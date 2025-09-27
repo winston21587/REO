@@ -13,8 +13,7 @@
             <a href="#" class="text-white font-bold text-xl">REO</a>
             <ul class="flex space-x-6">
                 <li><a href="/" class="text-white hover:text-blue-200">Home</a></li>
-                <li><a href="/admin" class="text-white hover:text-blue-200">Admin</a></li>
-                <li><a href="/login" class="text-white hover:text-blue-200">Login</a></li>
+                <li><a href="{{ route('login') }}" class="text-white hover:text-blue-200">Login</a></li>
             </ul>
         </div>
     </nav>

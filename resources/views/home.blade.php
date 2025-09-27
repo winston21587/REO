@@ -1,4 +1,7 @@
-<x-layout>
-    <p>home for users</p>
+<x-user_layout>
 
-</x-layout>
+<h1>home for users</h1>
+    <h2>Welcome, {{ Auth::user()->name }}!</h2>
+<p>Your email: {{ Auth::user()->email }}</p>
+<x-first_time_popup/>
+</x-user_layout>

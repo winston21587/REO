@@ -24,7 +24,19 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
+
+            $user = Auth::user();
+
+            if($user->role === 'admin'){
+                return redirect()->route('admin.dashboard');
+            }
+            if($user->role === 'researcher'){
+                return redirect()->route('home');
+            }
+            return redirect()->intended(route('home'));
+
+            
+            
         }
 
         return back()->withErrors([
@@ -44,13 +56,14 @@ class AuthController extends Controller
         $data = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:6|confirmed',   
         ]);
 
         $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
+            'role'     => 'researcher', // default role
         ]);
 
         Auth::login($user);
@@ -64,6 +77,16 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('/');
-    }
+        return redirect()->route('index');
+    }   
+
+    public function acceptTerms(Request $request)
+{
+    $user = Auth::user();
+    $user->first_time = true;
+    $user->save();
+
+    return redirect()->route('home')->with('status', 'Thanks for accepting the terms!');
+}
+
 }

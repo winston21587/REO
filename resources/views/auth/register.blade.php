@@ -20,4 +20,6 @@
             <p class="mt-4 text-white">Already have an account? <a href="{{ route('login') }}" class="text-yellow-300 underline">Login</a></p>
         </form>
     </div>
+
+
 </x-layout_auth>

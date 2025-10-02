@@ -2,16 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+// use App\Http\Controllers\Con;                   make a controller for index page just to logout every time it refreshes
 
 // Route::get('/', function () {
 //     return view('index');
 // });
-
-
 // Route::get('/admin', function () {
 //     return view('admin.dashboard', ['title' => 'Admin']);
 // });
-
 // Route::get('/home', function () {
 //     return view('home');
 // });

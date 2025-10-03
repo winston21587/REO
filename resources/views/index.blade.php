@@ -39,7 +39,7 @@
     </div>
     <img class="msg2 w-full md:w-[36%] md:sticky md:top-[20px]" src="./images/msg2.png" alt="WMSU REOC Visual">
   </div>
-     <x-f-a-q/>
+     {{-- <x-f-a-q/> --}}
 
     <div class="reoc-join-wrapper max-w-[1400px] mx-auto flex items-center justify-between flex-wrap p-[60px_80px] md:p-[60px_80px]">
         <div class="reoc-join-image flex-1 min-w-[300px] p-[10px]">

@@ -86,7 +86,7 @@ class AuthController extends Controller
     $user->first_time = true;
     $user->save();
 
-    return redirect()->route('home')->with('status', 'Thanks for accepting the terms!');
+    return redirect()->route('instructions')->with('status', 'Thanks for accepting the terms!');
 }
 
 }

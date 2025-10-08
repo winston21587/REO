@@ -61,6 +61,11 @@
                 </ul>
             </div>
         @endif
+        @if (session('success'))
+            <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
+                {{ session('success') }}
+            </div>
+        @endif  
         {{-- <div class="bg-red-50 p-4 text-center">
             <p class="text-red-800 font-medium">Important research ethics reviews are waiting for you. Login now!</p>
         </div> --}}

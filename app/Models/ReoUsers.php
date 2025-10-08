@@ -12,6 +12,7 @@ class ReoUsers extends Model
         'password',
         'role',
         'contact_number',
+
     ];
 
 //    protected $guarded = ['id']; can also do but it only makes the id unfillable and not everything else

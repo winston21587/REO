@@ -127,5 +127,23 @@
             </div> --}}
           </div>
         </main>
-
+        <div class="fixed bottom-8 right-8">
+          <button onclick="openHelpModal()"
+            class="bg-primary text-white rounded-full h-16 w-16 flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors"
+          >
+            <span class="material-symbols-outlined text-3xl">help_outline</span>
+          </button>
+        </div>
+        <x-f-a-q />
 </x-user_layout>
+
+<script>
+  function openHelpModal(){
+    const helpModal = document.querySelector('.faq-modal');
+    helpModal.classList.remove('hidden');
+  }
+  function closeHelpModal(){
+    const helpModal = document.querySelector('.faq-modal');
+    helpModal.classList.add('hidden');
+  }
+</script>

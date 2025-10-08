@@ -22,6 +22,9 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login'); //anti hecker (wla brute force)
     Route::get('register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('register', [AuthController::class, 'register'])->name('register');
+
+    Route::get('/verify', [AuthController::class, 'showVerifyForm'])->name('verify.show'); 
+    Route::post('/verify', [AuthController::class, 'verifyCode'])->name('verify.submit'); //OTP func
 }); 
 
 Route::get('logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

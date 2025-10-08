@@ -28,8 +28,6 @@
 
 
 
-<link rel="stylesheet" href="Website Loading Screen/loader.css">
-<script src="Website Loading Screen/loader.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>

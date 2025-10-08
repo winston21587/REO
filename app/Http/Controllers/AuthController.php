@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -59,15 +60,24 @@ class AuthController extends Controller
             'password' => 'required|min:6|confirmed',   
         ]);
 
+        $verificationCode = rand(100000, 999999);   
+        // $verificationCode = 12345678;   
+
         $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
             'role'     => 'researcher', // default role
+            'verification_code' => $verificationCode,
+            'is_verified' => false,
         ]);
+    // Send email with verification code
+        Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user));
 
-        Auth::login($user);
-        return redirect()->route('home');
+        // Auth::login($user);
+        // return redirect()->route('home');
+
+        return redirect()->route('verify.show', ['email' => $user->email])->with('success', 'We sent a verification code to your email.');
     }
 
     // Logout
@@ -88,5 +98,38 @@ class AuthController extends Controller
 
     return redirect()->route('instructions')->with('status', 'Thanks for accepting the terms!');
 }
+public function showVerifyForm(Request $request)
+{
+        if (!$request->has('email')) {
+        return redirect()->route('register')
+                         ->with('error', 'Please register first to get your verification code.');
+    }
+    return view('auth.verification');
+}
+
+    public function verifyCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|numeric',
+        ]);
+
+        $user = User::where('email', $request->email)
+                    ->where('verification_code', $request->code)
+                    ->first();
+
+        if (!$user) {
+            return back()->with('error', 'Invalid verification code.');
+        }
+
+        $user->is_verified = true;
+        $user->verification_code = null;
+        $user->save();
+
+        // Auth::login($user);
+
+        return redirect()->route('login')->with('success', 'Email verified successfully!');
+    }
+
 
 }

@@ -96,6 +96,9 @@
     </div>
   </div>
 
+
+  <x-footer/>
+  
   <script>
     const slides = document.querySelectorAll('.slide');
     const next = document.getElementById('next');

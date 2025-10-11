@@ -62,8 +62,8 @@
           3
         </span>
         <p class="text-gray-800 font-semibold">
-          Upload all required files via the
-          <a href="{{ route('resources') }}"
+          Upload all of the required files in the submission portal and make sure to fully comply all the necessary information.
+          <a href="{{ route('submit') }}"
             class=" bg-primary text-white inline-flex p-2 rounded-lg  hover:bg-primary/90 transition-all duration-300  items-center gap-2">
             <span class="material-symbols-outlined items-center">upload_file</span>
             <span>Submit Here</span>

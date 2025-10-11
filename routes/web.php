@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\admin;
 // use App\Http\Controllers\Con;                   make a controller for index page just to logout every time it refreshes
 
 // Route::get('/', function () {
@@ -36,8 +37,10 @@ Route::middleware(['auth', 'role:researcher'])->group(function () {
     Route::get('/home', function () { return view('home'); })->name('home');    
     Route::get('/resources', function () { return view('resources'); })->name('resources');            //controller for these pages will be implemented soon
     Route::get('/instructions', function () { return view('instructions'); })->name('instructions');
-    Route::get('/forms', function () { return view('forms.submission'); });
-    Route::get('/forms/submission', function () { return view('forms.submission'); })->name('submission');
+    Route::get('/settings', function () { return view('user_settings'); })->name('settings');
+    Route::get('/submit', function () { return view('submit'); })->name('submit');
+    // Route::get('/forms', function () { return view('forms.submission'); });
+    // Route::get('/forms/submission', function () { return view('forms.submission'); })->name('submission');
 });
 
 
@@ -45,7 +48,12 @@ Route::middleware(['auth', 'role:researcher'])->group(function () {
 
 // admin access prolly
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin', function(){ return view('admin.dashboard'); })->name('admin.dashboard');
+    Route::get('/admin', function(){ return view('admin.analytics'); })->name('admin.analytics');
+    Route::get('/admin/appointment', function(){ return view('admin.appointment'); })->name('admin.appointment');
+    Route::get('/admin/users', function(){ return view('admin.manage_users'); })->name('admin.manage_users');
+    Route::get('/admin/staff', function(){ return view('admin.manage_staff'); })->name('admin.manage_staff');
+    Route::get('/admin/new', [ admin::class, 'newSubmissions'])->name('admin.NewSubmissions');
+    Route::get('/admin/applications', [admin::class, 'applications'])->name('admin.applications');
 
 });
 // Route::middleware(['auth','is_admin'])->group(function () {

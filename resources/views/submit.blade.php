@@ -127,7 +127,7 @@
                 />
               </div>
 
-              <div>
+              {{-- <div>
                 <label
                   for="drive-link"
                   class="block text-sm font-medium text-background-dark/80 dark:text-background-light/80 mb-1"
@@ -170,7 +170,7 @@
                   disabled
                   class="w-full bg-background-light/50 dark:bg-background-dark/50 border border-background-dark/20 dark:border-background-light/20 rounded-lg py-3 px-4 text-background-dark/60 dark:text-background-light/60"
                 />
-              </div>
+              </div> --}}
 
               <div class="md:col-span-2">
                 <label

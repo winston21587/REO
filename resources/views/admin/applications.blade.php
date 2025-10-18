@@ -61,6 +61,20 @@
                         </label>
                     </div>
                     <div class="flex gap-3 flex-wrap items-center">
+                        <label for="status"
+                            class="relative flex items-center h-12 shrink-0 rounded-lg bg-[#f3e7e7] dark:bg-gray-800">
+                            <div
+                                class="flex items-center justify-center pl-3 pr-2 text-[#994d4d] dark:text-gray-400 rounded-l-lg">
+                                <span class="material-symbols-outlined">filter_list</span>
+                            </div>
+                            <select id="status" name="status"
+                                class="focus:outline-0 focus:ring-0 appearance-none bg-transparent pl-3 pr-10 text-sm font-medium text-[#1b0e0e] dark:text-white h-12 w-full sm:w-auto min-w-[180px] outline-none border-none box-shadow:none">
+                                <option value="none" selected>Status: All</option>
+                                <option value="Review">Review</option>
+                                <option value="Revision">Revision</option>
+                                <option value="Finalization">Finalization</option>
+                            </select>
+                        </label>
                         <label for="review_type"
                             class="relative flex items-center h-12 shrink-0 rounded-lg bg-[#f3e7e7] dark:bg-gray-800">
                             <div
@@ -69,7 +83,7 @@
                             </div>
                             <select id="review_type" name="review_type"
                                 class="focus:outline-0 focus:ring-0 appearance-none bg-transparent pl-3 pr-10 text-sm font-medium text-[#1b0e0e] dark:text-white h-12 w-full sm:w-auto min-w-[180px] outline-none border-none box-shadow:none">
-                                <option value="none" selected>Review: None</option>
+                                <option value="none" selected>Review: All</option>
                                 <option value="full_review">Full Review</option>
                                 <option value="expedited">Expedited</option>
                                 <option value="exempt">Exempt</option>
@@ -83,7 +97,7 @@
                             </div>
                             <select id="revision_status" name="revision_status"
                                 class="focus:outline-0 focus:ring-0 appearance-none bg-transparent pl-3 pr-10 text-sm font-medium text-[#1b0e0e] dark:text-white h-12 w-full sm:w-auto min-w-[220px] outline-none border-none">
-                                <option value="none" selected>Revision: None</option>
+                                <option value="none" selected>Revision: All</option>
                                 <option value="waiting_for_revision">Waiting for Revision</option>
                                 <option value="panel_deliberation">Panel Deliberation</option>
                                 <option value="submission_of_revision">Submission of Revision</option>

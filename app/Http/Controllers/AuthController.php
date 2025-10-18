@@ -55,19 +55,32 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $data = $request->validate([
-            'name'     => 'required|string|max:255',
+            'FirstName'     => 'required|string|max:255',
+            'MiddleName'     => 'nullable|string|max:255',
+            'LastName'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users',
-            'password' => 'required|min:6|confirmed',   
+            'password' => 'required|min:6|confirmed', 
+            'college' => 'required|string|max:155',  
+            'department' => 'required|string|max:155',  
+            'course' => 'required|string|max:155',  
+            'external_user' => 'sometimes|boolean',
+            
         ]);
 
         $verificationCode = rand(100000, 999999);   
         // $verificationCode = 12345678;   
 
         $user = User::create([
-            'name'     => $data['name'],
+            'first_name'  => $data['FirstName'],
+            'middle_name' => $data['MiddleName'] ?? null,
+            'last_name' => $data['LastName'],
+            'college' => $data['college'] ?? null,
+            'department' => $data['department'] ?? null,
+            'course' => $data['course'] ?? null,
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
             'role'     => 'researcher', // default role
+            'external_user' => $data['external_user'] ?? false,
             'verification_code' => $verificationCode,
             'is_verified' => false,
         ]);

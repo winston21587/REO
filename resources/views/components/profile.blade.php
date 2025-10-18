@@ -1,5 +1,3 @@
-
-
 <script>
   tailwind.config = {
     darkMode: "class",
@@ -62,25 +60,46 @@
         </button>
       </div>
 
-        <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
-            <div  class=" grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Name</label>
-                <input readonly name="name" type="text" value="{{ old('name',  Auth::user()->name) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Email</label>
-                <input readonly name="email" type="email" value="{{ old('email',  Auth::user()->email) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
-              </div>
-            </div>
-        </div>
+      <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Full name</label>
+            <input readonly name="name" type="text" value="{{ old('name',  Auth::user()->name) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
+          </div>
 
-      {{-- <div class="p-6 border-t border-border-light dark:border-border-dark flex justify-end">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <input readonly name="email" type="email" value="{{ old('email',  Auth::user()->email) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Department</label>
+            <input readonly type="text" value="Department of Psychology" class="mt-1 block w-full rounded-md border-gray-200 bg-background-light/50 dark:bg-background-dark/60 shadow-sm sm:text-sm text-content-light dark:text-content-dark">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Role</label>
+            <input readonly type="text" value="Researcher" class="mt-1 block w-full rounded-md border-gray-200 bg-background-light/50 dark:bg-background-dark/60 shadow-sm sm:text-sm text-content-light dark:text-content-dark">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Contact number</label>
+            <input readonly type="text" value="+63 912 345 6789" class="mt-1 block w-full rounded-md border-gray-200 bg-background-light/50 dark:bg-background-dark/60 shadow-sm sm:text-sm text-content-light dark:text-content-dark">
+          </div>
+
+
+        </div>
+      </div>
+
+      <div class="p-6 border-t border-border-light dark:border-border-dark flex justify-end gap-3">
         <button onclick="closeProfModal()"
-          class=" close-btn bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark transition-colors duration-200">
+          class="bg-primary/10 text-primary font-semibold px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors">
           Close
         </button>
-      </div> --}}
+        <button class="bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+          <a href="{{ route('settings') }}">Edit profile</a>
+        </button>
+      </div>
     </div>
   </div>
 </div>

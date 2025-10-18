@@ -121,8 +121,10 @@
                     <div class="mt-auto">
                         <button
                             class="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors">
-                            <span class="truncate">Logout</span>
-                        </button>
+            <a class="flex items-center gap-3 text-white  hover:bg-primary/10 hover:text-primary p-3 rounded-lg transition-colors"
+              href="{{ route('logout') }}">
+              <span class="material-symbols-outlined">logout</span> Logout
+            </a>                        </button>
                     </div>
                 </div>
             </aside>

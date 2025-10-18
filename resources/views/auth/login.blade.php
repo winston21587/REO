@@ -24,19 +24,19 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome back!</h2>
                 <p class="text-gray-600">How do I get started with my research ethics review?</p>
             </div>
-            
+
             <form action="{{ route('login') }}" method="POST" class="space-y-6">
                 @csrf
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                     <input required type="email" name="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Enter your email">
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                     <input required type="password" name="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Enter your password">
                 </div>
-                
+
                 <div class="flex justify-between items-center">
                     <div class="flex items-center">
                         <input type="checkbox" id="remember" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">

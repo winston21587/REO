@@ -1,5 +1,5 @@
 <x-user_layout>
-  <div class="max-w-4xl mx-auto bg-white shadow-lg  p-8">
+  <div class="max-w-4xl mx-auto bg-white shadow-lg mb-10 p-8">
     <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center text-center gap-2">
 
       Instructions for Research Ethics Review Submission
@@ -37,21 +37,21 @@
           format:
         </p>
         <ul class="list-none pl-2 space-y-1 text-gray-700">
-          <li>► <strong>Application Form for Research Ethics Review</strong> - WMSU-REOC-FR-001 (with researcher/s
+          <li>► <strong>Application Form for Research Ethics Review</strong> - WMSU-REO-FR-001 (with researcher/s
             signature, <em>PDF</em>)</li>
           <li>► <strong>Research Protocol/Proposal</strong> (with page and line numbers, <em>PDF</em>)</li>
           <li>► <strong>Technical Review Clearance</strong> (with panel signatures, <em>PDF</em>)</li>
           <li>► <strong>Data Collection Instrument/s</strong> (with page and line numbers, <em>PDF</em>)</li>
           <li>► <strong>Informed Consent/Assent</strong> (with page and line numbers, <em>PDF</em>)</li>
           <li>► <strong>Curriculum Vitae</strong> of Researcher/s (<em>PDF</em>)</li>
-          <li>► <strong>Completed Study Protocol Assessment Form</strong> - WMSU-REOC-FR-004 (fill out fields with
+          <li>► <strong>Completed Study Protocol Assessment Form</strong> - WMSU-REO-FR-004 (fill out fields with
             asterisks, <em>Word</em>)</li>
-          <li>► <strong>Completed Informed Consent Assessment Form</strong> - WMSU-REOC-FR-005 (fill out fields with
+          <li>► <strong>Completed Informed Consent Assessment Form</strong> - WMSU-REO-FR-005 (fill out fields with
             asterisks, <em>Word</em>)</li>
-          <li>► <strong>Completed Exempt Review Assessment Form</strong> - WMSU-REOC-FR-006 (fill out fields with
+          <li>► <strong>Completed Exempt Review Assessment Form</strong> - WMSU-REO-FR-006 (fill out fields with
             asterisks, <em>Word</em>)</li>
           <li>► <strong>Supplementary Documents</strong> (NCIP Clearance, MOA, MOU, etc., <em>PDF</em>)</li>
-          <li>► <strong>Official Receipt</strong> (Research Ethics Review Fee, <em>PDF</em>)</li>
+          {{-- <li>► <strong>Official Receipt</strong> (Research Ethics Review Fee, <em>PDF</em>)</li> --}}
         </ul>
       </li>
 
@@ -78,7 +78,7 @@
           4
         </span>
         <p class="text-gray-800 font-semibold">
-          Secure your Research Ethics Review Payment Slip from the WMSU REOC Office and settle the payment at the
+          Secure your Research Ethics Review Payment Slip from the WMSU REO Office and settle the payment at the
           university cashier.
         </p>
       </li>

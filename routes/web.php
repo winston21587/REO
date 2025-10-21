@@ -23,7 +23,8 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login'); //anti hecker (wla brute force)
     Route::get('register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('register', [AuthController::class, 'register'])->name('register');
+    Route::post('register/internal', [AuthController::class, 'register_internal'])->name('register.internal');
+    Route::post('register/external', [AuthController::class, 'register_external'])->name('register.external');
 
     Route::get('/verify', [AuthController::class, 'showVerifyForm'])->name('verify.show'); 
     Route::post('/verify', [AuthController::class, 'verifyCode'])->name('verify.submit'); //OTP func
@@ -35,13 +36,16 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout')->middle
 
 // exlusive for users only or something (middleware gaming)
 Route::middleware(['auth', 'role:researcher'])->group(function () {
-    Route::get('/home', function () { return view('home'); })->name('home');    
+    Route::get('/home', [Research_title_Controller::class, 'showTitles'])->name('home');    
     Route::get('/resources', function () { return view('resources'); })->name('resources');            //controller for these pages will be implemented soon
     Route::get('/instructions', function () { return view('instructions'); })->name('instructions');
     Route::get('/settings', function () { return view('user_settings'); })->name('settings');
-    Route::get('/submit', function () { return view('submit'); })->name('submit');
-    // Route::get('/forms', function () { return view('forms.submission'); });
-    // Route::get('/forms/submission', function () { return view('forms.submission'); })->name('submission');
+
+    Route::get('/submit',[Research_title_Controller::class, 'showSubmit'] )->name('submit');
+    Route::post('/submit',  [Research_title_Controller::class, 'submitTitle'])->name('submit.title'); 
+    Route::get('/research/{id}/files', [Research_title_Controller::class, 'fetchFiles']);
+
+
 });
 
 

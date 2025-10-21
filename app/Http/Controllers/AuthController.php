@@ -52,8 +52,9 @@ class AuthController extends Controller
     }
 
     // Handle registration form
-    public function register(Request $request)
+    public function register_internal(Request $request)
     {
+
         $data = $request->validate([
             'FirstName'     => 'required|string|max:255',
             'MiddleName'     => 'nullable|string|max:255',
@@ -61,29 +62,72 @@ class AuthController extends Controller
             'email'    => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed', 
             'college' => 'required|string|max:155',  
-            'department' => 'required|string|max:155',  
-            'course' => 'required|string|max:155',  
-            'external_user' => 'sometimes|boolean',
-            
+            'department' => 'required|string|max:155',   
+            'course' => 'required|string|max:155', 
+            'contact' => 'nullable|string|max:11',
+
         ]);
 
         $verificationCode = rand(100000, 999999);   
         // $verificationCode = 12345678;   
 
-        $user = User::create([
+            $user = User::create([
             'first_name'  => $data['FirstName'],
             'middle_name' => $data['MiddleName'] ?? null,
             'last_name' => $data['LastName'],
             'college' => $data['college'] ?? null,
             'department' => $data['department'] ?? null,
+            'contact' => $data['contact'] ?? null,
             'course' => $data['course'] ?? null,
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
+            'external_user' =>  false,
             'role'     => 'researcher', // default role
-            'external_user' => $data['external_user'] ?? false,
             'verification_code' => $verificationCode,
             'is_verified' => false,
         ]);
+    
+
+    // Send email with verification code
+        Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user));
+
+        // Auth::login($user);
+        // return redirect()->route('home');
+
+        return redirect()->route('verify.show', ['email' => $user->email])->with('success', 'We sent a verification code to your email.');
+    }
+    public function register_external(Request $request)
+    {
+
+        $data = $request->validate([
+            'FirstName'     => 'required|string|max:255',
+            'MiddleName'     => 'nullable|string|max:255',
+            'LastName'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:6|confirmed', 
+            'institute' => 'required|string|max:155',  
+            'contact' => 'nullable|string|max:11',
+
+        ]);
+
+        $verificationCode = rand(100000, 999999);   
+        // $verificationCode = 12345678;   
+
+            $user = User::create([
+            'first_name'  => $data['FirstName'],
+            'middle_name' => $data['MiddleName'] ?? null,
+            'last_name' => $data['LastName'],
+            'contact' => $data['contact'] ?? null,
+            'email'    => $data['email'],
+            'institute' => $data['institute'] ?? null, 
+            'password' => Hash::make($data['password']),
+            'external_user' =>  false,
+            'role'     => 'researcher', // default role
+            'verification_code' => $verificationCode,
+            'is_verified' => false,
+        ]);
+    
+
     // Send email with verification code
         Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user));
 

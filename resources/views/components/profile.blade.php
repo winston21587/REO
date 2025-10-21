@@ -64,7 +64,7 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label class="block text-sm font-medium text-gray-700">Full name</label>
-            <input readonly name="name" type="text" value="{{ old('name',  Auth::user()->name) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
+            <input readonly name="name" type="text" value="{{ old('name',  Auth::user()->id) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
           </div>
 
           <div>

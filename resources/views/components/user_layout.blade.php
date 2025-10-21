@@ -151,7 +151,6 @@
         </div>
 
       </header>
-
       <x-notification-tab/>
       <x-profile/>
 

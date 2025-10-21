@@ -8,124 +8,57 @@
           </h2>
 
 
-          <div class="grid gap-6 title_wrapper">
-            <div class=" title_box bg-background-light dark:bg-background-dark/50 rounded-lg shadow-md overflow-hidden border border-background-dark/10 dark:border-background-light/10">
-              <div class="p-6">
+<div class="grid gap-6 title_wrapper">
+    @forelse($researchTitles as $title)
+        <div class="title_box bg-background-light dark:bg-background-dark/50 rounded-lg shadow-md overflow-hidden border border-background-dark/10 dark:border-background-light/10">
+            <div class="p-6">
                 <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4">
-                  <p class="text-sm text-background-dark/60 dark:text-background-light/60">
-                    APPOINTMENT: Oct 25, 2024
-                  </p>
-                  <div
-                    class="mt-2 sm:mt-0 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold"
-                  >
-                    <span class="material-symbols-outlined text-base"
-                      >history</span
-                    >
-                    On Revision
-                  </div>
+                    <p class="text-sm text-background-dark/60 dark:text-background-light/60">
+                        Submitted: {{ $title->created_at->format('M d, Y') }}
+                    </p>
+                    <div
+                        class="mt-2 sm:mt-0 inline-flex items-center gap-2 px-3 py-1 rounded-full
+                               {{ $title->status === 'Approved' ? 'bg-green-100 text-green-700' : 
+                                  ($title->status === 'On Revision' ? 'bg-yellow-100 text-yellow-700' : 'bg-primary/10 text-primary') }}
+                               text-sm font-semibold">
+                        <span class="material-symbols-outlined text-base">history</span>
+                        {{ $title->status ?? 'Pending Review' }}
+                    </div>
                 </div>
-                <h3
-                  class="text-xl font-bold text-background-dark dark:text-background-light"
-                >
-                  The Impact of Social Media on Youth Mental Health
-                </h3>
-                <div class="mt-6 flex flex-wrap gap-4">
-                  <button onclick="openModal('detail-modal')"
-                    class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors flex-grow sm:flex-grow-0"
-                  >
-                    View Details
-                  </button>
-                  <button onclick="openModal('manage-modal')"
-                    class="bg-primary/20 dark:bg-primary/30 text-primary font-bold py-2 px-6 rounded-lg hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors flex-grow sm:flex-grow-0"
-                  >
-                    Manage Files
-                  </button>
-                </div>
-              </div>
-            </div>
 
-            {{-- <div
-              class="bg-background-light dark:bg-background-dark/50 rounded-lg shadow-md overflow-hidden border border-background-dark/10 dark:border-background-light/10"
-            >
-              <div class="p-6">
-                <div
-                  class="flex flex-col sm:flex-row justify-between sm:items-center mb-4"
-                >
-                  <p
-                    class="text-sm text-background-dark/60 dark:text-background-light/60"
-                  >
-                    APPOINTMENT: Nov 12, 2024
-                  </p>
-                  <div
-                    class="mt-2 sm:mt-0 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold"
-                  >
-                    <span class="material-symbols-outlined text-base"
-                      >rule</span
-                    >
-                    Selecting Review Type
-                  </div>
-                </div>
-                <h3
-                  class="text-xl font-bold text-background-dark dark:text-background-light"
-                >
-                  A Comparative Analysis of Renewable Energy Sources
+                <h3 class="text-xl font-bold text-background-dark dark:text-background-light">
+                    {{ $title->Study_Protocol_title }}
                 </h3>
-                <div class="mt-6 flex flex-wrap gap-4">
-                  <button
-                    class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors flex-grow sm:flex-grow-0"
-                  >
-                    View Details
-                  </button>
-                  <button
-                    class="bg-primary/20 dark:bg-primary/30 text-primary font-bold py-2 px-6 rounded-lg hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors flex-grow sm:flex-grow-0"
-                  >
-                    Manage Files
-                  </button>
-                </div>
-              </div>
-            </div>
 
-            <div
-              class="bg-background-light dark:bg-background-dark/50 rounded-lg shadow-md overflow-hidden border border-background-dark/10 dark:border-background-light/10"
-            >
-              <div class="p-6">
-                <div
-                  class="flex flex-col sm:flex-row justify-between sm:items-center mb-4"
-                >
-                  <p
-                    class="text-sm text-background-dark/60 dark:text-background-light/60"
-                  >
-                    APPOINTMENT: Dec 01, 2024
-                  </p>
-                  <div
-                    class="mt-2 sm:mt-0 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-sm font-semibold"
-                  >
-                    <span class="material-symbols-outlined text-base"
-                      >check_circle</span
-                    >
-                    Complete
-                  </div>
-                </div>
-                <h3
-                  class="text-xl font-bold text-background-dark dark:text-background-light"
-                >
-                  The Role of Artificial Intelligence in Healthcare
-                </h3>
+                <p class="text-sm text-background-dark/70 dark:text-background-light/70 mt-2">
+                    Adviser: <strong>{{ $title->Adviser }}</strong>
+                </p>
+                <p class="text-sm text-background-dark/70 dark:text-background-light/70">
+                    Category: <strong>{{ $title->Research_Category }}</strong>
+                </p>
+
                 <div class="mt-6 flex flex-wrap gap-4">
-                  <button
-                    class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors flex-grow sm:flex-grow-0"
-                  >
-                    View Details
-                  </button>
-                  <button
-                    class="bg-primary/20 dark:bg-primary/30 text-primary font-bold py-2 px-6 rounded-lg hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors flex-grow sm:flex-grow-0"
-                  >
-                    Manage Files
-                  </button>
+                    <button  onclick="openDetailModal(
+                    '{{ $title->Study_Protocol_title }}','{{ $title->Research_Category }}',
+                    '{{ $title->Adviser }}','{{ $title->Official_Receipt_Number }}','{{ $title->status ?? 'Pending Review' }}')"
+                        class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors flex-grow sm:flex-grow-0">
+                        View Details
+                    </button>
+                    <button onclick="openManageModal({{ $title->id }})" 
+                        class="bg-primary/20 dark:bg-primary/30 text-primary font-bold py-2 px-6 rounded-lg hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors flex-grow sm:flex-grow-0">
+                        Manage Files
+                    </button>
                 </div>
-              </div>
-            </div> --}}
-          </div>
+            </div>
+        </div>
+    @empty
+        <p class="text-center text-gray-500 dark:text-gray-400">No research titles submitted yet.</p>
+    @endforelse
+</div>
+
+
+
+
         </main>
         <div class="fixed bottom-8 right-8">
           <button onclick="openHelpModal()"
@@ -162,39 +95,37 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
                     <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Research Title</p>
-                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark">
-                      The Impact of Social Media on Youth Mental Health
-                    </p>
+                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-title">–</p>
                   </div>
 
                   <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
                     <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Research Category</p>
-                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark">
-                      Psychology
-                    </p>
+                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-category">–</p>
                   </div>
 
                   <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Official Receipt No.</p>
-                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark">
-                      OR-2024-015
-                    </p>
+                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Adviser</p>
+                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-adviser">–</p>
+                  </div>
+
+                  <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
+                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Review Type</p>
+                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-status">–</p>
                   </div>
 
                   <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
                     <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Review Type</p>
                     <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark">
-                      Full Board Review
+                      Pending
                     </p>
                   </div>
 
                   <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
                     <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Revision Type</p>
                     <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark">
-                      Major Revision
+                      Pending
                     </p>
-                  </div>
-
+                  </div> 
                   <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
                     <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Appointed Date</p>
                     <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark">
@@ -244,87 +175,7 @@
             <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
               <h3 class="text-lg font-semibold text-content-light dark:text-content-dark">Files (click to open)</h3>
 
-              <ul class="space-y-3">
-                <li class="flex items-start justify-between bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5 p-4">
-                  <div class="flex-1 min-w-0">
-                    <a href="#" class="block text-sm font-medium text-primary hover:underline truncate">sample_draft.docx</a>
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark mt-1">Uploaded: Oct 22, 2024 · 560 KB</p>
-
-                    <!-- indicate no revisions -->
-                    <div class="mt-3 text-xs italic text-subtle-light dark:text-subtle-dark">
-                      No revisions yet — not revised or changed yet.
-                    </div>
-                  </div>
-
-                  <div class="ml-4 flex-shrink-0 flex flex-col items-end gap-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200">Not revised</span>
-                    <a href="#" class="text-sm bg-primary text-white px-3 py-1 rounded-md hover:bg-primary/90">Download</a>
-                  </div>
-                </li>
-                <li class="flex items-start justify-between bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5 p-4">
-                  <div class="flex-1 min-w-0">
-                    <a href="#" class="block text-sm font-medium text-primary hover:underline truncate">manuscript_final_v3.pdf</a>
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark mt-1">Uploaded: Oct 20, 2024 · 1.2 MB</p>
-
-                    <details class="mt-3 bg-background-light/20 dark:bg-background-dark/30 rounded-md p-3">
-                      <summary class="text-xs font-semibold text-subtle-light dark:text-subtle-dark cursor-pointer">Revision history</summary>
-                      <ul class="mt-2 space-y-2">
-                        <li>
-                          <a href="#" class="text-sm text-content-light dark:text-content-dark hover:underline">v3 — Oct 20, 2024 · Reviewer updates</a>
-                        </li>
-                        <li>
-                          <a href="#" class="text-sm text-content-light dark:text-content-dark hover:underline">v2 — Oct 08, 2024 · Author revision</a>
-                        </li>
-                        <li>
-                          <a href="#" class="text-sm text-content-light dark:text-content-dark hover:underline">v1 — Sep 30, 2024 · Initial upload</a>
-                        </li>
-                      </ul>
-                    </details>
-                  </div>
-
-                  <div class="ml-4 flex-shrink-0 flex flex-col items-end gap-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">Rev 3</span>
-                    <a href="#" class="text-sm bg-primary text-white px-3 py-1 rounded-md hover:bg-primary/90">Download</a>
-                  </div>
-                </li>
-                <li class="flex items-start justify-between bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5 p-4">
-                  <div class="flex-1 min-w-0">
-                    <a href="#" class="block text-sm font-medium text-primary hover:underline truncate">consent_form_signed.pdf</a>
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark mt-1">Uploaded: Sep 28, 2024 · 230 KB</p>
-
-                    <details class="mt-3 bg-background-light/20 dark:bg-background-dark/30 rounded-md p-3">
-                      <summary class="text-xs font-semibold text-subtle-light dark:text-subtle-dark cursor-pointer">Revision history</summary>
-                      <ul class="mt-2 space-y-2">
-                        <li><a href="#" class="text-sm text-content-light dark:text-content-dark hover:underline">v1 — Sep 28, 2024 · Signed copy</a></li>
-                      </ul>
-                    </details>
-                  </div>
-
-                  <div class="ml-4 flex-shrink-0 flex flex-col items-end gap-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">Rev 1</span>
-                    <a href="#" class="text-sm bg-primary text-white px-3 py-1 rounded-md hover:bg-primary/90">Download</a>
-                  </div>
-                </li>
-                <li class="flex items-start justify-between bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5 p-4">
-                  <div class="flex-1 min-w-0">
-                    <a href="#" class="block text-sm font-medium text-primary hover:underline truncate">figure_set.zip</a>
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark mt-1">Uploaded: Oct 01, 2024 · 4.5 MB</p>
-
-                    <details class="mt-3 bg-background-light/20 dark:bg-background-dark/30 rounded-md p-3">
-                      <summary class="text-xs font-semibold text-subtle-light dark:text-subtle-dark cursor-pointer">Revision history</summary>
-                      <ul class="mt-2 space-y-2">
-                        <li><a href="#" class="text-sm text-content-light dark:text-content-dark hover:underline">v2 — Oct 01, 2024 · Updated figures</a></li>
-                        <li><a href="#" class="text-sm text-content-light dark:text-content-dark hover:underline">v1 — Sep 25, 2024 · Initial upload</a></li>
-                      </ul>
-                    </details>
-                  </div>
-
-                  <div class="ml-4 flex-shrink-0 flex flex-col items-end gap-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">Rev 2</span>
-                    <a href="#" class="text-sm bg-primary text-white px-3 py-1 rounded-md hover:bg-primary/90">Download</a>
-                  </div>
-                </li>
-                <!-- New sample file that has NOT been revised yet -->
+              <ul id="file-list" class="space-y-3">
 
               </ul>
 
@@ -345,19 +196,55 @@
 </x-user_layout>
 
 <script>
-  function openHelpModal(){
-    const helpModal = document.querySelector('.faq-modal');
-    helpModal.classList.remove('hidden');
+  function openHelpModal()
+  { const helpModal = document.querySelector('.faq-modal');
+   helpModal.classList.remove('hidden');
+  
   }
-  function closeHelpModal(){
-    const helpModal = document.querySelector('.faq-modal');
-    helpModal.classList.add('hidden');
-  }
+   function closeHelpModal(){
+     const helpModal = document.querySelector('.faq-modal'); helpModal.classList.add('hidden');
+    
+    }
+function openDetailModal(title, category, adviser, receipt, status) {
+    const modal = document.querySelector('.detail-modal');
+    modal.classList.remove('hidden');
 
-    function openModal(modalid) {
-    document.querySelector("." + modalid).classList.remove("hidden");
-  }
-  function closeModal(modalid) {
-    document.querySelector("." + modalid).classList.add("hidden");
-  }
+    // Fill modal content dynamically
+    modal.querySelector('#modal-title').textContent = title;
+    modal.querySelector('#modal-category').textContent = category;
+    modal.querySelector('#modal-adviser').textContent = adviser;
+    modal.querySelector('#modal-receipt').textContent = receipt;
+    modal.querySelector('#modal-status').textContent = status;
+}
+
+function openManageModal(researchId) {
+    const modal = document.querySelector('.manage-modal');
+    modal.classList.remove('hidden');
+
+    // Fetch files dynamically using AJAX
+    fetch(`/research/${researchId}/files`)
+        .then(response => response.json())
+        .then(files => {
+            const list = modal.querySelector('#file-list');
+            list.innerHTML = ''; // clear previous
+
+            if (files.length === 0) {
+                list.innerHTML = `<p class="text-sm text-gray-500">No files uploaded yet.</p>`;
+            } else {
+                files.forEach(file => {
+                    list.innerHTML += `
+                        <li class="flex items-start justify-between bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5 p-4">
+                            <div class="flex-1 min-w-0">
+                                <a href="/storage/${file.filepath}" target="_blank" class="block text-sm font-medium text-primary hover:underline truncate">${file.filename}</a>
+                                <p class="text-xs text-subtle-light dark:text-subtle-dark mt-1">Uploaded: ${new Date(file.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <div class="ml-4">
+                                <a href="/${file.filepath}" download class="text-sm bg-primary text-white px-3 py-1 rounded-md hover:bg-primary/90">Download</a>
+                            </div>
+                        </li>`;
+                });
+            }
+        });
+}
+function closeModal(modalid) { document.querySelector("." + modalid).classList.add("hidden"); }
 </script>

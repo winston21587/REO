@@ -29,7 +29,9 @@ class User extends Authenticatable
         'college',
         'department',
         'course',
+        'institute',
         'external_user',
+        'contact',
     ];
 
     /**

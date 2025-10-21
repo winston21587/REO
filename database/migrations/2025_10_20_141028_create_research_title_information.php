@@ -17,9 +17,15 @@ return new class extends Migration
             $table->string('Research_Category');
             $table->string('Review_Type')->default('N/A');
             $table->string('Created_by')->nullable();
-            $table->integer('Official_Receipt_Number');
+            $table->string('Status')->default('Pending');
+            $table->string('Adviser')->nullable();
+            $table->integer('Official_Receipt_Number')->default(null);
             $table->foreignId('user_id')
                   ->constrained('users')
+                  ->onDelete('cascade');
+
+            $table->foreignId('researcher_file_id')
+                  ->constrained('researcher_files')
                   ->onDelete('cascade');
 
             $table->timestamps();

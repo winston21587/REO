@@ -25,9 +25,10 @@ return new class extends Migration
             // additional profile fields from validation
             $table->string('college')->nullable();
             $table->string('department')->nullable();
+            $table->string('institute')->nullable();
             $table->string('course')->nullable();
-            $table->boolean('external_user')->default(false);
-
+            $table->boolean('external_user');
+            $table->string('contact')->nullable();
             $table->boolean('is_verified')->default(false);
             $table->string('verification_code')->nullable();
             $table->rememberToken();

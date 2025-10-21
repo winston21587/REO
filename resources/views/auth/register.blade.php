@@ -4,8 +4,13 @@
     <div class="bg-white dark:bg-background-dark/50 shadow-lg rounded-xl p-6 sm:p-10 w-full">
       <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 text-center">Create an Account</h1>
       <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 text-center">Please fill out the details below.</p>
-
-      <form action="{{ route('register') }}" method="POST"  class="space-y-4 sm:space-y-5">
+        <div class="flex items-center gap-2 pt-2">
+          <input type="checkbox" id="isNotWmsu" name="external_user" value="on" class="rounded text-primary focus:ring-primary" />
+          <label for="external_user" class="text-sm font-medium text-gray-700 dark:text-gray-300">Are you NOT from WMSU?</label>
+        </div>
+      
+        {{-- student form --}}
+      <form action="{{ route('register.internal') }}" method="POST"  class="space-y-4 sm:space-y-5" id="wmsuSection">
         @csrf
         <!-- Name fields in a grid for better use of width -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -27,15 +32,8 @@
               class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
           </div>
         </div>
-
-        <!-- Non-WMSU Checkbox (Reversed) -->
-        <div class="flex items-center gap-2 pt-2">
-          <input type="checkbox" id="isNotWmsu" name="external_user" class="rounded text-primary focus:ring-primary" />
-          <label for="external_user" class="text-sm font-medium text-gray-700 dark:text-gray-300">Are you NOT from WMSU?</label>
-        </div>
-
         <!-- WMSU Section (Default visible) -->
-        <div id="wmsuSection" class="space-y-4 sm:space-y-5 mt-3">
+        <div  class="space-y-4 sm:space-y-5 mt-3">
           <!-- WMSU Email -->
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">WMSU Email</label>
@@ -90,43 +88,9 @@
             </div>
           </div>
 
-          <!-- Password fields in grid -->
-          {{-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-              <input type="password" id="password" name="password" required value="{{ old('password') }}"
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-            </div>
-            
-            <div>
-              <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
-              <input type="password" id="password_confirmation" name="password_confirmation" required value="{{ old('password_confirmation') }}"
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-            </div>
-          </div> --}}
         </div>
 
-        <!-- Non-WMSU Section (Hidden by default) -->
-        {{-- <div id="nonWmsuSection" class="hidden space-y-4 sm:space-y-5 mt-3">
-        
-          <div>
-            <label for="personalEmail" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-            <input type="email" id="personalEmail" name="email" placeholder="example@gmail.com"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
 
-          <div>
-            <label for="Department" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
-            <input type="text" id="Department" name="Department" 
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
-          <div>
-            <label for="Contact" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contact</label>
-            <input type="text" id="Contact" name="Contact" placeholder="09*********" pattern="[0-9]*" inputmode="numeric" maxlength="11"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base appearance-none" />
-          </div>
-
-        </div> --}}
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -149,12 +113,88 @@
           <span>Create Account</span>
         </button>
       </form>
+
+      {{-- external user form --}}
+      <form action="{{ route('register.external') }}" method="POST"  class="space-y-4 sm:space-y-5 hidden" id="nonWmsuSection">
+        @csrf
+        <!-- Name fields in a grid for better use of width -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label for="FirstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
+            <input type="text" id="FirstName" name="FirstName" required value="{{ old('FirstName') }}"
+              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
+          </div>
+
+          <div>
+            <label for="MiddleName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Middle Name</label>
+            <input type="text" id="MiddleName" name="MiddleName" placeholder="Optional" value="{{ old('MiddleName') }}"
+              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
+          </div>
+
+          <div>
+            <label for="LastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
+            <input type="text" id="LastName" name="LastName" required value="{{ old('LastName') }}"
+              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
+          </div>
+        </div>
+
+        <!-- Non-WMSU Section (Hidden by default) -->
+        <div  class=" space-y-4 sm:space-y-5 mt-3">
+        
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+            <input type="email" id="email" name="email" placeholder="example@gmail.com"
+              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
+          </div>
+
+          <div>
+            <label for="institute" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institute</label>
+            <input type="text" id="institute" name="institute" 
+              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
+          </div>
+          <div>
+            <label for="contact" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contact</label>
+            <input type="text" id="contact" name="contact" placeholder="09*********" pattern="[0-9]*" inputmode="numeric" maxlength="11"
+              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base appearance-none" />
+          </div>
+
+        </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+              <input type="password" id="password" name="password" required value="{{ old('password') }}"
+                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
+            </div>
+            
+            <div>
+              <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
+              <input type="password" id="password_confirmation" name="password_confirmation" required value="{{ old('password_confirmation') }}"
+                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
+            </div>
+          </div>
+
+        <!-- Submit Button -->
+        <button type="submit"
+          class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base mt-6">
+          <span class="material-symbols-outlined text-lg">person_add</span>
+          <span>Create Account</span>
+        </button>
+      </form>      
                   <div class="mt-6 text-center">
                 <p class="text-gray-600">Already have an account? <a href="{{ route('login') }}" class="text-red-600 hover:text-red-700 font-medium">Login</a></p>
             </div>
     </div>
   </div>
-
+@if ($errors->any())
+    <div class="mt-3 bg-red-100 border border-red-400 text-red-700 p-3 rounded">
+        <ul class="list-disc ml-5">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     {{-- <div class="max-w-md w-full bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="p-8">
             <div class="mb-8">

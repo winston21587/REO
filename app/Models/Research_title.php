@@ -19,7 +19,6 @@ class Research_title extends Model
         'Created_by',
         'Official_Receipt_Number',
         'user_id',
-        'researcher_file_id',
         'Adviser',
     ];
     // Relationship: each research title belongs to a user
@@ -29,8 +28,9 @@ class Research_title extends Model
     }
 
     // Relationship: each research title belongs to a researcher file
-    public function researcherFile()
-    {
-        return $this->belongsTo(Researcher_files::class, 'researcher_file_id');
-    }
+public function files()
+{
+    return $this->belongsToMany(Research_title::class, 'research_title_files', 'research_title_id', 'researcher_file_id')
+    ->withTimestamps();
+}
 }

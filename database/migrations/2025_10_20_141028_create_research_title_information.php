@@ -24,9 +24,9 @@ return new class extends Migration
                   ->constrained('users')
                   ->onDelete('cascade');
 
-            $table->foreignId('researcher_file_id')
-                  ->constrained('researcher_files')
-                  ->onDelete('cascade');
+            // $table->foreignId('researcher_file_id')
+            //       ->constrained('researcher_files')
+            //       ->onDelete('cascade');
 
             $table->timestamps();
         });

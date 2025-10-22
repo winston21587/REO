@@ -140,8 +140,6 @@ public function submitTitle(Request $request)
         return view('researcher_files', compact('researchTitle'));
     }
 
-
-    
     public function updateFile(Request $request, $id)
     {
         $request->validate([

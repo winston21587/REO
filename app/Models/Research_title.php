@@ -30,7 +30,11 @@ class Research_title extends Model
     // Relationship: each research title belongs to a researcher file
 public function files()
 {
-    return $this->belongsToMany(Research_title::class, 'research_title_files', 'research_title_id', 'researcher_file_id')
+    return $this->belongsToMany(
+            Researcher_files::class,
+                'research_title_files',
+      'research_title_id',
+      'researcher_file_id')
     ->withTimestamps();
 }
 }

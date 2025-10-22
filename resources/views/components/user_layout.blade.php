@@ -67,7 +67,7 @@
       <div
         class="flex items-center justify-between text-background-dark dark:text-background-light p-4 border-b border-background-dark/10 dark:border-background-light/10 h-16">
         <div class="flex items-center gap-3">
-          <img src="./images/reoc-nobg.png" alt="REO LOGO" class="w-8 h-8">
+          <img src="{{ asset('images/reoc-nobg.png') }}" alt="REO LOGO" class="w-8 h-8">
           <h1 class="text-xl font-bold">REO</h1>
         </div>
         <button id="close-sidebar" class="md:hidden text-background-dark dark:text-background-light">

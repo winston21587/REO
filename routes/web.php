@@ -43,8 +43,8 @@ Route::middleware(['auth', 'role:researcher'])->group(function () {
 
     Route::get('/submit',[Research_title_Controller::class, 'showSubmit'] )->name('submit');
     Route::post('/submit',  [Research_title_Controller::class, 'submitTitle'])->name('submit.title'); 
-Route::get('/home/{id}/files', [Research_title_Controller::class, 'manageFiles'])->name('manage.files');
-Route::post('/home/{id}/files/update', [Research_title_Controller::class, 'updateFile'])->name('update.file');  
+    Route::get('/home/{id}/files', [Research_title_Controller::class, 'manageFiles'])->name('manage.files');
+    Route::post('/home/{id}/files/update', [Research_title_Controller::class, 'updateFile'])->name('update.file');  
 
 
 });

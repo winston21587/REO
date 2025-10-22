@@ -80,11 +80,19 @@
                             <a class="{{ request()->routeIs('admin.applications') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
                                 href="{{ route('admin.applications') }}">
                                 <span
-                                    class="material-symbols-outlined text-[#1b0e0e] dark:text-white">folder_managed</span>
+                                    class="material-symbols-outlined text-[#1b0e0e] dark:text-white">folder_data</span>
                                 <p class="text-[#1b0e0e] {{ request()->routeIs('admin.applications') ? 'text-primary ' : '' }} dark:text-white text-sm font-medium leading-normal">
-                                    Applications
+                                    Reviews
                                 </p>
                             </a> 
+                            <a class="{{ request()->routeIs('admin.applications') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
+                                href="{{ route('admin.applications') }}">
+                                <span
+                                    class="material-symbols-outlined text-[#1b0e0e] dark:text-white">folder_match</span>
+                                <p class="text-[#1b0e0e] {{ request()->routeIs('admin.applications') ? 'text-primary ' : '' }} dark:text-white text-sm font-medium leading-normal">
+                                    Revisions
+                                </p>
+                            </a>                             
 
                             <a class="{{ request()->routeIs('admin.appointment') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
                                 href="{{ route('admin.appointment') }}">
@@ -94,7 +102,14 @@
                                     Appointments
                                 </p>
                             </a>                                                                             
-                            
+                            <a class="{{ request()->routeIs('admin.appointment') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
+                                href="{{ route('admin.appointment') }}">
+                                <span
+                                    class="material-symbols-outlined text-[#1b0e0e] dark:text-white">archive</span>
+                                <p class="text-[#1b0e0e] {{ request()->routeIs('admin.appointment') ? 'text-primary ' : '' }} dark:text-white text-sm font-medium leading-normal">
+                                    Content Management
+                                </p>
+                            </a>                                
                             <a class="{{ request()->routeIs('admin.manage_users') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
                                 href="{{ route('admin.manage_users') }}">
                                 <span
@@ -108,7 +123,7 @@
                                 <span
                                     class="material-symbols-outlined text-[#1b0e0e] dark:text-white">person_apron</span>
                                 <p class="text-[#1b0e0e] {{ request()->routeIs('admin.manage_staff') ? 'text-primary ' : '' }} dark:text-white text-sm font-medium leading-normal">
-                                    Staff
+                                    Admin
                                 </p>
                             </a>  
 

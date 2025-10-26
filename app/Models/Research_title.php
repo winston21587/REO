@@ -27,6 +27,11 @@ class Research_title extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function author()
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
+
     // Relationship: each research title belongs to a researcher file
 public function files()
 {
@@ -37,4 +42,10 @@ public function files()
       'researcher_file_id')
     ->withTimestamps();
 }
+
+public function appointment()
+{
+    return $this->hasMany(Appointment::class, 'research_title_id');
+}
+
 }

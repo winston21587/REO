@@ -1,6 +1,6 @@
   <footer class="bg-white border-t border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-between" >
                 <div class="col-span-1 lg:col-span-2">
                     <div class="flex items-center mb-4">
                         <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center mr-3">
@@ -22,7 +22,7 @@
                     </div>
                 </div>
 
-                <div>
+                {{-- <div>
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Links</h3>
                     <ul class="space-y-2">
                         <li><a href="#" class="text-gray-600 hover:text-red-600 transition">Submit Research</a></li>
@@ -31,7 +31,7 @@
                         <li><a href="#" class="text-gray-600 hover:text-red-600 transition">Ethics Guidelines</a></li>
                         <li><a href="#" class="text-gray-600 hover:text-red-600 transition">FAQs</a></li>
                     </ul>
-                </div>
+                </div> --}}
 
                 <div>
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Contact Us</h3>

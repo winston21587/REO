@@ -59,7 +59,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/users', function(){ return view('admin.manage_users'); })->name('admin.manage_users');
     Route::get('/admin/staff', function(){ return view('admin.manage_staff'); })->name('admin.manage_staff');
     Route::get('/admin/new', [ admin::class, 'newSubmissions'])->name('admin.NewSubmissions');
+    Route::get('/admin/Review', [admin::class, 'GetReview'])->name('admin.Review');
+    Route::get('/admin/Revision', [admin::class, 'GetRevision'])->name('admin.Revision');
+    Route::get('/admin/file', function (){ return view('admin.view_asessment'); })->name('admin.file');
+
     Route::get('/admin/applications', [admin::class, 'applications'])->name('admin.applications');
+    Route::post('/admin/update-status/{id}', [admin::class, 'updateStatus']);
+    Route::post('/admin/{id}/set-initial-review', [admin::class, 'setInitialReview'])->name('submissions.setInitialReview');
+Route::get('/admin/view-files/{id}', [admin::class, 'viewFiles'])->name('admin.view_files');
 
 });
 // Route::middleware(['auth','is_admin'])->group(function () {

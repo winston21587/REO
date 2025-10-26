@@ -7,11 +7,11 @@
       <div class="overlay absolute inset-0 bg-black/60 z-10"></div>
       <div
         class="slide-content absolute top-1/2 left-[7%] -translate-y-1/2 z-20 max-w-[600px] text-left text-white p-[20px] md:left-[7%]">
-        <h2 class="mb-[10px] text-[2.5rem] md:text-[2.5rem] font-bold">Welcome to REOC: Where Research Meets
+        <h2 class="mb-[10px] text-[2.5rem] md:text-[2.5rem] font-bold">Welcome to REO: Where Research Meets
           Collaboration</h2>
-        <p class="text-[1.1rem] leading-[1.5] md:text-[1.1rem]">At REOC, we’re creating a space where students, faculty,
+        <p class="text-[1.1rem] leading-[1.5] md:text-[1.1rem]">At REO, we’re creating a space where students, faculty,
           and researchers come together to innovate, share knowledge, and grow. Whether you're looking to collaborate on
-          research projects, share valuable resources, or connect with peers REOC is your go-to hub for academic
+          research projects, share valuable resources, or connect with peers REO is your go-to hub for academic
           success. Join our thriving community today and be a part of something bigger.</p>
       </div>
     </div>
@@ -22,10 +22,10 @@
         class="slide-content absolute top-1/2 left-[7%] -translate-y-1/2 z-20 max-w-[600px] text-left text-white p-[20px] md:left-[7%]">
         <h2 class="mb-[10px] text-[2.5rem] md:text-[2.5rem] font-bold">Collaborate, Share, Achieves</h2>
         <p class="text-[1.1rem] leading-[1.5] md:text-[1.1rem]">
-          The power of collaboration lies in the exchange of ideas. REOC makes it easy for students to pass materials,
+          The power of collaboration lies in the exchange of ideas. REO makes it easy for students to pass materials,
           participate in discussions, and contribute to ongoing research projects. From sharing research papers to
           organizing study sessions, everything you need to stay connected and productive is just a click away.The power
-          of collaboration lies in the exchange of ideas. REOC makes it easy for students to pass materials, participate
+          of collaboration lies in the exchange of ideas. REO makes it easy for students to pass materials, participate
           in discussions, and contribute to ongoing research projects. From sharing research papers to organizing study
           sessions, everything you need to stay connected and productive is just a click away.</p>
       </div>
@@ -38,7 +38,7 @@
         <h2 class="mb-[10px] text-[2.5rem] md:text-[2.5rem] font-bold">Effortless Meeting & Event Coordination</h2>
         <p class="text-[1.1rem] leading-[1.5] md:text-[1.1rem]">
 
-          Tired of juggling schedules and missing important events? REOC streamlines the process of meeting
+          Tired of juggling schedules and missing important events? REO streamlines the process of meeting
           organization. Plan study groups, research sessions, or school events with ease. Our intuitive platform lets
           you set dates, send invitations, and manage attendance—all in one place. Stay on top of your academic goals
           without the hassle.</p>
@@ -56,25 +56,25 @@
     <div class="msg md:w-[60%] md:pr-[40px]">
       <hr class="hr opacity-[0.25] my-[24px] border-t">
       <h3 class="text-[#990101] text-[2.5rem] font-[700] my-[1rem]">Mission</h3>
-      <p class="text-[1rem] mb-[1rem]">WMSU-REOC/CERC safeguards the general welfare of human participants and animal
+      <p class="text-[1rem] mb-[1rem]">WMSU-REO/CERC safeguards the general welfare of human participants and animal
         subjects in the conduct of researches.
 
       </p>
       <hr class="hr opacity-[0.25] my-[24px] border-t">
       <h3 class="text-[#990101] text-[2.5rem] font-[700] my-[1rem]">Vision</h3>
-      <p class="text-[1rem] mb-[1rem]">The Western Mindanao State University Research Ethics Oversight Committee(WMSU
-        REOC) / College Research Ethics Committee (CERC) is an accredited board instituted to conduct ethics review in
+      <p class="text-[1rem] mb-[1rem]">The Western Mindanao State University Research Ethics Office(WMSU
+        REO) / College Research Ethics Committee (CERC) is an accredited board instituted to conduct ethics review in
         various fields of researches that involve human participants and animal subjects in the University and the
         region.</p>
       <hr class="hr opacity-[0.25] my-[24px] border-t">
       <h3 class="text-[#990101] text-[2.5rem] font-[700] my-[1rem]">Goals</h3>
-      <p class="text-[1rem] mb-[1rem]">WMSU-REOC attempts to achieve the following goals: 1. Conduct a quality and
+      <p class="text-[1rem] mb-[1rem]">WMSU-REO attempts to achieve the following goals: 1. Conduct a quality and
         standard ethical review process for all researches in order to safeguard the rights and welfare of participants
         in any research. 2. Establish and maintain a pool of professional multidisciplinary reviewers to do expedited
         and full review procedure. 3. Ensure compliance to ethical standards in the implementation of research
         protocols.</p>
     </div>
-    <img class="msg2 w-full md:w-[36%] md:sticky md:top-[20px]" src="./images/msg2.png" alt="WMSU REOC Visual">
+    <img class="msg2 w-full md:w-[36%] md:sticky md:top-[20px]" src="./images/msg2.png" alt="WMSU REO Visual">
   </div>
   {{-- <x-f-a-q /> --}}
 
@@ -87,10 +87,10 @@
       <div class="before:block before:w-[50px] before:h-[4px] before:bg-[#990101] before:mb-[12px]"></div>
       <h2 class="reoc-join-title text-[2.2rem] text-[#333] mb-[20px]">Join Us Now</h2>
       <p class="reoc-join-text text-[1rem] text-[#555] leading-[1.6] mb-[30px] font-bold">Why should you join REOC? As a
-        premier school research facility, REOC offers you access to cutting-edge technology, expert mentorship, and a
+        premier school research facility, REO offers you access to cutting-edge technology, expert mentorship, and a
         vibrant community passionate about innovation. Be part of groundbreaking projects and help shape the future of
         research and developments.</p>
-      <a href="signup.php"
+      <a href="{{ route('register') }}"
         class="reoc-join-btn inline-block bg-[#990101] text-white px-[26px] py-[12px] font-[700] rounded-[6px]">Join
         Us</a>
     </div>

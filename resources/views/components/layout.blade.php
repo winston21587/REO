@@ -35,6 +35,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WMSU REO</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -58,7 +59,7 @@
   <nav id="navbar" class="fixed top-0 left-0 w-full h-[60px] flex justify-between items-center px-[30px] z-[1000] transition-all duration-300 bg-transparent">
     <div class="flex items-center">
       <div class="w-[40px] h-[40px] rounded-full mr-[10px] overflow-hidden">
-        <img src="./images/reoc-nobg.png" alt="Logo" class="w-full h-full object-cover" />
+        <img src="{{ asset('images/reoc-nobg.png') }}" alt="Logo" class="w-full h-full object-cover" />
       </div>
   <h1 class="text-white transition-colors text-xl font-bold">WMSU REO</h1>
     </div>

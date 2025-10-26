@@ -4,7 +4,10 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>REO Admin</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800;900&amp;display=swap"
         rel="stylesheet" />
@@ -77,19 +80,19 @@
                                     New Submissions
                                 </p>
                             </a>  
-                            <a class="{{ request()->routeIs('admin.applications') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
-                                href="{{ route('admin.applications') }}">
+                            <a class="{{ request()->routeIs('admin.Review') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
+                                href="{{ route('admin.Review') }}">
                                 <span
                                     class="material-symbols-outlined text-[#1b0e0e] dark:text-white">folder_data</span>
-                                <p class="text-[#1b0e0e] {{ request()->routeIs('admin.applications') ? 'text-primary ' : '' }} dark:text-white text-sm font-medium leading-normal">
+                                <p class="text-[#1b0e0e] {{ request()->routeIs('admin.Review') ? 'text-primary ' : '' }} dark:text-white text-sm font-medium leading-normal">
                                     Reviews
                                 </p>
                             </a> 
-                            <a class="{{ request()->routeIs('admin.applications') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
-                                href="{{ route('admin.applications') }}">
+                            <a class="{{ request()->routeIs('admin.Revision') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
+                                href="{{ route('admin.Revision') }}">
                                 <span
                                     class="material-symbols-outlined text-[#1b0e0e] dark:text-white">folder_match</span>
-                                <p class="text-[#1b0e0e] {{ request()->routeIs('admin.applications') ? 'text-primary ' : '' }} dark:text-white text-sm font-medium leading-normal">
+                                <p class="text-[#1b0e0e] {{ request()->routeIs('admin.Revision') ? 'text-primary ' : '' }} dark:text-white text-sm font-medium leading-normal">
                                     Revisions
                                 </p>
                             </a>                             
@@ -102,11 +105,11 @@
                                     Appointments
                                 </p>
                             </a>                                                                             
-                            <a class="{{ request()->routeIs('admin.appointment') ? 'bg-primary/10 ' : '' }} flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
-                                href="{{ route('admin.appointment') }}">
+                            <a class=" flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
+                                href="">
                                 <span
                                     class="material-symbols-outlined text-[#1b0e0e] dark:text-white">archive</span>
-                                <p class="text-[#1b0e0e] {{ request()->routeIs('admin.appointment') ? 'text-primary ' : '' }} dark:text-white text-sm font-medium leading-normal">
+                                <p class="text-[#1b0e0e]  dark:text-white text-sm font-medium leading-normal">
                                     Content Management
                                 </p>
                             </a>                                

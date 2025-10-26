@@ -75,6 +75,8 @@
           </button>
         </div>
         <x-f-a-q />
+
+        
     <div class="bg-background-light dark:bg-background-dark font-display detail-modal modal hidden">
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
         <div class="bg-background-light dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-2xl m-4 flex flex-col">

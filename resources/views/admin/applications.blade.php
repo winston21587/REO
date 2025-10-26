@@ -4,43 +4,10 @@
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b border-stone-200 dark:border-gray-700 pb-2">
             <div class="flex flex-col gap-1">
                 <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Research Application Management</h1>
-                {{-- <p class="text-[#1b0e0e] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
-                    Research Application Management
-                </p> --}}
-                {{-- <p class="text-[#994d4d] dark:text-gray-400 text-base font-normal leading-normal">
-                    Review, categorize, and track all submissions through various
-                    stages.
-                </p> --}}
             </div>
-            {{-- <div class="flex gap-2">
-                <button
-                    class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors">
-                    <span class="material-symbols-outlined mr-2">add</span>
-                    <span class="truncate">New Submission Queue</span>
-                </button>
-            </div> --}}
+
         </div>
-        {{-- <div class="flex border-b border-[#e7d0d0] dark:border-gray-700 mb-4">
-            <button class="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary">
-                All
-            </button>
-            <button
-                class="px-4 py-2 text-sm font-medium text-[#994d4d] dark:text-gray-400 hover:text-primary dark:hover:text-white">
-                Submission
-            </button>
-            <button
-                class="px-4 py-2 text-sm font-medium text-[#994d4d] dark:text-gray-400 hover:text-primary dark:hover:text-white">
-                Review
-            </button>
-            <button
-                class="px-4 py-2 text-sm font-medium text-[#994d4d] dark:text-gray-400 hover:text-primary dark:hover:text-white">
-                Revision
-            </button>
-            <button
-                class="px-4 py-2 text-sm font-medium text-[#994d4d] dark:text-gray-400 hover:text-primary dark:hover:text-white">
-                Finalization
-            </button>
-        </div> --}}
+
 
         <div class="flex flex-col gap-4 justify-between h-full">
 

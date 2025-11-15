@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\admin;
 use App\Http\Controllers\Research_title_Controller;
+use App\Http\Controllers\AiCheckController;
+
 // use App\Http\Controllers\Con;                   make a controller for index page just to logout every time it refreshes
 
 // Route::get('/', function () {
@@ -45,6 +47,9 @@ Route::middleware(['auth', 'role:researcher'])->group(function () {
     Route::post('/submit',  [Research_title_Controller::class, 'submitTitle'])->name('submit.title'); 
     Route::get('/home/{id}/files', [Research_title_Controller::class, 'manageFiles'])->name('manage.files');
     Route::post('/home/{id}/files/update', [Research_title_Controller::class, 'updateFile'])->name('update.file');  
+
+
+    Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
 
 
 });

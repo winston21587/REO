@@ -83,7 +83,7 @@
         Application Form for Research Ethics Review - WMSU-REO-FR-001 (PDF)
       </label>
       <input type="file" name="files[application_form]" accept="application/pdf" required
-        class="block w-full text-background-dark dark:text-background-light
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light
                file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0
                file:text-sm file:font-semibold file:bg-primary file:text-white
                hover:file:bg-primary/90 transition
@@ -96,7 +96,7 @@
         Research Protocol / Proposal (with page and line numbers, PDF)
       </label>
       <input type="file" name="files[research_protocol]" accept="application/pdf" required
-        class="block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
     </div>
 
     <!-- 3. Technical Review Clearance -->
@@ -105,7 +105,7 @@
         Technical Review Clearance (with panel signatures, PDF)
       </label>
       <input type="file" name="files[technical_clearance]" accept="application/pdf" required
-        class="block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
     </div>
 
     <!-- 4. Data Collection Instruments -->
@@ -114,7 +114,7 @@
         Data Collection Instrument/s (with page and line numbers, PDF)
       </label>
       <input type="file" name="files[data_collection_instruments]" accept="application/pdf" required
-        class="block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
     </div>
 
     <!-- 5. Informed Consent/Assent -->
@@ -123,7 +123,7 @@
         Informed Consent / Assent (with page and line numbers, PDF)
       </label>
       <input type="file" name="files[informed_consent]" accept="application/pdf" required
-        class="block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
     </div>
 
     <!-- 6. Curriculum Vitae -->
@@ -132,7 +132,7 @@
         Curriculum Vitae of Researcher/s (PDF)
       </label>
       <input type="file" name="files[curriculum_vitae]" accept="application/pdf" required
-        class="block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
     </div>
 
     <!-- 7. Completed Study Protocol Assessment Form -->
@@ -141,7 +141,7 @@
         Completed Study Protocol Assessment Form - WMSU-REO-FR-004 (Word)
       </label>
       <input type="file" name="files[study_protocol_form]" accept=".doc,.docx" required
-        class="block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
     </div>
 
     <!-- 8. Completed Informed Consent Assessment Form -->
@@ -150,7 +150,7 @@
         Completed Informed Consent Assessment Form - WMSU-REO-FR-005 (Word)
       </label>
       <input type="file" name="files[informed_consent_form]" accept=".doc,.docx" required
-        class="block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
     </div>
 
     <!-- 9. Completed Exempt Review Assessment Form -->
@@ -159,7 +159,7 @@
         Completed Exempt Review Assessment Form - WMSU-REO-FR-006 (Word)
       </label>
       <input type="file" name="files[exempt_review_form]" accept=".doc,.docx" required
-        class="block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
     </div>
 
     <!-- 10. Supplementary Documents -->
@@ -168,23 +168,104 @@
         Supplementary Documents (NCIP Clearance, MOA, MOU, etc., PDF, optional)
       </label>
       <input type="file" name="files[supplementary_docs][]" accept="application/pdf" multiple
-        class="block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
+        class=" ai-checkable-file block w-full text-background-dark dark:text-background-light file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 transition bg-background-light dark:bg-background-dark border border-background-dark/20 dark:border-background-light/20 rounded-lg py-2 px-3" />
     </div>
 
   </div>
 </div>
 
 
-  <!-- Submit Button -->
-  <div class="flex md:justify-end justify-center pt-4">
-    <button type="submit"
-      class="bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary/90 focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-      Submit Research
-    </button>
+
+
+
+  <div id="ai-results-container" class="mt-6 hidden">
+    <h3 class="text-xl font-semibold text-background-dark dark:text-background-light mb-4">AI Compliance Check Results:</h3>
+    <div id="ai-results" class="prose dark:prose-invert max-w-none rounded-lg border border-gray-300 bg-gray-50 p-4 dark:border-gray-700 dark:bg-background-dark">
+        </div>
   </div>
+
+  <div class="flex flex-col items-center gap-4 pt-6 md:flex-row md:justify-end">
+      <button type="button" id="ai-check-btn"
+              class="w-full rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 md:w-auto">
+          Check Files with AI
+      </button>
+      <button type="submit"
+              class="w-full rounded-lg bg-primary px-6 py-3 font-bold text-white hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 md:w-auto">
+          Submit Research
+      </button>
+  </div>
+
 </form>
 
        
       </main>
+
+      
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const aiCheckBtn = document.getElementById('ai-check-btn');
+        const allFileInputs = document.querySelectorAll('.ai-checkable-file'); // Selects all inputs with the new class
+        const resultsContainer = document.getElementById('ai-results-container');
+        const resultsDiv = document.getElementById('ai-results');
+
+        aiCheckBtn.addEventListener('click', async () => {
+            const formData = new FormData();
+            let fileCount = 0;
+
+            // Loop through all designated file inputs
+            allFileInputs.forEach(input => {
+                if (input.files.length > 0) {
+                    for (const file of input.files) {
+                        formData.append('research_files[]', file); // Append each file to the same array
+                        fileCount++;
+                    }
+                }
+            });
+
+            if (fileCount === 0) {
+                alert('Please select at least one file to check.');
+                return;
+            }
+
+            resultsContainer.classList.remove('hidden');
+            resultsDiv.innerHTML = '<p>Checking files with AI... This may take a moment.</p>';
+            aiCheckBtn.disabled = true;
+            aiCheckBtn.textContent = 'Checking...';
+
+            try {
+                const response = await fetch("{{ route('submit.ai_check') }}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `Server error: ${response.status}`);
+                }
+                
+                // Style the table that 'marked' will create
+                resultsDiv.innerHTML = `<style>
+                    #ai-results table { width: 100%; border-collapse: collapse; }
+                    #ai-results th, #ai-results td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+                    #ai-results th { background-color: #f2f2f2; }
+                    .dark #ai-results th { background-color: #333; border-color: #555; }
+                    .dark #ai-results td { border-color: #555; }
+                </style>` + marked.parse(data.feedback);
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${error.message}</p>`;
+                console.error('AI Check Error:', error);
+            } finally {
+                aiCheckBtn.disabled = false;
+                aiCheckBtn.textContent = 'Check Files with AI';
+            }
+        });
+    });
+</script>
 
 </x-user_layout>

@@ -282,7 +282,8 @@
 
             <div class="flex justify-end gap-3 pt-4">
                           <!-- View Files -->
-          <button onclick="window.location.href='{{ route('admin.view_files', $s->id) }}'"
+                          {{-- onclick value = window.location.href='{{ route('admin.view_files', $s->id) }}'\ --}}
+          <button onclick=""
             class="bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
             View Files
           </button>

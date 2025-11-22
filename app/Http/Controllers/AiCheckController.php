@@ -10,6 +10,43 @@ use PhpOffice\PhpWord\IOFactory;
 
 class AiCheckController extends Controller
 {
+    private function safeExtractWord($path)
+{
+    $text = '';
+
+    try {
+        $reader = IOFactory::createReader('Word2007'); // safer than load()
+        $phpWord = $reader->load($path);
+    } catch (\Exception $e) {
+        throw new \Exception("Word document could not be read.");
+    }
+
+    foreach ($phpWord->getSections() as $section) {
+        foreach ($section->getElements() as $element) {
+
+            // Get simple text elements
+            if (method_exists($element, 'getText')) {
+                $text .= $element->getText() . ' ';
+            }
+
+            // Handle TextRun elements
+            if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
+                foreach ($element->getElements() as $child) {
+                    if (method_exists($child, 'getText')) {
+                        $text .= $child->getText() . ' ';
+                    }
+                }
+            }
+        }
+    }
+
+    if (trim($text) === '') {
+        throw new \Exception("No readable text found in Word document.");
+    }
+
+    return $text;
+}
+
     public function checkDocuments(Request $request)
     {
         $request->validate([
@@ -33,16 +70,21 @@ class AiCheckController extends Controller
                     // Path to your Poppler executable
                     // $text = (new Pdf('resources\poppler-25.07.0\Library\bin\pdftotext.exe'))->setPdf($file->path())->text();
                     
+                // } elseif (in_array($extension, ['doc', 'docx'])) {
+                //     $phpWord = IOFactory::load($file->path());
+                //     foreach ($phpWord->getSections() as $section) {
+                //         foreach ($section->getElements() as $element) {
+                //             if (method_exists($element, 'getText')) {
+                //                 $text .= $element->getText() . ' ';
+                //             }
+                //         }
+                //     }
+                // }
                 } elseif (in_array($extension, ['doc', 'docx'])) {
-                    $phpWord = IOFactory::load($file->path());
-                    foreach ($phpWord->getSections() as $section) {
-                        foreach ($section->getElements() as $element) {
-                            if (method_exists($element, 'getText')) {
-                                $text .= $element->getText() . ' ';
-                            }
-                        }
-                    }
+                    $text = $this->safeExtractWord($file->path());
                 }
+
+
                 $extractedTexts[] = "-- DOCUMENT: {$originalName} --\n{$text}";
 
             } catch (\Exception $e) {

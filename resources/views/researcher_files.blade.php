@@ -17,24 +17,35 @@
                 <p class="text-sm text-gray-500">{{ $file->filename }}</p>
 
                 @if($file->filetype === 'pdf')
-                    <!-- Show inline PDF -->
-                    <iframe src="{{ asset($file->filepath) }}" class="w-full h-96 mt-4 border rounded-lg"></iframe>
+
+                    {{-- Show PDF normally --}}
+                    <iframe src="{{ asset($file->filepath) }}" 
+                        class="w-full h-96 mt-4 border rounded-lg"></iframe>
+
                 @else
-                    <!-- Other file types (docx, etc.) -->
-                    <a href="{{ asset($file->filepath) }}" 
-                    target="_blank"
-                    class="text-blue-500 hover:underline mt-4 inline-block">
-                    View File
-                    </a>
+
+                    {{-- Show DOC/DOCX using Google Docs Viewer --}}
+                    <iframe 
+                        src="https://docs.google.com/gview?url={{ urlencode(asset($file->filepath)) }}&embedded=true"
+                        class="w-full h-96 mt-4 border rounded-lg bg-white"
+                        frameborder="0">
+                    </iframe>
+
                 @endif
 
                 <!-- Replace file -->
-                <form action="{{ route('update.file', $researchTitle->id) }}" method="POST" enctype="multipart/form-data" class="mt-4">
+                <form action="{{ route('update.file', $researchTitle->id) }}" 
+                      method="POST" 
+                      enctype="multipart/form-data" 
+                      class="mt-4">
                     @csrf
                     <input type="hidden" name="file_id" value="{{ $file->id }}">
                     <label class="block font-semibold mb-2">Replace this file:</label>
-                    <input type="file" name="file" accept=".pdf,.doc,.docx" required
-                        class="border border-gray-300 p-2 rounded w-full dark:bg-gray-700 dark:text-white">
+                    <input type="file" 
+                           name="file" 
+                           accept=".pdf,.doc,.docx" 
+                           required
+                           class="border border-gray-300 p-2 rounded w-full dark:bg-gray-700 dark:text-white">
 
                     <button type="submit"
                         class="bg-primary text-white px-4 py-2 mt-3 rounded hover:bg-primary/80 transition">

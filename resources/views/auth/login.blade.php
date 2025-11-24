@@ -1,59 +1,114 @@
-<x-layout_auth>
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div class="p-8">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">REO Portal</h1>
-                <p class="text-gray-600">Research Ethics Oversight Committee</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | WMSU REO</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-heading { font-family: 'Montserrat', sans-serif; }
+        .bg-\[\#8B0000\] { background-color: #8B0000; }
+        .text-\[\#8B0000\] { color: #8B0000; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+    <div class="min-h-screen flex h-screen overflow-hidden">
+        
+        <div class="hidden md:flex w-1/2 relative text-white flex-col justify-center p-12 lg:p-16">
+            <div class="absolute inset-0 z-0">
+                <img src="{{ asset('images/wmsu1.jpg') }}" class="w-full h-full object-cover" alt="WMSU Campus">
+                <div class="absolute inset-0 bg-black/30"></div>
             </div>
             
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome back!</h2>
-                <p class="text-gray-600">How do I get started with my research ethics review?</p>
-            </div>
-
-            <form action="{{ route('login') }}" method="POST" class="space-y-6">
-                @csrf
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input required type="email" name="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Enter your email">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input required type="password" name="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Enter your password">
-                </div>
-
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center">
-                        <input type="checkbox" id="remember" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
-                        <label for="remember" class="ml-2 text-sm text-gray-700">Remember me</label>
-                    </div>
-                    <a href="forgot-password.html" class="text-sm text-red-600 hover:text-red-700 font-medium">Forgot Password?</a>
+            <div class="relative z-10 max-w-lg animate-[fadeInUp_0.8s_ease-out]">
+                <div class="w-16 h-16 flex items-center justify-center mb-8">
+                    <img src="{{ asset('images/reoc-nobg.png') }}" class="w-10 h-10 drop-shadow-md">
                 </div>
                 
-                <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Login</button>
-            </form>
-            
-            <div class="mt-6 text-center">
-                <p class="text-gray-600">Don't have an account? <a href="{{ route('register') }}" class="text-red-600 hover:text-red-700 font-medium">Sign up</a></p>
+                <h1 class="text-5xl lg:text-6xl font-extrabold font-heading tracking-tight leading-tight drop-shadow-xl">
+                    Research <br> Excellence.
+                </h1>
+                
+                <p class="mt-6 text-lg text-white/90 font-medium leading-relaxed drop-shadow-lg max-w-md">
+                    Your gateway to ethical research review and compliance at Western Mindanao State University.
+                </p>
             </div>
         </div>
-        @if ($errors->any())
-            <div class="bg-red-50 p-4 text-center">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li class="text-red-800 font-medium">{{ $error }}</li>
-                    @endforeach
-                </ul>
+
+        <div class="w-full md:w-1/2 flex items-center justify-center p-8 bg-white relative">
+            
+            <div class="absolute inset-0 md:hidden z-0">
+                <img src="{{ asset('images/wmsu1.jpg') }}" class="w-full h-full object-cover opacity-10">
             </div>
-        @endif
-        @if (session('success'))
-            <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
-                {{ session('success') }}
+
+            <div class="w-full max-w-md relative z-10">
+
+                <div class="mb-6">
+                    <a href="{{ route('index') }}" class="text-slate-500 hover:text-[#8B0000] transition-colors font-bold text-sm inline-flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Back to Home
+                    </a>
+                </div>
+                
+                <div class="text-center md:text-left mb-10">
+                    <h2 class="text-3xl font-bold text-slate-900 font-heading">Welcome Back</h2>
+                    <p class="mt-2 text-slate-500">Please sign in to your researcher account.</p>
+                </div>
+
+                <form method="POST" action="{{ route('login') }}" class="space-y-6">
+                    @csrf
+                    
+                    <div class="space-y-2">
+                        <label for="email" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+                        <div class="relative group">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#8B0000] transition-colors">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input id="email" type="email" name="email" required autofocus 
+                                class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] transition-all outline-none text-slate-800 placeholder-slate-400 font-medium"
+                                placeholder="name@wmsu.edu.ph">
+                        </div>
+                        @error('email') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="password" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
+                            <a href="#" class="text-xs text-[#8B0000] font-bold hover:underline">Forgot password?</a>
+                        </div>
+                        <div class="relative group">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#8B0000] transition-colors">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input id="password" type="password" name="password" required 
+                                class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] transition-all outline-none text-slate-800 placeholder-slate-400 font-medium"
+                                placeholder="••••••••">
+                        </div>
+                        @error('password') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <button type="submit" class="w-full bg-[#8B0000] hover:bg-red-900 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-900/20 transition-all duration-200 flex justify-center items-center gap-2 group mt-8">
+                        <span>Sign In</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+
+                <div class="mt-10 pt-6 border-t border-slate-100 text-center">
+                    <p class="text-slate-500 text-sm">
+                        New to REO? <a href="{{ route('register') }}" class="text-[#8B0000] font-bold hover:underline ml-1">Create an account</a>
+                    </p>
+                </div>
             </div>
-        @endif  
-        {{-- <div class="bg-red-50 p-4 text-center">
-            <p class="text-red-800 font-medium">Important research ethics reviews are waiting for you. Login now!</p>
-        </div> --}}
+        </div>
     </div>
-</x-layout_auth>
+
+</body>
+</html>

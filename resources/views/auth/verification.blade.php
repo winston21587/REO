@@ -1,39 +1,99 @@
-<x-layout_auth>
-    @if (!request('email'))
-        <p class="p-4 bg-red-300 rounded mb-5 text-center" >Invalid access!</p>
-    @endif
-        <div class="max-w-md w-full bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div class="p-8">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Account | WMSU REO</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
 
-            
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Verification</h2>
-                <p class="text-gray-600">Enter the code sent to {{ request('email') }}</p>
-            </div>
-            
-            <form action="{{ route('verify.submit') }}" method="POST" class="space-y-6">
-            @csrf        
-            <input type="hidden" name="email" value="{{ request('email') }}">        
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Code</label>
-                    <input type="text" name="code" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Enter your code here">
-                </div>
-                
-                <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Verify</button>
-            </form>
-            
-        </div>
+    <script src="https://cdn.tailwindcss.com"></script>
 
-        @if ($errors->any())
-            <div class="bg-red-50 p-4 text-center">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li class="text-red-800 font-medium">{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif        
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-heading { font-family: 'Montserrat', sans-serif; }
+        .bg-\[\#8B0000\] { background-color: #8B0000; }
+    </style>
+</head>
+<body class="antialiased h-screen flex items-center justify-center overflow-hidden bg-[#1a0505]">
 
+    <div class="fixed inset-0 z-0">
+        <img src="{{ asset('images/wmsu3.jpg') }}" alt="WMSU Background" class="w-full h-full object-cover opacity-30">
+        <div class="absolute inset-0 from-black/80 via-[#1a0505]/90 to-[#8B0000]/80 mix-blend-multiply"></div>
     </div>
 
-</x-layout_auth>
+    <div class="relative z-10 w-full max-w-md mx-4">
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden animate-[fadeInUp_0.5s_ease-out]">
+            
+            <div class="bg-slate-900 p-8 text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                
+                <div class="relative z-10">
+                    <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-white/20 shadow-lg mb-4">
+                        <i class="fas fa-shield-alt text-2xl text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-heading font-extrabold text-white">Verify Identity</h2>
+                    <p class="text-slate-400 text-sm mt-2">Secure your research account.</p>
+                </div>
+            </div>
+
+            <div class="p-8 md:p-10">
+                <div class="text-center mb-8">
+                    <p class="text-sm text-slate-600">
+                        We've sent a 6-digit code to<br>
+                        <strong class="text-slate-900 font-bold block mt-1 text-base">{{ request('email') ?? 'your email address' }}</strong>
+                    </p>
+                </div>
+
+                <form action="{{ route('verify.submit') }}" method="POST" class="space-y-6">
+                    @csrf
+                    <input type="hidden" name="email" value="{{ request('email') }}">
+                    
+                    <div>
+                        <label for="code" class="sr-only">Verification Code</label>
+                        <input type="text" name="code" id="code" maxlength="6" required autofocus
+                            class="w-full text-center text-4xl font-bold tracking-[0.5em] py-4 border-b-2 border-slate-200 focus:border-[#8B0000] outline-none transition-all placeholder-slate-200 text-slate-800 bg-transparent" 
+                            placeholder="000000" autocomplete="off">
+                    </div>
+
+                    <button type="submit" class="w-full bg-[#8B0000] text-white font-bold py-4 rounded-xl shadow-lg shadow-red-900/20 hover:bg-red-900 hover:-translate-y-0.5 transition-all duration-200 text-sm tracking-wide flex items-center justify-center gap-2 group">
+                        <span>Confirm Code</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+
+                <div class="mt-8 pt-6 border-t border-slate-100 text-center space-y-4">
+                    <div class="text-xs text-slate-500">
+                        Didn't receive the code? 
+                        <form action="#" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="text-[#8B0000] font-bold hover:underline">Resend Code</button>
+                        </form>
+                    </div>
+                    
+                    <div>
+                        <a href="{{ route('logout') }}" class="text-xs font-bold text-slate-400 hover:text-slate-600 inline-flex items-center gap-1 transition-colors">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-submit when 6 digits are entered (Optional UX enhancement)
+        const codeInput = document.getElementById('code');
+        codeInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, ''); // Only numbers
+            if (this.value.length === 6) {
+                // Uncomment next line if you want auto-submit
+                // this.form.submit();
+            }
+        });
+    </script>
+</body>
+</html>

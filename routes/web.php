@@ -6,20 +6,9 @@ use App\Http\Controllers\admin;
 use App\Http\Controllers\Research_title_Controller;
 use App\Http\Controllers\AiCheckController;
 
-// use App\Http\Controllers\Con;                   make a controller for index page just to logout every time it refreshes
-
-// Route::get('/', function () {
-//     return view('index');
-// });
-// Route::get('/admin', function () {
-//     return view('admin.dashboard', ['title' => 'Admin']);
-// });
-// Route::get('/home', function () {
-//     return view('home');
-// });
-// Route::get('/home', function () { return view('home'); })->name('home');
-
-Route::get('/', function () { return view('index'); })->name('index');
+Route::get('/', function () {
+    return view('index'); // Changed from 'welcome'
+})->name('index');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
@@ -80,7 +69,9 @@ Route::get('/admin/view-files/{id}', [admin::class, 'viewFiles'])->name('admin.v
 
 Route::post('/accept-terms', [AuthController::class, 'acceptTerms'])->name('accept.terms');
 
-
+Route::get('/privacy-policy', function () { return view('legal.privacy'); })->name('policy.privacy');
+Route::get('/terms-of-service', function () { return view('legal.terms'); })->name('policy.terms');
+Route::get('/accessibility', function () { return view('legal.accessibility'); })->name('policy.accessibility');
 
 
 

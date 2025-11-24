@@ -1,299 +1,229 @@
-<x-layout_auth>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | WMSU REO</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
 
-  <div class="signup-container mx-auto">
-    <div class="bg-white dark:bg-background-dark/50 shadow-lg rounded-xl p-6 sm:p-10 w-full">
-      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 text-center">Create an Account</h1>
-      <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 text-center">Please fill out the details below.</p>
-        <div class="flex items-center gap-2 pt-2">
-          <input type="checkbox" id="isNotWmsu" name="external_user" value="on" class="rounded text-primary focus:ring-primary" />
-          <label for="external_user" class="text-sm font-medium text-gray-700 dark:text-gray-300">Are you NOT from WMSU?</label>
-        </div>
-      
-        {{-- student form --}}
-      <form action="{{ route('register.internal') }}" method="POST"  class="space-y-4 sm:space-y-5" id="wmsuSection">
-        @csrf
-        <!-- Name fields in a grid for better use of width -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label for="FirstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
-            <input type="text" id="FirstName" name="FirstName" required value="{{ old('FirstName') }}"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
+    <script src="https://cdn.tailwindcss.com"></script>
 
-          <div>
-            <label for="MiddleName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Middle Name</label>
-            <input type="text" id="MiddleName" name="MiddleName" placeholder="Optional" value="{{ old('MiddleName') }}"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-heading { font-family: 'Montserrat', sans-serif; }
+        .bg-\[\#8B0000\] { background-color: #8B0000; }
+        /* Smooth fade for toggling sections */
+        .fade-enter { opacity: 0; transform: translateY(-10px); }
+        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 0.3s, transform 0.3s; }
+    </style>
+</head>
+<body class="antialiased h-screen flex items-center justify-center overflow-hidden bg-[#1a0505]">
 
-          <div>
-            <label for="LastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
-            <input type="text" id="LastName" name="LastName" required value="{{ old('LastName') }}"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
-        </div>
-        <!-- WMSU Section (Default visible) -->
-        <div  class="space-y-4 sm:space-y-5 mt-3">
-          <!-- WMSU Email -->
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">WMSU Email</label>
-            <input type="email" id="wmsuEmail" name="email" placeholder="hz20230402@wmsu.edu.ph" value="{{ old('email') }}"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-            <p id="emailError" class="text-red-600 text-sm mt-1 hidden">Email must end with @wmsu.edu.ph</p>
-          </div>
-            <div>
-            <label for="Contact" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contact</label>
-            <input type="text" id="Contact" name="Contact" placeholder="09*********" pattern="[0-9]*" inputmode="numeric" maxlength="11" value="{{ old('Contact') }}"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base appearance-none" />
-            </div>
+    <div class="fixed inset-0 z-0">
+        <img src="{{ asset('images/wmsu2.jpg') }}" alt="WMSU Background" class="w-full h-full object-cover opacity-40">
+        <div class="absolute inset-0 from-[#8B0000]/90 via-[#1a0505]/95 to-black/90 mix-blend-multiply"></div>
+    </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="college" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">College</label>
-              <select id="college" name="college" 
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base">
-                <option value="">Select College</option>
-                <option value="CCS">College of Computer Studies</option>
-                <option value="COE">College of Engineering</option>
-                <option value="COED">College of Education</option>
-                <option value="CAS">College of Arts and Sciences</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="department" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
-              <select id="department" name="department"
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base">
-                <option value="">Select department</option>
-                <option value="CCS">College of Computer Studies</option>
-                <option value="COE">College of Engineering</option>
-                <option value="COED">College of Education</option>
-                <option value="CAS">College of Arts and Sciences</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Course Dropdown - Centered -->
-          <div class="flex justify-center">
-            <div class="w-full md:w-1/2">
-              <label for="course" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course</label>
-              <select id="course" name="course"
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base">
-                <option value="">Select your course</option>
-                <option value="BS Computer Science">BS Computer Science</option>
-                <option value="BS Information Technology">BS Information Technology</option>
-                <option value="BS Education">BS Education</option>
-                <option value="BS Engineering">BS Engineering</option>
-              </select>
-            </div>
-          </div>
-
-        </div>
-
-
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-              <input type="password" id="password" name="password" required value="{{ old('password') }}"
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-            </div>
-            
-            <div>
-              <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
-              <input type="password" id="password_confirmation" name="password_confirmation" required value="{{ old('password_confirmation') }}"
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-            </div>
-          </div>
-
-        <!-- Submit Button -->
-        <button type="submit"
-          class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base mt-6">
-          <span class="material-symbols-outlined text-lg">person_add</span>
-          <span>Create Account</span>
-        </button>
-      </form>
-
-      {{-- external user form --}}
-      <form action="{{ route('register.external') }}" method="POST"  class="space-y-4 sm:space-y-5 hidden" id="nonWmsuSection">
-        @csrf
-        <!-- Name fields in a grid for better use of width -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label for="FirstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
-            <input type="text" id="FirstName" name="FirstName" required value="{{ old('FirstName') }}"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
-
-          <div>
-            <label for="MiddleName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Middle Name</label>
-            <input type="text" id="MiddleName" name="MiddleName" placeholder="Optional" value="{{ old('MiddleName') }}"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
-
-          <div>
-            <label for="LastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
-            <input type="text" id="LastName" name="LastName" required value="{{ old('LastName') }}"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
-        </div>
-
-        <!-- Non-WMSU Section (Hidden by default) -->
-        <div  class=" space-y-4 sm:space-y-5 mt-3">
+    <div class="relative z-10 w-full max-w-6xl h-full md:h-[90vh] flex flex-col md:flex-row bg-white rounded-none md:rounded-3xl shadow-2xl overflow-hidden animate-[fadeInUp_0.5s_ease-out]">
         
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-            <input type="email" id="email" name="email" placeholder="example@gmail.com"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
-
-          <div>
-            <label for="institute" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institute</label>
-            <input type="text" id="institute" name="institute" 
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-          </div>
-          <div>
-            <label for="contact" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contact</label>
-            <input type="text" id="contact" name="contact" placeholder="09*********" pattern="[0-9]*" inputmode="numeric" maxlength="11"
-              class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base appearance-none" />
-          </div>
-
-        </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-              <input type="password" id="password" name="password" required value="{{ old('password') }}"
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
-            </div>
+        <div class="hidden md:flex w-1/3 bg-slate-900 text-white p-10 flex-col justify-between relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
             
-            <div>
-              <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
-              <input type="password" id="password_confirmation" name="password_confirmation" required value="{{ old('password_confirmation') }}"
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-background-dark text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2 text-sm sm:text-base" />
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/20">
+                        <img src="{{ asset('images/reoc-nobg.png') }}" class="w-6 h-6">
+                    </div>
+                    <span class="font-heading font-bold text-xl tracking-wide">WMSU REO</span>
+                </div>
+                <h2 class="text-3xl font-extrabold leading-tight mb-4">Join the Research Community</h2>
+                <p class="text-slate-400 leading-relaxed text-sm">Create your account to submit protocols, track ethics reviews, and collaborate with peers.</p>
             </div>
-          </div>
 
-        <!-- Submit Button -->
-        <button type="submit"
-          class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base mt-6">
-          <span class="material-symbols-outlined text-lg">person_add</span>
-          <span>Create Account</span>
-        </button>
-      </form>      
-                  <div class="mt-6 text-center">
-                <p class="text-gray-600">Already have an account? <a href="{{ route('login') }}" class="text-red-600 hover:text-red-700 font-medium">Login</a></p>
-            </div>
-    </div>
-  </div>
-@if ($errors->any())
-    <div class="mt-3 bg-red-100 border border-red-400 text-red-700 p-3 rounded">
-        <ul class="list-disc ml-5">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-    {{-- <div class="max-w-md w-full bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div class="p-8">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Create Account</h2>
-                <p class="text-gray-600">Start your research ethics review process today</p>
-            </div>
-            
-            <form action="{{ route('register') }}" method="POST" class="space-y-6">
-            @csrf                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">First Name:</label>
-                    <input type="text" name="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Enter your full name" value="{{ old('name') }}" >
+            <div class="relative z-10">
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10 mb-4">
+                    <h4 class="font-bold text-sm text-white mb-1">Security Notice</h4>
+                    <p class="text-xs text-slate-400">All registrations require email verification. WMSU users must use their institutional email.</p>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Last Name:</label>
-                    <input type="text" name="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Enter your full name" value="{{ old('name') }}" >
-                </div> 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name:</label>
-                    <input type="text" name="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Enter your full name" value="{{ old('name') }}" >
-                </div>                
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Enter your email" value="{{ old('email') }}" >
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" name="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Create a password">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" name="password_confirmation" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" placeholder="Comfirm password">
-                </div>
-                
-                
-                <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Create Account</button>
-            </form>
-            
-            <div class="mt-6 text-center">
-                <p class="text-gray-600">Already have an account? <a href="{{ route('login') }}" class="text-red-600 hover:text-red-700 font-medium">Login</a></p>
+                <p class="text-[10px] text-slate-600">© 2025 Research Ethics Office</p>
             </div>
         </div>
 
-        @if ($errors->any())
-            <div class="bg-red-50 p-4 text-center">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li class="text-red-800 font-medium">{{ $error }}</li>
-                    @endforeach
-                </ul>
+        <div class="w-full md:w-2/3 bg-white p-8 md:p-10 overflow-y-auto relative">
+            
+            <div class="absolute top-8 left-8">
+                <a href="{{ route('login') }}" class="group flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#8B0000] transition-colors">
+                    <i class="fas fa-arrow-left transition-transform group-hover:-translate-x-1"></i> Back to Login
+                </a>
             </div>
-        @endif
-        @if (session('success'))
-            <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
-                {{ session('success') }}
+
+            <div class="mt-10 max-w-2xl mx-auto">
+                <h1 class="text-2xl font-heading font-extrabold text-slate-900 mb-1">Create Account</h1>
+                <p class="text-slate-500 text-sm mb-6">Please fill in your details to get started.</p>
+
+                <!-- NEW TOGGLE -->
+                <div class="flex items-center gap-3 mb-8 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="external_user" id="isNotWmsu" class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]"></div>
+                        <span class="ms-3 text-sm font-bold text-slate-700 select-none">Are you NOT from WMSU?</span>
+                    </label>
+                </div>
+
+                <form id="signupForm" method="POST" action="{{ route('register.internal') }}" class="space-y-5">
+                    @csrf
+                    <input type="hidden" name="external_user" id="externalUserValue" value="0">
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 uppercase">First Name</label>
+                            <input type="text" name="FirstName" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm" placeholder="Juan">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 uppercase">Middle Name <span class="text-slate-400 font-normal">(Opt)</span></label>
+                            <input type="text" name="MiddleName" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="D.">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 uppercase">Last Name</label>
+                            <input type="text" name="LastName" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="Dela Cruz">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 uppercase">Email Address</label>
+                            <input type="email" name="email" id="emailField" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="juan@wmsu.edu.ph">
+                            <p id="emailHint" class="text-[10px] text-[#8B0000] hidden mt-1">* Must be a valid WMSU email (@wmsu.edu.ph)</p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 uppercase">Contact No.</label>
+                            <input type="text" name="contact" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="0912 345 6789">
+                        </div>
+                    </div>
+
+                    <div id="wmsuFields" class="space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-200 transition-all duration-300">
+                        <h3 class="text-xs font-bold text-[#8B0000] uppercase tracking-wider border-b border-slate-200 pb-2 mb-3">Academic Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-700">College</label>
+                                <select name="college" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm">
+                                    <option value="" disabled selected>Select College</option>
+                                    <option value="ICS">College of Computing Studies</option>
+                                    <option value="COE">College of Engineering</option>
+                                    <option value="CSM">College of Science & Math</option>
+                                    </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-700">Department</label>
+                                <input type="text" name="department" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="e.g. Computer Science">
+                            </div>
+                            <div class="space-y-1 md:col-span-2">
+                                <label class="text-xs font-bold text-slate-700">Course / Program</label>
+                                <input type="text" name="course" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="e.g. BS in Computer Science">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="externalFields" class="hidden space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-200 transition-all duration-300">
+                        <h3 class="text-xs font-bold text-blue-700 uppercase tracking-wider border-b border-slate-200 pb-2 mb-3">Affiliation Details</h3>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700">Institute / Agency</label>
+                            <input type="text" name="institute" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-sm" placeholder="e.g. Department of Science and Technology">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 uppercase">Password</label>
+                            <input type="password" name="password" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="••••••••">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 uppercase">Confirm Password</label>
+                            <input type="password" name="password_confirmation" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="w-full bg-[#8B0000] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-900/20 hover:bg-red-900 hover:-translate-y-0.5 transition-all duration-200 text-sm tracking-wide">
+                            Complete Registration
+                        </button>
+                    </div>
+
+                    <p class="text-center text-xs text-slate-500 mt-4">
+                        By registering, you agree to our <a href="{{ route('policy.terms') }}" class="text-[#8B0000] font-bold hover:underline">Terms</a>.
+                    </p>
+                </form>
             </div>
-        @endif    
-        @if (session('error'))
-    <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
-        {{ session('error') }}
+        </div>
     </div>
-@endif    
 
-    </div> --}}
-<script>
-  const isNotWmsu = document.getElementById('isNotWmsu');
-  const wmsuSection = document.getElementById('wmsuSection');
-  const nonWmsuSection = document.getElementById('nonWmsuSection');
-  const wmsuEmail = document.getElementById('wmsuEmail');
-  const emailError = document.getElementById('emailError');
-  const form = document.getElementById('signupForm');
+    <script>
+        const toggle = document.getElementById('isNotWmsu');
+        const wmsuFields = document.getElementById('wmsuFields');
+        const externalFields = document.getElementById('externalFields');
+        const emailField = document.getElementById('emailField');
+        const emailHint = document.getElementById('emailHint');
+        const hiddenExternalInput = document.getElementById('externalUserValue');
+        const form = document.getElementById('signupForm');
 
-  // Toggle visibility of form sections (reversed logic)
-  isNotWmsu.addEventListener('change', () => {
-    if (isNotWmsu.checked) {
-      nonWmsuSection.classList.remove('hidden');
-      wmsuSection.classList.add('hidden');
-    } else {
-      wmsuSection.classList.remove('hidden');
-      nonWmsuSection.classList.add('hidden');
-    }
-  });
+        // Inputs to toggle
+        const wmsuInputs = wmsuFields.querySelectorAll('input, select');
+        const externalInputs = externalFields.querySelectorAll('input, select');
 
-  // Validate WMSU Email
-  form.addEventListener('submit', (e) => {
-    if (!isNotWmsu.checked) { // Only validate if user IS from WMSU
-      const email = wmsuEmail.value.trim();
-      if (!email.endsWith('@wmsu.edu.ph')) {
-        e.preventDefault();
-        emailError.classList.remove('hidden');
-        wmsuEmail.classList.add('border-red-600');
-      } else {
-        emailError.classList.add('hidden');
-        wmsuEmail.classList.remove('border-red-600');
-      }
-    }
-  });
-</script>
-</x-layout_auth>
+        // Toggle Form Logic
+        function updateFormState() {
+            if (toggle.checked) {
+                // External Mode
+                wmsuFields.classList.add('hidden');
+                externalFields.classList.remove('hidden');
+                emailField.placeholder = "name@example.com";
+                emailHint.classList.add('hidden');
+                hiddenExternalInput.value = "1";
+                
+                // Update Action
+                form.action = "{{ route('register.external') }}";
+
+                // Disable WMSU inputs so they don't block validation or send data
+                wmsuInputs.forEach(input => input.disabled = true);
+                externalInputs.forEach(input => input.disabled = false);
+
+            } else {
+                // WMSU Mode
+                externalFields.classList.add('hidden');
+                wmsuFields.classList.remove('hidden');
+                emailField.placeholder = "juan@wmsu.edu.ph";
+                hiddenExternalInput.value = "0";
+
+                // Update Action
+                form.action = "{{ route('register.internal') }}";
+
+                // Disable External inputs
+                externalInputs.forEach(input => input.disabled = true);
+                wmsuInputs.forEach(input => input.disabled = false);
+            }
+        }
+
+        toggle.addEventListener('change', updateFormState);
+
+        // Initialize state on load
+        updateFormState();
+
+        // Simple Frontend Validation for WMSU Email
+        form.addEventListener('submit', function(e) {
+            if (!toggle.checked) {
+                const email = emailField.value;
+                if (!email.endsWith('@wmsu.edu.ph')) {
+                    e.preventDefault();
+                    emailField.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                    emailHint.classList.remove('hidden');
+                    emailField.focus();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

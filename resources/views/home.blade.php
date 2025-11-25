@@ -1,188 +1,187 @@
 <x-user_layout>
-    <x-first_time_popup/>
-        <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h2
-            class="text-3xl font-bold text-background-dark dark:text-background-light mb-8"
-          >
-            My Submissions
-          </h2>
-
-
-<div class="grid gap-6 title_wrapper">
-@forelse($researchTitles as $title)
-    <div class="title_box bg-background-light dark:bg-background-dark/50 rounded-lg shadow-md overflow-hidden border border-background-dark/10 dark:border-background-light/10">
-        <div class="p-6">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4">
-                <p class="text-sm text-background-dark/60 dark:text-background-light/60">
-                    Submitted: {{ $title->created_at->format('M d, Y') }}
-                </p>
-
-                <div
-                    class="mt-2 sm:mt-0 inline-flex items-center gap-2 px-3 py-1 rounded-full
-                           {{ $title->Status === 'Pending' ? 'bg-green-100 text-green-700' : 
-                              ($title->Status === 'Initial Review' ? 'bg-yellow-100 text-yellow-700' : 'bg-primary/10 text-primary') }}
-                           text-sm font-semibold">
-                    <span class="material-symbols-outlined text-base">history</span>
-                    {{ $title->Status }}
-                </div>
-            </div>
-
-            <h3 class="text-xl font-bold text-background-dark dark:text-background-light">
-                {{ $title->Study_Protocol_title }}
-            </h3>
-
-            <p class="text-sm text-background-dark/70 dark:text-background-light/70 mt-2">
-                Adviser: <strong>{{ $title->Adviser }}</strong>
-            </p>
-            <p class="text-sm text-background-dark/70 dark:text-background-light/70">
-                Category: <strong>{{ $title->Research_Category }}</strong>
-            </p>
-
-            <div class="mt-6 flex flex-wrap gap-4">
-                <button  onclick="openDetailModal(
-                    '{{ $title->Study_Protocol_title }}','{{ $title->Research_Category }}',
-                    '{{ $title->Adviser }}','{{ $title->Status }}')"
-                    class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors flex-grow sm:flex-grow-0">
-                    View Details
-                </button>
-
-                {{-- manage button --}}
-      
-                <a href="{{ url('/home/' . $title->id . '/files') }}"
-                    class="bg-primary/20 dark:bg-primary/30 text-primary font-bold py-2 px-6 rounded-lg hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors flex-grow sm:flex-grow-0 text-center">
-                    Manage Files
-                </a>
-      
-
-            </div>
-        </div>
-    </div>
-@empty
-    <p class="text-center text-gray-500 dark:text-gray-400">No research titles submitted yet.</p>
-@endforelse
-
-</div>
-
-
-
-
-        </main>
-        <div class="fixed bottom-8 right-8">
-          <button onclick="openHelpModal()"
-            class="bg-primary text-white rounded-full h-16 w-16 flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors"
-          >
-            <span class="material-symbols-outlined text-3xl">help_outline</span>
-          </button>
-        </div>
-        <x-f-a-q />
-
+    <div class="max-w-7xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
         
-    <div class="bg-background-light dark:bg-background-dark font-display detail-modal modal hidden">
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div class="bg-background-light dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-2xl m-4 flex flex-col">
-          <div class="flex items-center justify-between p-6 pb-3 border-b border-border-light dark:border-border-dark">
-            <h2 class="text-xl font-bold text-content-light dark:text-content-dark">
-              Submission Details
-            </h2>
-            <button onclick="closeModal('detail-modal')"
-              class=" close-btn text-subtle-light dark:text-subtle-dark hover:bg-primary/10 dark:hover:bg-primary/20 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark">
-              <svg class="h-6 w-6" fill="none" height="24" stroke="currentColor" stroke-linecap="round"
-                stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-                <line x1="18" x2="6" y1="6" y2="18"></line>
-                <line x1="6" x2="18" y1="6" y2="18"></line>
-              </svg>  
-            </button>
-          </div>
-
-          <div>
-            <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
-              <div class="space-y-6">
-                <h3 class="text-lg font-semibold text-content-light dark:text-content-dark">
-                  Research Information
-                </h3>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Research Title</p>
-                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-title"></p>
-                  </div>
-
-                  <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Research Category</p>
-                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-category"></p>
-                  </div>
-
-                  <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Adviser</p>
-                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-adviser"></p>
-                  </div>
-
-                  <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Review Type</p>
-                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark">
-                      Pending
-                    </p>
-                  </div>
-
-                  <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Revision Type</p>
-                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark">
-                      Pending
-                    </p>
-                  </div> 
-                  <div class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Appointed Date</p>
-                    <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark">
-                      Pending
-                    </p>
-                  </div>
-
-                  <div class="sm:col-span-2 px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-background-dark/5 dark:border-background-light/5">
-                    <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Appointed Details</p>
-                    <p class="mt-1 text-sm text-content-light dark:text-content-dark">
-                      please wait for further instructions
-                    </p>
-                  </div>
-                </div>
-
-                <div class="flex justify-end gap-3">
-                  <button onclick="closeModal('detail-modal')"
-                    class="bg-primary/10 text-primary font-semibold px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors">
-                    Close
-                  </button>
-                </div>
-              </div>
+        <!-- Welcome Section -->
+        <div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 font-heading">
+                    Welcome back, <span class="text-brand-primary">{{ explode(' ', Auth::user()->first_name)[0] }}</span>!
+                </h1>
+                <p class="text-slate-500 mt-2 text-lg">Manage your research protocols and track their status.</p>
             </div>
-          </div>
+            <a href="{{ route('submit') }}" class="group flex items-center gap-3 bg-[#8B0000] text-white px-6 py-3.5 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                <i class="fas fa-plus-circle text-lg group-hover:rotate-90 transition-transform duration-300"></i>
+                <span>New Submission</span>
+            </a>
         </div>
-      </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <!-- Active Protocols -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden group hover:shadow-md transition-all">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-file-medical text-6xl text-brand-primary"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-slate-500 text-sm font-bold uppercase tracking-wider">Active Protocols</p>
+                    <h3 class="text-4xl font-extrabold text-slate-900 mt-2">{{ $titles->count() }}</h3>
+                    <div class="mt-4 flex items-center gap-2 text-xs font-bold text-green-600 bg-green-50 w-fit px-2 py-1 rounded-lg">
+                        <i class="fas fa-arrow-up"></i> Updated today
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Reviews -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden group hover:shadow-md transition-all">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-clock text-6xl text-orange-500"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-slate-500 text-sm font-bold uppercase tracking-wider">Pending Review</p>
+                    <h3 class="text-4xl font-extrabold text-slate-900 mt-2">
+                        {{ $titles->where('status', 'Pending')->count() }}
+                    </h3>
+                    <div class="mt-4 flex items-center gap-2 text-xs font-bold text-orange-600 bg-orange-50 w-fit px-2 py-1 rounded-lg">
+                        <i class="fas fa-hourglass-half"></i> Awaiting action
+                    </div>
+                </div>
+            </div>
+
+            <!-- Needs Revision -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden group hover:shadow-md transition-all">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-exclamation-circle text-6xl text-red-500"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-slate-500 text-sm font-bold uppercase tracking-wider">Needs Revision</p>
+                    <h3 class="text-4xl font-extrabold text-slate-900 mt-2">
+                        {{ $titles->where('status', 'Returned')->count() }}
+                    </h3>
+                    <div class="mt-4 flex items-center gap-2 text-xs font-bold text-red-600 bg-red-50 w-fit px-2 py-1 rounded-lg">
+                        <i class="fas fa-exclamation-triangle"></i> Attention required
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Submissions -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                    <i class="fas fa-folder-open text-brand-primary"></i> My Submissions
+                </h2>
+                <div class="flex gap-2">
+                    <button class="p-2 text-slate-400 hover:text-brand-primary transition-colors"><i class="fas fa-search"></i></button>
+                    <button class="p-2 text-slate-400 hover:text-brand-primary transition-colors"><i class="fas fa-filter"></i></button>
+                </div>
+            </div>
+
+            @if($titles->isEmpty())
+                <div class="p-12 text-center">
+                    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-folder-open text-3xl text-slate-300"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-700">No Submissions Yet</h3>
+                    <p class="text-slate-500 mt-2 mb-6 max-w-sm mx-auto">Start your research journey by submitting your first protocol for review.</p>
+                    <a href="{{ route('submit') }}" class="inline-flex items-center gap-2 text-brand-primary font-bold hover:underline">
+                        Create Submission <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            @else
+                <div class="divide-y divide-slate-100">
+                    @foreach($titles as $title)
+                        <div class="p-6 hover:bg-slate-50 transition-colors group">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
+                                            {{ $title->status === 'Approved' ? 'bg-green-100 text-green-700' : 
+                                              ($title->status === 'Returned' ? 'bg-red-100 text-red-700' : 
+                                              'bg-orange-100 text-orange-700') }}">
+                                            {{ $title->status ?? 'Pending' }}
+                                        </span>
+                                        <span class="text-xs text-slate-400 font-medium">
+                                            <i class="far fa-calendar-alt mr-1"></i> {{ $title->created_at->format('M d, Y') }}
+                                        </span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-slate-900 group-hover:text-brand-primary transition-colors line-clamp-1">
+                                        {{ $title->Study_Protocol_title }}
+                                    </h3>
+                                    <p class="text-sm text-slate-500 mt-1 line-clamp-2">{{ $title->Layman_term }}</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <a href="{{ route('manage.files', $title->id) }}" 
+                                       class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-lg hover:border-brand-primary hover:text-brand-primary transition-all shadow-sm">
+                                        Manage Files
+                                    </a>
+                                    <button onclick="openModal('{{ $title->id }}')" class="p-2 text-slate-400 hover:text-brand-primary transition-colors">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal for this item -->
+                        <div id="modal-{{ $title->id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity">
+                            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-[scaleIn_0.2s_ease-out]">
+                                <div class="bg-slate-900 p-6 flex justify-between items-center">
+                                    <h3 class="text-white font-bold text-lg flex items-center gap-2">
+                                        <i class="fas fa-info-circle text-brand-primary"></i> Submission Details
+                                    </h3>
+                                    <button onclick="closeModal('{{ $title->id }}')" class="text-slate-400 hover:text-white transition-colors">
+                                        <i class="fas fa-times text-xl"></i>
+                                    </button>
+                                </div>
+                                <div class="p-8 space-y-6">
+                                    <div>
+                                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Research Title</label>
+                                        <p class="text-lg font-bold text-slate-900 mt-1">{{ $title->Study_Protocol_title }}</p>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Category</label>
+                                            <p class="text-sm font-semibold text-slate-700 mt-1">{{ $title->Research_Category }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Submission Date</label>
+                                            <p class="text-sm font-semibold text-slate-700 mt-1">{{ $title->created_at->format('F d, Y') }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Abstract / Layman Terms</label>
+                                        <div class="mt-2 p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm text-slate-600 leading-relaxed max-h-40 overflow-y-auto">
+                                            {{ $title->Layman_term }}
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-4 flex justify-end gap-3 border-t border-slate-100">
+                                        <button onclick="closeModal('{{ $title->id }}')" class="px-5 py-2.5 rounded-xl text-slate-500 font-bold hover:bg-slate-50 transition-colors">Close</button>
+                                        <a href="{{ route('manage.files', $title->id) }}" class="px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:bg-red-800 transition-all">
+                                            View All Files
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                
+                <!-- Pagination -->
+                <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+                    {{ $titles->links() }}
+                </div>
+            @endif
+        </div>
     </div>
 
-
-
-
+    <script>
+        function openModal(id) {
+            document.getElementById('modal-' + id).classList.remove('hidden');
+        }
+        function closeModal(id) {
+            document.getElementById('modal-' + id).classList.add('hidden');
+        }
+    </script>
 </x-user_layout>
-
-<script>
-  function openHelpModal()
-  { const helpModal = document.querySelector('.faq-modal');
-   helpModal.classList.remove('hidden');
-  
-  }
-   function closeHelpModal(){
-     const helpModal = document.querySelector('.faq-modal'); helpModal.classList.add('hidden');
-    
-    }
-function openDetailModal(title, category, adviser, status) {
-    const modal = document.querySelector('.detail-modal');
-    modal.classList.remove('hidden');
-
-    // Fill modal content dynamically
-    modal.querySelector('#modal-title').textContent = title;
-    modal.querySelector('#modal-category').textContent = category;
-    modal.querySelector('#modal-adviser').textContent = adviser;
-    modal.querySelector('#modal-status').textContent = status;
-}
-
-function closeModal(modalid) { document.querySelector("." + modalid).classList.add("hidden"); }
-</script>

@@ -126,12 +126,12 @@ public function submitTitle(Request $request)
 
 
     public function showTitles()
-{
-    $user = Auth::user();
-    $researchTitles = Research_title::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+    {
+        $user = Auth::user();
+        $titles = Research_title::where('user_id', $user->id)->orderBy('created_at', 'desc')->paginate(9);
 
-    return view('home', compact('researchTitles'));
-}
+        return view('home', compact('titles'));
+    }
 
     // Show all files for a specific research title
     public function manageFiles($id)

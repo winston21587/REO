@@ -1,5 +1,5 @@
 <div id="notifications-panel" 
-    class="hidden absolute right-0 mt-4 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 z-[100] transform transition-all duration-200 origin-top-right scale-95 opacity-0"
+    class="hidden absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 z-[100] transform transition-all duration-200 origin-top-right scale-95 opacity-0"
     style="display: none;">
     
     <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">

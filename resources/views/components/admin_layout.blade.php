@@ -11,6 +11,7 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -45,18 +46,18 @@
                     <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Review Process</p>
                     <div class="space-y-1">
                         <a href="{{ route('admin.analytics') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.analytics') ? 'active' : '' }}">
-                            <!-- <span class="material-symbols-outlined text-xl"></span> -->
+                            <i class="fas fa-chart-line w-5 text-center"></i>
                             <span class="flex-1">Analytics</span>
                         </a>
                         <a href="{{ route('admin.NewSubmissions') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.NewSubmissions') ? 'active' : '' }}">
-                            <!-- <span class="material-symbols-outlined text-xl"></span>  -->
+                            <i class="fas fa-inbox w-5 text-center"></i>
                             <span class="flex-1">Initial Intake</span>
                             @if($pendingCount = \App\Models\Research_title::where('Status', 'Pending')->count())
                                 <span class="bg-[#8B0000] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $pendingCount }}</span>
                             @endif
                         </a>
                         <a href="{{ route('admin.applications') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.applications') ? 'active' : '' }}">
-                            <!-- <span class="material-symbols-outlined text-xl">folder_managed</span> -->
+                            <i class="fas fa-folder-open w-5 text-center"></i>
                             <span class="flex-1">Active Protocols</span>
                         </a>
                     </div>
@@ -66,15 +67,15 @@
                     <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Committee</p>
                     <div class="space-y-1">
                         <a href="{{ route('admin.meetings') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.meetings') ? 'active' : '' }}">
-                            <!-- <span class="material-symbols-outlined text-xl">groups</span> -->
+                            <i class="fas fa-users w-5 text-center"></i>
                             <span class="flex-1">Meetings & Agenda</span>
                         </a>
                         <a href="{{ route('admin.manage_staff') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.manage_staff') ? 'active' : '' }}">
-                            <!-- <span class="material-symbols-outlined text-xl">badge</span> -->
+                            <i class="fas fa-id-card w-5 text-center"></i>
                             <span class="flex-1">REO Members</span>
                         </a>
                         <a href="{{ route('admin.manage_users') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.manage_users') ? 'active' : '' }}">
-                            <!-- <span class="material-symbols-outlined text-xl">person_search</span> -->
+                            <i class="fas fa-user-graduate w-5 text-center"></i>
                             <span class="flex-1">Researchers</span>
                         </a>
                     </div>
@@ -93,7 +94,7 @@
                     </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="text-slate-400 hover:text-white transition-colors"><span class="material-symbols-outlined">logout</span></button>
+                        <button type="submit" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-sign-out-alt"></i></button>
                     </form>
                 </div>
             </div>
@@ -104,7 +105,7 @@
                 <h2 class="text-xl font-bold text-slate-800 font-heading">{{ $title ?? 'Dashboard' }}</h2>
                 <div class="flex items-center gap-4 relative">
                     <button id="notification-btn" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-[#8B0000] transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2">
-                        <span class="material-symbols-outlined">notifications</span>
+                        <i class="fas fa-bell text-xl"></i>
                         <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-[#8B0000] border-2 border-white rounded-full animate-pulse"></span>
                     </button>
                     

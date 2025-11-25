@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AppointmentMail;
 use App\Notifications\AppointmentNotification;
+use App\Models\UserNotification;
 class admin extends Controller
 {
 
@@ -122,34 +123,82 @@ class admin extends Controller
         return view('admin.NewSubmissions', compact('pendingSubmissions', 'incompleteSubmissions'));
     }
 
+// public function updateStatus(Request $request, $id)
+// {
+//     $request->validate([
+//         'status' => 'required|string',
+//         'appointment_date' => 'nullable|date'
+//     ]);
+
+//     $submission = Research_title::findOrFail($id);
+//     $submission->Status = $request->status;
+//     $submission->save();
+
+//     // If the admin marked as "For Initial Review"
+//     if ($request->status === 'For Initial Review') {
+//         $appointment = Appointment::create([
+//             'research_title_id' => $submission->id,
+//             'user_id' => $submission->user_id,
+//             'appointment_date' => $request->appointed_date,
+//         ]);
+
+//         // Notify the user
+//         $user = User::find($submission->user_id);
+//         if ($user) {
+//             Notification::send($user, new SubmissionAppointed($submission, $appointment));
+//         }
+//     }
+
+//     return response()->json(['success' => true]);
+// }
+
+
 public function updateStatus(Request $request, $id)
 {
     $request->validate([
         'status' => 'required|string',
-        'appointment_date' => 'nullable|date'
+        'appointment_date' => 'nullable|date',
+        'reason' => 'nullable|string' // Remarks/Reason
     ]);
 
     $submission = Research_title::findOrFail($id);
     $submission->Status = $request->status;
     $submission->save();
 
-    // If the admin marked as "For Initial Review"
+    // --- START CUSTOM NOTIFICATION LOGIC ---
+    $message = "Your research '{$submission->Study_Protocol_title}' status has been updated to: {$request->status}.";
+    
+    if ($request->reason) {
+        $message .= " Remarks: {$request->reason}";
+    }
+
+    if ($request->appointment_date) {
+        $date = \Carbon\Carbon::parse($request->appointment_date)->format('F j, Y');
+        $message .= " Appointment Date: {$date}.";
+    }
+
+    UserNotification::create([
+        'user_id' => $submission->user_id,
+        'research_id' => $submission->id,
+        'title' => 'Status Update',
+        'message' => $message,
+        'type' => 'info',
+        'is_read' => false
+    ]);
+    // --- END CUSTOM NOTIFICATION LOGIC ---
+
+    // Handle Appointment creation if needed (existing logic)
     if ($request->status === 'For Initial Review') {
-        $appointment = Appointment::create([
+        Appointment::create([
             'research_title_id' => $submission->id,
             'user_id' => $submission->user_id,
-            'appointment_date' => $request->appointed_date,
+            'appointment_date' => $request->appointed_date, // Note: check if this is 'appointment_date' or 'appointed_date' in your form
         ]);
-
-        // Notify the user
-        $user = User::find($submission->user_id);
-        if ($user) {
-            Notification::send($user, new SubmissionAppointed($submission, $appointment));
-        }
     }
 
     return response()->json(['success' => true]);
 }
+
  public function setInitialReview(Request $request, $id)
     {
         $request->validate([

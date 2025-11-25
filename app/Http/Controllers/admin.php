@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AppointmentMail;
 use App\Notifications\AppointmentNotification;
+use App\Models\UserNotification;
 class admin extends Controller
 {
 
@@ -66,54 +67,65 @@ class admin extends Controller
     public function newSubmissions()
     {
         // Mock Data for Pending Submissions
-        $pendingSubmissions = collect([
-            (object)[
-                'id' => 101,
-                'Study_Protocol_title' => 'Impact of Remote Learning on Student Mental Health',
-                'Research_Category' => 'Social Science',
-                'created_at' => \Carbon\Carbon::now()->subDays(2),
-                'author' => (object)['first_name' => 'Maria', 'last_name' => 'Clara', 'college' => 'College of Education']
-            ],
-            (object)[
-                'id' => 102,
-                'Study_Protocol_title' => 'Biodiversity Assessment of Mount Makiling',
-                'Research_Category' => 'Environmental Science',
-                'created_at' => \Carbon\Carbon::now()->subDays(5),
-                'author' => (object)['first_name' => 'Jose', 'last_name' => 'Rizal', 'college' => 'College of Forestry']
-            ],
-            (object)[
-                'id' => 103,
-                'Study_Protocol_title' => 'Telemedicine Adoption in Rural Health Units',
-                'Research_Category' => 'Public Health',
-                'created_at' => \Carbon\Carbon::now()->subDays(1),
-                'author' => (object)['first_name' => 'Apolinario', 'last_name' => 'Mabini', 'college' => 'College of Medicine']
-            ]
-        ]);
+        // $pendingSubmissions = collect([
+        //     (object)[
+        //         'id' => 101,
+        //         'Study_Protocol_title' => 'Impact of Remote Learning on Student Mental Health',
+        //         'Research_Category' => 'Social Science',
+        //         'created_at' => \Carbon\Carbon::now()->subDays(2),
+        //         'author' => (object)['first_name' => 'Maria', 'last_name' => 'Clara', 'college' => 'College of Education']
+        //     ],
+        //     (object)[
+        //         'id' => 102,
+        //         'Study_Protocol_title' => 'Biodiversity Assessment of Mount Makiling',
+        //         'Research_Category' => 'Environmental Science',
+        //         'created_at' => \Carbon\Carbon::now()->subDays(5),
+        //         'author' => (object)['first_name' => 'Jose', 'last_name' => 'Rizal', 'college' => 'College of Forestry']
+        //     ],
+        //     (object)[
+        //         'id' => 103,
+        //         'Study_Protocol_title' => 'Telemedicine Adoption in Rural Health Units',
+        //         'Research_Category' => 'Public Health',
+        //         'created_at' => \Carbon\Carbon::now()->subDays(1),
+        //         'author' => (object)['first_name' => 'Apolinario', 'last_name' => 'Mabini', 'college' => 'College of Medicine']
+        //     ]
+        // ]);
 
-        // Mock Data for Incomplete Submissions
-        $incompleteSubmissions = collect([
-            (object)[
-                'id' => 201,
-                'Study_Protocol_title' => 'AI-Driven Traffic Management System',
-                'Research_Category' => 'Technology',
-                'created_at' => \Carbon\Carbon::now()->subWeeks(1),
-                'author' => (object)['first_name' => 'Andres', 'last_name' => 'Bonifacio', 'college' => 'College of Engineering']
-            ],
-            (object)[
-                'id' => 202,
-                'Study_Protocol_title' => 'Traditional Healing Practices in Rural Areas',
-                'Research_Category' => 'Anthropology',
-                'created_at' => \Carbon\Carbon::now()->subWeeks(2),
-                'author' => (object)['first_name' => 'Gabriela', 'last_name' => 'Silang', 'college' => 'College of Arts and Sciences']
-            ],
-            (object)[
-                'id' => 203,
-                'Study_Protocol_title' => 'Microplastic Contamination in Laguna de Bay',
-                'Research_Category' => 'Environmental Science',
-                'created_at' => \Carbon\Carbon::now()->subWeeks(3),
-                'author' => (object)['first_name' => 'Emilio', 'last_name' => 'Aguinaldo', 'college' => 'College of Agriculture']
-            ]
-        ]);
+        // // Mock Data for Incomplete Submissions
+        // $incompleteSubmissions = collect([
+        //     (object)[
+        //         'id' => 201,
+        //         'Study_Protocol_title' => 'AI-Driven Traffic Management System',
+        //         'Research_Category' => 'Technology',
+        //         'created_at' => \Carbon\Carbon::now()->subWeeks(1),
+        //         'author' => (object)['first_name' => 'Andres', 'last_name' => 'Bonifacio', 'college' => 'College of Engineering']
+        //     ],
+        //     (object)[
+        //         'id' => 202,
+        //         'Study_Protocol_title' => 'Traditional Healing Practices in Rural Areas',
+        //         'Research_Category' => 'Anthropology',
+        //         'created_at' => \Carbon\Carbon::now()->subWeeks(2),
+        //         'author' => (object)['first_name' => 'Gabriela', 'last_name' => 'Silang', 'college' => 'College of Arts and Sciences']
+        //     ],
+        //     (object)[
+        //         'id' => 203,
+        //         'Study_Protocol_title' => 'Microplastic Contamination in Laguna de Bay',
+        //         'Research_Category' => 'Environmental Science',
+        //         'created_at' => \Carbon\Carbon::now()->subWeeks(3),
+        //         'author' => (object)['first_name' => 'Emilio', 'last_name' => 'Aguinaldo', 'college' => 'College of Agriculture']
+        //     ]
+        // ]);
+
+        // 2. Fetch Pending Submissions (Recent Submissions)
+    // Adjust 'Pending' to the exact string you use in your DB (e.g., 'For Initial Review' or 'Submitted')
+        $pendingSubmissions = Research_title::where('Status', 'Pending') 
+                                ->orderBy('created_at', 'desc') // Show newest first
+                                ->get();
+
+        // 3. Fetch Incomplete Submissions
+        $incompleteSubmissions = Research_title::where('Status', 'Incomplete')
+                                ->orderBy('created_at', 'desc')
+                                ->get();
 
         // Fallback to DB if needed, or just use mock for demo
         // $pendingSubmissions = Research_title::with('author')->where('Status', 'Pending')->get();
@@ -122,36 +134,84 @@ class admin extends Controller
         return view('admin.NewSubmissions', compact('pendingSubmissions', 'incompleteSubmissions'));
     }
 
+// public function updateStatus(Request $request, $id)
+// {
+//     $request->validate([
+//         'status' => 'required|string',
+//         'appointment_date' => 'nullable|date'
+//     ]);
+
+//     $submission = Research_title::findOrFail($id);
+//     $submission->Status = $request->status;
+//     $submission->save();
+
+//     // If the admin marked as "For Initial Review"
+//     if ($request->status === 'For Initial Review') {
+//         $appointment = Appointment::create([
+//             'research_title_id' => $submission->id,
+//             'user_id' => $submission->user_id,
+//             'appointment_date' => $request->appointed_date,
+//         ]);
+
+//         // Notify the user
+//         $user = User::find($submission->user_id);
+//         if ($user) {
+//             Notification::send($user, new SubmissionAppointed($submission, $appointment));
+//         }
+//     }
+
+//     return response()->json(['success' => true]);
+// }
+
+
 public function updateStatus(Request $request, $id)
 {
     $request->validate([
         'status' => 'required|string',
-        'appointment_date' => 'nullable|date'
+        'appointment_date' => 'nullable|date',
+        'reason' => 'nullable|string' // Remarks/Reason
     ]);
 
     $submission = Research_title::findOrFail($id);
     $submission->Status = $request->status;
     $submission->save();
 
-    // If the admin marked as "For Initial Review"
+    // --- START CUSTOM NOTIFICATION LOGIC ---
+    $message = "Your research '{$submission->Study_Protocol_title}' status has been updated to: {$request->status}.";
+    
+    if ($request->reason) {
+        $message .= " Remarks: {$request->reason}";
+    }
+
+    if ($request->appointment_date) {
+        $date = \Carbon\Carbon::parse($request->appointment_date)->format('F j, Y');
+        $message .= " Appointment Date: {$date}.";
+    }
+
+    UserNotification::create([
+        'user_id' => $submission->user_id,
+        'research_id' => $submission->id,
+        'title' => 'Status Update',
+        'message' => $message,
+        'type' => 'info',
+        'is_read' => false
+    ]);
+    // --- END CUSTOM NOTIFICATION LOGIC ---
+
+    // Handle Appointment creation if needed (existing logic)
     if ($request->status === 'For Initial Review') {
-        $appointment = Appointment::create([
+        Appointment::create([
             'research_title_id' => $submission->id,
             'user_id' => $submission->user_id,
-            'appointment_date' => $request->appointed_date,
+            'appointment_date' => $request->appointed_date, // Note: check if this is 'appointment_date' or 'appointed_date' in your form
         ]);
-
-        // Notify the user
-        $user = User::find($submission->user_id);
-        if ($user) {
-            Notification::send($user, new SubmissionAppointed($submission, $appointment));
-        }
     }
 
     return response()->json(['success' => true]);
 }
 
     public function assignReviewers(Request $request, $id)
+ public function setInitialReview(Request $request, $id)
     {
         $request->validate([
             'primary_reviewer' => 'required',

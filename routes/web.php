@@ -80,3 +80,22 @@ Route::post('/accept-terms', [AuthController::class, 'acceptTerms'])->name('acce
 Route::get('/privacy-policy', function () { return view('legal.privacy'); })->name('policy.privacy');
 Route::get('/terms-of-service', function () { return view('legal.terms'); })->name('policy.terms');
 Route::get('/accessibility', function () { return view('legal.accessibility'); })->name('policy.accessibility');
+
+
+
+// Notification routes
+Route::get('/notifications', function () {
+    $notifications = \App\Models\UserNotification::where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+    return view('user.notifications', compact('notifications'));
+})->middleware('auth')->name('notifications.index');
+
+// Route to mark as read
+Route::post('/notifications/{id}/read', function ($id) {
+    $notification = \App\Models\UserNotification::findOrFail($id);
+    if ($notification->user_id == Auth::id()) {
+        $notification->update(['is_read' => true]);
+    }
+    return back();
+})->middleware('auth')->name('notifications.read');

@@ -82,7 +82,7 @@
                     <div class="space-y-2">
                         <div class="flex justify-between items-center">
                             <label for="password" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
-                            <a href="#" class="text-xs text-[#8B0000] font-bold hover:underline">Forgot password?</a>
+                            <a href="{{ route('password.request') }}" class="text-xs text-[#8B0000] font-bold hover:underline">Forgot password?</a>
                         </div>
                         <div class="relative group">
                             <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#8B0000] transition-colors">

@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
+use App\Mail\ResetPasswordMail;
 
 class AuthController extends Controller
 {
@@ -189,4 +191,57 @@ public function showVerifyForm(Request $request)
     }
 
 
+
+    // Forgot Password
+    public function showForgotPassword()
+    {
+        return view('auth.forgot-password');
+    }
+
+    public function sendResetCode(Request $request)
+    {
+        $request->validate(['email' => 'required|email|exists:users,email']);
+
+        $user = User::where('email', $request->email)->first();
+        $code = rand(100000, 999999);
+
+        $user->reset_code = $code;
+        $user->reset_code_expires_at = Carbon::now()->addMinutes(10);
+        $user->save();
+
+        Mail::to($user->email)->send(new ResetPasswordMail($code));
+
+        return redirect()->route('password.reset', ['email' => $user->email])
+            ->with('status', 'We have emailed your password reset code.');
+    }
+
+    public function showResetPassword(Request $request)
+    {
+        return view('auth.reset-password', ['email' => $request->email]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'code' => 'required|numeric',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = User::where('email', $request->email)
+                    ->where('reset_code', $request->code)
+                    ->where('reset_code_expires_at', '>', Carbon::now())
+                    ->first();
+
+        if (!$user) {
+            return back()->withErrors(['code' => 'Invalid or expired verification code.']);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->reset_code = null;
+        $user->reset_code_expires_at = null;
+        $user->save();
+
+        return redirect()->route('login')->with('success', 'Password has been reset successfully.');
+    }
 }

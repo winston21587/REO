@@ -67,54 +67,65 @@ class admin extends Controller
     public function newSubmissions()
     {
         // Mock Data for Pending Submissions
-        $pendingSubmissions = collect([
-            (object)[
-                'id' => 101,
-                'Study_Protocol_title' => 'Impact of Remote Learning on Student Mental Health',
-                'Research_Category' => 'Social Science',
-                'created_at' => \Carbon\Carbon::now()->subDays(2),
-                'author' => (object)['first_name' => 'Maria', 'last_name' => 'Clara', 'college' => 'College of Education']
-            ],
-            (object)[
-                'id' => 102,
-                'Study_Protocol_title' => 'Biodiversity Assessment of Mount Makiling',
-                'Research_Category' => 'Environmental Science',
-                'created_at' => \Carbon\Carbon::now()->subDays(5),
-                'author' => (object)['first_name' => 'Jose', 'last_name' => 'Rizal', 'college' => 'College of Forestry']
-            ],
-            (object)[
-                'id' => 103,
-                'Study_Protocol_title' => 'Telemedicine Adoption in Rural Health Units',
-                'Research_Category' => 'Public Health',
-                'created_at' => \Carbon\Carbon::now()->subDays(1),
-                'author' => (object)['first_name' => 'Apolinario', 'last_name' => 'Mabini', 'college' => 'College of Medicine']
-            ]
-        ]);
+        // $pendingSubmissions = collect([
+        //     (object)[
+        //         'id' => 101,
+        //         'Study_Protocol_title' => 'Impact of Remote Learning on Student Mental Health',
+        //         'Research_Category' => 'Social Science',
+        //         'created_at' => \Carbon\Carbon::now()->subDays(2),
+        //         'author' => (object)['first_name' => 'Maria', 'last_name' => 'Clara', 'college' => 'College of Education']
+        //     ],
+        //     (object)[
+        //         'id' => 102,
+        //         'Study_Protocol_title' => 'Biodiversity Assessment of Mount Makiling',
+        //         'Research_Category' => 'Environmental Science',
+        //         'created_at' => \Carbon\Carbon::now()->subDays(5),
+        //         'author' => (object)['first_name' => 'Jose', 'last_name' => 'Rizal', 'college' => 'College of Forestry']
+        //     ],
+        //     (object)[
+        //         'id' => 103,
+        //         'Study_Protocol_title' => 'Telemedicine Adoption in Rural Health Units',
+        //         'Research_Category' => 'Public Health',
+        //         'created_at' => \Carbon\Carbon::now()->subDays(1),
+        //         'author' => (object)['first_name' => 'Apolinario', 'last_name' => 'Mabini', 'college' => 'College of Medicine']
+        //     ]
+        // ]);
 
-        // Mock Data for Incomplete Submissions
-        $incompleteSubmissions = collect([
-            (object)[
-                'id' => 201,
-                'Study_Protocol_title' => 'AI-Driven Traffic Management System',
-                'Research_Category' => 'Technology',
-                'created_at' => \Carbon\Carbon::now()->subWeeks(1),
-                'author' => (object)['first_name' => 'Andres', 'last_name' => 'Bonifacio', 'college' => 'College of Engineering']
-            ],
-            (object)[
-                'id' => 202,
-                'Study_Protocol_title' => 'Traditional Healing Practices in Rural Areas',
-                'Research_Category' => 'Anthropology',
-                'created_at' => \Carbon\Carbon::now()->subWeeks(2),
-                'author' => (object)['first_name' => 'Gabriela', 'last_name' => 'Silang', 'college' => 'College of Arts and Sciences']
-            ],
-            (object)[
-                'id' => 203,
-                'Study_Protocol_title' => 'Microplastic Contamination in Laguna de Bay',
-                'Research_Category' => 'Environmental Science',
-                'created_at' => \Carbon\Carbon::now()->subWeeks(3),
-                'author' => (object)['first_name' => 'Emilio', 'last_name' => 'Aguinaldo', 'college' => 'College of Agriculture']
-            ]
-        ]);
+        // // Mock Data for Incomplete Submissions
+        // $incompleteSubmissions = collect([
+        //     (object)[
+        //         'id' => 201,
+        //         'Study_Protocol_title' => 'AI-Driven Traffic Management System',
+        //         'Research_Category' => 'Technology',
+        //         'created_at' => \Carbon\Carbon::now()->subWeeks(1),
+        //         'author' => (object)['first_name' => 'Andres', 'last_name' => 'Bonifacio', 'college' => 'College of Engineering']
+        //     ],
+        //     (object)[
+        //         'id' => 202,
+        //         'Study_Protocol_title' => 'Traditional Healing Practices in Rural Areas',
+        //         'Research_Category' => 'Anthropology',
+        //         'created_at' => \Carbon\Carbon::now()->subWeeks(2),
+        //         'author' => (object)['first_name' => 'Gabriela', 'last_name' => 'Silang', 'college' => 'College of Arts and Sciences']
+        //     ],
+        //     (object)[
+        //         'id' => 203,
+        //         'Study_Protocol_title' => 'Microplastic Contamination in Laguna de Bay',
+        //         'Research_Category' => 'Environmental Science',
+        //         'created_at' => \Carbon\Carbon::now()->subWeeks(3),
+        //         'author' => (object)['first_name' => 'Emilio', 'last_name' => 'Aguinaldo', 'college' => 'College of Agriculture']
+        //     ]
+        // ]);
+
+        // 2. Fetch Pending Submissions (Recent Submissions)
+    // Adjust 'Pending' to the exact string you use in your DB (e.g., 'For Initial Review' or 'Submitted')
+        $pendingSubmissions = Research_title::where('Status', 'Pending') 
+                                ->orderBy('created_at', 'desc') // Show newest first
+                                ->get();
+
+        // 3. Fetch Incomplete Submissions
+        $incompleteSubmissions = Research_title::where('Status', 'Incomplete')
+                                ->orderBy('created_at', 'desc')
+                                ->get();
 
         // Fallback to DB if needed, or just use mock for demo
         // $pendingSubmissions = Research_title::with('author')->where('Status', 'Pending')->get();

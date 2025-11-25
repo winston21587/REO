@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\AppointmentMail;
 use App\Notifications\AppointmentNotification;
 use App\Models\UserNotification;
+use Carbon\Carbon;
+
 class admin extends Controller
 {
 
@@ -20,22 +22,39 @@ class admin extends Controller
     {
         return view('admin.analytics');
     }
-    public function applications()
+public function applications(Request $request)
     {
-        $data = [
-            ['id' => 1, 'name' => 'John Doe',    'email' => 'john@example.com',  'status' => 'Review',     'date' => '2025-09-10', 'title' => 'Research on AI',           'ReviewType' => 'Full Review'],
-            ['id' => 2, 'name' => 'Jane Roe',    'email' => 'jane@example.com',  'status' => 'Revision',   'date' => '2025-09-12', 'title' => 'Nursing Study',            'ReviewType' => 'Exempt',     'RevisionStage' => 'Waiting for Revision'],
-            ['id' => 3, 'name' => 'Sam Smith',   'email' => 'sam@example.com',   'status' => 'Complete',   'date' => '2025-08-30', 'title' => 'Grassland Ecology',        'ReviewType' => 'Expedited'],
-            ['id' => 4, 'name' => 'Lisa Wong',   'email' => 'lisa@example.com',  'status' => 'Finalization','date' => '2025-09-01', 'title' => 'Behavioral Study',         'ReviewType' => 'Full Review'],
-            ['id' => 5, 'name' => 'Tom Brown',   'email' => 'tom@example.com',   'status' => 'Revision',   'date' => '2025-09-15', 'title' => 'Clinical Trial',           'ReviewType' => 'Full Review','RevisionStage' => 'Panel Deliberation'],
-            // ['id' => 6, 'name' => 'Anna Green',  'email' => 'anna@example.com',  'status' => 'Review',     'date' => '2025-09-18', 'title' => 'AI Ethics',                'ReviewType' => 'Expedited'],
-            // ['id' => 7, 'name' => 'Mark Blue',   'email' => 'mark@example.com',  'status' => 'Revision',   'date' => '2025-09-20', 'title' => 'Environmental Impact',     'ReviewType' => 'Exempt',     'RevisionStage' => 'Submission of Revsion'],
-            // ['id' => 8, 'name' => 'Rita Black',  'email' => 'rita@example.com',  'status' => 'Complete',   'date' => '2025-09-05', 'title' => 'Public Health Survey',     'ReviewType' => 'Full Review'],
-            // ['id' => 9, 'name' => 'Carlos Diaz', 'email' => 'carlos@example.com','status' => 'Finalization','date' => '2025-09-07', 'title' => 'Soil Microbiology',        'ReviewType' => 'Expedited'],
-            // ['id' => 10,'name' => 'Maya Patel',  'email' => 'maya@example.com',  'status' => 'Revision',   'date' => '2025-09-22', 'title' => 'Nutrition Study',          'ReviewType' => 'Full Review','RevisionStage' => 'Checking of Revision'],
-        ];
-            
-        return view('admin.applications')->with('datas', $data);
+        $query = Research_title::with('author');
+
+        // 1. STRICT CONSTRAINT: Only "For Initial Review" and "Revision" statuses
+        // This ensures the page ONLY accepts these titles, regardless of other inputs.
+        $query->where(function($q) {
+            $q->where('Status', 'For Initial Review')
+              ->orWhere('Status', 'LIKE', '%Revision%'); // Matches 'Waiting for Revision', 'Checking of Revisions', etc.
+        });
+
+        // 2. Handle Search
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('Study_Protocol_title', 'like', "%{$search}%")
+                  ->orWhereHas('author', function($q2) use ($search) {
+                      $q2->where('name', 'like', "%{$search}%"); 
+                  });
+            });
+        }
+
+        // 3. Handle Specific Filter (e.g., if user selects just "Waiting for Revision")
+        if ($request->has('status') && !empty($request->status)) {
+            $query->where('Status', $request->status);
+        }
+
+        $datas = $query->orderBy('created_at', 'desc')->get();
+
+        // Fetch Reviewers for the modal
+        $reviewers = User::whereIn('role', ['admin', 'researcher', 'reviewer'])->get(); 
+
+        return view('admin.applications', compact('datas', 'reviewers'));
     }
 
     public function meetings()
@@ -118,6 +137,8 @@ class admin extends Controller
 
         // 2. Fetch Pending Submissions (Recent Submissions)
     // Adjust 'Pending' to the exact string you use in your DB (e.g., 'For Initial Review' or 'Submitted')
+
+
         $pendingSubmissions = Research_title::where('Status', 'Pending') 
                                 ->orderBy('created_at', 'desc') // Show newest first
                                 ->get();
@@ -165,62 +186,129 @@ class admin extends Controller
 
 
 public function updateStatus(Request $request, $id)
-{
-    $request->validate([
-        'status' => 'required|string',
-        'appointment_date' => 'nullable|date',
-        'reason' => 'nullable|string' // Remarks/Reason
-    ]);
+    {
+        $submission = Research_title::findOrFail($id);
+        $user = User::find($submission->user_id);
+        
+        $message = ""; // Message to be sent to user
+        $newStatus = "";
 
-    $submission = Research_title::findOrFail($id);
-    $submission->Status = $request->status;
-    $submission->save();
+        // ---------------------------------------------------------
+        // CASE A: Request coming from Triage Modal (has 'classification')
+        // ---------------------------------------------------------
+        if ($request->has('classification')) {
+            
+            if ($request->classification === 'Complete') {
+                // Validate Appointment
+                $request->validate(['appointment_date' => 'required|date']);
 
-    // --- START CUSTOM NOTIFICATION LOGIC ---
-    $message = "Your research '{$submission->Study_Protocol_title}' status has been updated to: {$request->status}.";
-    
-    if ($request->reason) {
-        $message .= " Remarks: {$request->reason}";
-    }
+                $newStatus = 'For Initial Review';
+                $submission->Status = $newStatus;
+                $submission->save();
 
-    if ($request->appointment_date) {
-        $date = \Carbon\Carbon::parse($request->appointment_date)->format('F j, Y');
-        $message .= " Appointment Date: {$date}.";
-    }
+                // Create Appointment
+                $appointment = Appointment::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => $submission->user_id,
+                    'appointment_date' => $request->appointment_date,
+                    'stage' => 'Initial Review',
+                ]);
 
-    UserNotification::create([
-        'user_id' => $submission->user_id,
-        'research_id' => $submission->id,
-        'title' => 'Status Update',
-        'message' => $message,
-        'type' => 'info',
-        'is_read' => false
-    ]);
-    // --- END CUSTOM NOTIFICATION LOGIC ---
+                // Format Message
+                $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
+                $message = "Your submission document check is Complete. We have set your Initial Review Appointment on: {$dateFormatted}.";
 
-    // Handle Appointment creation if needed (existing logic)
-    if ($request->status === 'For Initial Review') {
-        Appointment::create([
-            'research_title_id' => $submission->id,
+                $message = "Your submission has been marked as COMPLETE.\n\n";
+                $message .= "1. Appointment Set: Your Initial Review is scheduled for {$dateFormatted}.\n";
+                $message .= "2. Action Required: Please submit the HARD COPY of your protocol to the Research Ethics Office (REO).";
+                // (Optional) Send standard Appointment Email if you use Mailables
+                // Mail::to($user->email)->send(new AppointmentMail($appointment));
+
+            } elseif ($request->classification === 'Incomplete') {
+                // Validate Remarks
+                $request->validate(['remarks' => 'nullable|string']);
+
+                $newStatus = 'Incomplete';
+                $submission->Status = $newStatus;
+                $submission->save();
+
+                // Handle the List of Missing Requirements
+                // The Javascript sends this as an array: missing_requirements[]
+                $missingDocs = $request->input('missing_requirements', []);
+                
+                $message = "Your submission has been marked as Incomplete.";
+                
+                // Append General Remarks
+                if($request->remarks) {
+                    $message .= "\n\nGeneral Remarks: " . $request->remarks;
+                }
+
+                // Append List of Missing Files
+                if (!empty($missingDocs)) {
+                    $message .= "\n\nMissing Requirements / Actions Needed:";
+                    foreach($missingDocs as $doc) {
+                        $message .= "\n- " . $doc;
+                    }
+                }
+            }
+        } 
+        // ---------------------------------------------------------
+        // CASE B: Generic Status Update (Simple dropdowns from other pages)
+        // ---------------------------------------------------------
+        else {
+            $request->validate(['status' => 'required|string']);
+            
+            $newStatus = $request->status;
+            $submission->Status = $newStatus;
+            $submission->save();
+
+            $message = "Your research status has been updated to: {$newStatus}.";
+            if ($request->reason) {
+                $message .= " Remarks: {$request->reason}";
+            }
+        }
+
+        // ---------------------------------------------------------
+        //  NOTIFICATIONS (Database + Email via Notification Class)
+        // ---------------------------------------------------------
+        
+        // 1. Create entry in custom 'user_notifications' table (If you are using the custom table approach)
+        UserNotification::create([
             'user_id' => $submission->user_id,
-            'appointment_date' => $request->appointed_date, // Note: check if this is 'appointment_date' or 'appointed_date' in your form
+            'research_id' => $submission->id,
+            'title' => 'Submission Status Update',
+            'message' => $message,
+            'type' => ($newStatus === 'Incomplete') ? 'warning' : 'info',
+            'is_read' => false
         ]);
+
+        // 2. (Optional) If you want to use the Laravel Notification Class as well:
+        // if ($user) {
+        //    Notification::send($user, new TitleStatusUpdated($submission, $newStatus, null, $message));
+        // }
+
+        return response()->json(['success' => true, 'message' => 'Status updated successfully']);
     }
 
-    return response()->json(['success' => true]);
-}
-
-    public function assignReviewers(Request $request, $id)
- public function setInitialReview(Request $request, $id)
+public function assignReviewers(Request $request, $id)
     {
         $request->validate([
-            'primary_reviewer' => 'required',
-            'secondary_reviewer' => 'required',
+            'primary_reviewer' => 'required|exists:users,id',
+            'secondary_reviewer' => 'required|exists:users,id|different:primary_reviewer',
         ]);
 
-        // Logic to save reviewers would go here
-        // For now, just return success
+        $submission = Research_title::findOrFail($id);
         
+        // Assuming you have these columns in your 'research_titles' table.
+        // If not, you need to create a migration to add them.
+        $submission->primary_reviewer_id = $request->primary_reviewer;
+        $submission->secondary_reviewer_id = $request->secondary_reviewer;
+        $submission->Status = 'Under Review'; // Optional: Auto-update status
+        $submission->save();
+
+        // Optional: Send Notification to Reviewers
+        // Notification::send(User::find($request->primary_reviewer), new ReviewerAssigned($submission));
+
         return response()->json(['success' => true, 'message' => 'Reviewers assigned successfully.']);
     }
     public function setInitialReview(Request $request, $id)

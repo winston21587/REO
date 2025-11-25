@@ -14,16 +14,7 @@ use App\Mail\AppointmentMail;
 use App\Notifications\AppointmentNotification;
 class admin extends Controller
 {
-    public function viewFiles($id)
-    {
-        // Find the research title
-        $researchTitle = Research_title::findOrFail($id);
 
-        // Fetch files related to that research title
-        $files = Research_title::where('research_id', $id)->get();
-
-        return view('admin.view_files', compact('files', 'researchTitle'));
-    }
     public function index($request)
     {
         return view('admin.analytics');
@@ -45,6 +36,18 @@ class admin extends Controller
             
         return view('admin.applications')->with('datas', $data);
     }
+
+    public function meetings()
+    {
+        // Mock data for meetings
+        $meetings = [
+            ['id' => 1, 'title' => 'Initial Review Board', 'date' => '2025-10-15', 'time' => '09:00 AM', 'location' => 'Conference Room A', 'status' => 'Scheduled', 'agenda_count' => 5],
+            ['id' => 2, 'title' => 'Expedited Review Panel', 'date' => '2025-10-18', 'time' => '02:00 PM', 'location' => 'Online (Zoom)', 'status' => 'Scheduled', 'agenda_count' => 3],
+            ['id' => 3, 'title' => 'Policy Revision Meeting', 'date' => '2025-10-25', 'time' => '10:00 AM', 'location' => 'Conference Room B', 'status' => 'Draft', 'agenda_count' => 0],
+        ];
+        return view('admin.meetings', compact('meetings'));
+    }
+
     public function GetReview()
     {
                 $datas = Research_title::with('author')
@@ -62,14 +65,61 @@ class admin extends Controller
     }
     public function newSubmissions()
     {
-        $pendingSubmissions = Research_title::with('author')
-            ->where('Status', 'Pending')
-            ->get();
+        // Mock Data for Pending Submissions
+        $pendingSubmissions = collect([
+            (object)[
+                'id' => 101,
+                'Study_Protocol_title' => 'Impact of Remote Learning on Student Mental Health',
+                'Research_Category' => 'Social Science',
+                'created_at' => \Carbon\Carbon::now()->subDays(2),
+                'author' => (object)['first_name' => 'Maria', 'last_name' => 'Clara', 'college' => 'College of Education']
+            ],
+            (object)[
+                'id' => 102,
+                'Study_Protocol_title' => 'Biodiversity Assessment of Mount Makiling',
+                'Research_Category' => 'Environmental Science',
+                'created_at' => \Carbon\Carbon::now()->subDays(5),
+                'author' => (object)['first_name' => 'Jose', 'last_name' => 'Rizal', 'college' => 'College of Forestry']
+            ],
+            (object)[
+                'id' => 103,
+                'Study_Protocol_title' => 'Telemedicine Adoption in Rural Health Units',
+                'Research_Category' => 'Public Health',
+                'created_at' => \Carbon\Carbon::now()->subDays(1),
+                'author' => (object)['first_name' => 'Apolinario', 'last_name' => 'Mabini', 'college' => 'College of Medicine']
+            ]
+        ]);
 
-        $incompleteSubmissions = Research_title::with('author')
-            ->where('Status', 'Incomplete')
-            ->get();
-    return view('admin.NewSubmissions', compact('pendingSubmissions', 'incompleteSubmissions'));
+        // Mock Data for Incomplete Submissions
+        $incompleteSubmissions = collect([
+            (object)[
+                'id' => 201,
+                'Study_Protocol_title' => 'AI-Driven Traffic Management System',
+                'Research_Category' => 'Technology',
+                'created_at' => \Carbon\Carbon::now()->subWeeks(1),
+                'author' => (object)['first_name' => 'Andres', 'last_name' => 'Bonifacio', 'college' => 'College of Engineering']
+            ],
+            (object)[
+                'id' => 202,
+                'Study_Protocol_title' => 'Traditional Healing Practices in Rural Areas',
+                'Research_Category' => 'Anthropology',
+                'created_at' => \Carbon\Carbon::now()->subWeeks(2),
+                'author' => (object)['first_name' => 'Gabriela', 'last_name' => 'Silang', 'college' => 'College of Arts and Sciences']
+            ],
+            (object)[
+                'id' => 203,
+                'Study_Protocol_title' => 'Microplastic Contamination in Laguna de Bay',
+                'Research_Category' => 'Environmental Science',
+                'created_at' => \Carbon\Carbon::now()->subWeeks(3),
+                'author' => (object)['first_name' => 'Emilio', 'last_name' => 'Aguinaldo', 'college' => 'College of Agriculture']
+            ]
+        ]);
+
+        // Fallback to DB if needed, or just use mock for demo
+        // $pendingSubmissions = Research_title::with('author')->where('Status', 'Pending')->get();
+        // $incompleteSubmissions = Research_title::with('author')->where('Status', 'Incomplete')->get();
+
+        return view('admin.NewSubmissions', compact('pendingSubmissions', 'incompleteSubmissions'));
     }
 
 public function updateStatus(Request $request, $id)
@@ -129,5 +179,87 @@ public function updateStatus(Request $request, $id)
         return response()->json([
             'message' => 'Appointment successfully set and user notified.',
         ]);
+    }
+    public function viewFiles($id)
+    {
+        // Mock Data Handling for Demo
+        $mockData = collect([
+            101 => (object)[
+                'id' => 101,
+                'Study_Protocol_title' => 'Impact of Remote Learning on Student Mental Health',
+                'Research_Category' => 'Social Science',
+                'created_at' => \Carbon\Carbon::now()->subDays(2),
+                'reoc_code' => 'REO-2024-001',
+                'author' => (object)['first_name' => 'Maria', 'last_name' => 'Clara', 'college' => 'College of Education', 'email' => 'maria@example.com'],
+                'files' => collect([
+                    (object)['filename' => 'Protocol_Draft_v1.pdf'],
+                    (object)['filename' => 'Informed_Consent.pdf']
+                ])
+            ],
+            102 => (object)[
+                'id' => 102,
+                'Study_Protocol_title' => 'Biodiversity Assessment of Mount Makiling',
+                'Research_Category' => 'Environmental Science',
+                'created_at' => \Carbon\Carbon::now()->subDays(5),
+                'reoc_code' => 'REO-2024-002',
+                'author' => (object)['first_name' => 'Jose', 'last_name' => 'Rizal', 'college' => 'College of Forestry', 'email' => 'jose@example.com'],
+                'files' => collect([
+                    (object)['filename' => 'Field_Study_Plan.pdf'],
+                    (object)['filename' => 'Permits.pdf']
+                ])
+            ],
+            103 => (object)[
+                'id' => 103,
+                'Study_Protocol_title' => 'Telemedicine Adoption in Rural Health Units',
+                'Research_Category' => 'Public Health',
+                'created_at' => \Carbon\Carbon::now()->subDays(1),
+                'reoc_code' => 'REO-2024-003',
+                'author' => (object)['first_name' => 'Apolinario', 'last_name' => 'Mabini', 'college' => 'College of Medicine', 'email' => 'apol@example.com'],
+                'files' => collect([
+                    (object)['filename' => 'Research_Proposal.pdf']
+                ])
+            ],
+            201 => (object)[
+                'id' => 201,
+                'Study_Protocol_title' => 'AI-Driven Traffic Management System',
+                'Research_Category' => 'Technology',
+                'created_at' => \Carbon\Carbon::now()->subWeeks(1),
+                'reoc_code' => 'REO-2024-004',
+                'author' => (object)['first_name' => 'Andres', 'last_name' => 'Bonifacio', 'college' => 'College of Engineering', 'email' => 'andres@example.com'],
+                'files' => collect([
+                    (object)['filename' => 'System_Architecture.pdf']
+                ])
+            ],
+            202 => (object)[
+                'id' => 202,
+                'Study_Protocol_title' => 'Traditional Healing Practices in Rural Areas',
+                'Research_Category' => 'Anthropology',
+                'created_at' => \Carbon\Carbon::now()->subWeeks(2),
+                'reoc_code' => 'REO-2024-005',
+                'author' => (object)['first_name' => 'Gabriela', 'last_name' => 'Silang', 'college' => 'College of Arts and Sciences', 'email' => 'gabriela@example.com'],
+                'files' => collect([
+                    (object)['filename' => 'Interview_Guide.pdf']
+                ])
+            ],
+            203 => (object)[
+                'id' => 203,
+                'Study_Protocol_title' => 'Microplastic Contamination in Laguna de Bay',
+                'Research_Category' => 'Environmental Science',
+                'created_at' => \Carbon\Carbon::now()->subWeeks(3),
+                'reoc_code' => 'REO-2024-006',
+                'author' => (object)['first_name' => 'Emilio', 'last_name' => 'Aguinaldo', 'college' => 'College of Agriculture', 'email' => 'emilio@example.com'],
+                'files' => collect([
+                    (object)['filename' => 'Lab_Results.pdf']
+                ])
+            ]
+        ]);
+
+        if ($mockData->has($id)) {
+            $researchTitle = $mockData->get($id);
+            return view('admin.view_files', compact('researchTitle'));
+        }
+
+        $researchTitle = Research_title::with('author', 'files')->findOrFail($id);
+        return view('admin.view_files', compact('researchTitle'));
     }
 }

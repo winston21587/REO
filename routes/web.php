@@ -42,22 +42,19 @@ Route::middleware(['auth', 'role:researcher'])->group(function () {
     Route::post('/submit',  [Research_title_Controller::class, 'submitTitle'])->name('submit.title'); 
     Route::get('/home/{id}/files', [Research_title_Controller::class, 'manageFiles'])->name('manage.files');
     Route::post('/home/{id}/files/update', [Research_title_Controller::class, 'updateFile'])->name('update.file');  
-
-
     Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
 
 
 });
 
-
 // Route::get('logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
-
 // admin access prolly
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin', function(){ return view('admin.analytics'); })->name('admin.analytics');
     Route::get('/admin/appointment', function(){ return view('admin.appointment'); })->name('admin.appointment');
     Route::get('/admin/users', function(){ return view('admin.manage_users'); })->name('admin.manage_users');
     Route::get('/admin/staff', function(){ return view('admin.manage_staff'); })->name('admin.manage_staff');
+    Route::get('/admin/meetings', [admin::class, 'meetings'])->name('admin.meetings');
     Route::get('/admin/new', [ admin::class, 'newSubmissions'])->name('admin.NewSubmissions');
     Route::get('/admin/Review', [admin::class, 'GetReview'])->name('admin.Review');
     Route::get('/admin/Revision', [admin::class, 'GetRevision'])->name('admin.Revision');
@@ -66,26 +63,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/applications', [admin::class, 'applications'])->name('admin.applications');
     Route::post('/admin/update-status/{id}', [admin::class, 'updateStatus']);
     Route::post('/admin/{id}/set-initial-review', [admin::class, 'setInitialReview'])->name('submissions.setInitialReview');
-Route::get('/admin/view-files/{id}', [admin::class, 'viewFiles'])->name('admin.view_files');
+    Route::get('/admin/view-files/{id}', [admin::class, 'viewFiles'])->name('admin.view_files');
+
+    Route::post('/admin/submission/{id}/complete', [admin::class, 'markAsComplete'])->name('admin.markComplete');
+    Route::post('/admin/submission/{id}/incomplete', [admin::class, 'markAsIncomplete'])->name('admin.markIncomplete');
 
 });
-// Route::middleware(['auth','is_admin'])->group(function () {
-//     Route::get('/admin', function(){ return view('admin.index'); });
-// });
 
 Route::post('/accept-terms', [AuthController::class, 'acceptTerms'])->name('accept.terms');
 
 Route::get('/privacy-policy', function () { return view('legal.privacy'); })->name('policy.privacy');
 Route::get('/terms-of-service', function () { return view('legal.terms'); })->name('policy.terms');
 Route::get('/accessibility', function () { return view('legal.accessibility'); })->name('policy.accessibility');
-
-
-
-
-// bruh the auth is actually in the:
-// protected $routeMiddleware = [
-//     'auth' => \App\Http\Middleware\Authenticate::class,
-//     'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-//     // ...
-// ];
-// lmao

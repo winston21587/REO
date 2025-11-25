@@ -211,7 +211,6 @@ public function updateStatus(Request $request, $id)
 }
 
     public function assignReviewers(Request $request, $id)
- public function setInitialReview(Request $request, $id)
     {
         $request->validate([
             'primary_reviewer' => 'required',

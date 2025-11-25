@@ -8,11 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Researcher_files extends Model
 {
     use HasFactory;
-    protected $table = 'researcher_files';
-    protected $fillable = ['filename', 'filepath', 'filetype','category'];
 
-public function titles()
-{
-    return $this->belongsToMany(Research_title::class, 'research_title_files', 'researcher_file_id', 'research_title_id');
-}
+    protected $table = 'researcher_files';
+
+    protected $fillable = [
+        'research_title_id', // This matches the foreign key column
+        'filename',
+        'file_path',
+        'file_type',   
+        'uploaded_by'  
+    ];
+
+    // ✅ CORRECT RELATIONSHIP: A file belongs to ONE research title
+    public function research()
+    {
+        return $this->belongsTo(Research_title::class, 'research_title_id');
+    }
 }

@@ -188,21 +188,7 @@
                                         <i class="fas fa-magic group-hover:animate-pulse"></i> Check with AI
                                     </button>
 
-                                    <!-- AI Loader -->
-                                    <div id="ai-loader" class="hidden mt-4">
-                                        <div class="flex items-center gap-2 text-xs text-[#8B0000] font-bold mb-2">
-                                            <span class="w-2 h-2 bg-[#8B0000] rounded-full animate-ping"></span> 
-                                            <span>Analyzing Documents...</span>
-                                        </div>
-                                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                            <div class="bg-[#8B0000] h-full rounded-full animate-[progress_1.5s_infinite_linear] w-1/3"></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- AI Results -->
-                                    <div id="ai-results" class="hidden mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm text-slate-700 max-h-60 overflow-y-auto custom-scrollbar">
-                                        <div id="ai-feedback-content" class="prose prose-sm prose-red"></div>
-                                    </div>
+                                    <!-- AI Loader & Results Removed (Moved to Modal) -->
                                 </div>
 
                                 <!-- Submit Button -->
@@ -235,6 +221,61 @@
         </div>
     </div>
 
+    <!-- AI Results Modal -->
+    <div id="ai-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity opacity-0" id="ai-modal-backdrop"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <!-- Modal Panel -->
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl opacity-0 scale-95" id="ai-modal-panel">
+                    
+                    <!-- Header -->
+                    <div class="bg-[#0f172a] px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2" id="modal-title">
+                            <i class="fas fa-robot text-[#8B0000]"></i> AI Compliance Check Results
+                        </h3>
+                        <button type="button" onclick="closeAiModal()" class="text-slate-400 hover:text-white transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="px-6 py-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                        
+                        <!-- Loader State -->
+                        <div id="ai-modal-loader" class="hidden flex flex-col items-center justify-center py-12">
+                            <div class="relative w-24 h-24 mb-6">
+                                <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
+                                <div class="absolute inset-0 border-4 border-[#8B0000] rounded-full border-t-transparent animate-spin"></div>
+                                <i class="fas fa-magic absolute inset-0 flex items-center justify-center text-2xl text-[#8B0000] animate-pulse"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-2">Analyzing Documents...</h4>
+                            <p class="text-slate-500 text-center max-w-md">Our AI is scanning your attached files for missing signatures, formatting errors, and compliance with REO standards.</p>
+                        </div>
+
+                        <!-- Results State -->
+                        <div id="ai-modal-content" class="hidden prose prose-slate max-w-none">
+                            <!-- Content injected via JS -->
+                        </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="bg-slate-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-200">
+                        <button type="button" onclick="closeAiModal()" class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 font-bold hover:bg-slate-50 transition-colors">
+                            Close
+                        </button>
+                        <button type="button" onclick="closeAiModal()" class="px-4 py-2 bg-[#8B0000] text-white rounded-lg font-bold hover:bg-red-800 transition-colors shadow-lg shadow-red-900/20">
+                            I Understand
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Reusable File Upload Component -->
     @verbatim
     <script>
@@ -245,7 +286,7 @@
         });
 
         function updateFileName(input) {
-            const fileNameDisplay = input.parentElement.querySelector('.file-name');
+            const fileNameDisplay = input.closest('.flex').querySelector('.file-name');
             if (input.files && input.files.length > 0) {
                 const count = input.files.length;
                 fileNameDisplay.textContent = count === 1 ? input.files[0].name : `${count} files selected`;
@@ -269,16 +310,25 @@
                 if (input.files.length > 0) {
                     hasFiles = true;
                     // Get label text from the component
-                    const label = input.closest('.border').querySelector('label').innerText.replace('*', '').trim().split('(')[0]; // Clean up label
+                    const label = input.closest('.border').querySelector('label').innerText.replace('*', '').trim().split('(')[0]; 
                     
-                    html += `
-                        <div class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
-                            <div class="flex items-center gap-2 overflow-hidden">
-                                <i class="fas fa-check-circle text-green-500"></i>
-                                <span class="truncate max-w-[150px] font-medium text-slate-700">${label}</span>
-                            </div>
-                            <span class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold">Ready</span>
-                        </div>`;
+                    Array.from(input.files).forEach(file => {
+                        html += `
+                            <div class="group relative bg-slate-50 p-2.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1 min-w-0 mr-2">
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">${label}</p>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <i class="fas fa-file-alt text-[#8B0000] text-xs"></i>
+                                            <p class="text-xs font-bold text-slate-700 truncate" title="${file.name}">${file.name}</p>
+                                        </div>
+                                    </div>
+                                    <div class="shrink-0">
+                                        <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
                 }
             });
 
@@ -294,9 +344,32 @@
     <script>
         // AI Check Logic
         const checkBtn = document.getElementById('check-btn');
-        const loader = document.getElementById('ai-loader');
-        const results = document.getElementById('ai-results');
-        const feedback = document.getElementById('ai-feedback-content');
+        const modal = document.getElementById('ai-modal');
+        const modalBackdrop = document.getElementById('ai-modal-backdrop');
+        const modalPanel = document.getElementById('ai-modal-panel');
+        const modalLoader = document.getElementById('ai-modal-loader');
+        const modalContent = document.getElementById('ai-modal-content');
+
+        function openAiModal() {
+            modal.classList.remove('hidden');
+            // Animate in
+            setTimeout(() => {
+                modalBackdrop.classList.remove('opacity-0');
+                modalPanel.classList.remove('opacity-0', 'scale-95');
+                modalPanel.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function closeAiModal() {
+            // Animate out
+            modalBackdrop.classList.add('opacity-0');
+            modalPanel.classList.remove('opacity-100', 'scale-100');
+            modalPanel.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
 
         async function performAiCheck() {
             const fileInputs = document.querySelectorAll('input[type="file"]');
@@ -317,11 +390,11 @@
                 return;
             }
 
-            checkBtn.disabled = true;
-            checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            checkBtn.classList.add('opacity-75');
-            loader.classList.remove('hidden');
-            results.classList.add('hidden');
+            // Show Modal & Loader
+            openAiModal();
+            modalLoader.classList.remove('hidden');
+            modalContent.classList.add('hidden');
+            modalContent.innerHTML = '';
 
             try {
                 const response = await fetch("{{ route('submit.ai_check') }}", {
@@ -331,26 +404,69 @@
                 });
 
                 const data = await response.json();
-                loader.classList.add('hidden');
-                results.classList.remove('hidden');
-                checkBtn.disabled = false;
-                checkBtn.innerHTML = '<i class="fas fa-magic"></i> Check with AI';
-                checkBtn.classList.remove('opacity-75');
+                
+                // Hide Loader, Show Content
+                modalLoader.classList.add('hidden');
+                modalContent.classList.remove('hidden');
 
-                if (data.feedback) {
+                if (data.results) {
+                    let html = `
+                        <div class="overflow-hidden rounded-xl border border-slate-200">
+                            <table class="min-w-full divide-y divide-slate-200">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Document</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Issues / Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-slate-200">
+                    `;
+
+                    data.results.forEach(item => {
+                        const isPass = item.status.toLowerCase() === 'pass';
+                        const statusBadge = isPass 
+                            ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i> Pass</span>`
+                            : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><i class="fas fa-times-circle mr-1"></i> Fail</span>`;
+                        
+                        const issuesText = item.issues === 'All clear' 
+                            ? `<span class="text-slate-400 italic">No issues found.</span>` 
+                            : `<span class="text-slate-700">${item.issues}</span>`;
+
+                        html += `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">
+                                    ${item.document_name}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    ${statusBadge}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-slate-500">
+                                    ${issuesText}
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    modalContent.innerHTML = html; 
+                } else if (data.feedback) {
+                     // Fallback for old string response if any
                     let html = data.feedback
                         .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900">$1</strong>')
                         .replace(/\n/g, '<br>');
-                    feedback.innerHTML = html; 
+                    modalContent.innerHTML = html;
                 } else {
-                    feedback.innerHTML = `<div class="p-3 bg-red-50 text-red-700 rounded-lg border border-red-100 flex items-center gap-2"><i class="fas fa-exclamation-circle"></i> Error: ${data.error}</div>`;
+                    modalContent.innerHTML = `<div class="p-4 bg-red-50 text-red-700 rounded-xl border border-red-100 flex items-center gap-3"><i class="fas fa-exclamation-circle text-xl"></i> <div><strong>Error:</strong> ${data.error || 'Unknown error occurred.'}</div></div>`;
                 }
             } catch (error) {
-                loader.classList.add('hidden');
-                checkBtn.disabled = false;
-                checkBtn.innerHTML = '<i class="fas fa-magic"></i> Check with AI';
-                checkBtn.classList.remove('opacity-75');
-                alert('AI Service Unavailable. Please try again later.');
+                modalLoader.classList.add('hidden');
+                modalContent.classList.remove('hidden');
+                modalContent.innerHTML = `<div class="p-4 bg-red-50 text-red-700 rounded-xl border border-red-100 flex items-center gap-3"><i class="fas fa-exclamation-triangle text-xl"></i> <div><strong>System Error:</strong> AI Service Unavailable. Please try again later.</div></div>`;
             }
         }
     </script>
@@ -360,10 +476,10 @@
             0% { transform: translateX(-100%); }
             100% { transform: translateX(300%); }
         }
-        /* Custom Scrollbar for AI Results */
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </x-user_layout>

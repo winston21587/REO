@@ -127,9 +127,21 @@ class AiCheckController extends Controller
         $result = $response->json();
         
         // Correctly parse the OpenAI-compatible response from OpenRouter
-        $aiFeedback = $result['choices'][0]['message']['content'] ?? 'No feedback was received. The document might be too large or complex.';
+        // Correctly parse the OpenAI-compatible response from OpenRouter
+        $content = $result['choices'][0]['message']['content'] ?? '';
+        
+        // Clean up markdown code blocks if present
+        $content = preg_replace('/^```json\s*|\s*```$/', '', trim($content));
+        
+        $aiFeedback = json_decode($content, true);
 
-        return response()->json(['feedback' => $aiFeedback]);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Fallback if JSON parsing fails
+            Log::error('AI JSON Parse Error: ' . json_last_error_msg() . ' Content: ' . $content);
+            return response()->json(['error' => 'Failed to parse AI response. Please try again.'], 500);
+        }
+
+        return response()->json(['results' => $aiFeedback]);
     }
 
     private function getAiPromptTemplate(): string
@@ -165,9 +177,10 @@ class AiCheckController extends Controller
     * Must contain a clear indication of a signature.
 
 **Output Format:**
-Generate your report as a markdown table with the following columns: "Document Name", "Status", and "Issues/Comments".
-* For "Status," use a ✅ emoji if all checks pass and a ❌ emoji if any check fails.
-* For "Issues/Comments," clearly state which requirement was not met. If all checks pass, write "All clear."
+Return ONLY a valid JSON array of objects. Do not include any markdown formatting (like ```json). Each object must have the following keys:
+- "document_name": The name of the file.
+- "status": "pass" or "fail".
+- "issues": A string describing the issues, or "All clear" if passed.
 
 **Begin Analysis:** Here are the documents.
 PROMPT;

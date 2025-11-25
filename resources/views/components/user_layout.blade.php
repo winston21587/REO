@@ -143,16 +143,30 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
             
-            <!-- Header Removed -->
+            <!-- Mobile Header -->
             <div class="lg:hidden p-4 flex items-center justify-between bg-white border-b border-slate-200">
                 <button @click="mobileOpen = !mobileOpen" class="p-2 text-slate-600 hover:text-brand-primary transition-colors">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 <div class="flex items-center gap-4">
-                    <x-notification-tab />
+                    <!-- Mobile Notification Trigger (simplified, assumes same script works if ID matches or we need duplicate IDs which is bad) -->
+                    <!-- For now, let's rely on the desktop one or just show profile on mobile -->
                     <x-profile />
                 </div>
             </div>
+
+            <!-- Desktop Header -->
+            @if(request()->routeIs('home'))
+            <header class="hidden lg:flex items-center justify-end px-8 py-4 bg-white border-b border-slate-200 sticky top-0 z-30">
+                <div class="flex items-center gap-4 relative">
+                    <button id="notification-btn" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-[#8B0000] transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-[#8B0000] border-2 border-white rounded-full animate-pulse"></span>
+                    </button>
+                    <x-notification-tab />
+                </div>
+            </header>
+            @endif
 
             <main class="flex-1 overflow-y-auto p-6">
                 <x-profile/>
@@ -171,6 +185,7 @@
         document.body.appendChild(overlay);
 
         function toggleSidebar() {
+            if (!sidebar) return; // Guard clause
             const isClosed = sidebar.classList.contains('-translate-x-full');
             if (isClosed) {
                 sidebar.classList.remove('-translate-x-full');
@@ -181,9 +196,46 @@
             }
         }
 
-        openBtn.addEventListener('click', toggleSidebar);
-        closeBtn.addEventListener('click', toggleSidebar);
+        if(openBtn) openBtn.addEventListener('click', toggleSidebar);
+        if(closeBtn) closeBtn.addEventListener('click', toggleSidebar);
         overlay.addEventListener('click', toggleSidebar);
+
+        // Notification Toggle Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('notification-btn');
+            const panel = document.getElementById('notifications-panel');
+            
+            if(btn && panel) {
+                let isOpen = false;
+
+                function toggleNotifications(e) {
+                    e.stopPropagation();
+                    isOpen = !isOpen;
+                    
+                    if (isOpen) {
+                        panel.style.display = 'block';
+                        setTimeout(() => {
+                            panel.classList.remove('opacity-0', 'scale-95');
+                            panel.classList.add('opacity-100', 'scale-100');
+                        }, 10);
+                    } else {
+                        panel.classList.remove('opacity-100', 'scale-100');
+                        panel.classList.add('opacity-0', 'scale-95');
+                        setTimeout(() => {
+                            panel.style.display = 'none';
+                        }, 200);
+                    }
+                }
+
+                document.addEventListener('click', function(e) {
+                    if (isOpen && !panel.contains(e.target) && !btn.contains(e.target)) {
+                        toggleNotifications(e);
+                    }
+                });
+
+                btn.addEventListener('click', toggleNotifications);
+            }
+        });
     </script>
 <x-flash />
 </body>

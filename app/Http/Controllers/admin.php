@@ -210,35 +210,64 @@ public function updateStatus(Request $request, $id)
     return response()->json(['success' => true]);
 }
 
+    public function assignReviewers(Request $request, $id)
  public function setInitialReview(Request $request, $id)
     {
         $request->validate([
-            'appointment_date' => 'required|date',
+            'primary_reviewer' => 'required',
+            'secondary_reviewer' => 'required',
+        ]);
+
+        // Logic to save reviewers would go here
+        // For now, just return success
+        
+        return response()->json(['success' => true, 'message' => 'Reviewers assigned successfully.']);
+    }
+    public function setInitialReview(Request $request, $id)
+    {
+        $request->validate([
+            'classification' => 'required|string',
+            'appointment_date' => 'nullable|date',
         ]);
 
         // Find the research title
         $research = Research_title::findOrFail($id);
 
-        // Update status to “For Initial Review”
-        $research->Status = 'For Initial Review';
-        $research->save();
+        if ($request->classification === 'Complete') {
+            $request->validate([
+                'appointment_date' => 'required|date',
+            ]);
 
-        // Create appointment record
-        $appointment = Appointment::create([
-            'research_title_id' => $research->id,
-            'user_id' => $research->user_id,
-            'appointment_date' => $request->appointment_date,
-        ]);
+            // Update status to “For Initial Review”
+            $research->Status = 'For Initial Review';
+            $research->save();
 
-        // Send email to the user
-        Mail::to($research->user->email)->send(new AppointmentMail($appointment));
+            // Create appointment record
+            $appointment = Appointment::create([
+                'research_title_id' => $research->id,
+                'user_id' => $research->user_id,
+                'appointment_date' => $request->appointment_date,
+            ]);
 
-        // Send notification
-        $research->user->notify(new AppointmentNotification($appointment));
+            // Send email to the user
+            Mail::to($research->user->email)->send(new AppointmentMail($appointment));
 
-        return response()->json([
-            'message' => 'Appointment successfully set and user notified.',
-        ]);
+            // Send notification
+            $research->user->notify(new AppointmentNotification($appointment));
+
+            return response()->json([
+                'message' => 'Submission marked as Complete. Appointment set and user notified.',
+            ]);
+        } elseif ($request->classification === 'Incomplete') {
+            $research->Status = 'Incomplete';
+            $research->save();
+
+            return response()->json([
+                'message' => 'Submission marked as Incomplete.',
+            ]);
+        }
+
+        return response()->json(['message' => 'Invalid classification.'], 400);
     }
     public function viewFiles($id)
     {

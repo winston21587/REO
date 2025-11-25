@@ -150,41 +150,34 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Select Review Type</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Document Completeness Check</label>
                         
                         <div class="space-y-3">
-                            <label class="group flex items-start gap-4 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-green-50 hover:border-green-200 transition-all relative overflow-hidden">
-                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <input type="radio" name="review_type" value="Exempt" class="mt-1 text-green-600 focus:ring-green-500">
+                            <!-- Complete Submission -->
+                            <label id="label_complete" class="group flex items-start gap-4 p-4 border border-slate-200 rounded-xl cursor-pointer transition-all relative overflow-hidden" onclick="selectOption('Complete')">
+                                <div id="bar_complete" class="absolute left-0 top-0 bottom-0 w-1 bg-green-500 opacity-0 transition-opacity"></div>
+                                <input type="radio" name="classification" value="Complete" class="mt-1 text-green-600 focus:ring-green-500" checked onchange="toggleAppointment(true)">
                                 <div>
-                                    <span class="block font-bold text-slate-800 text-sm group-hover:text-green-700 transition-colors">Exempt Review (SOP 04)</span>
-                                    <span class="block text-xs text-slate-500 mt-1">No human participants or minimal risk.</span>
+                                    <span id="text_complete" class="block font-bold text-slate-800 text-sm transition-colors">Complete Submission</span>
+                                    <span class="block text-xs text-slate-500 mt-1">All required documents are present. Proceed to Initial Review.</span>
                                 </div>
                             </label>
 
-                            <label class="group flex items-start gap-4 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition-all relative overflow-hidden">
-                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <input type="radio" name="review_type" value="Expedited" class="mt-1 text-blue-600 focus:ring-blue-500">
+                            <!-- Incomplete Submission -->
+                            <label id="label_incomplete" class="group flex items-start gap-4 p-4 border border-slate-200 rounded-xl cursor-pointer transition-all relative overflow-hidden" onclick="selectOption('Incomplete')">
+                                <div id="bar_incomplete" class="absolute left-0 top-0 bottom-0 w-1 bg-red-500 opacity-0 transition-opacity"></div>
+                                <input type="radio" name="classification" value="Incomplete" class="mt-1 text-red-600 focus:ring-red-500" onchange="toggleAppointment(false)">
                                 <div>
-                                    <span class="block font-bold text-slate-800 text-sm group-hover:text-blue-700 transition-colors">Expedited Review (SOP 05)</span>
-                                    <span class="block text-xs text-slate-500 mt-1">Minimal risk. Assigned to 2 Primary Reviewers.</span>
-                                </div>
-                            </label>
-
-                            <label class="group flex items-start gap-4 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-red-50 hover:border-red-200 transition-all relative overflow-hidden">
-                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#8B0000] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <input type="radio" name="review_type" value="Full Review" class="mt-1 text-[#8B0000] focus:ring-[#8B0000]">
-                                <div>
-                                    <span class="block font-bold text-slate-800 text-sm group-hover:text-[#8B0000] transition-colors">Full Board Review (SOP 06)</span>
-                                    <span class="block text-xs text-slate-500 mt-1">High risk / Vulnerable groups. Requires meeting.</span>
+                                    <span id="text_incomplete" class="block font-bold text-slate-800 text-sm transition-colors">Incomplete Submission</span>
+                                    <span class="block text-xs text-slate-500 mt-1">Missing or invalid documents. Return to researcher.</span>
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">System Code</span>
-                        <span class="font-mono font-bold text-slate-900 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">{{ date('Y') }}-{{ str_pad($pendingSubmissions->count() + 1, 3, '0', STR_PAD_LEFT) }}</span>
+                    <div id="appointmentField" class="transition-all duration-300">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Set Appointment Date</label>
+                        <input type="date" name="appointment_date" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm">
                     </div>
                 </div>
 
@@ -197,6 +190,57 @@
     </div>
 
     <script>
+        function toggleAppointment(show) {
+            const field = document.getElementById('appointmentField');
+            const input = field.querySelector('input');
+            
+            if (show) {
+                field.classList.remove('hidden');
+                field.classList.remove('opacity-0');
+                input.required = true;
+            } else {
+                field.classList.add('opacity-0');
+                setTimeout(() => field.classList.add('hidden'), 300);
+                input.required = false;
+                input.value = '';
+            }
+        }
+
+        function selectOption(type) {
+            // Reset Complete
+            const labelComplete = document.getElementById('label_complete');
+            const barComplete = document.getElementById('bar_complete');
+            const textComplete = document.getElementById('text_complete');
+            
+            labelComplete.classList.remove('bg-green-50', 'border-green-200');
+            barComplete.classList.remove('opacity-100');
+            barComplete.classList.add('opacity-0');
+            textComplete.classList.remove('text-green-700');
+
+            // Reset Incomplete
+            const labelIncomplete = document.getElementById('label_incomplete');
+            const barIncomplete = document.getElementById('bar_incomplete');
+            const textIncomplete = document.getElementById('text_incomplete');
+            
+            labelIncomplete.classList.remove('bg-red-50', 'border-red-200');
+            barIncomplete.classList.remove('opacity-100');
+            barIncomplete.classList.add('opacity-0');
+            textIncomplete.classList.remove('text-red-700');
+
+            // Apply Active State
+            if (type === 'Complete') {
+                labelComplete.classList.add('bg-green-50', 'border-green-200');
+                barComplete.classList.remove('opacity-0');
+                barComplete.classList.add('opacity-100');
+                textComplete.classList.add('text-green-700');
+            } else if (type === 'Incomplete') {
+                labelIncomplete.classList.add('bg-red-50', 'border-red-200');
+                barIncomplete.classList.remove('opacity-0');
+                barIncomplete.classList.add('opacity-100');
+                textIncomplete.classList.add('text-red-700');
+            }
+        }
+
         function openTriageModal(id, title) {
             const modal = document.getElementById('triageModal');
             const content = document.getElementById('modalContent');
@@ -206,6 +250,11 @@
             titleEl.textContent = title;
             form.action = `/admin/${id}/set-initial-review`; 
             
+            // Reset state
+            document.querySelector('input[value="Complete"]').checked = true;
+            toggleAppointment(true);
+            selectOption('Complete'); // Initialize visual state
+
             modal.classList.remove('hidden');
             // Small delay to allow display:block to apply before opacity transition
             setTimeout(() => {
@@ -227,5 +276,49 @@
                 modal.classList.add('hidden');
             }, 300);
         }
+
+        // AJAX Form Submission
+        document.getElementById('triageForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Success
+                    alert(result.message); // Or use a nicer toast notification
+                    closeTriage();
+                    window.location.reload(); // Reload to update the list
+                } else {
+                    // Error
+                    alert(result.message || 'An error occurred. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An unexpected error occurred.');
+            } finally {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
     </script>
 </x-admin_layout>

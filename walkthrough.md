@@ -52,6 +52,8 @@ I have successfully enhanced the UI for the REO Admin Portal, focusing on a prem
 - **View Details Page:** Implemented a premium "Submission Details" page with file preview, metadata, and action panel.
 - **UI Alignment:** Used Flexbox to align pagination controls to the bottom of the columns, ensuring a consistent layout regardless of content height.
 - **Notification Enhancements:** Added the REO logo to the notification panel and increased the z-index to ensure it overlays other content.
+- **Researcher UI Fix:** Restored the missing Tailwind configuration in the researcher layout to ensure custom colors and fonts render correctly.
+- **Settings Functionality:** Implemented `SettingsController` and registered routes for profile updates, password changes, and account deletion.
 
 ## Verification Results
 

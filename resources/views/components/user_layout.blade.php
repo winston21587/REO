@@ -1,190 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>REO</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>REO | Researcher Portal</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
-  <link href="https://fonts.googleapis.com" rel="preconnect" />
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: "#ea2a2a",
-            "background-light": "#f8f6f6",
-            "background-dark": "#211111",
-          },
-          fontFamily: {
-            display: ["Inter"],
-          },
-          borderRadius: {
-            DEFAULT: "0.25rem",
-            lg: "0.5rem",
-            xl: "0.75rem",
-            full: "9999px",
-          },
-        },
-      },
-    };
-  </script>
-  <style>
-    .form-select {
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ea2a2a' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-      background-position: right 0.5rem center;
-      background-repeat: no-repeat;
-      background-size: 1.5em 1.5em;
-      padding-right: 2.5rem;
-    }
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#1a0505',
+                            primary: '#8B0000', // Crimson
+                            secondary: '#5c0000',
+                            light: '#ffffff'
+                        },
+                        surface: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0'
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['Montserrat', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
-    /* Sidebar slide effect */
-    .sidebar {
-      transition: transform 0.3s ease;
-    }
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-heading { font-family: 'Montserrat', 'sans-serif'; }
+        [x-cloak] { display: none !important; }
+        
+        /* Active Link Styling */
+        .nav-item.active {
+            background: linear-gradient(to right, rgba(139, 0, 0, 0.2), transparent);
+            border-left: 4px solid #8B0000;
+            color: white;
+        }
 
-    .sidebar-hidden {
-      transform: translateX(-100%);
-    }
-
-    @media (min-width: 768px) {
-      .sidebar-hidden {
-        transform: none;
-      }
-    }
-  </style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
 
-<body class="bg-background-light dark:bg-background-dark font-display">
-  <div class="flex min-h-screen relative">
-    <aside id="sidebar"
-      class="sidebar fixed top-0 left-0 h-screen w-64 bg-background-light dark:bg-background-dark/50 flex-col border-r border-background-dark/10 dark:border-background-light/10 sidebar-hidden md:flex z-30">
+<body class="bg-surface-50 text-slate-800 antialiased">
+    <div class="min-h-screen bg-surface-50 flex" x-data="{ sidebarOpen: true, mobileOpen: false }">
+        
+        <!-- Sidebar -->
+        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-[#1a0505] text-white border-r border-white/5 transition-transform duration-300 ease-in-out transform lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen shadow-xl lg:shadow-none flex flex-col"
+            :class="{'translate-x-0': mobileOpen, '-translate-x-full': !mobileOpen, 'lg:w-64': sidebarOpen, 'lg:w-20': !sidebarOpen}">
+            
+            <!-- Logo Area -->
+            <div class="h-20 shrink-0 flex items-center justify-center border-b border-white/5 bg-gradient-to-r from-[#8B0000]/20 to-transparent relative">
+                <div class="flex items-center gap-3" :class="{'px-6': sidebarOpen, 'px-0': !sidebarOpen}">
+                    <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg overflow-hidden transition-all duration-300" :class="{'w-8 h-8': sidebarOpen, 'w-8 h-8': !sidebarOpen}">
+                        <img src="{{ asset('images/reoc-nobg.png') }}" alt="REO Logo" class="h-6 w-auto">
+                    </div>
+                    <span class="font-heading font-extrabold text-xl text-white tracking-tight whitespace-nowrap transition-opacity duration-300" 
+                        x-show="sidebarOpen" x-transition>
+                        REO <span class="text-brand-primary">Portal</span>
+                    </span>
+                </div>
+            </div>
 
-      <div
-        class="flex items-center justify-between text-background-dark dark:text-background-light p-4 border-b border-background-dark/10 dark:border-background-light/10 h-16">
-        <div class="flex items-center gap-3">
-          <img src="{{ asset('images/reoc-nobg.png') }}" alt="REO LOGO" class="w-8 h-8">
-          <h1 class="text-xl font-bold">REO</h1>
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+                
+                <div class="mb-6">
+                    <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 transition-opacity duration-300" x-show="sidebarOpen">Main Menu</p>
+                    
+                    <a href="{{ route('home') }}" 
+                       class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg transition-all duration-200 group {{ request()->routeIs('home') ? 'active' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                        <i class="fas fa-home w-5 text-center transition-colors {{ request()->routeIs('home') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}"></i>
+                        <span class="whitespace-nowrap transition-opacity duration-300" x-show="sidebarOpen">Dashboard</span>
+                    </a>
+
+                    <a href="{{ route('submit') }}" 
+                       class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg transition-all duration-200 group {{ request()->routeIs('submit') ? 'active' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                        <i class="fas fa-plus-circle w-5 text-center transition-colors {{ request()->routeIs('submit') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}"></i>
+                        <span class="whitespace-nowrap transition-opacity duration-300" x-show="sidebarOpen">New Submission</span>
+                    </a>
+                </div>
+
+                <div class="mb-6">
+                    <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 transition-opacity duration-300" x-show="sidebarOpen">Resources</p>
+                    
+                    <a href="{{ route('resources') }}" 
+                       class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg transition-all duration-200 group {{ request()->routeIs('resources') ? 'active' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                        <i class="fas fa-folder-open w-5 text-center transition-colors {{ request()->routeIs('resources') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}"></i>
+                        <span class="whitespace-nowrap transition-opacity duration-300" x-show="sidebarOpen">Downloadables</span>
+                    </a>
+
+                    <a href="{{ route('instructions') }}" 
+                       class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg transition-all duration-200 group {{ request()->routeIs('instructions') ? 'active' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                        <i class="fas fa-book w-5 text-center transition-colors {{ request()->routeIs('instructions') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}"></i>
+                        <span class="whitespace-nowrap transition-opacity duration-300" x-show="sidebarOpen">Guidelines</span>
+                    </a>
+                </div>
+
+                <div>
+                    <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 transition-opacity duration-300" x-show="sidebarOpen">Account</p>
+                    
+                    <a href="{{ route('settings') }}" 
+                       class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg transition-all duration-200 group {{ request()->routeIs('settings') ? 'active' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                        <i class="fas fa-cog w-5 text-center transition-colors {{ request()->routeIs('settings') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}"></i>
+                        <span class="whitespace-nowrap transition-opacity duration-300" x-show="sidebarOpen">Settings</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Sign Out Section -->
+            <div class="p-4 border-t border-white/10 bg-black/20 shrink-0">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-r-lg text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200 group">
+                        <i class="fas fa-sign-out-alt w-5 text-center transition-colors text-slate-400 group-hover:text-white"></i>
+                        <span class="whitespace-nowrap transition-opacity duration-300" x-show="sidebarOpen">Sign Out ({{ Auth::user()->first_name ?? 'User' }})</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Mobile Overlay -->
+        <div x-show="mobileOpen" @click="mobileOpen = false" x-transition.opacity 
+             class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"></div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            
+            <!-- Header Removed -->
+            <div class="lg:hidden p-4 flex items-center justify-between bg-white border-b border-slate-200">
+                <button @click="mobileOpen = !mobileOpen" class="p-2 text-slate-600 hover:text-brand-primary transition-colors">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center gap-4">
+                    <x-notification-tab />
+                    <x-profile />
+                </div>
+            </div>
+
+            <main class="flex-1 overflow-y-auto p-6">
+                <x-profile/>
+                {{ $slot }}
+            </main>
         </div>
-        <button id="close-sidebar" class="md:hidden text-background-dark dark:text-background-light">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <!-- Close button for mobile -->
-
-      <nav class="flex-grow p-4 overflow-y-auto">
-        <ul>
-          <li class="mb-2">
-            <a class=" {{ request()->routeIs('home') ? 'bg-primary/10 text-primary ' : '' }} flex items-center gap-3 text-background-dark dark:text-background-light hover:bg-primary/10 hover:text-primary p-3 rounded-lg transition-colors "
-              href="{{ route('home') }}">
-              <span class="material-symbols-outlined">dashboard</span>
-              Dashboard
-            </a>
-          </li>
-          <li class="mb-2">
-            <a class="{{ request()->routeIs('submit') ? 'bg-primary/10 text-primary ' : '' }} flex items-center gap-3 text-background-dark dark:text-background-light hover:bg-primary/10 hover:text-primary p-3 rounded-lg transition-colors"
-              href="{{ route('submit') }}">
-              <span class="material-symbols-outlined">upload_file</span>
-              Submissions
-            </a>
-          </li>
-          <li class="mb-2">
-            <a class="{{ request()->routeIs('resources') ? 'bg-primary/10 text-primary ' : '' }}  flex items-center gap-3 text-background-dark dark:text-background-light hover:bg-primary/10 hover:text-primary p-3 rounded-lg transition-colors"
-              href="{{ route('resources') }}">
-              <span class="material-symbols-outlined">source</span> Resources
-            </a>
-          </li>
-          <li class="mb-2">
-            <a class="{{ request()->routeIs('instructions') ? 'bg-primary/10 text-primary ' : '' }}  flex items-center gap-3 text-background-dark dark:text-background-light hover:bg-primary/10 hover:text-primary p-3 rounded-lg transition-colors"
-              href="{{ route('instructions') }}">
-              <span class="material-symbols-outlined">developer_guide</span>instructions
-            </a>
-          </li>
-          <li class="mb-2">
-            <a class="{{ request()->routeIs('settings') ? 'bg-primary/10 text-primary ' : '' }}  flex items-center gap-3 text-background-dark dark:text-background-light hover:bg-primary/10 hover:text-primary p-3 rounded-lg transition-colors"
-              href="{{ route('settings') }}">
-              <span class="material-symbols-outlined">settings</span> Settings
-            </a>
-          </li>
-          <li class="mb-2">
-            <a class="flex items-center gap-3 text-background-dark dark:text-background-light hover:bg-primary/10 hover:text-primary p-3 rounded-lg transition-colors"
-              href="{{ route('logout') }}">
-              <span class="material-symbols-outlined">logout</span> Logout
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </aside>
-    <!-- Main Content -->
-    <div class="flex flex-col flex-grow md:ml-64 transition-all duration-300">
-
-      <header
-        class="bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm sticky top-0 z-20 border-b border-background-dark/10 dark:border-background-light/10 ">
-        <div class="flex items-center justify-between h-16 px-4">
-          <div class="flex items-center gap-3">
-            <!-- Menu button -->
-            <button id="open-sidebar" class="md:hidden text-background-dark dark:text-background-light">
-              <span class="material-symbols-outlined">menu</span>
-            </button>
-
-            <h2 class="text-lg font-semibold text-background-dark dark:text-background-light">
-
-              {{ strtoupper(Auth::user()->name) }}
-
-            </h2>
-          </div>
-
-          <div class="flex items-center gap-4">
-            <button id="notif-btn" class="relative text-background-dark dark:text-background-light">
-              <span class="material-symbols-outlined text-2xl">notifications</span>
-              <span {{-- notification indicator --}}
-                class=" absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary border-2 border-background-light dark:border-background-dark"></span>
-            </button>
-            <button  onclick="openProfModal()" class="w-10 h-10 rounded-full bg-cover bg-center ring-2 ring-primary/20"
-              style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBUo3VHN1LRMtK9aNhen245LilHHSLXIrtLKlotsyxTHyVGhayRL8zNquJXw6RnS6w3Q0152eT5U6bt8ck4mF7eFpIFpxOgI7VHA3TIwNPPng0h51rN3qet1yBHHAGhQsJAnPrzlgu75y4StUVrgbljvWQVn6dmUPmWxzIQlksem15dg5ux2LvdBKr2d0Y6uqbXxp8gejWg4JYY14SlvDwfzrjwyB4yqbK_fnkQ3hH1dLsbP8oLAIXhmvNeL3Jl2FyDIxoWpWO9v8kx');">
-            </button>
-          </div>
-        </div>
-
-      </header>
-      <x-notification-tab/>
-      <x-profile/>
-
-      {{ $slot }}
-
-
-
     </div>
-  </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const openBtn = document.getElementById('open-sidebar');
+        const closeBtn = document.getElementById('close-sidebar');
+        const overlay = document.createElement('div');
+        
+        overlay.className = 'fixed inset-0 bg-black/50 z-40 md:hidden hidden backdrop-blur-sm transition-opacity';
+        document.body.appendChild(overlay);
+
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        openBtn.addEventListener('click', toggleSidebar);
+        closeBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+    </script>
+<x-flash />
 </body>
-<script>
-  const sidebar = document.getElementById("sidebar");
-  const openBtn = document.getElementById("open-sidebar");
-  const closeBtn = document.getElementById("close-sidebar");
-  const notifbtn = document.getElementById("notif-btn");
-  const notifpanel = document.getElementById("notifications-panel");
-
-
-  openBtn.addEventListener("click", () => sidebar.classList.remove("sidebar-hidden"));
-  closeBtn.addEventListener("click", () => sidebar.classList.add("sidebar-hidden"));
-
-  notifbtn.addEventListener("click", () => {
-    notifpanel.classList.toggle("hidden");
-  });
-  document.addEventListener("click", (event) => {
-    if (!notifbtn.contains(event.target) && !notifpanel.contains(event.target)) {
-      notifpanel.classList.add("hidden");
-    }
-  });
-
-
-
-</script>
-
 </html>

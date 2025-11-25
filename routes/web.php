@@ -44,6 +44,10 @@ Route::middleware(['auth', 'role:researcher'])->group(function () {
     Route::post('/home/{id}/files/update', [Research_title_Controller::class, 'updateFile'])->name('update.file');  
     Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
 
+    // Settings Routes
+    Route::post('/settings/profile', [App\Http\Controllers\SettingsController::class, 'updateProfile'])->name('settings.update_profile');
+    Route::post('/settings/password', [App\Http\Controllers\SettingsController::class, 'updatePassword'])->name('settings.update_password');
+    Route::delete('/settings/account', [App\Http\Controllers\SettingsController::class, 'deleteAccount'])->name('settings.delete_account');
 
 });
 
@@ -62,6 +66,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/admin/applications', [admin::class, 'applications'])->name('admin.applications');
     Route::post('/admin/update-status/{id}', [admin::class, 'updateStatus']);
+    Route::post('/admin/assign-reviewers/{id}', [admin::class, 'assignReviewers'])->name('admin.assignReviewers');
     Route::post('/admin/{id}/set-initial-review', [admin::class, 'setInitialReview'])->name('submissions.setInitialReview');
     Route::get('/admin/view-files/{id}', [admin::class, 'viewFiles'])->name('admin.view_files');
 

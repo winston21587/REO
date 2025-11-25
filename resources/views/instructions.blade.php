@@ -1,115 +1,90 @@
 <x-user_layout>
-  <div class="max-w-4xl mx-auto bg-white shadow-lg mb-10 p-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center text-center gap-2">
+    <div class="max-w-5xl mx-auto py-12 px-4 sm:px-6 animate-[fadeInUp_0.5s_ease-out]">
+        
+        <div class="text-center mb-16">
+            <h1 class="text-4xl font-extrabold text-slate-900 font-heading tracking-tight">Submission Roadmap</h1>
+            <p class="text-slate-500 mt-4 text-lg max-w-2xl mx-auto">Follow these steps to ensure a smooth and successful ethics review process.</p>
+        </div>
 
-      Instructions for Research Ethics Review Submission
-    </h2>
+        <div class="relative">
+            <!-- Vertical Line -->
+            <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-slate-200 via-slate-200 to-transparent"></div>
 
-    <ol class="relative border-l border-gray-300 space-y-8 ml-4">
+            <!-- Step 1 -->
+            <div class="relative flex gap-8 mb-16 group">
+                <div class="w-16 h-16 bg-white border-4 border-[#8B0000] rounded-full flex items-center justify-center z-10 shrink-0 shadow-lg shadow-red-900/10 transition-transform duration-300 group-hover:scale-110">
+                    <span class="text-2xl font-bold text-[#8B0000]">1</span>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-bl-full -mr-4 -mt-4 opacity-50 transition-transform group-hover:scale-150"></div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3 relative z-10">Download Resources</h3>
+                    <p class="text-slate-600 mb-6 relative z-10">Get copies of the Application Form and applicable Assessment Forms from our library.</p>
+                    <a href="{{ route('resources') }}" class="inline-flex items-center gap-2 text-sm font-bold text-[#8B0000] bg-red-50 px-5 py-2.5 rounded-xl hover:bg-[#8B0000] hover:text-white transition-all duration-300 relative z-10">
+                        <span class="material-symbols-outlined text-lg">source</span> Go to Resources
+                    </a>
+                </div>
+            </div>
 
-      <!-- Step 1 -->
-      <li class="ml-6">
-        <span
-          class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-sm font-semibold">
-          1
-        </span>
+            <!-- Step 2 -->
+            <div class="relative flex gap-8 mb-16 group">
+                <div class="w-16 h-16 bg-white border-4 border-slate-200 group-hover:border-[#8B0000] rounded-full flex items-center justify-center z-10 shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110">
+                    <span class="text-2xl font-bold text-slate-400 group-hover:text-[#8B0000] transition-colors">2</span>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Prepare Documents</h3>
+                    <p class="text-slate-600 mb-6">Ensure all files are PDF (unless specified) and formatted correctly.</p>
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700 font-medium">
+                            <li class="flex items-center gap-3"><i class="fas fa-check-circle text-green-500 text-lg"></i> Application Form (Signed)</li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check-circle text-green-500 text-lg"></i> Research Protocol (Lines)</li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check-circle text-green-500 text-lg"></i> Technical Clearance</li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check-circle text-green-500 text-lg"></i> Consent Forms</li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check-circle text-green-500 text-lg"></i> CV of Researcher/s</li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check-circle text-green-500 text-lg"></i> Assessment Forms (Word)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
 
-        <p class="text-gray-800 font-semibold">
-          Download copies of the <em>Application Form</em> and the applicable <em>Assessment Forms</em> from the
+            <!-- Step 3 -->
+            <div class="relative flex gap-8 mb-16 group">
+                <div class="w-16 h-16 bg-white border-4 border-slate-200 group-hover:border-[#8B0000] rounded-full flex items-center justify-center z-10 shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110">
+                    <span class="text-2xl font-bold text-slate-400 group-hover:text-[#8B0000] transition-colors">3</span>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-l-4 border-l-transparent hover:border-l-[#8B0000]">
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Upload Submission</h3>
+                    <p class="text-slate-600 mb-6">Upload your complied files to the portal. Our AI will pre-screen for formatting errors.</p>
+                    <a href="{{ route('submit') }}" class="inline-flex items-center gap-2 text-sm font-bold text-white bg-[#8B0000] px-6 py-3 rounded-xl hover:bg-red-800 hover:shadow-lg hover:shadow-red-900/30 transition-all duration-300 transform hover:-translate-y-0.5">
+                        <span class="material-symbols-outlined text-lg">upload_file</span> Start Submission
+                    </a>
+                </div>
+            </div>
 
-          <a href="{{ route('resources') }}"
-            class=" bg-primary text-white font-semibold inline-flex p-2 rounded-lg  hover:bg-primary/90 transition-all duration-300  items-center gap-2">
-            <span class="material-symbols-outlined items-center">source</span>
-            <span>Resource</span>
-          </a>
-          
-         .</p>
-      </li>
+            <!-- Step 4 -->
+            <div class="relative flex gap-8 mb-16 group">
+                <div class="w-16 h-16 bg-white border-4 border-slate-200 group-hover:border-[#8B0000] rounded-full flex items-center justify-center z-10 shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110">
+                    <span class="text-2xl font-bold text-slate-400 group-hover:text-[#8B0000] transition-colors">4</span>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Payment & Hard Copies</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        1. Secure a Payment Slip from the REO Office and pay at the University Cashier.<br>
+                        2. Submit hard copies in an <strong class="text-[#8B0000]">expanded long envelope</strong> (color-coded by college) with the Official Receipt.
+                    </p>
+                </div>
+            </div>
 
-      <!-- Step 2 -->
-      <li class="ml-6">
-        <span
-          class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-sm font-semibold">
-          2
-        </span>
-        <p class="text-gray-800 font-semibold mb-2">
-          Comply with all required documents for Research Ethics Review, ensuring each file follows the specified
-          format:
-        </p>
-        <ul class="list-none pl-2 space-y-1 text-gray-700">
-          <li>► <strong>Application Form for Research Ethics Review</strong> - WMSU-REO-FR-001 (with researcher/s
-            signature, <em>PDF</em>)</li>
-          <li>► <strong>Research Protocol/Proposal</strong> (with page and line numbers, <em>PDF</em>)</li>
-          <li>► <strong>Technical Review Clearance</strong> (with panel signatures, <em>PDF</em>)</li>
-          <li>► <strong>Data Collection Instrument/s</strong> (with page and line numbers, <em>PDF</em>)</li>
-          <li>► <strong>Informed Consent/Assent</strong> (with page and line numbers, <em>PDF</em>)</li>
-          <li>► <strong>Curriculum Vitae</strong> of Researcher/s (<em>PDF</em>)</li>
-          <li>► <strong>Completed Study Protocol Assessment Form</strong> - WMSU-REO-FR-004 (fill out fields with
-            asterisks, <em>Word</em>)</li>
-          <li>► <strong>Completed Informed Consent Assessment Form</strong> - WMSU-REO-FR-005 (fill out fields with
-            asterisks, <em>Word</em>)</li>
-          <li>► <strong>Completed Exempt Review Assessment Form</strong> - WMSU-REO-FR-006 (fill out fields with
-            asterisks, <em>Word</em>)</li>
-          <li>► <strong>Supplementary Documents</strong> (NCIP Clearance, MOA, MOU, etc., <em>PDF</em>)</li>
-          {{-- <li>► <strong>Official Receipt</strong> (Research Ethics Review Fee, <em>PDF</em>)</li> --}}
-        </ul>
-      </li>
+            <!-- Final Step -->
+            <div class="relative flex gap-8 group">
+                <div class="w-16 h-16 bg-green-50 border-4 border-green-500 rounded-full flex items-center justify-center z-10 shrink-0 shadow-lg shadow-green-900/10 transition-transform duration-300 group-hover:scale-110">
+                    <span class="material-symbols-outlined text-3xl text-green-600">flag</span>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Wait for Review</h3>
+                    <p class="text-slate-600">Monitor your dashboard for status updates. You will be notified if an appointment is needed.</p>
+                </div>
+            </div>
 
-      <!-- Step 3 -->
-      <li class="ml-6">
-        <span
-          class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-sm font-semibold">
-          3
-        </span>
-        <p class="text-gray-800 font-semibold">
-          Upload all of the required files in the submission portal and make sure to fully comply all the necessary information.
-          <a href="{{ route('submit') }}"
-            class=" bg-primary text-white inline-flex p-2 rounded-lg  hover:bg-primary/90 transition-all duration-300  items-center gap-2">
-            <span class="material-symbols-outlined items-center">upload_file</span>
-            <span>Submit Here</span>
-          </a>
-        </p>
-      </li>
-
-      <!-- Step 4 -->
-      <li class="ml-6">
-        <span
-          class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-sm font-semibold">
-          4
-        </span>
-        <p class="text-gray-800 font-semibold">
-          Secure your Research Ethics Review Payment Slip from the WMSU REO Office and settle the payment at the
-          university cashier.
-        </p>
-      </li>
-
-      <!-- Step 5 -->
-      <li class="ml-6">
-        <span
-          class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-sm font-semibold">
-          5
-        </span>
-        <p class="text-gray-800 font-semibold">
-          Submit hard copies of all documents together with the Official Receipt.
-          Place them in an <em>expanded long envelope</em> following the prescribed color coding (see the
-          <strong>College/Institution Section</strong>)
-          and seal it with your College/Institution’s official seal.
-        </p>
-      </li>
-
-      <!-- Step 6 -->
-      <li class="ml-6">
-        <span
-          class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-sm font-semibold">
-          6
-        </span>
-        <p class="text-gray-800 font-semibold">
-          Wait for updates regarding your research title’s review status.
-          Please follow the <em>appointment scheduling</em> instructions below.
-        </p>
-      </li>
-
-    </ol>
-  </div>
-
+        </div>
+    </div>
 </x-user_layout>

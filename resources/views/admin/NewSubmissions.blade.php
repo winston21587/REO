@@ -1,536 +1,231 @@
 <x-admin_layout>
-    <header class="mb-5 flex gap-24 justify-evenly items-center border-b border-stone-200 dark:border-gray-700 pb-2">
-        <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-200">Recent Submissions</h2>
-        <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-200">Incomplete Submissions</h2>
+    <div class="max-w-7xl mx-auto py-8 animate-[fadeInUp_0.5s_ease-out]">
 
-    </header>
-    <div class=" flex gap-2 justify-between h-full">
-
-        <div
-            class="bg-white dark:bg-background-dark/50 rounded-lg shadow-sm p-6 w-full h-full flex flex-col justify-between">
-
-            <div>
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
-                    <div class="relative w-1/2">
-                        <input
-                            class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-primary/50 dark:text-white"
-                            placeholder="Search submissions..." type="text" />
-                        <span
-                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">search</span>
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Recent Submissions Column -->
+            <div class="space-y-6 flex flex-col h-full">
+                <h2 class="text-2xl font-extrabold text-slate-800 font-heading">Recent Submissions</h2>
+                
+                <!-- Controls -->
+                <div class="flex gap-4">
+                    <div class="relative flex-1">
+                        <input type="text" placeholder="Search submissions..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-white">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="sort">Sort by:</label>
-                        <select
-                            class="pr-8 rounded-lg border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark px-3 py-2 focus:outline-none  dark:text-white"
-                            id="sort">
+                    <div class="relative">
+                        <select class="appearance-none pl-4 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-white font-medium text-slate-600 cursor-pointer shadow-sm">
                             <option>Submission Date</option>
-                            <option>Author Name</option>
-                            <option>Status</option>
+                            <option>Title</option>
                         </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                     </div>
                 </div>
-                <div class="divide-y divide-gray-200 dark:divide-gray-700">
-                  
-            @forelse ($pendingSubmissions as $s)
-                <div class="flex items-center justify-between py-4">
-                    <div>
-                        <p class="font-semibold text-gray-900 dark:text-white">
-                            {{ $s['Study_Protocol_title'] }}
-                        </p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Submitted at: {{ $s['created_at']->format('Y-m-d') }}
-                        </p>
-                    </div>
 
-                    <div class="flex items-center gap-4">
-                <button  
-                      data-id="{{ $s->id }}"
-                    data-title="{{ e($s->Study_Protocol_title) }}"
-                    data-category="{{ e($s->Research_Category) }}"
-                    data-author="{{ e(($s->author->first_name ?? '') . ' ' . ($s->author->last_name ?? '')) }}"
-                    data-email="{{ e($s->author->email ?? '') }}"
-                    data-adviser="{{ e($s->Adviser ?? '') }}"
-                    data-status="{{ e($s->Status ?? '') }}"
-                    data-contact="{{ $s->author->contact ?? '' }}"
-                    data-created="{{ $s->created_at ? $s->created_at->format('Y-m-d H:i') : '' }}"               
-                              onclick="openDetailsModal(this)"
-                    class="bg-primary text-white font-medium py-1.5 px-3 text:sm rounded-lg hover:bg-primary/90 transition-colors flex-grow sm:flex-grow-0">
-                    View Details
-                </button>
-                        <span class="px-3 py-1 text-sm font-medium text-yellow-800 bg-yellow-200 rounded-md">
-                            {{ $s['Status'] }}
-                        </span>
-                      <button
-                        type="button"
-                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition"
-                        data-id="{{ $s->id }}"
-                        onclick="openActionModal(this)"
-                      >
-                        Action
-                      </button>
+                <!-- Submissions List -->
+                <div class="space-y-4 flex-1">
+                    @forelse($pendingSubmissions as $sub)
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg leading-tight group-hover:text-[#8B0000] transition-colors line-clamp-1" title="{{ $sub->Study_Protocol_title }}">{{ $sub->Study_Protocol_title }}</h3>
+                                <p class="text-xs text-slate-500 mt-1 font-medium">Submitted at: {{ $sub->created_at->format('Y-m-d') }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="{{ route('admin.view_files', $sub->id) }}" class="bg-[#dc2626] hover:bg-[#b91c1c] text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                                View Details
+                            </a>
+                            
+                            <div class="flex items-center gap-2">
+                                <span class="bg-[#fef08a] text-[#854d0e] px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide">Pending</span>
+                                <button onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')" class="bg-[#fecaca] hover:bg-[#fca5a5] text-[#991b1b] px-4 py-2 rounded-lg text-xs font-bold transition-all">
+                                    Action
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                    @empty
+                    <div class="bg-white p-12 rounded-2xl border border-slate-100 text-center">
+                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-inbox text-3xl text-slate-300"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium">No recent submissions found.</p>
+                    </div>
+                    @endforelse
                 </div>
-            @empty
-                <p class="text-gray-500 dark:text-gray-400 py-4 text-center">No pending submissions found.</p>
-            @endforelse
-
+                
+                <!-- Pagination (Static for UI) -->
+                <div class="flex items-center justify-between pt-4 mt-auto">
+                    <span class="text-xs text-slate-400 font-medium">Previous</span>
+                    <div class="flex gap-1">
+                        <button class="w-8 h-8 rounded-lg bg-[#dc2626] text-white text-xs font-bold shadow-md">1</button>
+                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">2</button>
+                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">3</button>
+                        <span class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs">...</span>
+                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">10</button>
+                    </div>
+                    <span class="text-xs text-slate-500 font-bold cursor-pointer hover:text-[#8B0000]">Next</span>
                 </div>
             </div>
 
-
-            <div class="mt-6 flex justify-center items-center space-x-2">
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
-                    disabled="">Previous</button>
-                <button class="px-3 py-1 rounded-md text-sm font-medium text-white bg-primary">1</button>
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">2</button>
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">3</button>
-                <span class="text-gray-500 dark:text-gray-400">...</span>
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">10</button>
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">Next</button>
-            </div>
-        </div>
-
-
-
-
-        <div
-            class="bg-white dark:bg-background-dark/50 rounded-lg shadow-sm p-6 w-full h-full flex flex-col justify-between">
-
-            <div>
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
-                    <div class="relative w-1/2">
-                        <input
-                            class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-primary/50 dark:text-white"
-                            placeholder="Search submissions..." type="text" />
-                        <span
-                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">search</span>
+            <!-- Incomplete Submissions Column -->
+            <div class="space-y-6 flex flex-col h-full">
+                <h2 class="text-2xl font-extrabold text-slate-800 font-heading">Incomplete Submissions</h2>
+                
+                <!-- Controls -->
+                <div class="flex gap-4">
+                    <div class="relative flex-1">
+                        <input type="text" placeholder="Search submissions..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-white">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="sort">Sort by:</label>
-                        <select
-                            class="pr-8 rounded-lg border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark px-3 py-2 focus:outline-none  dark:text-white"
-                            id="sort">
+                    <div class="relative">
+                        <select class="appearance-none pl-4 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-white font-medium text-slate-600 cursor-pointer shadow-sm">
                             <option>Submission Date</option>
-                            <option>Author Name</option>
-                            <option>Status</option>
+                            <option>Title</option>
                         </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                     </div>
                 </div>
-                <div class="divide-y divide-gray-200 dark:divide-gray-700">
 
-            @forelse ($incompleteSubmissions as $s)
-                <div class="flex items-center justify-between py-4">
+                <!-- Submissions List -->
+                <div class="space-y-4 flex-1">
+                    @forelse($incompleteSubmissions as $sub)
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group opacity-75 hover:opacity-100">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg leading-tight group-hover:text-[#8B0000] transition-colors line-clamp-1">{{ $sub->Study_Protocol_title }}</h3>
+                                <p class="text-xs text-slate-500 mt-1 font-medium">Submitted at: {{ $sub->created_at->format('Y-m-d') }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mt-4">
+                            <span class="text-xs font-bold text-slate-400 italic">Waiting for resubmission...</span>
+                            <span class="bg-slate-100 text-slate-500 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide">Incomplete</span>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="bg-white p-12 rounded-2xl border border-slate-100 text-center flex flex-col items-center justify-center h-64">
+                        <p class="text-slate-400 font-medium">No incomplete submissions found.</p>
+                    </div>
+                    @endforelse
+                </div>
+                
+                <!-- Pagination (Static for UI) -->
+                <div class="flex items-center justify-between pt-4 mt-auto">
+                    <span class="text-xs text-slate-400 font-medium">Previous</span>
+                    <div class="flex gap-1">
+                        <button class="w-8 h-8 rounded-lg bg-[#dc2626] text-white text-xs font-bold shadow-md">1</button>
+                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">2</button>
+                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">3</button>
+                        <span class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs">...</span>
+                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">10</button>
+                    </div>
+                    <span class="text-xs text-slate-500 font-bold cursor-pointer hover:text-[#8B0000]">Next</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Triage Modal -->
+    <div id="triageModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="bg-[#1a0505] p-6 border-b border-white/10 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <i class="fas fa-gavel text-6xl text-white"></i>
+                </div>
+                <h3 class="text-white font-bold text-xl relative z-10" id="modal-title">Protocol Classification</h3>
+                <p class="text-slate-400 text-xs mt-1 relative z-10">Determine the level of review required (SOP 04/05/06).</p>
+            </div>
+            
+            <form id="triageForm" method="POST" action="">
+                @csrf
+                <div class="p-6 space-y-6">
                     <div>
-                        <p class="font-semibold text-gray-900 dark:text-white">
-                            {{ $s['Study_Protocol_title'] }}
-                        </p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Submitted at: {{ $s['created_at']->format('Y-m-d') }}
-                        </p>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Protocol Title</label>
+                        <p id="modalTitle" class="text-slate-800 font-bold bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm leading-relaxed"></p>
                     </div>
 
-                    <div class="flex items-center gap-4">
-                <button  
-                      data-id="{{ $s->id }}"
-                    data-title="{{ e($s->Study_Protocol_title) }}"
-                    data-category="{{ e($s->Research_Category) }}"
-                    data-author="{{ e(($s->author->first_name ?? '') . ' ' . ($s->author->last_name ?? '')) }}"
-                    data-email="{{ e($s->author->email ?? '') }}"
-                    data-adviser="{{ e($s->Adviser ?? '') }}"
-                    data-status="{{ e($s->Status ?? '') }}"
-                    data-contact="{{ $s->author->contact ?? '' }}"
-                    data-created="{{ $s->created_at ? $s->created_at->format('Y-m-d H:i') : '' }}"               
-                              onclick="openDetailsModal(this)"
-                    class="bg-primary text-white font-medium py-1.5 px-3 text:sm rounded-lg hover:bg-primary/90 transition-colors flex-grow sm:flex-grow-0">
-                    View Details
-                </button>
-                        <span class="px-3 py-1 text-sm font-medium text-yellow-800 bg-yellow-200 rounded-md">
-                            {{ $s['Status'] }}
-                        </span>
-                      <button
-                        type="button"
-                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition"
-                        data-id="{{ $s->id }}"
-                        onclick="openActionModal(this)"
-                      >
-                        Action
-                      </button>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Select Review Type</label>
+                        
+                        <div class="space-y-3">
+                            <label class="group flex items-start gap-4 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-green-50 hover:border-green-200 transition-all relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <input type="radio" name="review_type" value="Exempt" class="mt-1 text-green-600 focus:ring-green-500">
+                                <div>
+                                    <span class="block font-bold text-slate-800 text-sm group-hover:text-green-700 transition-colors">Exempt Review (SOP 04)</span>
+                                    <span class="block text-xs text-slate-500 mt-1">No human participants or minimal risk.</span>
+                                </div>
+                            </label>
+
+                            <label class="group flex items-start gap-4 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition-all relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <input type="radio" name="review_type" value="Expedited" class="mt-1 text-blue-600 focus:ring-blue-500">
+                                <div>
+                                    <span class="block font-bold text-slate-800 text-sm group-hover:text-blue-700 transition-colors">Expedited Review (SOP 05)</span>
+                                    <span class="block text-xs text-slate-500 mt-1">Minimal risk. Assigned to 2 Primary Reviewers.</span>
+                                </div>
+                            </label>
+
+                            <label class="group flex items-start gap-4 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-red-50 hover:border-red-200 transition-all relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#8B0000] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <input type="radio" name="review_type" value="Full Review" class="mt-1 text-[#8B0000] focus:ring-[#8B0000]">
+                                <div>
+                                    <span class="block font-bold text-slate-800 text-sm group-hover:text-[#8B0000] transition-colors">Full Board Review (SOP 06)</span>
+                                    <span class="block text-xs text-slate-500 mt-1">High risk / Vulnerable groups. Requires meeting.</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">System Code</span>
+                        <span class="font-mono font-bold text-slate-900 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">{{ date('Y') }}-{{ str_pad($pendingSubmissions->count() + 1, 3, '0', STR_PAD_LEFT) }}</span>
                     </div>
                 </div>
-            @empty
-                <p class="text-gray-500 dark:text-gray-400 py-4 text-center">No incomplete submissions found.</p>
-            @endforelse
+
+                <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
+                    <button type="button" onclick="closeTriage()" class="px-5 py-2.5 text-slate-600 font-bold text-sm hover:bg-white hover:text-slate-800 rounded-lg transition-all border border-transparent hover:border-slate-200">Cancel</button>
+                    <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white font-bold text-sm rounded-lg shadow-lg hover:bg-[#6d0000] hover:shadow-xl transition-all transform hover:-translate-y-0.5">Confirm & Assign</button>
                 </div>
-            </div>
-
-
-            <div class="mt-6 flex justify-center items-center space-x-2">
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
-                    disabled="">Previous</button>
-                <button class="px-3 py-1 rounded-md text-sm font-medium text-white bg-primary">1</button>
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">2</button>
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">3</button>
-                <span class="text-gray-500 dark:text-gray-400">...</span>
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">10</button>
-                <button
-                    class="px-3 py-1 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">Next</button>
-            </div>
+            </form>
         </div>
-
-
-
-
     </div>
 
-<!-- Details Modal -->
-<div class="bg-background-light dark:bg-background-dark font-display detailsmodal hidden" id="detailsmodal">
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    <div class="bg-background-light dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-2xl m-4 flex flex-col">
+    <script>
+        function openTriageModal(id, title) {
+            const modal = document.getElementById('triageModal');
+            const content = document.getElementById('modalContent');
+            const titleEl = document.getElementById('modalTitle');
+            const form = document.getElementById('triageForm');
+            
+            titleEl.textContent = title;
+            form.action = `/admin/${id}/set-initial-review`; 
+            
+            modal.classList.remove('hidden');
+            // Small delay to allow display:block to apply before opacity transition
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
 
-      <!-- Header -->
-      <div class="flex items-center justify-between p-6 pb-3 border-b border-border-light dark:border-border-dark">
-        <h2 class="text-xl font-bold text-content-light dark:text-content-dark">
-          Submission Details
-        </h2>
-        <button onclick="closeModal('detailsmodal')"
-          class="close-btn text-subtle-light dark:text-subtle-dark hover:bg-primary/10 dark:hover:bg-primary/20 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark">
-          <svg class="h-6 w-6" fill="none" height="24" stroke="currentColor" stroke-linecap="round"
-            stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24"
-            xmlns="http://www.w3.org/2000/svg">
-            <line x1="18" x2="6" y1="6" y2="18"></line>
-            <line x1="6" x2="18" y1="6" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Body -->
-      <div>
-        <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
-          <div class="space-y-6">
-            <h3 class="text-lg font-semibold text-content-light dark:text-content-dark">
-              Research Information
-            </h3>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <!-- Research Title -->
-              <div
-                class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-border-light/5 dark:border-border-dark/5">
-                <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Research Title</p>
-                <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-title"></p>
-              </div>
-
-              <!-- Category -->
-              <div
-                class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-border-light/5 dark:border-border-dark/5">
-                <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Research Category</p>
-                <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-category"></p>
-              </div>
-
-              <!-- Author -->
-              <div
-                class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-border-light/5 dark:border-border-dark/5">
-                <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Author</p>
-                <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-author"></p>
-              </div>
-
-              <!-- Author Email -->
-              <div
-                class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-border-light/5 dark:border-border-dark/5">
-                <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Author Email</p>
-                <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-email"></p>
-              </div>
-
-              <!-- Adviser -->
-              <div
-                class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-border-light/5 dark:border-border-dark/5">
-                <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Adviser</p>
-                <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-adviser"></p>
-              </div>
-
-
-
-              <!-- Status -->
-              <div
-                class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-border-light/5 dark:border-border-dark/5">
-                <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Status</p>
-                <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-status"></p>
-              </div>
-
-              <!-- Contact -->
-              <div
-                class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-border-light/5 dark:border-border-dark/5">
-                <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">contact</p>
-                <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-contact"></p>
-              </div>
-
-              <!-- Created Date -->
-              <div
-                class="px-4 py-3 bg-background-light/50 dark:bg-background-dark/60 rounded-lg border border-border-light/5 dark:border-border-dark/5">
-                <p class="text-xs text-subtle-light dark:text-subtle-dark uppercase font-semibold">Submitted At</p>
-                <p class="mt-1 text-sm font-medium text-content-light dark:text-content-dark" id="modal-created"></p>
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-4">
-                          <!-- View Files -->
-                          {{-- onclick value = window.location.href='{{ route('admin.view_files', $s->id) }}'\ --}}
-          <button onclick=""
-            class="bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-            View Files
-          </button>
-
-              <!-- Close -->
-              <button onclick="closeModal('detailsmodal')"
-                class="bg-primary/10 text-primary font-semibold px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors">
-                Close
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- ACTION MODAL -->
-<div id="actionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-  <div class="bg-background-light dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-md p-6 space-y-6">
-    
-    <h2 class="text-xl font-bold text-content-light dark:text-content-dark">
-      Take Action on Submission
-    </h2>
-
-    <p class="text-sm text-subtle-light dark:text-subtle-dark">
-      Choose what you want to do with this submission.
-    </p>
-
-    <div class="space-y-4">
-      <button 
-        onclick="setSubmissionStatus('complete')" 
-        class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-        Mark as Complete (For Initial Review)
-      </button>
-{{-- <!-- Appointment Date Picker (hidden until button is clicked) -->
-<div id="appointment-section" class="hidden mt-4">
-  <label for="appointed_date" class="block text-sm font-medium text-content-light dark:text-content-dark">
-    Appointed Date
-  </label>
-  <input
-    type="date"
-    id="appointed_date"
-    name="appointed_date"
-    class="mt-1 w-full border rounded-md px-3 py-2"
-  > --}}
-      <button 
-        onclick="setSubmissionStatus('incomplete')" 
-        class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-        Mark as Incomplete
-      </button>
-    </div>
-
-    <button onclick="closeModal('actionModal')" 
-      class="w-full mt-4 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-2 px-4 rounded-lg">
-      Cancel
-    </button>
-  </div>
-</div>
-
-<!-- INCOMPLETE REASON MODAL -->
-<div id="incompleteReasonModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-  <div class="bg-background-light dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
-    <h2 class="text-lg font-bold text-content-light dark:text-content-dark">
-      List Missing Requirements
-    </h2>
-
-    <textarea id="incompleteReason" rows="4"
-      class="w-full border border-border-light dark:border-border-dark rounded-lg p-2 text-sm bg-background-light dark:bg-background-dark text-content-light dark:text-content-dark"
-      placeholder="List the missing documents or details here..."></textarea>
-
-    <div class="flex justify-end gap-3">
-      <button onclick="closeModal('incompleteReasonModal')" 
-        class="bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-2 px-4 rounded-lg">
-        Cancel
-      </button>
-
-      <button onclick="submitIncompleteReason()" 
-        class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">
-        Submit
-      </button>
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
+        function closeTriage() {
+            const modal = document.getElementById('triageModal');
+            const content = document.getElementById('modalContent');
+            
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
 </x-admin_layout>
-<script>
-
-
-  function showAppointmentInput() {
-    document.getElementById('appointment-section').classList.remove('hidden');
-}
-
-function setInitialReview(id) {
-    const date = document.getElementById('appointed_date').value;
-
-    if (!date) {
-        alert("Please select an appointment date.");
-        return;
-    }
-
-    fetch(`/submissions/${id}/set-initial-review`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ appointment_date: date })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        location.reload();
-    })
-    .catch(error => console.error(error));
-}
-
-function openDetailsModal(button) {
-  // get all data-* attributes from the button
-  const submission = {
-    Study_Protocol_title: button.dataset.title,
-    Research_Category: button.dataset.category,
-    author_name: button.dataset.author,
-    email: button.dataset.email,
-    Adviser: button.dataset.adviser,
-    Status: button.dataset.status,
-    contact: button.dataset.contact,
-    created_at: button.dataset.created
-  };
-
-  // populate modal fields
-  document.getElementById('modal-title').textContent = submission.Study_Protocol_title || '—';
-  document.getElementById('modal-category').textContent = submission.Research_Category || '—';
-  document.getElementById('modal-author').textContent = submission.author_name || '—';
-  document.getElementById('modal-email').textContent = submission.email || '—';
-  document.getElementById('modal-adviser').textContent = submission.Adviser || '—';
-  document.getElementById('modal-status').textContent = submission.Status || '—';
-  document.getElementById('modal-contact').textContent = submission.contact || '—';
-  document.getElementById('modal-created').textContent = submission.created_at || '—';
-
-  // show the modal
-  document.getElementById('detailsmodal').classList.remove('hidden');
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.add('hidden');
-}
-
-
-
-function getCsrfToken() {
-  return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? null;
-}
-
-let selectedSubmissionId = null;
-
-function openActionModal(button) {
-  selectedSubmissionId = button.dataset.id;
-  document.getElementById('actionModal').classList.remove('hidden');
-}
-
-function setSubmissionStatus(action) {
-  // action: 'complete' or 'incomplete' (we map to DB statuses below)
-  if (!selectedSubmissionId) {
-    alert('No submission selected.');
-    return;
-  }
-
-  if (action === 'complete') {
-    // map UI action to DB status value
-    updateStatus(selectedSubmissionId, 'For Initial Review', null);
-    closeModal('actionModal');
-  } else if (action === 'incomplete') {
-    closeModal('actionModal');
-    document.getElementById('incompleteReasonModal').classList.remove('hidden');
-  }
-}
-
-function submitIncompleteReason() {
-  const reason = document.getElementById('incompleteReason').value.trim();
-  if (!reason) {
-    alert('Please provide a reason for incompleteness.');
-    return;
-  }
-
-  updateStatus(selectedSubmissionId, 'Incomplete', reason);
-  closeModal('incompleteReasonModal');
-}
-
-/**
- * updateStatus: POST to server to update status + optional reason
- */
-async function updateStatus(id, status, reason = null) {
-  const token = getCsrfToken();
-  if (!token) {
-    console.error('CSRF token not found. Make sure <meta name="csrf-token" content="{{ csrf_token() }}"> is in your <head>.');
-    alert('CSRF token missing — unable to send request. Check console for details.');
-    return;
-  }
-
-  try {
-    const res = await fetch(`/admin/update-status/${id}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': token
-      },
-      body: JSON.stringify({ status, reason })
-    });
-
-    if (!res.ok) {
-      // try to parse JSON error
-      let errText = 'Request failed';
-      try {
-        const errJson = await res.json();
-        errText = errJson.message || JSON.stringify(errJson);
-      } catch (e) {
-        errText = `${res.status} ${res.statusText}`;
-      }
-      throw new Error(errText);
-    }
-
-    const data = await res.json();
-    // success - show message then refresh or update UI
-    alert(data.message || 'Status updated successfully.');
-    // Option A: reload the page to reflect changes
-    window.location.reload();
-    // Option B: update the DOM to reflect new status without reload (left for you)
-  } catch (err) {
-    console.error('updateStatus error:', err);
-    alert('Error updating status: ' + (err.message || err));
-  }
-}
-
-function closeModal(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.add('hidden');
-}
-</script>
-
-</script>
-

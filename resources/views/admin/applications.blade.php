@@ -1,201 +1,102 @@
-
 <x-admin_layout>
-    <div class="layout-content-container flex flex-col max-w-full h-full">
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b border-stone-200 dark:border-gray-700 pb-2">
-            <div class="flex flex-col gap-1">
-                <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Research Application Management</h1>
+    <div class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-end pb-6 border-b border-slate-200">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Active Protocols</h1>
+                <p class="text-slate-500 mt-2 text-sm">Manage and monitor ongoing research protocols.</p>
             </div>
-
+            <div class="flex gap-2 mt-4 md:mt-0">
+                <div class="relative">
+                    <input type="text" placeholder="Search protocols..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent w-64 shadow-sm">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                </div>
+                <button class="px-4 py-2 bg-[#8B0000] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#6d0000] transition-colors shadow-md flex items-center gap-2">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+            </div>
         </div>
 
-
-        <div class="flex flex-col gap-4 justify-between h-full">
-
-            <div class="flex flex-col gap-4">
-                {{-- filter --}}
-                <div class="flex flex-col md:flex-row gap-3">
-                    <div class="flex-1">
-                        <label class="flex flex-col min-w-40 h-12 w-full">
-                            <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
-                                <div
-                                    class="text-[#994d4d] dark:text-gray-400 flex bg-[#f3e7e7] dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
-                                    <span class="material-symbols-outlined">search</span>
+        <!-- Content -->
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                            <th class="p-6">Protocol ID</th>
+                            <th class="p-6">Research Title</th>
+                            <th class="p-6">Principal Investigator</th>
+                            <th class="p-6">Submission Date</th>
+                            <th class="p-6">Status</th>
+                            <th class="p-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach($datas as $data)
+                        <tr class="hover:bg-slate-50/80 transition-colors group">
+                            <td class="p-6">
+                                <span class="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                                    #{{ str_pad($data['id'], 5, '0', STR_PAD_LEFT) }}
+                                </span>
+                            </td>
+                            <td class="p-6">
+                                <p class="font-bold text-slate-800 text-sm line-clamp-1 group-hover:text-[#8B0000] transition-colors">{{ $data['title'] }}</p>
+                                <p class="text-xs text-slate-400 mt-1">{{ $data['ReviewType'] ?? 'Standard Review' }}</p>
+                            </td>
+                            <td class="p-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                                        {{ substr($data['name'], 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-slate-700">{{ $data['name'] }}</p>
+                                        <p class="text-[10px] text-slate-400">{{ $data['email'] }}</p>
+                                    </div>
                                 </div>
-                                <input
-                                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-[#1b0e0e] dark:text-white focus:outline-0 focus:ring-0 border-none bg-[#f3e7e7] dark:bg-gray-800 h-full placeholder:text-[#994d4d] dark:placeholder:text-gray-500 px-4 text-base font-normal leading-normal"
-                                    placeholder="Search by Title, Submitter..." value="" />
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex gap-3 flex-wrap items-center">
-                        <label for="status"
-                            class="relative flex items-center h-12 shrink-0 rounded-lg bg-[#f3e7e7] dark:bg-gray-800">
-                            <div
-                                class="flex items-center justify-center pl-3 pr-2 text-[#994d4d] dark:text-gray-400 rounded-l-lg">
-                                <span class="material-symbols-outlined">filter_list</span>
-                            </div>
-                            <select id="status" name="status"
-                                class="focus:outline-0 focus:ring-0 appearance-none bg-transparent pl-3 pr-10 text-sm font-medium text-[#1b0e0e] dark:text-white h-12 w-full sm:w-auto min-w-[180px] outline-none border-none box-shadow:none">
-                                <option value="none" selected>Status: All</option>
-                                <option value="Review">Review</option>
-                                <option value="Revision">Revision</option>
-                                <option value="Finalization">Finalization</option>
-                            </select>
-                        </label>
-                        <label for="review_type"
-                            class="relative flex items-center h-12 shrink-0 rounded-lg bg-[#f3e7e7] dark:bg-gray-800">
-                            <div
-                                class="flex items-center justify-center pl-3 pr-2 text-[#994d4d] dark:text-gray-400 rounded-l-lg">
-                                <span class="material-symbols-outlined">filter_list</span>
-                            </div>
-                            <select id="review_type" name="review_type"
-                                class="focus:outline-0 focus:ring-0 appearance-none bg-transparent pl-3 pr-10 text-sm font-medium text-[#1b0e0e] dark:text-white h-12 w-full sm:w-auto min-w-[180px] outline-none border-none box-shadow:none">
-                                <option value="none" selected>Review: All</option>
-                                <option value="full_review">Full Review</option>
-                                <option value="expedited">Expedited</option>
-                                <option value="exempt">Exempt</option>
-                            </select>
-                        </label>
-                        <label for="revision_status"
-                            class="relative flex items-center h-12 shrink-0 rounded-lg bg-[#f3e7e7] dark:bg-gray-800">
-                            <div
-                                class="flex items-center justify-center pl-3 pr-2 text-[#994d4d] dark:text-gray-400 rounded-l-lg">
-                                <span class="material-symbols-outlined">filter_list</span>
-                            </div>
-                            <select id="revision_status" name="revision_status"
-                                class="focus:outline-0 focus:ring-0 appearance-none bg-transparent pl-3 pr-10 text-sm font-medium text-[#1b0e0e] dark:text-white h-12 w-full sm:w-auto min-w-[220px] outline-none border-none">
-                                <option value="none" selected>Revision: All</option>
-                                <option value="waiting_for_revision">Waiting for Revision</option>
-                                <option value="panel_deliberation">Panel Deliberation</option>
-                                <option value="submission_of_revision">Submission of Revision</option>
-                                <option value="checking_of_revision">Checking of Revision</option>
-                            </select>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="overflow-visible">
-                    <div class="flex overflow-visible rounded-lg border border-[#e7d0d0] dark:border-gray-700 bg-background-light dark:bg-background-dark">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="bg-[#f3e7e7] dark:bg-gray-800">
-                                    <th
-                                        class="px-4 py-3 text-[#1b0e0e] dark:text-white text-sm font-medium leading-normal ">
-                                        Title
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-[#1b0e0e] dark:text-white text-sm font-medium leading-normal ">
-                                        Author
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-[#1b0e0e] dark:text-white text-sm font-medium leading-normal ">
-                                        Date
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-[#1b0e0e] dark:text-white text-sm font-medium leading-normal">
-                                        Status
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-[#1b0e0e] dark:text-white text-sm font-medium leading-normal">
-                                        Review Type
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-center text-[#1b0e0e] dark:text-white text-sm font-medium leading-normal">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-
-                            <tbody class="overflow-visible divide-y divide-[#e7d0d0] dark:divide-gray-700">
-
-                                @foreach ($datas as $data)
-                                <tr class=" dark:hover:bg-primary/10 text-start">
-                                    <td
-                                        class="h-[72px] px-4 py-2 text-[#1b0e0e] dark:text-white text-sm font-normal leading-normal">
-                                        {{$data['title']}}
-                                    </td>
-                                    <td
-                                        class="h-[72px] px-4 py-2 text-[#994d4d] dark:text-gray-400 text-sm font-normal leading-normal">
-                                        {{$data['name']}}
-                                    </td>
-                                    <td
-                                        class="h-[72px] px-4 py-2 text-[#994d4d] dark:text-gray-400 text-sm font-normal leading-normal">
-                                        {{$data['date']}}
-                                    </td>
-                                    <td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-">{{$data['status']}}</span>
-                                    </td>
-                                    <td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
-                                        <div class="flex items-center gap-1">
-                                            
-                                            <span class="text-yellow-700">{{$data['ReviewType']}}</span>
-                                        </div>
-                                    </td>
-                                    <td class="h-[72px] px-4 py-2 text-center">
-                                        <div class="flex justify-center items-center gap-2">
-                                            <div class="relative group inline-block ">
-                                                <button
-                                                    class="p-2 pb-0 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                                    aria-label="View details">
-                                                    <span
-                                                        class="material-symbols-outlined text-[#1b0e0e] dark:text-white">visibility</span>
-                                                </button>
-                                                <span
-                                                    class="overflow-y-visible absolute left-1/2 -translate-x-1/2 -bottom-8 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity bg-gray-500 text-white text-xs rounded px-2 py-1 whitespace-nowrap  ">
-                                                    View details
-                                                </span>
-                                            </div>
-                                            <div class="relative group inline-block ">
-                                            <button class="p-2 pb-0 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
-                                                aria-label="Edit">
-                                                <span class="material-symbols-outlined text-primary">edit</span>
-                                                <span class="overflow-y-visible absolute left-1/2 -translate-x-1/2 -bottom-8 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity bg-gray-500 text-white text-xs rounded px-2 py-1 whitespace-nowrap  ">
-                                                    Edit
-                                                </span>
-                                            </button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-
-
-
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            </td>
+                            <td class="p-6">
+                                <div class="flex items-center gap-2 text-sm text-slate-600">
+                                    <i class="far fa-calendar text-slate-400"></i>
+                                    {{ \Carbon\Carbon::parse($data['date'])->format('M d, Y') }}
+                                </div>
+                            </td>
+                            <td class="p-6">
+                                @php
+                                    $statusColors = [
+                                        'Review' => 'bg-blue-50 text-blue-700 border-blue-100',
+                                        'Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
+                                        'Complete' => 'bg-green-50 text-green-700 border-green-100',
+                                        'Finalization' => 'bg-purple-50 text-purple-700 border-purple-100',
+                                    ];
+                                    $colorClass = $statusColors[$data['status']] ?? 'bg-slate-50 text-slate-700 border-slate-100';
+                                @endphp
+                                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }} inline-flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                                    {{ $data['status'] }}
+                                </span>
+                                @if(isset($data['RevisionStage']))
+                                    <p class="text-[10px] text-slate-400 mt-1 ml-2">{{ $data['RevisionStage'] }}</p>
+                                @endif
+                            </td>
+                            <td class="p-6 text-right">
+                                <button class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all" title="View Details">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-
-            <div class="flex justify-between items-center mt-4">
-                <p class="text-[#994d4d] dark:text-gray-400 text-sm">
-                    Showing 1 to 5 of 20 results
-                </p>
-                <div class="flex items-center gap-2">
-                    <button class="p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 disabled:opacity-50"
-                        disabled="">
-                        <span class="material-symbols-outlined text-[#1b0e0e] dark:text-white">chevron_left</span>
-                    </button>
-                    <button class="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white">
-                        1
-                    </button>
-                    <button
-                        class="px-4 py-2 rounded-lg text-sm font-medium text-[#1b0e0e] dark:text-white hover:bg-primary/10 dark:hover:bg-primary/20">
-                        2
-                    </button>
-                    <button
-                        class="px-4 py-2 rounded-lg text-sm font-medium text-[#1b0e0e] dark:text-white hover:bg-primary/10 dark:hover:bg-primary/20">
-                        3
-                    </button>
-                    <button
-                        class="px-4 py-2 rounded-lg text-sm font-medium text-[#1b0e0e] dark:text-white hover:bg-primary/10 dark:hover:bg-primary/20">
-                        4
-                    </button>
-                    <button class="p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20">
-                        <span class="material-symbols-outlined text-[#1b0e0e] dark:text-white">chevron_right</span>
-                    </button>
+            
+            <!-- Pagination (Static for now) -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                <p class="text-xs text-slate-500">Showing <span class="font-bold text-slate-700">1-{{ count($datas) }}</span> of <span class="font-bold text-slate-700">{{ count($datas) }}</span> protocols</p>
+                <div class="flex gap-1">
+                    <button class="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-600 disabled:opacity-50" disabled>Previous</button>
+                    <button class="px-3 py-1 text-xs font-medium text-white bg-[#8B0000] rounded shadow-sm">1</button>
+                    <button class="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-600 disabled:opacity-50" disabled>Next</button>
                 </div>
             </div>
         </div>

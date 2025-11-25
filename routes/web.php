@@ -116,6 +116,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/assign-reviewers/{id}', [admin::class, 'assignReviewers'])->name('admin.assignReviewers');
         Route::get('/admin/view-files/{id}', [admin::class, 'viewFiles'])->name('admin.view_files');
 
+        Route::get('/admin/letter/create/{id}', [admin::class, 'showLetterForm'])->name('admin.letter.form');
+        Route::post('/admin/letter/preview', [admin::class, 'previewLetter'])->name('admin.letter.preview');
+        Route::get('/admin/check-file-status/{id}', [admin::class, 'checkFileStatus']);
         // --- DEPRECATED ROUTES (Logic merged into updateStatus) ---
         // Route::post('/admin/{id}/set-initial-review', [admin::class, 'setInitialReview'])->name('submissions.setInitialReview');
         // Route::post('/admin/submission/{id}/complete', [admin::class, 'markAsComplete'])->name('admin.markComplete');

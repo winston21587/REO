@@ -136,5 +136,175 @@
             </div>
         </div>
     </div>
-    
-    </x-admin_layout>
+
+<div id="statusModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="statusModalContent">
+            <div class="bg-[#1a0505] p-6 border-b border-white/10">
+                <h3 class="text-white font-bold text-lg">Update Review Status</h3>
+                <p id="statusModalTitle" class="text-slate-400 text-xs mt-1 line-clamp-1">Protocol Title</p>
+            </div>
+            <form id="statusForm" method="POST" class="p-6 space-y-6">
+                @csrf
+                
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+                    <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-blue-800 uppercase tracking-wider mb-1">AI Recommendation</p>
+                        <p class="text-sm text-slate-700">Based on content analysis:</p>
+                        <div class="mt-2 inline-flex items-center gap-2 bg-white px-3 py-1 rounded-lg border border-blue-200 shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                            <span class="text-sm font-bold text-slate-800">Expedited Review</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-b border-slate-100 pb-6">
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Step 1: Required Action</label>
+                        <span id="fileSavedBadge" class="hidden bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                            <i class="fas fa-check-circle"></i> File Saved
+                        </span>
+                    </div>
+
+                    <div id="step1Box" class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+                                <i class="fas fa-file-contract text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700">Result of Review</p>
+                                <p id="step1Desc" class="text-xs text-slate-400">Generate and save to unlock Step 2.</p>
+                            </div>
+                        </div>
+                        <a id="generateBtnLink" href="#" target="_blank" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 hover:text-[#8B0000] hover:border-[#8B0000] transition-all shadow-sm flex items-center gap-2">
+                            <i class="fas fa-print"></i> <span id="generateBtnText">Open Generator</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="statusSection" class="space-y-4 opacity-50 grayscale pointer-events-none transition-all duration-300">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Step 2: Finalize Status</label>
+                        <span id="lockMessage" class="text-[10px] text-red-500 font-bold"><i class="fas fa-lock"></i> Generate letter to unlock</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Set Review Classification</label>
+                        <select id="reviewTypeSelect" name="review_type" disabled class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-slate-50">
+                            <option value="Exempt">Exempt Review</option>
+                            <option value="Expedited" selected>Expedited Review</option>
+                            <option value="Full Board">Full Board Review</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">New Application Status</label>
+                        <select id="statusSelect" name="status" disabled class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-slate-50">
+                            <option value="Waiting for Revision">Waiting for Revision</option>
+                            <option value="Under Review">Under Review</option>
+                            <option value="Approved">Approved</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeStatusModal()" class="px-4 py-2 text-slate-600 font-bold text-sm hover:bg-slate-50 rounded-lg transition-colors">Cancel</button>
+                    <button type="submit" id="submitStatusBtn" disabled class="px-4 py-2 bg-[#8B0000] text-white font-bold text-sm rounded-lg hover:bg-[#6d0000] transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                        Confirm Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        async function openStatusModal(id, title) {
+            document.getElementById('statusModalTitle').textContent = title;
+            document.getElementById('statusForm').action = `/admin/update-status/${id}`;
+            const genLink = document.getElementById('generateBtnLink');
+            genLink.href = `/admin/letter/create/${id}`;
+            
+            // 1. Reset UI to Locked State
+            lockStep2();
+
+            // 2. Check if file already exists
+            try {
+                const response = await fetch(`/admin/check-file-status/${id}`);
+                const data = await response.json();
+
+                if (data.has_letter) {
+                    unlockStep2(); // Auto unlock if file exists
+                    document.getElementById('generateBtnText').textContent = "View / Regenerate";
+                } else {
+                    document.getElementById('generateBtnText').textContent = "Open Generator";
+                    
+                    // Add listener to unlock when clicked (Optimistic unlock)
+                    // In a real app, you might want to wait for them to come back, 
+                    // but for smooth UX, we unlock after they click the generator.
+                    genLink.onclick = function() {
+                        setTimeout(unlockStep2, 2000); 
+                    };
+                }
+            } catch (error) {
+                console.error("Error checking file status", error);
+            }
+
+            // Show Modal
+            const modal = document.getElementById('statusModal');
+            const content = document.getElementById('statusModalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function lockStep2() {
+            const statusSection = document.getElementById('statusSection');
+            const submitBtn = document.getElementById('submitStatusBtn');
+            const inputs = ['reviewTypeSelect', 'statusSelect'];
+            const lockMsg = document.getElementById('lockMessage');
+            const badge = document.getElementById('fileSavedBadge');
+            const box = document.getElementById('step1Box');
+
+            statusSection.classList.add('opacity-50', 'grayscale', 'pointer-events-none');
+            submitBtn.disabled = true;
+            inputs.forEach(id => document.getElementById(id).disabled = true);
+            lockMsg.classList.remove('hidden');
+            badge.classList.add('hidden');
+            box.classList.remove('border-green-200', 'bg-green-50');
+        }
+
+        function unlockStep2() {
+            const statusSection = document.getElementById('statusSection');
+            const submitBtn = document.getElementById('submitStatusBtn');
+            const inputs = ['reviewTypeSelect', 'statusSelect'];
+            const lockMsg = document.getElementById('lockMessage');
+            const badge = document.getElementById('fileSavedBadge');
+            const box = document.getElementById('step1Box');
+
+            statusSection.classList.remove('opacity-50', 'grayscale', 'pointer-events-none');
+            submitBtn.disabled = false;
+            inputs.forEach(id => document.getElementById(id).disabled = false);
+            lockMsg.classList.add('hidden');
+            
+            // Show Success Indicators
+            badge.classList.remove('hidden');
+            box.classList.add('border-green-200', 'bg-green-50');
+            box.classList.remove('border-slate-200', 'bg-slate-50');
+        }
+
+        function closeStatusModal() {
+            const modal = document.getElementById('statusModal');
+            const content = document.getElementById('statusModalContent');
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+    </script>
+
+</x-admin_layout>

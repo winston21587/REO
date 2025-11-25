@@ -15,6 +15,7 @@ use App\Notifications\AppointmentNotification;
 use App\Models\UserNotification;
 use Carbon\Carbon;
 
+
 class admin extends Controller
 {
 
@@ -438,5 +439,49 @@ public function assignReviewers(Request $request, $id)
 
         $researchTitle = Research_title::with('author', 'files')->findOrFail($id);
         return view('admin.view_files', compact('researchTitle'));
+    }
+
+    // 1. Show the Checklist Form (Replaces RC_letter.php)
+    public function showLetterForm($id)
+    {
+        $submission = Research_title::with('author')->findOrFail($id);
+        return view('admin.letter_generator.form', compact('submission'));
+    }
+
+    // 2. Show the Printable Letter (The Output)
+public function previewLetter(Request $request)
+    {
+        $data = $request->validate([
+            'submission_id' => 'required',
+            'protocol_issues' => 'array',
+            'consent_issues' => 'array',
+            'recommended_actions' => 'array',
+            'review_type' => 'required|string',
+            'remarks' => 'nullable|string'
+        ]);
+
+        $submission = Research_title::with('author')->findOrFail($request->submission_id);
+
+        // A. Render View to String
+        $htmlContent = view('admin.letter_generator.print', compact('submission', 'data'))->render();
+
+        // B. Generate Filename
+        $timestamp = now()->format('Ymd_His');
+        $filename = "Result_of_Review_{$submission->id}_{$timestamp}.html";
+        $path = "uploads/research_{$submission->id}/" . $filename;
+
+        // C. Save HTML File to Storage (public disk)
+        Storage::disk('public')->put($path, $htmlContent);
+
+        // D. Save Record in Database
+        researcher_files::create([
+            'research_title_id' => $submission->id, // Ensure this matches your FK column
+            'filename' => $filename,
+            'file_path' => $path, // Storing the path
+            'file_type' => 'Result of Review (Admin Generated)',
+        ]);
+
+        // E. Return the view for the browser to print
+        return response($htmlContent);
     }
 }

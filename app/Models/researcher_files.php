@@ -12,7 +12,7 @@ class Researcher_files extends Model
     protected $table = 'researcher_files';
 
     protected $fillable = [
-        'research_title_id', // This matches the foreign key column
+        //'research_title_id', // This matches the foreign key column
         'filename',
         'file_path',
         'file_type',   

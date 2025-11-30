@@ -1054,7 +1054,7 @@ public function previewLetter(Request $request)
     public function revisions(Request $request)
     {
         $query = Research_title::with('author')
-            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']);
+            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions', 'Panel Deliberation']);
 
         if ($request->has('search')) {
             $search = $request->search;

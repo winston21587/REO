@@ -64,6 +64,7 @@
                                         'Waiting for Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
                                         'Revision Submitted' => 'bg-purple-50 text-purple-700 border-purple-100',
                                         'Checking of Revisions' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                                        'Panel Deliberation' => 'bg-pink-50 text-pink-700 border-pink-100',
                                     ];
                                     $colorClass = $statusColors[$data->Status] ?? 'bg-slate-50 text-slate-700 border-slate-100';
                                 @endphp

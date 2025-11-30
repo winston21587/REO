@@ -277,8 +277,7 @@ public function applications(Request $request)
             $q->where('Status', 'For Initial Review')
               ->orWhere('Status', 'Complete - Awaiting Hardcopy')
               ->orWhere('Status', 'Hardcopy Received - For Initial Review')
-              ->orWhere('Status', 'Under Review')
-              ->orWhere('Status', 'Panel Deliberation'); // Added to keep visible
+              ->orWhere('Status', 'Under Review');
         });
 
         // 2. Handle Search
@@ -971,17 +970,30 @@ public function previewLetter(Request $request)
     {
         $submission = Research_title::findOrFail($id);
         
+        $userMessage = '';
         if ($submission->Review_Type === 'Full Board Review') {
             $submission->Status = 'Panel Deliberation';
             $message = 'Status updated to Panel Deliberation.';
             $redirectRoute = 'admin.applications'; 
+            $userMessage = "Your research protocol has been moved to Panel Deliberation. Please wait for further updates regarding the schedule.";
         } else {
             $submission->Status = 'Waiting for Revision';
             $message = 'Status updated to Waiting for Revision.';
             $redirectRoute = 'admin.revisions';
+            $userMessage = "Your research protocol requires revisions. Please check the recommendation letter and submit the necessary changes.";
         }
         
         $submission->save();
+        
+        // Notify the user
+        UserNotification::create([
+            'user_id' => $submission->user_id,
+            'research_id' => $submission->id,
+            'title' => 'Status Update: ' . $submission->Status,
+            'message' => $userMessage,
+            'type' => 'status_update',
+            'is_read' => false
+        ]);
         
         return redirect()->route($redirectRoute)->with('success', $message);
     }
@@ -1054,7 +1066,7 @@ public function previewLetter(Request $request)
     public function revisions(Request $request)
     {
         $query = Research_title::with('author')
-            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']);
+            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions', 'Panel Deliberation']);
 
         if ($request->has('search')) {
             $search = $request->search;

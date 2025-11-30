@@ -145,13 +145,15 @@
                                                     <i class="fas fa-file-pdf w-4"></i> View RC Letter
                                                 </a>
                                                 
-                                                <!-- Proceed to Revision -->
-                                                <form action="{{ route('admin.recommendation.finalize', $data->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to finalize this review and proceed to the next stage?');">
-                                                    @csrf
-                                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
-                                                        <i class="fas fa-check-circle w-4"></i> Proceed to Revision
-                                                    </button>
-                                                </form>
+                                                <!-- Proceed to Revision (Only if not yet finalized) -->
+                                                @if(!in_array($data->Status, ['Panel Deliberation', 'Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']))
+                                                    <form action="{{ route('admin.recommendation.finalize', $data->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to finalize this review and proceed to the next stage?');">
+                                                        @csrf
+                                                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
+                                                            <i class="fas fa-check-circle w-4"></i> Proceed to Revision
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             @elseif($data->Review_Type)
                                                 <!-- Generate Letter -->
                                                 <a href="{{ route('admin.recommendation.form', $data->id) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">

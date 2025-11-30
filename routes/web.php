@@ -152,4 +152,5 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::post('/admin/recommendation-letter/finalize/{id}', [admin::class, 'finalizeReview'])->name('admin.recommendation.finalize');
+    Route::get('/admin/recommendation-letter/view-saved/{id}', [admin::class, 'viewSavedRecommendationLetter'])->name('admin.recommendation.view_saved');
 });

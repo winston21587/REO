@@ -187,11 +187,8 @@
             
             // Auto-set status if on Applications page
             if (isApplicationsPage) {
-                if (type === 'Full Board Review') {
-                    document.getElementById('statusActionInput').value = 'Panel Deliberation';
-                } else {
-                    document.getElementById('statusActionInput').value = 'Waiting for Revision';
-                }
+                // Logic removed to prevent auto-redirect to revision
+                document.getElementById('statusActionInput').value = ''; 
             } else {
                 document.getElementById('statusActionInput').value = ''; // Clear status action if not auto-setting
             }
@@ -403,13 +400,9 @@
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    if (result.redirect) {
-                        window.location.href = result.redirect;
-                    } else {
-                        closeStatusModal();
-                        // Show success message or reload
-                        window.location.reload(); 
-                    }
+                    closeStatusModal();
+                    // Show success message or reload
+                    window.location.reload(); 
                 } else {
                     // Handle Validation Errors
                     if (result.errors) {

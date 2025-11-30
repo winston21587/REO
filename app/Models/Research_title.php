@@ -43,6 +43,11 @@ public function files()
     ->withTimestamps();
 }
 
+public function adminFiles()
+{
+    return $this->hasMany(Researcher_files::class, 'research_title_id');
+}
+
 public function appointment()
 {
     return $this->hasMany(Appointment::class, 'research_title_id');

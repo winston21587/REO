@@ -139,7 +139,7 @@
                                                 </button>
                                             @endif
                                             @php
-                                                $recLetter = $data->files->where('filetype', 'recommendation letter')->first();
+                                                $recLetter = $data->files->where('filetype', 'Result of Review (Admin Generated)')->first();
                                             @endphp
 
                                             @if($recLetter)

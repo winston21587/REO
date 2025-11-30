@@ -29,19 +29,26 @@
                 // Tracker Logic
                 $steps = [
                     1 => ['label' => 'Submitted', 'icon' => 'fa-paper-plane'],
-                    2 => ['label' => 'Under Review', 'icon' => 'fa-search'],
-                    3 => ['label' => 'Finalization', 'icon' => 'fa-clipboard-check'],
+                    2 => ['label' => 'Ongoing Review', 'icon' => 'fa-search'],
+                    3 => ['label' => 'Deliberation', 'icon' => 'fa-clipboard-check'],
                     4 => ['label' => 'Certificate', 'icon' => 'fa-certificate'],
                 ];
 
                 $currentStep = 1;
-                $status = strtolower($title->status ?? '');
+                $status = $title->status ?? '';
 
-                if (str_contains($status, 'complete') || str_contains($status, 'approved')) {
+                if (str_contains($status, 'Approved') || str_contains($status, 'Complete')) {
                     $currentStep = 4;
-                } elseif (str_contains($status, 'finalization')) {
+                } elseif ($status === 'Panel Deliberation') {
                     $currentStep = 3;
-                } elseif (str_contains($status, 'review') || str_contains($status, 'revision') || str_contains($status, 'pending')) {
+                } elseif (in_array($status, [
+                    'For Initial Review', 
+                    'Waiting for Revision', 
+                    'Revision Submitted', 
+                    'Checking of Revisions', 
+                    'Submission of Revisions / Resubmission', 
+                    'Hardcopy Received - For Initial Review'
+                ])) {
                     $currentStep = 2;
                 }
 
@@ -200,6 +207,25 @@
                                 </a>
                             </div>
                         </div>
+
+                        <!-- Recommendation Letter Card -->
+                        @php
+                            $hasLetter = $title->files->where('filetype', 'Result of Review (Admin Generated)')->isNotEmpty();
+                        @endphp
+                        @if($hasLetter)
+                        <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-6 relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <i class="fas fa-file-signature text-6xl text-emerald-600"></i>
+                            </div>
+                            <h3 class="text-emerald-900 font-bold mb-2 flex items-center gap-2 relative z-10">
+                                <i class="fas fa-envelope-open-text"></i> Result of Review
+                            </h3>
+                            <p class="text-sm text-emerald-800 mb-4 relative z-10">Your official review result letter is available.</p>
+                            <a href="{{ route('recommendation.view', $title->id) }}" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all relative z-10">
+                                <i class="fas fa-eye"></i> View Letter
+                            </a>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Right Column: Abstract -->

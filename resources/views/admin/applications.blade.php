@@ -105,12 +105,6 @@
                                     {{ $displayStatus }}
                                 </span>
                             </td>
-                                @endphp
-                                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }} inline-flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                                    {{ $data->Status }}
-                                </span>
-                            </td>
                             <td class="p-6 text-right relative">
                                 <div class="relative" x-data="{ open: false }">
                                     <button @click="open = !open" @click.away="open = false" class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
@@ -118,7 +112,7 @@
                                     </button>
                                     
                                     <div x-show="open" 
-                                         class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden"
+                                         class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden"
                                          style="display: none;">
                                         <div class="p-1">
                                             <a href="{{ route('admin.view_files', $data->id) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
@@ -138,17 +132,30 @@
                                                     <i class="fas fa-sync-alt w-4"></i> Update Status
                                                 </button>
                                             @endif
+
                                             @php
-                                                $recLetter = $data->files->where('filetype', 'Result of Review (Admin Generated)')->first();
+                                                // Check for letter in both relationships
+                                                $recLetter = $data->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first() 
+                                                          ?? $data->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first();
                                             @endphp
 
                                             @if($recLetter)
-                                                <a href="{{ asset('storage/' . $recLetter->filepath) }}" target="_blank" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                    <i class="fas fa-file-pdf w-4"></i> View Recommendation Letter
+                                                <!-- View Letter -->
+                                                <a href="{{ route('admin.recommendation.view_saved', $data->id) }}" target="_blank" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
+                                                    <i class="fas fa-file-pdf w-4"></i> View RC Letter
                                                 </a>
+                                                
+                                                <!-- Proceed to Revision -->
+                                                <form action="{{ route('admin.recommendation.finalize', $data->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to finalize this review and proceed to the next stage?');">
+                                                    @csrf
+                                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
+                                                        <i class="fas fa-check-circle w-4"></i> Proceed to Revision
+                                                    </button>
+                                                </form>
                                             @elseif($data->Review_Type)
+                                                <!-- Generate Letter -->
                                                 <a href="{{ route('admin.recommendation.form', $data->id) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                    <i class="fas fa-file-signature w-4"></i> Generate Recommendation Letter
+                                                    <i class="fas fa-file-signature w-4"></i> Result of Review
                                                 </a>
                                             @endif
 

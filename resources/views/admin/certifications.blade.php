@@ -23,7 +23,7 @@
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
                             <th class="p-6">Protocol ID</th>
                             <th class="p-6">Research Title</th>
-                            <th class="p-6">Principal Investigator</th>
+                            <th class="p-6">Researcher</th>
                             <th class="p-6">Approval Date</th>
                             <th class="p-6">Certificate</th>
                             <th class="p-6 text-right">Actions</th>
@@ -45,10 +45,11 @@
                             <td class="p-6">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
-                                        {{ substr($data->author->name ?? 'U', 0, 1) }}
+                                        {{ substr($data->author->first_name ?? 'U', 0, 1) }}
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-slate-700">{{ $data->author->name ?? 'Unknown' }}</p>
+                                        <p class="text-sm font-medium text-slate-700">{{ $data->author->first_name ?? '' }} {{ $data->author->last_name ?? 'Unknown' }}</p>
+                                        <p class="text-[10px] text-slate-400">{{ $data->author->email ?? '' }}</p>
                                     </div>
                                 </div>
                             </td>

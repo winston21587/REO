@@ -6,7 +6,7 @@
             <div class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 pointer-events-none group-hover:opacity-70 transition-opacity duration-700"></div>
             
             <div class="flex items-center gap-5 relative z-10">
-                <a href="{{ route('admin.NewSubmissions') }}" class="group flex items-center justify-center w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:border-[#8B0000] hover:text-[#8B0000] hover:shadow-md hover:-translate-x-1 transition-all duration-300">
+                <a href="javascript:history.back()" class="group flex items-center justify-center w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:border-[#8B0000] hover:text-[#8B0000] hover:shadow-md hover:-translate-x-1 transition-all duration-300">
                     <i class="fas fa-arrow-left text-lg"></i>
                 </a>
                 <div>

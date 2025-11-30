@@ -539,10 +539,10 @@ public function applications(Request $request)
                 }
             } elseif ($action === 'Approved') {
                 $message = "Congratulations! Your research has been Approved.";
-                $message .= "\n\nYour Research Ethics Clearance Certificate has been issued.";
+                $message .= "\n\nYour Research Ethics Clearance Certificate is ready. Please check with the Research Ethics Office.";
                 
-                // Generate Certificate
-                $this->generateCertificate($submission);
+                // Certificate generation removed as per request (handled offline)
+                // $this->generateCertificate($submission);
             }
         }
         // ---------------------------------------------------------
@@ -971,17 +971,14 @@ public function previewLetter(Request $request)
         $submission = Research_title::findOrFail($id);
         
         $userMessage = '';
-        if ($submission->Review_Type === 'Full Board Review') {
-            $submission->Status = 'Panel Deliberation';
-            $message = 'Status updated to Panel Deliberation.';
-            $redirectRoute = 'admin.applications'; 
-            $userMessage = "Your research protocol has been moved to Panel Deliberation. Please wait for further updates regarding the schedule.";
-        } else {
-            $submission->Status = 'Waiting for Revision';
-            $message = 'Status updated to Waiting for Revision.';
-            $redirectRoute = 'admin.revisions';
-            $userMessage = "Your research protocol requires revisions. Please check the recommendation letter and submit the necessary changes.";
-        }
+        
+        // Update status to Waiting for Revision for ALL review types
+        $submission->Status = 'Waiting for Revision';
+        $message = 'Status updated to Waiting for Revision.';
+        $redirectRoute = 'admin.revisions';
+        
+        // Custom notification message
+        $userMessage = "Your research protocol status has been updated to Waiting for Revision. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.";
         
         $submission->save();
         
@@ -989,7 +986,7 @@ public function previewLetter(Request $request)
         UserNotification::create([
             'user_id' => $submission->user_id,
             'research_id' => $submission->id,
-            'title' => 'Status Update: ' . $submission->Status,
+            'title' => 'Status Update: Waiting for Revision',
             'message' => $userMessage,
             'type' => 'status_update',
             'is_read' => false
@@ -999,69 +996,8 @@ public function previewLetter(Request $request)
     }
 
 
-    private function generateCertificate($submission)
-    {
-        $user = User::find($submission->user_id);
-        
-        $pdf = new Fpdi();
-        $pdf->AddPage();
-        
-        // Header
-        $pdf->SetFont('Arial', 'B', 16);
-        $pdf->Cell(0, 10, 'RESEARCH ETHICS CLEARANCE', 0, 1, 'C');
-        $pdf->Ln(10);
-        
-        // Date
-        $pdf->SetFont('Arial', '', 12);
-        $pdf->Cell(0, 10, 'Date: ' . date('F j, Y'), 0, 1, 'R');
-        $pdf->Ln(10);
-        
-        // Body
-        $pdf->SetFont('Arial', '', 12);
-        $pdf->MultiCell(0, 10, "This is to certify that the research protocol titled:");
-        $pdf->Ln(5);
-        
-        $pdf->SetFont('Arial', 'B', 14);
-        $pdf->MultiCell(0, 10, strtoupper($submission->Study_Protocol_title), 0, 'C');
-        $pdf->Ln(5);
-        
-        $pdf->SetFont('Arial', '', 12);
-        $pdf->MultiCell(0, 10, "Submitted by:");
-        $pdf->Ln(5);
-        
-        $pdf->SetFont('Arial', 'B', 14);
-        $pdf->MultiCell(0, 10, strtoupper($user->first_name . ' ' . $user->last_name), 0, 'C');
-        $pdf->Ln(10);
-        
-        $pdf->SetFont('Arial', '', 12);
-        $text = "Has been reviewed by the Research Ethics Office and has been granted ETHICAL CLEARANCE. The researcher is hereby authorized to proceed with the data collection as described in the approved protocol.";
-        $pdf->MultiCell(0, 10, $text);
-        $pdf->Ln(20);
-        
-        // Signature
-        $pdf->Cell(0, 10, '_________________________', 0, 1, 'R');
-        $pdf->Cell(0, 10, 'Ethics Review Chair       ', 0, 1, 'R');
+    // generateCertificate method removed as per request
 
-        // Output
-        $fileName = 'Clearance_' . $submission->id . '.pdf';
-        $filePath = 'certificates/' . $fileName;
-        
-        // Ensure directory exists
-        if (!Storage::disk('public')->exists('certificates')) {
-            Storage::disk('public')->makeDirectory('certificates');
-        }
-        
-        $pdf->Output('F', storage_path('app/public/' . $filePath));
-        
-        // Save to Database
-        researcher_files::create([
-            'research_title_id' => $submission->id,
-            'filename' => 'Ethics Clearance Certificate',
-            'filetype' => 'certificate',
-            'filepath' => 'storage/' . $filePath,
-            'user_id' => $submission->user_id,
-        ]);
-    }
 
     public function revisions(Request $request)
     {

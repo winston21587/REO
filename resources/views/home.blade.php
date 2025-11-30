@@ -29,7 +29,7 @@
                 // Tracker Logic
                 $steps = [
                     1 => ['label' => 'Submitted', 'icon' => 'fa-paper-plane'],
-                    2 => ['label' => 'Ongoing Review', 'icon' => 'fa-search'],
+                    2 => ['label' => 'Review & Revision', 'icon' => 'fa-search'],
                     3 => ['label' => 'Deliberation', 'icon' => 'fa-clipboard-check'],
                     4 => ['label' => 'Certificate', 'icon' => 'fa-certificate'],
                 ];

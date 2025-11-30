@@ -9,6 +9,14 @@
                 <h2 class="text-2xl font-extrabold text-slate-900 font-heading">Document Manager</h2>
                 <p class="text-slate-500 text-sm">Manage uploads for: <span class="font-semibold text-brand-primary">{{ $researchTitle->Study_Protocol_title }}</span></p>
             </div>
+            @if($researchTitle->Status === 'Waiting for Revision')
+            <form action="{{ route('submit.revisions', $researchTitle->id) }}" method="POST" class="mt-4 md:mt-0">
+                @csrf
+                <button type="submit" class="inline-flex items-center gap-2 bg-[#8B0000] text-white px-6 py-3 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg shadow-red-900/20" onclick="return confirm('Are you sure you have updated all necessary files? This will notify the admin that you are ready for re-evaluation.')">
+                    <i class="fas fa-paper-plane"></i> Submit Revisions
+                </button>
+            </form>
+            @endif
         </div>
 
         @if(session('success'))

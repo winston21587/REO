@@ -171,12 +171,12 @@ public function submitTitle(Request $request)
             'filetype' => $request->file('file')->getClientOriginalExtension(),
         ]);
 
-        // Check and Update Research Status
-        $researchTitle = Research_title::find($id);
-        if ($researchTitle && $researchTitle->Status === 'Waiting for Revision') {
-            $researchTitle->Status = 'Revision Submitted';
-            $researchTitle->save();
-        }
+        // Status update removed to allow manual submission
+        // $researchTitle = Research_title::find($id);
+        // if ($researchTitle && $researchTitle->Status === 'Waiting for Revision') {
+        //     $researchTitle->Status = 'Revision Submitted';
+        //     $researchTitle->save();
+        // }
 
         return redirect()->back()->with('success', 'File updated successfully!');
     }
@@ -206,6 +206,26 @@ public function submitTitle(Request $request)
         $storagePath = str_replace('storage/', '', $file->filepath);
         
         return response()->file(storage_path('app/public/' . $storagePath));
+    }
+    public function submitRevisions($id)
+    {
+        $researchTitle = Research_title::findOrFail($id);
+
+        if ($researchTitle->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($researchTitle->Status === 'Waiting for Revision') {
+            $researchTitle->Status = 'Revision Submitted';
+            $researchTitle->save();
+            
+            // Notify Admin (Optional but good practice)
+            // UserNotification::create([...]); 
+
+            return redirect()->route('home')->with('success', 'Revisions submitted successfully! The status has been updated.');
+        }
+
+        return back()->with('error', 'Unable to submit revisions. Current status: ' . $researchTitle->Status);
     }
 }
 

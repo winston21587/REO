@@ -167,78 +167,100 @@
                 </div>
 
                 <!-- Details Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                @php
+                    $hasLetter = $title->files->where('filetype', 'Result of Review (Admin Generated)')->isNotEmpty();
+                @endphp
+                <div class="grid grid-cols-1 md:grid-cols-2 {{ $hasLetter ? 'lg:grid-cols-3' : 'lg:grid-cols-2' }} gap-8 items-stretch">
                     
-                    <!-- Left Column: Metadata -->
-                    <div class="lg:col-span-1 space-y-6">
-                        <!-- Info Card -->
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                            <h3 class="text-slate-800 font-bold mb-4 flex items-center gap-2">
-                                <i class="fas fa-info-circle text-[#8B0000]"></i> Protocol Info
-                            </h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Category</label>
-                                    <p class="text-slate-700 font-semibold mt-1">{{ $title->Research_Category }}</p>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Adviser</label>
-                                    <p class="text-slate-700 font-semibold mt-1">{{ $title->Adviser }}</p>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Reference ID</label>
-                                    <p class="text-slate-700 font-semibold mt-1 font-mono">#{{ str_pad($title->id, 6, '0', STR_PAD_LEFT) }}</p>
-                                </div>
+                    <!-- Protocol Info Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col h-full hover:shadow-md transition-shadow duration-300">
+                        <h3 class="text-slate-800 font-bold mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
+                            <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-[#8B0000]">
+                                <i class="fas fa-info-circle text-xl"></i>
+                            </div>
+                            <span class="text-lg">Protocol Info</span>
+                        </h3>
+                        <div class="space-y-6 flex-1">
+                            <div class="group">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block group-hover:text-[#8B0000] transition-colors">Category</label>
+                                <p class="text-slate-800 font-bold text-lg">{{ $title->Research_Category }}</p>
+                            </div>
+                            <div class="group">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block group-hover:text-[#8B0000] transition-colors">Adviser</label>
+                                <p class="text-slate-800 font-bold text-lg">{{ $title->Adviser }}</p>
+                            </div>
+                            <div class="group">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block group-hover:text-[#8B0000] transition-colors">Reference ID</label>
+                                <p class="text-slate-600 font-mono bg-slate-50 px-3 py-1 rounded-lg inline-block border border-slate-100">#{{ str_pad($title->id, 6, '0', STR_PAD_LEFT) }}</p>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Quick Actions -->
-                        <div class="bg-blue-50 rounded-2xl border border-blue-100 p-6">
-                            <h3 class="text-blue-900 font-bold mb-2 flex items-center gap-2">
-                                <i class="fas fa-question-circle"></i> Need Help?
-                            </h3>
-                            <p class="text-sm text-blue-800 mb-4">Check our guidelines or download templates if you need to revise your documents.</p>
-                            <div class="space-y-2">
-                                <a href="{{ route('instructions') }}" class="block text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline">
-                                    <i class="fas fa-book mr-1"></i> View Guidelines
-                                </a>
-                                <a href="{{ route('resources') }}" class="block text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline">
-                                    <i class="fas fa-download mr-1"></i> Download Templates
-                                </a>
+                    <!-- Quick Actions Card -->
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-8 flex flex-col h-full hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
+                        <!-- Decorative Background -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-bl-full -mr-10 -mt-10 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+                        
+                        <h3 class="text-blue-900 font-bold mb-6 flex items-center gap-3 relative z-10 border-b border-blue-100/50 pb-4">
+                            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-blue-600 shadow-sm">
+                                <i class="fas fa-life-ring text-xl"></i>
                             </div>
-                        </div>
+                            <span class="text-lg">Resources & Help</span>
+                        </h3>
+                        
+                        <div class="flex-1 flex flex-col justify-center gap-4 relative z-10">
+                            <p class="text-blue-800 mb-2 font-medium">Need to revise your documents? Access our guidelines and templates below.</p>
+                            
+                            <a href="{{ route('instructions') }}" class="flex items-center gap-4 p-4 bg-white rounded-xl border border-blue-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all group/link">
+                                <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover/link:scale-110 transition-transform">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <div>
+                                    <span class="block font-bold text-slate-800 group-hover/link:text-blue-700 transition-colors">View Guidelines</span>
+                                    <span class="text-xs text-slate-500">Read the submission rules</span>
+                                </div>
+                                <i class="fas fa-arrow-right ml-auto text-blue-300 group-hover/link:text-blue-500 transition-colors"></i>
+                            </a>
 
-                        <!-- Recommendation Letter Card -->
-                        @php
-                            $hasLetter = $title->files->where('filetype', 'Result of Review (Admin Generated)')->isNotEmpty();
-                        @endphp
-                        @if($hasLetter)
-                        <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-6 relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <i class="fas fa-file-signature text-6xl text-emerald-600"></i>
-                            </div>
-                            <h3 class="text-emerald-900 font-bold mb-2 flex items-center gap-2 relative z-10">
-                                <i class="fas fa-envelope-open-text"></i> Result of Review
-                            </h3>
-                            <p class="text-sm text-emerald-800 mb-4 relative z-10">Your official review result letter is available.</p>
-                            <a href="{{ route('recommendation.view', $title->id) }}" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all relative z-10">
-                                <i class="fas fa-eye"></i> View Letter
+                            <a href="{{ route('resources') }}" class="flex items-center gap-4 p-4 bg-white rounded-xl border border-blue-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all group/link">
+                                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover/link:scale-110 transition-transform">
+                                    <i class="fas fa-download"></i>
+                                </div>
+                                <div>
+                                    <span class="block font-bold text-slate-800 group-hover/link:text-indigo-700 transition-colors">Download Templates</span>
+                                    <span class="text-xs text-slate-500">Get official forms</span>
+                                </div>
+                                <i class="fas fa-arrow-right ml-auto text-indigo-300 group-hover/link:text-indigo-500 transition-colors"></i>
                             </a>
                         </div>
-                        @endif
                     </div>
 
-                    <!-- Right Column: Abstract -->
-                    <div class="lg:col-span-2">
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 h-full">
-                            <h3 class="text-slate-800 font-bold mb-4 flex items-center gap-2">
-                                <i class="fas fa-align-left text-[#8B0000]"></i> Abstract / Layman Terms
-                            </h3>
-                            <div class="prose prose-slate max-w-none text-slate-600 leading-relaxed">
-                                {{ $title->Layman_term }}
+                    <!-- Recommendation Letter Card (Conditional) -->
+                    @if($hasLetter)
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-8 flex flex-col h-full hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
+                        <!-- Decorative Background -->
+                        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-emerald-100 rounded-full opacity-30 group-hover:scale-125 transition-transform duration-700"></div>
+                        
+                        <h3 class="text-emerald-900 font-bold mb-6 flex items-center gap-3 relative z-10 border-b border-emerald-100/50 pb-4">
+                            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-emerald-600 shadow-sm">
+                                <i class="fas fa-envelope-open-text text-xl"></i>
                             </div>
+                            <span class="text-lg">Result of Review</span>
+                        </h3>
+                        
+                        <div class="flex-1 flex flex-col justify-between relative z-10">
+                            <div class="mb-6">
+                                <p class="text-emerald-800 font-medium text-lg mb-2">Review Completed</p>
+                                <p class="text-emerald-600/80 text-sm">Your official review result letter has been generated and is ready for viewing.</p>
+                            </div>
+                            
+                            <a href="{{ route('recommendation.view', $title->id) }}" target="_blank" class="w-full py-4 bg-white text-emerald-700 rounded-xl font-bold text-center shadow-sm border border-emerald-100 hover:bg-emerald-600 hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group/btn">
+                                <i class="fas fa-eye group-hover/btn:scale-110 transition-transform"></i>
+                                <span>View Official Letter</span>
+                            </a>
                         </div>
                     </div>
+                    @endif
 
                 </div>
             </div>

@@ -180,6 +180,33 @@ public function submitTitle(Request $request)
 
         return redirect()->back()->with('success', 'File updated successfully!');
     }
+
+    public function viewRecommendationLetter($id)
+    {
+        $researchTitle = Research_title::findOrFail($id);
+
+        // Security: Ensure user owns the title
+        if ($researchTitle->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Find the recommendation letter file
+        $file = researcher_files::where('research_title_id', $id)
+            ->where('filetype', 'Result of Review (Admin Generated)')
+            ->latest()
+            ->first();
+
+        if (!$file || !Storage::disk('public')->exists(str_replace('storage/', '', $file->filepath))) {
+            return back()->with('error', 'Recommendation letter not found.');
+        }
+
+        // Serve the file
+        // Note: The filepath in DB is 'storage/uploads/...', but Storage::disk('public') expects 'uploads/...'
+        // We need to strip 'storage/' prefix if it exists.
+        $storagePath = str_replace('storage/', '', $file->filepath);
+        
+        return response()->file(storage_path('app/public/' . $storagePath));
+    }
 }
 
 

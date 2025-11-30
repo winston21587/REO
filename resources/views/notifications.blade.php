@@ -50,23 +50,7 @@
                                     </span>
                                 </div>
 
-                                @if(Str::contains($notify->message, '- '))
-                                    <div class="mt-2 bg-slate-50 rounded-xl p-4 border border-slate-100">
-                                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Remarks / Details:</p>
-                                        <ul class="space-y-1">
-                                            @foreach(explode("\n", $notify->message) as $line)
-                                                @if(Str::startsWith(trim($line), '-'))
-                                                    <li class="flex items-start gap-2 text-sm text-slate-600">
-                                                        <i class="fas fa-circle text-[4px] mt-2 text-slate-400"></i>
-                                                        <span>{{ trim(str_replace('-', '', $line)) }}</span>
-                                                    </li>
-                                                @endif
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @else
-                                    <p class="text-sm text-slate-600 leading-relaxed">{{ $notify->message }}</p>
-                                @endif
+                                <div class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $notify->message }}</div>
                             </div>
                         </div>
                     </li>

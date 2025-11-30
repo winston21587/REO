@@ -86,6 +86,8 @@ public function applications(Request $request)
         // This ensures the page ONLY accepts these titles, regardless of other inputs.
         $query->where(function($q) {
             $q->where('Status', 'For Initial Review')
+              ->orWhere('Status', 'Complete - Awaiting Hardcopy')
+              ->orWhere('Status', 'Hardcopy Received - For Initial Review')
               ->orWhere('Status', 'LIKE', '%Revision%'); // Matches 'Waiting for Revision', 'Checking of Revisions', etc.
         });
 
@@ -254,19 +256,19 @@ public function applications(Request $request)
             // For now, I'll assume this part remains for the "Initial Intake" page.
             // If you want to unify, we can, but the user asked for "Applications" page update.
             
-             if ($request->classification === 'Complete') {
+            if ($request->classification === 'Complete') {
                 $request->validate(['appointment_date' => 'required|date']);
-                $newStatus = 'For Initial Review';
+                $newStatus = 'Complete - Awaiting Hardcopy';
                 $submission->Status = $newStatus;
                 $submission->save();
                 $appointment = Appointment::create([
                     'research_title_id' => $submission->id,
                     'user_id' => $submission->user_id,
                     'appointment_date' => $request->appointment_date,
-                    'stage' => 'Initial Review',
+                    'stage' => 'Hardcopy Submission',
                 ]);
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
-                $message = "Your submission document check is Complete. We have set your Initial Review Appointment on: {$dateFormatted}.";
+                $message = "Your submission document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
             } elseif ($request->classification === 'Incomplete') {
                 $request->validate(['remarks' => 'nullable|string']);
                 $newStatus = 'Incomplete';
@@ -332,13 +334,17 @@ public function applications(Request $request)
         UserNotification::create([
             'user_id' => $submission->user_id,
             'research_id' => $submission->id,
-            'title' => 'Submission Status Update',
+            'title' => 'Status Update: ' . $newStatus,
             'message' => $message,
-            'type' => 'info',
+            'type' => 'status_update',
             'is_read' => false
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Status and Review Type updated successfully']);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Status and Review Type updated successfully']);
+        }
+
+        return redirect()->back()->with('success', 'Status updated successfully');
     }
 
 public function assignReviewers(Request $request, $id)

@@ -22,10 +22,14 @@
         @foreach($researchTitle->files as $file)
             <div class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden transition-all hover:shadow-xl">
                 
+                @php
+                    $isPdf = $file->filetype === 'pdf' || $file->filetype === 'recommendation letter';
+                @endphp
+
                 <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center {{ $file->filetype === 'pdf' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }}">
-                            <i class="fas {{ $file->filetype === 'pdf' ? 'fa-file-pdf' : 'fa-file-word' }} text-lg"></i>
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center {{ $isPdf ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }}">
+                            <i class="fas {{ $isPdf ? 'fa-file-pdf' : 'fa-file-word' }} text-lg"></i>
                         </div>
                         <div>
                             <h3 class="font-bold text-slate-800">
@@ -44,7 +48,7 @@
                 </div>
 
                 <div class="bg-slate-100 p-1 relative group">
-                    @if($file->filetype === 'pdf')
+                    @if($isPdf)
                         <iframe src="{{ asset($file->filepath) }}" class="w-full h-[500px] rounded-b-lg border-0 bg-white"></iframe>
                     @else
                         <iframe src="https://docs.google.com/gview?url={{ urlencode(asset($file->filepath)) }}&embedded=true" class="w-full h-[500px] rounded-b-lg border-0 bg-white"></iframe>
@@ -53,6 +57,7 @@
                     <div class="absolute inset-0 bg-brand-primary/5 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
 
+                @if($file->filetype !== 'recommendation letter')
                 <div class="p-6 bg-white border-t border-slate-100">
                     <form action="{{ route('update.file', $researchTitle->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
@@ -76,6 +81,7 @@
                         </div>
                     </form>
                 </div>
+                @endif
             </div>
         @endforeach
         </div>

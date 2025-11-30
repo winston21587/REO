@@ -88,6 +88,8 @@
                                 @php
                                     $statusColors = [
                                         'For Initial Review' => 'bg-blue-50 text-blue-700 border-blue-100',
+                                        'Complete - Awaiting Hardcopy' => 'bg-yellow-50 text-yellow-700 border-yellow-100',
+                                        'Hardcopy Received - For Initial Review' => 'bg-teal-50 text-teal-700 border-teal-100',
                                         'Waiting for Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
                                         'Submission of Revisions / Resubmission' => 'bg-purple-50 text-purple-700 border-purple-100',
                                         'Checking of Revisions' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
@@ -112,9 +114,20 @@
                                             <a href="{{ route('admin.view_files', $data->id) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
                                                 <i class="fas fa-eye w-4"></i> View Details
                                             </a>
-                                            <button @click="open = false; openStatusModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                <i class="fas fa-sync-alt w-4"></i> Update Status
-                                            </button>
+                                            
+                                            @if($data->Status === 'Complete - Awaiting Hardcopy')
+                                                <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST">
+                                                    @csrf
+                                                    <input type="hidden" name="status" value="Hardcopy Received - For Initial Review">
+                                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
+                                                        <i class="fas fa-file-import w-4"></i> Receive Hardcopy
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <button @click="open = false; openStatusModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
+                                                    <i class="fas fa-sync-alt w-4"></i> Update Status
+                                                </button>
+                                            @endif
                                             <button @click="open = false; openReviewersModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
                                                 <i class="fas fa-users-cog w-4"></i> Assign Reviewers
                                             </button>

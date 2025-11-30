@@ -15,9 +15,13 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Seed AI Compliance Data for existing Research Titles
+        $titles = \App\Models\Research_title::all();
+        foreach ($titles as $title) {
+            $title->ai_score = rand(0, 100);
+            // 30% chance of being verified
+            $title->is_human_verified = (rand(1, 100) <= 30);
+            $title->save();
+        }
     }
 }

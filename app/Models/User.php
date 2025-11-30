@@ -33,6 +33,12 @@ class User extends Authenticatable
         'external_user',
         'contact',
         'first_time',
+        'position',
+        'member_type',
+        'expertise',
+        'training_completed',
+        'email_preferences',
+        'display_preferences',
     ];
 
     /**
@@ -55,6 +61,12 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_verified' => 'boolean',
+            'external_user' => 'boolean',
+            'expertise' => 'array',
+            'training_completed' => 'boolean',
+            'email_preferences' => 'array',
+            'display_preferences' => 'array',
         ];
     }
 }

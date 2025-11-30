@@ -74,7 +74,7 @@
                 <div>
                     <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Committee</p>
                     <div class="space-y-1">
-                        <a href="{{ route('admin.meetings') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.meetings') ? 'active' : '' }}">
+                        <a href="{{ route('admin.meetings') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.meetings*') ? 'active' : '' }}">
                             <i class="fas fa-users w-5 text-center"></i>
                             <span class="flex-1">Meetings & Agenda</span>
                         </a>

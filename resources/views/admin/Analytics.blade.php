@@ -75,24 +75,109 @@
                     <p class="text-5xl font-extrabold text-slate-900">Monthly Overview</p>
                 </div>
 
-                <div class="h-64 w-full">
-                    <svg fill="none" height="100%" preserveAspectRatio="none" viewBox="0 0 472 150" width="100%" class="overflow-visible">
-                        <defs>
-                            <linearGradient id="chart-gradient" x1="0" x2="0" y1="0" y2="1">
-                                <stop offset="0%" stop-color="#8B0000" stop-opacity="0.1"></stop>
-                                <stop offset="100%" stop-color="#8B0000" stop-opacity="0"></stop>
-                            </linearGradient>
-                        </defs>
-                        <path d="M0 109C18 109 18 21 36 21C54 21 54 41 72 41C90 41 90 93 108 93C127 93 127 33 145 33C163 33 163 101 181 101C199 101 199 61 217 61C236 61 236 45 254 45C272 45 272 121 290 121C308 121 308 149 326 149C344 149 344 1 363 1C381 1 381 81 399 81C417 81 417 129 435 129C453 129 453 25 472 25V150H0V109Z" fill="url(#chart-gradient)"></path>
-                        <path class="text-[#8B0000]" d="M0 109C18 109 18 21 36 21C54 21 54 41 72 41C90 41 90 93 108 93C127 93 127 33 145 33C163 33 163 101 181 101C199 101 199 61 217 61C236 61 236 45 254 45C272 45 272 121 290 121C308 121 308 149 326 149C344 149 344 1 363 1C381 1 381 81 399 81C417 81 417 129 435 129C453 129 453 25 472 25" stroke="currentColor" stroke-linecap="round" stroke-width="3"></path>
-                    </svg>
-                </div>
-                
-                <div class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">
-                    <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+                <div class="h-80 w-full">
+                    <canvas id="submissionTrendChart"></canvas>
                 </div>
             </div>
         </section>
+
+        <!-- Chart.js CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ctx = document.getElementById('submissionTrendChart').getContext('2d');
+                
+                // Create Gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(139, 0, 0, 0.2)'); // #8B0000 with opacity
+                gradient.addColorStop(1, 'rgba(139, 0, 0, 0)');
+
+                const monthlyData = @json($monthlyData);
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [{
+                            label: 'Submissions',
+                            data: monthlyData,
+                            borderColor: '#8B0000',
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#8B0000',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            fill: true,
+                            tension: 0.4 // Smooth curve
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: '#1e293b',
+                                padding: 12,
+                                titleFont: {
+                                    family: "'Inter', sans-serif",
+                                    size: 13
+                                },
+                                bodyFont: {
+                                    family: "'Inter', sans-serif",
+                                    size: 13,
+                                    weight: 'bold'
+                                },
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y + ' Submissions';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: '#f1f5f9',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: {
+                                        family: "'Inter', sans-serif",
+                                        size: 11
+                                    },
+                                    color: '#64748b',
+                                    padding: 10,
+                                    precision: 0
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: {
+                                        family: "'Inter', sans-serif",
+                                        size: 11,
+                                        weight: 'bold'
+                                    },
+                                    color: '#94a3b8',
+                                    padding: 10
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
 
         <div class="grid md:grid-cols-2 gap-8">
             <section class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 flex flex-col justify-between">
@@ -134,21 +219,21 @@
                 <div class="space-y-6 relative z-10">
                     <div>
                         <div class="flex justify-between mb-2 text-sm font-medium">
-                            <span class="text-slate-300">AI Generated Content</span>
-                            <span class="text-white">60%</span>
+                            <span class="text-slate-300">AI Generated Content (Avg)</span>
+                            <span class="text-white">{{ $avgAiScore }}%</span>
                         </div>
                         <div class="w-full bg-white/10 rounded-full h-2">
-                            <div class="bg-[#8B0000] h-2 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.5)]" style="width: 60%"></div>
+                            <div class="bg-[#8B0000] h-2 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.5)] transition-all duration-1000 ease-out" style="width: {{ $avgAiScore }}%"></div>
                         </div>
                     </div>
                     
                     <div>
                         <div class="flex justify-between mb-2 text-sm font-medium">
                             <span class="text-slate-300">Human Verified</span>
-                            <span class="text-white">30%</span>
+                            <span class="text-white">{{ $humanVerifiedRate }}%</span>
                         </div>
                         <div class="w-full bg-white/10 rounded-full h-2">
-                            <div class="bg-green-500 h-2 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]" style="width: 30%"></div>
+                            <div class="bg-green-500 h-2 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] transition-all duration-1000 ease-out" style="width: {{ $humanVerifiedRate }}%"></div>
                         </div>
                     </div>
 

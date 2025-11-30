@@ -1,4 +1,5 @@
 <x-user_layout>
+    @php $user = Auth::user(); @endphp
     @if(session('success'))
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" class="fixed top-24 right-6 z-50 bg-white border-l-4 border-green-500 rounded-lg shadow-lg p-4 animate-[fadeInLeft_0.3s_ease-out]">
             <div class="flex items-center gap-3">
@@ -34,7 +35,7 @@
             <p class="text-slate-500 mt-2">Manage your profile information, security, and preferences.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-primary/30 hover:shadow-lg transition-all group relative overflow-hidden">
                 <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -75,16 +76,7 @@
                 </button>
             </div>
 
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-primary/30 hover:shadow-lg transition-all group relative overflow-hidden">
-                <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                    <span class="material-symbols-outlined text-3xl">tune</span>
-                </div>
-                <h3 class="text-xl font-bold text-slate-900">Preferences</h3>
-                <p class="text-sm text-slate-500 mt-2 mb-8 leading-relaxed">Customize your dashboard view and accessibility settings.</p>
-                <button onclick="openModal('preferences-modal')" class="w-full py-3 rounded-xl border-2 border-slate-100 text-slate-600 font-bold text-sm hover:bg-brand-primary hover:border-brand-primary hover:text-white transition-all flex items-center justify-center gap-2">
-                    Customize View <i class="fas fa-sliders-h text-xs"></i>
-                </button>
-            </div>
+
 
     </div>
 
@@ -168,21 +160,35 @@
                     <input type="text" name="institute" value="{{ Auth::user()->institute }}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-brand-primary outline-none">
                 </div>
                 @else
-                <div class="grid grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">College</label>
-                        <input type="text" name="college" value="{{ Auth::user()->college }}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-brand-primary outline-none">
+                        <div class="relative">
+                            <select name="college" id="settingsCollegeSelect" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] outline-none appearance-none cursor-pointer">
+                                <option value="" disabled>Select College</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Department</label>
-                        <input type="text" name="department" value="{{ Auth::user()->department }}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-brand-primary outline-none">
+                        <div class="relative">
+                            <select name="department" id="settingsDeptSelect" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] outline-none appearance-none cursor-pointer">
+                                <option value="" disabled>Select Department</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 @endif
 
                 <div class="pt-4 flex justify-end gap-3">
                     <button type="button" onclick="closeModal('profile-modal')" class="px-5 py-2.5 rounded-xl text-slate-500 font-bold hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:bg-red-900 transition-all">Save Changes</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-[#8B0000] text-white font-bold shadow-lg hover:bg-red-900 transition-all">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -211,7 +217,7 @@
 
                 <div class="pt-4 flex justify-end gap-3">
                     <button type="button" onclick="closeModal('security-modal')" class="px-5 py-2.5 rounded-xl text-slate-500 font-bold hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:bg-red-900 transition-all">Update Password</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-[#8B0000] text-white font-bold shadow-lg hover:bg-red-900 transition-all">Update Password</button>
                 </div>
             </form>
         </div>
@@ -223,55 +229,52 @@
                 <h3 class="text-white font-bold text-lg">Email Preferences</h3>
                 <button onclick="closeModal('notifications-modal')" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-8 space-y-6">
-                <label class="flex items-center justify-between cursor-pointer">
-                    <span class="font-bold text-slate-700">Submission Status</span>
-                    <input type="checkbox" checked class="w-5 h-5 text-brand-primary rounded focus:ring-brand-primary">
-                </label>
-                <label class="flex items-center justify-between cursor-pointer">
-                    <span class="font-bold text-slate-700">Appointment Reminders</span>
-                    <input type="checkbox" checked class="w-5 h-5 text-brand-primary rounded focus:ring-brand-primary">
-                </label>
-                <label class="flex items-center justify-between cursor-pointer">
-                    <span class="font-bold text-slate-700">New Resources Alert</span>
-                    <input type="checkbox" class="w-5 h-5 text-brand-primary rounded focus:ring-brand-primary">
-                </label>
-                
-                <div class="pt-4 flex justify-end">
-                    <button onclick="closeModal('notifications-modal')" class="px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:bg-red-900 transition-all">Save Preferences</button>
+            <form action="{{ route('settings.update_email_preferences') }}" method="POST" class="p-8 space-y-6">
+                @csrf
+                <div class="space-y-6">
+                    <label class="flex items-center justify-between cursor-pointer group">
+                        <div>
+                            <span class="font-bold text-slate-700 block group-hover:text-[#8B0000] transition-colors">Submission Status</span>
+                            <span class="text-xs text-slate-500">Get notified when your protocol status changes.</span>
+                        </div>
+                        <div class="relative">
+                            <input type="checkbox" name="submission_status" class="sr-only peer" {{ ($user->email_preferences['submission_status'] ?? true) ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]"></div>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center justify-between cursor-pointer group">
+                        <div>
+                            <span class="font-bold text-slate-700 block group-hover:text-[#8B0000] transition-colors">Appointment Reminders</span>
+                            <span class="text-xs text-slate-500">Receive alerts before scheduled meetings.</span>
+                        </div>
+                        <div class="relative">
+                            <input type="checkbox" name="appointment_reminders" class="sr-only peer" {{ ($user->email_preferences['appointment_reminders'] ?? true) ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]"></div>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center justify-between cursor-pointer group">
+                        <div>
+                            <span class="font-bold text-slate-700 block group-hover:text-[#8B0000] transition-colors">New Resources Alert</span>
+                            <span class="text-xs text-slate-500">Be notified when new templates or guidelines are added.</span>
+                        </div>
+                        <div class="relative">
+                            <input type="checkbox" name="new_resources" class="sr-only peer" {{ ($user->email_preferences['new_resources'] ?? false) ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]"></div>
+                        </div>
+                    </label>
                 </div>
-            </div>
+                
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal('notifications-modal')" class="px-5 py-2.5 rounded-xl text-slate-500 font-bold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-[#8B0000] text-white font-bold shadow-lg hover:bg-red-900 transition-all">Save Preferences</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <div id="preferences-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-[scaleIn_0.2s_ease-out]">
-            <div class="bg-slate-900 p-6 flex justify-between items-center border-b border-slate-800">
-                <h3 class="text-white font-bold text-lg">Display Settings</h3>
-                <button onclick="closeModal('preferences-modal')" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-8 space-y-6">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Theme</label>
-                    <div class="flex gap-4">
-                        <button class="flex-1 py-3 border-2 border-brand-primary bg-red-50 text-brand-primary font-bold rounded-xl">Light</button>
-                        <button class="flex-1 py-3 border border-slate-200 text-slate-500 font-bold rounded-xl hover:border-slate-400">Dark</button>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Table Density</label>
-                    <select class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none">
-                        <option>Comfortable</option>
-                        <option>Compact</option>
-                    </select>
-                </div>
-                
-                <div class="pt-4 flex justify-end">
-                    <button onclick="closeModal('preferences-modal')" class="px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:bg-red-900 transition-all">Apply Changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <script>
         function openModal(id) {
@@ -280,5 +283,83 @@
         function closeModal(id) {
             document.getElementById(id).classList.add('hidden');
         }
+
+        // Academic Data Structure (Same as Register)
+        const academicData = {
+            "College of Computing Studies": {
+                "Department of Computer Science": ["BS Computer Science", "BS Information Technology", "Master in Information Technology"],
+                "Department of Computer Engineering": ["BS Computer Engineering"]
+            },
+            "College of Engineering": {
+                "Department of Civil Engineering": ["BS Civil Engineering", "BS Sanitary Engineering"],
+                "Department of Electrical Engineering": ["BS Electrical Engineering"],
+                "Department of Mechanical Engineering": ["BS Mechanical Engineering"]
+            },
+            "College of Science and Mathematics": {
+                "Department of Mathematics": ["BS Mathematics", "BS Statistics"],
+                "Department of Biology": ["BS Biology", "MS Biology"],
+                "Department of Physics": ["BS Physics"]
+            },
+            "College of Liberal Arts": {
+                "Department of English": ["AB English Language Studies"],
+                "Department of Political Science": ["AB Political Science"],
+                "Department of Psychology": ["BS Psychology"]
+            },
+            "College of Teacher Education": {
+                "Department of Elementary Education": ["BE Elementary Education"],
+                "Department of Secondary Education": ["BE Secondary Education"]
+            },
+            "College of Nursing": {
+                "Department of Nursing": ["BS Nursing"]
+            },
+            "College of Criminal Justice Education": {
+                "Department of Criminology": ["BS Criminology"]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const collegeSelect = document.getElementById('settingsCollegeSelect');
+            const deptSelect = document.getElementById('settingsDeptSelect');
+            
+            // Only proceed if elements exist (internal users)
+            if (collegeSelect && deptSelect) {
+                const userCollege = "{{ Auth::user()->college }}";
+                const userDept = "{{ Auth::user()->department }}";
+
+                // Populate Colleges
+                for (const college in academicData) {
+                    const option = document.createElement('option');
+                    option.value = college;
+                    option.textContent = college;
+                    if (college === userCollege) option.selected = true;
+                    collegeSelect.appendChild(option);
+                }
+
+                // Function to populate departments
+                function populateDepartments(selectedCollege, selectedDept = null) {
+                    deptSelect.innerHTML = '<option value="" disabled selected>Select Department</option>';
+                    
+                    if (selectedCollege && academicData[selectedCollege]) {
+                        for (const dept in academicData[selectedCollege]) {
+                            const option = document.createElement('option');
+                            option.value = dept;
+                            option.textContent = dept;
+                            if (dept === selectedDept) option.selected = true;
+                            deptSelect.appendChild(option);
+                        }
+                    }
+                }
+
+                // Initial Population
+                if (userCollege) {
+                    populateDepartments(userCollege, userDept);
+                }
+
+                // Handle Change
+                collegeSelect.addEventListener('change', function() {
+                    populateDepartments(this.value);
+                });
+            }
+        });
     </script>
 </x-user_layout>

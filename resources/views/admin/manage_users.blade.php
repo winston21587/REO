@@ -1,5 +1,5 @@
 <x-admin_layout>
-    <div class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
+    <div x-data="{ showAddModal: false, showViewModal: false, selectedUser: null }" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
         
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-end pb-6 border-b border-slate-200">
@@ -8,31 +8,50 @@
                 <p class="text-slate-500 mt-2 text-sm">Directory of registered faculty, staff, and student researchers.</p>
             </div>
             <div class="flex gap-2 mt-4 md:mt-0">
-                <button class="px-4 py-2 bg-[#8B0000] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#6d0000] transition-colors shadow-md flex items-center gap-2">
+                <button @click="showAddModal = true" class="px-4 py-2 bg-[#8B0000] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#6d0000] transition-colors shadow-md flex items-center gap-2">
                     <i class="fas fa-user-plus"></i> Add Researcher
                 </button>
             </div>
         </div>
 
         <!-- Search & Filter -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+        <form method="GET" action="{{ route('admin.manage_users') }}" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
             <div class="relative flex-grow w-full md:w-auto">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none" placeholder="Search by name, email, or college..." type="text" />
+                <input name="search" value="{{ request('search') }}" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none" placeholder="Search by name, email..." type="text" />
             </div>
+            
+            <!-- College Filter -->
+            <div class="relative w-full md:w-48">
+                <select name="college" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
+                    <option value="">All Colleges</option>
+                    @foreach($colleges as $college)
+                        <option value="{{ $college }}" {{ request('college') == $college ? 'selected' : '' }}>{{ $college }}</option>
+                    @endforeach
+                </select>
+                <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="relative w-full md:w-40">
+                <select name="status" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
+                    <option value="">All Status</option>
+                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                </select>
+                <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+            </div>
+
             <div class="flex gap-2 w-full md:w-auto">
-                <button class="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 flex-1 md:flex-none justify-center">
-                    <i class="fas fa-filter"></i> Filter
-                </button>
-                <button class="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 flex-1 md:flex-none justify-center">
-                    <i class="fas fa-download"></i> Export
+                <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#7A0000] transition-colors flex items-center gap-2 shadow-lg shadow-red-900/20">
+                    <i class="fas fa-filter"></i> Apply
                 </button>
             </div>
-        </div>
+        </form>
 
         <!-- Users List -->
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-            <div class="overflow-x-auto">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100">
+            <div class="overflow-x-auto md:overflow-visible">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
@@ -43,68 +62,291 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
+                        @forelse($users as $user)
                         <tr class="group hover:bg-slate-50 transition-colors">
                             <td class="p-6">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold shadow-sm border border-blue-100">DL</div>
+                                    <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold shadow-sm border border-blue-100">
+                                        {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
+                                    </div>
                                     <div>
-                                        <p class="font-bold text-slate-800 text-base">Dr. David Lee</p>
-                                        <p class="text-xs text-slate-400">Faculty Researcher</p>
+                                        <p class="font-bold text-slate-800 text-base">{{ $user->first_name }} {{ $user->last_name }}</p>
+                                        <p class="text-xs text-slate-400">{{ $user->college ?? 'Researcher' }}</p>
                                     </div>
                                 </div>
                             </td>
                             <td class="p-6 text-sm text-slate-600">
                                 <div class="flex items-center gap-2 group-hover:text-[#8B0000] transition-colors">
-                                    <i class="far fa-envelope text-slate-400"></i> david.lee@wmsu.edu.ph
+                                    <i class="far fa-envelope text-slate-400"></i> {{ $user->email }}
                                 </div>
                             </td>
                             <td class="p-6">
+                                @if($user->email_verified_at)
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Active
+                                    <span class="relative flex h-2 w-2">
+                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                      <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                    </span>
+                                    Active
                                 </span>
+                                @else
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Pending
+                                </span>
+                                @endif
                             </td>
-                            <td class="p-6 text-right">
-                                <button class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
+                            <td class="p-6 text-right relative">
+                                <div x-data="{ open: false }" class="relative inline-block text-left">
+                                    <button @click="open = !open" @click.away="open = false" class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    
+                                    <div x-show="open" 
+                                         x-transition:enter="transition ease-out duration-100"
+                                         x-transition:enter-start="transform opacity-0 scale-95"
+                                         x-transition:enter-end="transform opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="transform opacity-100 scale-100"
+                                         x-transition:leave-end="transform opacity-0 scale-95"
+                                         class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" 
+                                         style="display: none;">
+                                        <div class="py-1" role="menu" aria-orientation="vertical">
+                                            <button @click="selectedUser = {{ $user }}; showViewModal = true" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2 transition-colors">
+                                                <i class="fas fa-eye w-4"></i> View Details
+                                            </button>
+                                            
+                                            <form action="{{ route('admin.users.toggle_status', $user->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2 transition-colors">
+                                                    <i class="fas fa-ban w-4"></i> {{ $user->email_verified_at ? 'Deactivate' : 'Activate' }}
+                                                </button>
+                                            </form>
 
-                        <tr class="group hover:bg-slate-50 transition-colors">
-                            <td class="p-6">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center font-bold shadow-sm border border-orange-100">JM</div>
-                                    <div>
-                                        <p class="font-bold text-slate-800 text-base">Jane Miller</p>
-                                        <p class="text-xs text-slate-400">Student Researcher</p>
+                                            <form action="{{ route('admin.users.delete', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this researcher? This action cannot be undone.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
+                                                    <i class="fas fa-trash w-4"></i> Delete User
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-6 text-sm text-slate-600">
-                                <div class="flex items-center gap-2 group-hover:text-[#8B0000] transition-colors">
-                                    <i class="far fa-envelope text-slate-400"></i> jane.m@wmsu.edu.ph
-                                </div>
-                            </td>
-                            <td class="p-6">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Inactive
-                                </span>
-                            </td>
-                            <td class="p-6 text-right">
-                                <button class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
-                                    <i class="fas fa-edit"></i>
-                                </button>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="p-8 text-center text-slate-500">
+                                No researchers found.
                             </td>
                         </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
             
-            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
-                <p class="text-xs text-slate-500">Showing <span class="font-bold text-slate-700">1-10</span> of <span class="font-bold text-slate-700">45</span> users</p>
-                <div class="flex gap-1">
-                    <button class="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-600 border border-slate-200 rounded bg-white disabled:opacity-50" disabled>Previous</button>
-                    <button class="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-600 border border-slate-200 rounded bg-white">Next</button>
+            <div class="p-4 border-t border-slate-100 bg-slate-50">
+                {{ $users->links() }}
+            </div>
+        </div>
+
+        <!-- Add Researcher Modal -->
+        <div x-show="showAddModal" 
+             class="fixed inset-0 z-50 overflow-y-auto" 
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showAddModal = false"></div>
+
+            <!-- Modal Panel -->
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    
+                    <!-- Header -->
+                    <div class="bg-white px-6 pt-6 pb-4 border-b border-slate-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+                                    <i class="fas fa-user-plus text-[#8B0000] text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-slate-900" id="modal-title">Add New Researcher</h3>
+                                    <p class="text-xs text-slate-500">Create a new account for a researcher.</p>
+                                </div>
+                            </div>
+                            <button @click="showAddModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                <i class="fas fa-times text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="px-6 py-6">
+                        <form action="{{ route('admin.users.create') }}" method="POST" class="space-y-5">
+                            @csrf
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
+                                    <div class="relative">
+                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input type="text" name="first_name" required placeholder="John" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
+                                    <div class="relative">
+                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input type="text" name="last_name" required placeholder="Doe" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
+                                <div class="relative">
+                                    <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input type="email" name="email" required placeholder="john.doe@wmsu.edu.ph" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">College</label>
+                                <div class="relative">
+                                    <i class="fas fa-graduation-cap absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <select name="college" required class="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all appearance-none cursor-pointer text-slate-600">
+                                        <option value="" disabled selected>Select College</option>
+                                        @foreach($colleges as $college)
+                                            <option value="{{ $college }}">{{ $college }}</option>
+                                        @endforeach
+                                    </select>
+                                    <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-50 mt-6">
+                                <button type="button" @click="showAddModal = false" class="px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-[#8B0000] to-[#600000] text-white text-sm font-bold rounded-xl shadow-lg shadow-red-900/20 hover:shadow-red-900/30 hover:-translate-y-0.5 transition-all">
+                                    Create Account
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View User Modal -->
+        <div x-show="showViewModal" 
+             class="fixed inset-0 z-50 overflow-y-auto" 
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showViewModal = false"></div>
+
+            <!-- Modal Panel -->
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    
+                    <!-- Header -->
+                    <div class="bg-white px-6 pt-6 pb-4 border-b border-slate-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                                    <i class="fas fa-user-circle text-blue-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-slate-900">Researcher Details</h3>
+                                    <p class="text-xs text-slate-500">View complete researcher information.</p>
+                                </div>
+                            </div>
+                            <button @click="showViewModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                <i class="fas fa-times text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="px-6 py-6 space-y-6" x-if="selectedUser">
+                        <!-- Profile Header -->
+                        <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="w-16 h-16 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center text-2xl font-bold text-[#8B0000]">
+                                <span x-text="selectedUser.first_name.charAt(0) + selectedUser.last_name.charAt(0)"></span>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-900" x-text="selectedUser.first_name + ' ' + selectedUser.last_name"></h4>
+                                <p class="text-sm text-slate-500" x-text="selectedUser.email"></p>
+                                <div class="mt-2">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
+                                          :class="selectedUser.email_verified_at ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'">
+                                        <span class="w-1.5 h-1.5 rounded-full" :class="selectedUser.email_verified_at ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+                                        <span x-text="selectedUser.email_verified_at ? 'Active Account' : 'Pending Verification'"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Details Grid -->
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">College</label>
+                                <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                                    <i class="fas fa-graduation-cap text-slate-400"></i>
+                                    <span x-text="selectedUser.college || 'Not Assigned'"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Role</label>
+                                    <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                                        <i class="fas fa-id-badge text-slate-400"></i>
+                                        <span class="capitalize" x-text="selectedUser.role"></span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Joined Date</label>
+                                    <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                                        <i class="fas fa-calendar-alt text-slate-400"></i>
+                                        <span x-text="new Date(selectedUser.created_at).toLocaleDateString()"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="pt-4 border-t border-slate-50 flex justify-end">
+                            <button @click="showViewModal = false" class="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
+                                Close Details
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

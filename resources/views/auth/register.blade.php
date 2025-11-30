@@ -81,49 +81,82 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">First Name</label>
-                            <input type="text" name="FirstName" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm" placeholder="Juan">
+                            <input type="text" name="FirstName" value="{{ old('FirstName') }}" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm" placeholder="Juan">
+                            @error('FirstName') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Middle Name <span class="text-slate-400 font-normal">(Opt)</span></label>
-                            <input type="text" name="MiddleName" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="D.">
+                            <input type="text" name="MiddleName" value="{{ old('MiddleName') }}" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="D.">
+                            @error('MiddleName') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Last Name</label>
-                            <input type="text" name="LastName" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="Dela Cruz">
+                            <input type="text" name="LastName" value="{{ old('LastName') }}" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="Dela Cruz">
+                            @error('LastName') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Email Address</label>
-                            <input type="email" name="email" id="emailField" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="juan@wmsu.edu.ph">
+                            <input type="email" name="email" id="emailField" value="{{ old('email') }}" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="juan@wmsu.edu.ph">
                             <p id="emailHint" class="text-[10px] text-[#8B0000] hidden mt-1">* Must be a valid WMSU email (@wmsu.edu.ph)</p>
+                            @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Contact No.</label>
-                            <input type="text" name="contact" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="0912 345 6789">
+                            <input type="text" name="contact" value="{{ old('contact') }}" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="09123456789">
+                            @error('contact') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div id="wmsuFields" class="space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-200 transition-all duration-300">
                         <h3 class="text-xs font-bold text-[#8B0000] uppercase tracking-wider border-b border-slate-200 pb-2 mb-3">Academic Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        <div class="space-y-4">
+                            <!-- College Dropdown -->
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-700">College</label>
-                                <select name="college" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm">
-                                    <option value="" disabled selected>Select College</option>
-                                    <option value="ICS">College of Computing Studies</option>
-                                    <option value="COE">College of Engineering</option>
-                                    <option value="CSM">College of Science & Math</option>
+                                <div class="relative">
+                                    <select name="college" id="collegeSelect" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none cursor-pointer transition-shadow hover:shadow-sm">
+                                        <option value="" disabled selected>Select College</option>
+                                        <!-- Populated by JS -->
                                     </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                                @error('college') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-700">Department</label>
-                                <input type="text" name="department" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="e.g. Computer Science">
-                            </div>
-                            <div class="space-y-1 md:col-span-2">
-                                <label class="text-xs font-bold text-slate-700">Course / Program</label>
-                                <input type="text" name="course" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="e.g. BS in Computer Science">
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Department Dropdown -->
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-700">Department</label>
+                                    <div class="relative">
+                                        <select name="department" id="deptSelect" disabled class="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none cursor-not-allowed transition-all">
+                                            <option value="" disabled selected>Select Department</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                            <i class="fas fa-chevron-down text-xs"></i>
+                                        </div>
+                                    </div>
+                                    @error('department') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                                </div>
+
+                                <!-- Course Dropdown -->
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-700">Course / Program</label>
+                                    <div class="relative">
+                                        <select name="course" id="courseSelect" disabled class="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none cursor-not-allowed transition-all">
+                                            <option value="" disabled selected>Select Course</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                            <i class="fas fa-chevron-down text-xs"></i>
+                                        </div>
+                                    </div>
+                                    @error('course') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -140,6 +173,7 @@
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Password</label>
                             <input type="password" name="password" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="••••••••">
+                            @error('password') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Confirm Password</label>
@@ -174,6 +208,99 @@
         const wmsuInputs = wmsuFields.querySelectorAll('input, select');
         const externalInputs = externalFields.querySelectorAll('input, select');
 
+        // Academic Data Structure
+        const academicData = {
+            "College of Computing Studies": {
+                "Department of Computer Science": ["BS Computer Science", "BS Information Technology", "Master in Information Technology"],
+                "Department of Computer Engineering": ["BS Computer Engineering"]
+            },
+            "College of Engineering": {
+                "Department of Civil Engineering": ["BS Civil Engineering", "BS Sanitary Engineering"],
+                "Department of Electrical Engineering": ["BS Electrical Engineering"],
+                "Department of Mechanical Engineering": ["BS Mechanical Engineering"]
+            },
+            "College of Science and Mathematics": {
+                "Department of Mathematics": ["BS Mathematics", "BS Statistics"],
+                "Department of Biology": ["BS Biology", "MS Biology"],
+                "Department of Physics": ["BS Physics"]
+            },
+            "College of Liberal Arts": {
+                "Department of English": ["AB English Language Studies"],
+                "Department of Political Science": ["AB Political Science"],
+                "Department of Psychology": ["BS Psychology"]
+            },
+            "College of Teacher Education": {
+                "Department of Elementary Education": ["BE Elementary Education"],
+                "Department of Secondary Education": ["BE Secondary Education"]
+            },
+            "College of Nursing": {
+                "Department of Nursing": ["BS Nursing"]
+            },
+            "College of Criminal Justice Education": {
+                "Department of Criminology": ["BS Criminology"]
+            }
+        };
+
+        const collegeSelect = document.getElementById('collegeSelect');
+        const deptSelect = document.getElementById('deptSelect');
+        const courseSelect = document.getElementById('courseSelect');
+
+        // Populate Colleges
+        for (const college in academicData) {
+            const option = document.createElement('option');
+            option.value = college;
+            option.textContent = college;
+            collegeSelect.appendChild(option);
+        }
+
+        // Handle College Change
+        collegeSelect.addEventListener('change', function() {
+            const selectedCollege = this.value;
+            
+            // Reset Department
+            deptSelect.innerHTML = '<option value="" disabled selected>Select Department</option>';
+            deptSelect.disabled = false;
+            deptSelect.classList.remove('bg-slate-100', 'cursor-not-allowed');
+            deptSelect.classList.add('bg-white', 'cursor-pointer');
+
+            // Reset Course
+            courseSelect.innerHTML = '<option value="" disabled selected>Select Course</option>';
+            courseSelect.disabled = true;
+            courseSelect.classList.add('bg-slate-100', 'cursor-not-allowed');
+            courseSelect.classList.remove('bg-white', 'cursor-pointer');
+
+            if (selectedCollege && academicData[selectedCollege]) {
+                for (const dept in academicData[selectedCollege]) {
+                    const option = document.createElement('option');
+                    option.value = dept;
+                    option.textContent = dept;
+                    deptSelect.appendChild(option);
+                }
+            }
+        });
+
+        // Handle Department Change
+        deptSelect.addEventListener('change', function() {
+            const selectedCollege = collegeSelect.value;
+            const selectedDept = this.value;
+
+            // Reset Course
+            courseSelect.innerHTML = '<option value="" disabled selected>Select Course</option>';
+            courseSelect.disabled = false;
+            courseSelect.classList.remove('bg-slate-100', 'cursor-not-allowed');
+            courseSelect.classList.add('bg-white', 'cursor-pointer');
+
+            if (selectedCollege && selectedDept && academicData[selectedCollege][selectedDept]) {
+                const courses = academicData[selectedCollege][selectedDept];
+                courses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course;
+                    option.textContent = course;
+                    courseSelect.appendChild(option);
+                });
+            }
+        });
+
         // Toggle Form Logic
         function updateFormState() {
             if (toggle.checked) {
@@ -187,7 +314,7 @@
                 // Update Action
                 form.action = "{{ route('register.external') }}";
 
-                // Disable WMSU inputs so they don't block validation or send data
+                // Disable WMSU inputs
                 wmsuInputs.forEach(input => input.disabled = true);
                 externalInputs.forEach(input => input.disabled = false);
 
@@ -204,6 +331,9 @@
                 // Disable External inputs
                 externalInputs.forEach(input => input.disabled = true);
                 wmsuInputs.forEach(input => input.disabled = false);
+                
+                // Re-enable college select if it was disabled by loop
+                collegeSelect.disabled = false;
             }
         }
 

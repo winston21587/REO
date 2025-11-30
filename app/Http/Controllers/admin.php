@@ -13,11 +13,194 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\AppointmentMail;
 use App\Notifications\AppointmentNotification;
 use App\Models\UserNotification;
+use App\Models\Meeting;
+use App\Models\AgendaItem;
 use Carbon\Carbon;
 
 
+use Illuminate\Support\Facades\Hash;
+
 class admin extends Controller
 {
+
+    public function createUser(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'college' => 'required|string',
+        ]);
+
+        User::create([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'college' => $request->college,
+            'role' => 'researcher',
+            'password' => Hash::make('password'), // Default password
+            'email_verified_at' => now(), // Auto-verify since admin created it
+            'external_user' => false,
+        ]);
+
+        return back()->with('success', 'Researcher added successfully!');
+    }
+
+    public function toggleUserStatus($id)
+    {
+        $user = User::findOrFail($id);
+        
+        if ($user->email_verified_at) {
+            $user->email_verified_at = null;
+            $message = 'User deactivated successfully.';
+        } else {
+            $user->email_verified_at = now();
+            $message = 'User activated successfully.';
+        }
+        
+        $user->save();
+        
+        return back()->with('success', $message);
+    }
+
+    public function deleteUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+        
+        return back()->with('success', 'User deleted successfully.');
+    }
+
+    public function manageStaff()
+    {
+        $staff = User::where('role', 'reo_member')->get();
+        
+        $stats = [
+            'total' => $staff->count(),
+            'officers' => $staff->whereIn('position', ['Chair', 'Vice-Chair', 'Secretary'])->count(),
+            'trained' => $staff->where('training_completed', true)->count(),
+            'quorum' => ($staff->count() >= 5 && 
+                         $staff->where('member_type', 'Non-Scientist')->count() >= 1 && 
+                         $staff->where('member_type', 'Non-Affiliated')->count() >= 1) ? 'Valid' : 'Invalid'
+        ];
+
+        return view('admin.manage_staff', compact('staff', 'stats'));
+    }
+
+    public function storeStaff(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'email' => 'required|email|unique:users',
+            'position' => 'required|string',
+            'member_type' => 'required|in:Scientist,Non-Scientist,Non-Affiliated',
+            'expertise' => 'nullable|string', // Comma separated tags
+            'college' => 'nullable|string',
+            'training_completed' => 'nullable',
+        ]);
+
+        // Process expertise tags
+        $expertise = $request->expertise ? array_map('trim', explode(',', $request->expertise)) : [];
+
+        User::create([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'role' => 'reo_member',
+            'position' => $request->position,
+            'member_type' => $request->member_type,
+            'expertise' => $expertise,
+            'college' => $request->college,
+            'training_completed' => $request->has('training_completed'),
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'external_user' => $request->member_type === 'Non-Affiliated',
+        ]);
+
+        return back()->with('success', 'Member added successfully!');
+    }
+
+    public function updateStaff(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        $request->validate([
+            'position' => 'required|string',
+            'member_type' => 'required|in:Scientist,Non-Scientist,Non-Affiliated',
+            'expertise' => 'nullable|string',
+            'college' => 'nullable|string',
+            'training_completed' => 'nullable', // Checkbox sends 'on' or nothing
+        ]);
+
+        $expertise = $request->expertise ? array_map('trim', explode(',', $request->expertise)) : [];
+
+        $user->update([
+            'position' => $request->position,
+            'member_type' => $request->member_type,
+            'expertise' => $expertise,
+            'college' => $request->college,
+            'training_completed' => $request->has('training_completed'),
+            'external_user' => $request->member_type === 'Non-Affiliated',
+        ]);
+
+        return back()->with('success', 'Member updated successfully!');
+    }
+
+    public function deleteStaff($id)
+    {
+        $user = User::findOrFail($id);
+        $user->update(['role' => 'user']); // Or delete entirely if preferred
+        return back()->with('success', 'Member removed successfully!');
+    }
+
+    // --- Meetings & Agenda Methods ---
+
+
+
+    public function manageUsers(Request $request)
+    {
+        $query = User::where('role', 'researcher');
+
+        // Search functionality
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by College
+        if ($request->has('college') && $request->college != '') {
+            $query->where('college', $request->college);
+        }
+
+        // Filter by Status
+        if ($request->has('status') && $request->status != '') {
+            if ($request->status == 'active') {
+                $query->whereNotNull('email_verified_at');
+            } elseif ($request->status == 'pending') {
+                $query->whereNull('email_verified_at');
+            }
+        }
+
+        $users = $query->paginate(10);
+        
+        // Full list of WMSU Colleges
+        $colleges = [
+            "College of Computing Studies",
+            "College of Engineering",
+            "College of Science and Mathematics",
+            "College of Liberal Arts",
+            "College of Teacher Education",
+            "College of Nursing",
+            "College of Criminal Justice Education"
+        ];
+
+        return view('admin.manage_users', compact('users', 'colleges'));
+    }
 
     public function analytics()
     {
@@ -60,6 +243,10 @@ class admin extends Controller
         // Calculate Completion Rate (Example: Done / Total)
         $completionRate = $totalSubmissions > 0 ? round(($doneCount / $totalSubmissions) * 100) : 0;
 
+        // 6. AI Compliance Metrics
+        $avgAiScore = round(Research_title::avg('ai_score') ?? 0);
+        $humanVerifiedCount = Research_title::where('is_human_verified', true)->count();
+        $humanVerifiedRate = $totalSubmissions > 0 ? round(($humanVerifiedCount / $totalSubmissions) * 100) : 0;
 
         return view('admin.analytics', compact(
             'totalSubmissions', 
@@ -70,7 +257,9 @@ class admin extends Controller
             'doneCount',
             'activeCount',
             'pendingCount',
-            'completionRate'
+            'completionRate',
+            'avgAiScore',
+            'humanVerifiedRate'
         ));
     }
 
@@ -114,16 +303,7 @@ public function applications(Request $request)
         return view('admin.applications', compact('datas', 'reviewers'));
     }
 
-    public function meetings()
-    {
-        // Mock data for meetings
-        $meetings = [
-            ['id' => 1, 'title' => 'Initial Review Board', 'date' => '2025-10-15', 'time' => '09:00 AM', 'location' => 'Conference Room A', 'status' => 'Scheduled', 'agenda_count' => 5],
-            ['id' => 2, 'title' => 'Expedited Review Panel', 'date' => '2025-10-18', 'time' => '02:00 PM', 'location' => 'Online (Zoom)', 'status' => 'Scheduled', 'agenda_count' => 3],
-            ['id' => 3, 'title' => 'Policy Revision Meeting', 'date' => '2025-10-25', 'time' => '10:00 AM', 'location' => 'Conference Room B', 'status' => 'Draft', 'agenda_count' => 0],
-        ];
-        return view('admin.meetings', compact('meetings'));
-    }
+
 
     public function GetReview()
     {
@@ -831,5 +1011,123 @@ public function previewLetter(Request $request)
 
         $datas = $query->orderBy('updated_at', 'desc')->paginate(10);
         return view('admin.certifications', compact('datas'));
+    }
+    public function meetings()
+    {
+        $upcomingMeetings = Meeting::where('meeting_date', '>=', now())
+            ->orderBy('meeting_date', 'asc')
+            ->get();
+        
+        $nextMeeting = $upcomingMeetings->first();
+
+        return view('admin.meetings.index', compact('upcomingMeetings', 'nextMeeting'));
+    }
+
+    public function storeMeeting(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'type' => 'required|string',
+            'meeting_date' => 'required|date',
+            'venue' => 'nullable|string',
+        ]);
+
+        $meeting = Meeting::create([
+            'title' => $validated['title'],
+            'type' => $validated['type'],
+            'meeting_date' => $validated['meeting_date'],
+            'venue' => $validated['venue'],
+            'status' => 'Scheduled',
+            'agenda_status' => 'Draft',
+        ]);
+
+        // Pre-populate standard agenda items
+        $standardItems = [
+            ['section' => 'Preliminary', 'content' => 'Call to Order', 'order' => 1],
+            ['section' => 'Preliminary', 'content' => 'Invocation', 'order' => 2],
+            ['section' => 'Preliminary', 'content' => 'Determination of Quorum', 'order' => 3],
+            ['section' => 'Preliminary', 'content' => 'Approval of Agenda', 'order' => 4],
+            ['section' => 'Preliminary', 'content' => 'Reading and Approval of Minutes', 'order' => 5],
+            ['section' => 'Business Arising', 'content' => 'Review of Action Items', 'order' => 6],
+            ['section' => 'New Business', 'content' => 'Protocol Review', 'order' => 7],
+            ['section' => 'Other Matters', 'content' => 'Announcements', 'order' => 8],
+            ['section' => 'Closing', 'content' => 'Adjournment', 'order' => 9],
+        ];
+
+        foreach ($standardItems as $item) {
+            $meeting->agendaItems()->create($item);
+        }
+
+        return back()->with('success', 'Meeting scheduled successfully.');
+    }
+
+    public function showMeeting($id)
+    {
+        $meeting = Meeting::with(['agendaItems' => function($query) {
+            $query->orderBy('order', 'asc');
+        }])->findOrFail($id);
+
+        return view('admin.meetings.show', compact('meeting'));
+    }
+
+    public function destroyMeeting($id)
+    {
+        $meeting = Meeting::findOrFail($id);
+        $meeting->delete();
+        return back()->with('success', 'Meeting deleted successfully.');
+    }
+
+    public function storeAgendaItem(Request $request, $meetingId)
+    {
+        $request->validate([
+            'section' => 'required|string',
+            'content' => 'nullable|string',
+            'order' => 'required|integer',
+        ]);
+
+        AgendaItem::create([
+            'meeting_id' => $meetingId,
+            'section' => $request->section,
+            'content' => $request->content,
+            'order' => $request->order,
+        ]);
+
+        return back()->with('success', 'Agenda item added successfully.');
+    }
+
+    public function updateAgendaItem(Request $request, $id)
+    {
+        $item = AgendaItem::findOrFail($id);
+        
+        $request->validate([
+            'section' => 'required|string',
+            'content' => 'nullable|string',
+        ]);
+
+        $item->update([
+            'section' => $request->section,
+            'content' => $request->content,
+        ]);
+
+        return back()->with('success', 'Agenda item updated successfully.');
+    }
+
+    public function destroyAgendaItem($id)
+    {
+        $item = AgendaItem::findOrFail($id);
+        $item->delete();
+        return back()->with('success', 'Agenda item removed successfully.');
+    }
+
+    public function updateMeetingStatus(Request $request, $id)
+    {
+        $meeting = Meeting::findOrFail($id);
+        
+        if ($request->has('agenda_status')) {
+            $meeting->agenda_status = $request->agenda_status;
+        }
+
+        $meeting->save();
+        return back()->with('success', 'Meeting status updated successfully.');
     }
 }

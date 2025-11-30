@@ -21,7 +21,7 @@
 
     <div class="fixed inset-0 z-0">
         <img src="{{ asset('images/wmsu2.jpg') }}" alt="WMSU Background" class="w-full h-full object-cover opacity-40">
-        <div class="absolute inset-0 bg-gradient-to-br from-[#8B0000]/90 via-[#1a0505]/95 to-black/90 mix-blend-multiply"></div>
+        <div class="absolute inset-0 from-[#8B0000]/90 via-[#1a0505]/95 to-black/90 mix-blend-multiply"></div>
     </div>
 
     <div class="relative z-10 w-full max-w-md mx-4">

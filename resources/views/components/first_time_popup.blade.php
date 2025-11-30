@@ -1,86 +1,107 @@
 @if(Auth::check() && !Auth::user()->first_time)
 
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
-        }
-    </style>
-    <div class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
-            <div
-                class="bg-background-light dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
-                <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-center gap-4">
-                    <h2 class="text-xl font-bold text-center text-gray-900 dark:text-white">
-                        Non-Disclosure Agreement
-                    </h2>
-                    <span class="material-symbols-outlined text-gray-500 dark:text-gray-400">gavel</span>
+    <div class="fixed inset-0 z-[9999] flex items-center justify-center px-4 sm:px-0">
+        <!-- Backdrop with blur -->
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity duration-300"></div>
+
+        <!-- Modal Container -->
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all duration-300 scale-100 animate-[fadeInUp_0.4s_ease-out]">
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-[#8B0000] to-red-900 p-6 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3 text-white">
+                    <div class="p-2 bg-white/10 rounded-lg backdrop-blur-md border border-white/20">
+                        <i class="fas fa-file-contract text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-heading font-bold tracking-wide">Non-Disclosure Agreement</h2>
+                        <p class="text-xs text-red-100 opacity-80">Please review the terms carefully.</p>
+                    </div>
                 </div>
-                <div class="p-6 overflow-y-auto space-y-4 text-sm text-gray-600 dark:text-gray-400">
-                    {{-- <p>
-                        This Non-Disclosure Agreement (NDA) is made and entered into as of
-                        [Date], by and between [Researcher's Name], residing at
-                        [Researcher's Address] (hereinafter "Researcher"), and
-                        [Organization's Name], located at [Organization's Address]
-                        (hereinafter "Organization").
-                    </p> --}}
-                    <p>
-                        <strong class="text-gray-800 dark:text-white">Confidentiality Agreement and Conflict of Interest
-                            Disclosure:</strong><br>
-                        Researcher acknowledges that during the course of their interaction with the Organization's file
-                        submission portal, they may have access to confidential and proprietary information, including but
-                        not limited to research data, unpublished findings, and sensitive personal information
-                        (collectively, "Confidential Information").
-                    </p>
-                    <p>
-                        <strong class="text-gray-800 dark:text-white">Confidentiality:</strong><br>
-                        Any written information provided to the WMSU REO that is confidential, privileged, or proprietary
-                        in nature shall be identified accordingly. All confidential information (and any copies and notes
-                        thereof) shall remain the sole property of the WMSU REO.
-                    </p>
-                    <p>
-                        <strong class="text-gray-800 dark:text-white">Conflict of Interest:</strong><br>
-                        It is recognized that the potential for conflict of interest will always exist; however, there is
-                        concomitant faith in the ability of the WMSU REO to manage these conflict issues, if any, in such a
-                        way that the ultimate outcome of protection of human subject remains.
-                    </p>
+            </div>
 
-                        <p>
-                            It is the policy of the WMSU REO that no member may participate in the review, comment, or approval
-                            of any activity in which he/she has a conflict of interest except to provide information as
-                            requested by the WMSU REO.
-                        </p>
-
-                        <p>
-                            The WMSU REO will immediately disclose any actual or potential conflict of interest that may have
-                            in relation to any particular proposal submitted for review, and to abstain from any participation
-                            in discussion or recommendation in respect of such proposals.
-                        </p>
-
-                    <p class="pt-2 footer_agreement">
-                        By clicking "Accept," Researcher acknowledges that they have read,
-                        understood, and agree to be bound by the terms and conditions of
-                        this Non-Disclosure Agreement.
+            <!-- Scrollable Content -->
+            <div class="p-8 overflow-y-auto custom-scrollbar space-y-6 text-sm text-slate-600 leading-relaxed">
+                
+                <!-- Section 1 -->
+                <div class="space-y-2">
+                    <h3 class="text-[#8B0000] font-bold text-base flex items-center gap-2">
+                        <i class="fas fa-shield-alt text-xs opacity-70"></i> Confidentiality & Conflict of Interest
+                    </h3>
+                    <p class="text-justify bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        Researcher acknowledges that during the course of their interaction with the Organization's file submission portal, they may have access to confidential and proprietary information, including but not limited to research data, unpublished findings, and sensitive personal information (collectively, "Confidential Information").
                     </p>
                 </div>
 
-
-                <div class=" Agreement p-6 bg-gray-50 dark:bg-black/20 rounded-b-xl flex justify-end items-center gap-4">
-                    <form action="{{ route('accept.terms') }}" method="POST">
-                        @csrf
-                        <button
-                            class="px-6 py-2 rounded-lg text-sm font-semibold bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                            <a href="{{ route('logout') }}">Decline</a>
-                        </button>
-                        <button type="submit"
-                            class="px-6 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-opacity-90 transition-opacity">
-                            Accept
-                        </button>
-                    </form>
+                <!-- Section 2 -->
+                <div class="space-y-2">
+                    <h3 class="text-[#8B0000] font-bold text-base flex items-center gap-2">
+                        <i class="fas fa-user-secret text-xs opacity-70"></i> Confidentiality
+                    </h3>
+                    <p class="text-justify">
+                        Any written information provided to the WMSU REO that is confidential, privileged, or proprietary in nature shall be identified accordingly. All confidential information (and any copies and notes thereof) shall remain the sole property of the WMSU REO.
+                    </p>
                 </div>
+
+                <!-- Section 3 -->
+                <div class="space-y-2">
+                    <h3 class="text-[#8B0000] font-bold text-base flex items-center gap-2">
+                        <i class="fas fa-handshake text-xs opacity-70"></i> Conflict of Interest
+                    </h3>
+                    <p class="text-justify">
+                        It is recognized that the potential for conflict of interest will always exist; however, there is concomitant faith in the ability of the WMSU REO to manage these conflict issues, if any, in such a way that the ultimate outcome of protection of human subject remains.
+                    </p>
+                    <p class="text-justify">
+                        It is the policy of the WMSU REO that no member may participate in the review, comment, or approval of any activity in which he/she has a conflict of interest except to provide information as requested by the WMSU REO.
+                    </p>
+                    <p class="text-justify">
+                        The WMSU REO will immediately disclose any actual or potential conflict of interest that may have in relation to any particular proposal submitted for review, and to abstain from any participation in discussion or recommendation in respect of such proposals.
+                    </p>
+                </div>
+
+                <!-- Agreement Footer -->
+                <div class="pt-4 border-t border-slate-100">
+                    <p class="text-xs text-slate-500 italic text-center">
+                        By clicking "Accept," Researcher acknowledges that they have read, understood, and agree to be bound by the terms and conditions of this Non-Disclosure Agreement.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="p-6 bg-slate-50 border-t border-slate-200 flex justify-end items-center gap-3 shrink-0">
+                <form action="{{ route('logout') }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 transition-all duration-200">
+                        Decline & Logout
+                    </button>
+                </form>
+
+                <form action="{{ route('accept.terms') }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-[#8B0000] text-white shadow-lg shadow-red-900/20 hover:bg-red-900 hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2">
+                        <span>Accept Agreement</span>
+                        <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
-@endif
+    <style>
+        /* Custom Scrollbar for the modal content */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
 
-{{-- card carousel with modal component will be added here --}}
+@endif

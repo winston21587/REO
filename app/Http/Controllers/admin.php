@@ -269,7 +269,7 @@ class admin extends Controller
     }
 public function applications(Request $request)
     {
-        $query = Research_title::with(['author', 'files']);
+        $query = Research_title::with(['author', 'files', 'adminFiles']);
 
         // 1. STRICT CONSTRAINT: Only "For Initial Review" and "Revision" statuses
         // This ensures the page ONLY accepts these titles, regardless of other inputs.
@@ -725,6 +725,33 @@ public function assignReviewers(Request $request, $id)
         return view('admin.view_files', compact('researchTitle'));
     }
 
+    public function serveFile($id)
+    {
+        $file = researcher_files::findOrFail($id);
+        
+        // Normalize path: remove 'storage/' prefix if present
+        $path = str_replace('storage/', '', $file->filepath);
+        
+        // 1. Check Storage (Public Disk)
+        if (Storage::disk('public')->exists($path)) {
+            return response()->file(storage_path('app/public/' . $path));
+        }
+        
+        // 2. Check Public Directory (Direct Access)
+        $publicPath = public_path($file->filepath);
+        if (file_exists($publicPath)) {
+            return response()->file($publicPath);
+        }
+        
+        // 3. Check Storage Path directly (Absolute)
+        $storagePath = storage_path('app/public/' . $path);
+        if (file_exists($storagePath)) {
+            return response()->file($storagePath);
+        }
+
+        return abort(404, 'File not found.');
+    }
+
     // 1. Show the Checklist Form (Replaces RC_letter.php)
     public function showLetterForm($id)
     {
@@ -944,17 +971,19 @@ public function previewLetter(Request $request)
     {
         $submission = Research_title::findOrFail($id);
         
-        // Finalize Status Update
         if ($submission->Review_Type === 'Full Board Review') {
             $submission->Status = 'Panel Deliberation';
+            $message = 'Status updated to Panel Deliberation.';
             $redirectRoute = 'admin.applications'; 
         } else {
             $submission->Status = 'Waiting for Revision';
+            $message = 'Status updated to Waiting for Revision.';
             $redirectRoute = 'admin.revisions';
         }
+        
         $submission->save();
-
-        return redirect()->route($redirectRoute)->with('success', 'Protocol status updated successfully.');
+        
+        return redirect()->route($redirectRoute)->with('success', $message);
     }
 
 
@@ -1177,5 +1206,6 @@ public function previewLetter(Request $request)
         $meeting->save();
         return back()->with('success', 'Meeting status updated successfully.');
     }
+
 
 }

@@ -1155,4 +1155,29 @@ public function previewLetter(Request $request)
         $meeting->save();
         return back()->with('success', 'Meeting status updated successfully.');
     }
+    public function serveFile($id)
+    {
+        $file = Researcher_files::findOrFail($id);
+        
+        // Determine the full path
+        $path = $file->filepath;
+        
+        // Clean the path
+        if (str_starts_with($path, 'storage/')) {
+            $relativePath = substr($path, 8); // Remove 'storage/'
+            $fullPath = storage_path('app/public/' . $relativePath);
+        } else {
+            $fullPath = storage_path('app/' . $path);
+        }
+
+        if (!file_exists($fullPath)) {
+            // Try alternative path (maybe it's directly in app)
+            $fullPath = storage_path('app/' . $path);
+            if (!file_exists($fullPath)) {
+                abort(404, 'File not found.');
+            }
+        }
+
+        return response()->file($fullPath);
+    }
 }

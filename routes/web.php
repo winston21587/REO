@@ -133,6 +133,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/revisions', [admin::class, 'revisions'])->name('admin.revisions');
     Route::get('/admin/certifications', [admin::class, 'certifications'])->name('admin.certifications');
     Route::get('/admin/view_files/{id}', [admin::class, 'viewFiles'])->name('admin.view_files');
+    Route::get('/admin/file-serve/{id}', [admin::class, 'serveFile'])->name('admin.serve_file');
 
         Route::post('/admin/assign-reviewers/{id}', [admin::class, 'assignReviewers'])->name('admin.assignReviewers');
 

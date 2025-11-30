@@ -91,6 +91,9 @@
                                         'Complete - Awaiting Hardcopy' => 'bg-yellow-50 text-yellow-700 border-yellow-100',
                                         'Hardcopy Received - For Initial Review' => 'bg-teal-50 text-teal-700 border-teal-100',
                                         'Waiting for Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
+                                        'Revision Submitted' => 'bg-purple-50 text-purple-700 border-purple-100',
+                                        'Panel Deliberation' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                                        'Approved' => 'bg-green-50 text-green-700 border-green-100',
                                         'Submission of Revisions / Resubmission' => 'bg-purple-50 text-purple-700 border-purple-100',
                                         'Checking of Revisions' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
                                     ];
@@ -249,6 +252,50 @@
                                     </div>
                                 </div>
 
+                                <!-- Status Actions Section -->
+                                <div class="border-t border-slate-100 pt-4 mt-4">
+                                    <label class="block text-sm font-bold text-slate-700 mb-3">Update Status</label>
+                                    <input type="hidden" id="statusActionInput" name="status_action">
+                                    
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <!-- Needs Revision -->
+                                        <div class="status-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-orange-400/50 hover:bg-orange-50/50 transition-all group" onclick="selectStatus('Waiting for Revision', this)">
+                                            <div class="absolute top-3 right-3 opacity-0 check-icon text-orange-500">
+                                                <i class="fas fa-check-circle text-lg"></i>
+                                            </div>
+                                            <div class="mb-2 text-slate-400 group-hover:text-orange-500 icon-box">
+                                                <i class="fas fa-edit text-2xl"></i>
+                                            </div>
+                                            <h5 class="font-bold text-slate-700 text-sm mb-1">Needs Revision</h5>
+                                            <p class="text-[10px] text-slate-500 leading-tight">Request changes from researcher.</p>
+                                        </div>
+
+                                        <!-- Panel Deliberation -->
+                                        <div class="status-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-blue-400/50 hover:bg-blue-50/50 transition-all group" onclick="selectStatus('Panel Deliberation', this)">
+                                            <div class="absolute top-3 right-3 opacity-0 check-icon text-blue-500">
+                                                <i class="fas fa-check-circle text-lg"></i>
+                                            </div>
+                                            <div class="mb-2 text-slate-400 group-hover:text-blue-500 icon-box">
+                                                <i class="fas fa-gavel text-2xl"></i>
+                                            </div>
+                                            <h5 class="font-bold text-slate-700 text-sm mb-1">Panel Deliberation</h5>
+                                            <p class="text-[10px] text-slate-500 leading-tight">For Full Review protocols.</p>
+                                        </div>
+
+                                        <!-- Approve -->
+                                        <div class="status-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-green-400/50 hover:bg-green-50/50 transition-all group" onclick="selectStatus('Approved', this)">
+                                            <div class="absolute top-3 right-3 opacity-0 check-icon text-green-500">
+                                                <i class="fas fa-check-circle text-lg"></i>
+                                            </div>
+                                            <div class="mb-2 text-slate-400 group-hover:text-green-500 icon-box">
+                                                <i class="fas fa-award text-2xl"></i>
+                                            </div>
+                                            <h5 class="font-bold text-slate-700 text-sm mb-1">Approve</h5>
+                                            <p class="text-[10px] text-slate-500 leading-tight">Issue Clearance Certificate.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Recommendation Letter Button (Moved Here) -->
                                 <div id="recommendationSection" class="hidden flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 animate-[fadeIn_0.3s_ease-out]">
                                     <div class="flex items-center gap-3">
@@ -308,15 +355,27 @@
         function selectReviewType(type, element) {
             // 1. Update Hidden Input
             document.getElementById('reviewTypeInput').value = type;
+            document.getElementById('statusActionInput').value = ''; // Clear status action
 
             // 2. Visual Selection
-            // Remove active class from all options
+            // Remove active class from all options (Review Types)
             document.querySelectorAll('.review-option').forEach(el => {
                 el.classList.remove('border-[#8B0000]', 'bg-red-50');
                 el.classList.add('border-slate-200');
                 el.querySelector('.check-icon').classList.add('opacity-0');
                 el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
                 el.querySelector('.icon-box').classList.add('text-slate-400');
+            });
+
+            // Remove active class from all options (Status Actions)
+            document.querySelectorAll('.status-option').forEach(el => {
+                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
+                el.classList.add('border-slate-200');
+                el.querySelector('.check-icon').classList.add('opacity-0');
+                // Reset icon colors
+                const iconBox = el.querySelector('.icon-box');
+                iconBox.classList.remove('text-orange-500', 'text-blue-500', 'text-green-500');
+                iconBox.classList.add('text-slate-400');
             });
 
             // Add active class to clicked option
@@ -340,6 +399,60 @@
             }
             
             recBtn.href = `${baseUrl}?review_type=${encodeURIComponent(type)}`;
+        }
+
+        function selectStatus(status, element) {
+            // 1. Update Hidden Input
+            document.getElementById('statusActionInput').value = status;
+            document.getElementById('reviewTypeInput').value = ''; // Clear review type
+
+            // 2. Visual Selection
+            // Remove active class from all options (Review Types)
+            document.querySelectorAll('.review-option').forEach(el => {
+                el.classList.remove('border-[#8B0000]', 'bg-red-50');
+                el.classList.add('border-slate-200');
+                el.querySelector('.check-icon').classList.add('opacity-0');
+                el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
+                el.querySelector('.icon-box').classList.add('text-slate-400');
+            });
+
+            // Remove active class from all options (Status Actions)
+            document.querySelectorAll('.status-option').forEach(el => {
+                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
+                el.classList.add('border-slate-200');
+                el.querySelector('.check-icon').classList.add('opacity-0');
+                // Reset icon colors
+                const iconBox = el.querySelector('.icon-box');
+                iconBox.classList.remove('text-orange-500', 'text-blue-500', 'text-green-500');
+                iconBox.classList.add('text-slate-400');
+            });
+
+            // Add active class to clicked option
+            element.classList.remove('border-slate-200');
+            
+            let activeClass = '';
+            let activeText = '';
+            
+            if (status === 'Waiting for Revision') {
+                activeClass = 'border-orange-400 bg-orange-50';
+                activeText = 'text-orange-500';
+            } else if (status === 'Panel Deliberation') {
+                activeClass = 'border-blue-400 bg-blue-50';
+                activeText = 'text-blue-500';
+            } else if (status === 'Approved') {
+                activeClass = 'border-green-400 bg-green-50';
+                activeText = 'text-green-500';
+            }
+
+            const classes = activeClass.split(' ');
+            element.classList.add(...classes);
+            
+            element.querySelector('.check-icon').classList.remove('opacity-0');
+            element.querySelector('.icon-box').classList.remove('text-slate-400');
+            element.querySelector('.icon-box').classList.add(activeText);
+            
+            // Hide Recommendation Button since it's for review type
+            document.getElementById('recommendationSection').classList.add('hidden');
         }
 
         async function openStatusModal(id, title) {

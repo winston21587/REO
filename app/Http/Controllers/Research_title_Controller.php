@@ -171,6 +171,13 @@ public function submitTitle(Request $request)
             'filetype' => $request->file('file')->getClientOriginalExtension(),
         ]);
 
+        // Check and Update Research Status
+        $researchTitle = Research_title::find($id);
+        if ($researchTitle && $researchTitle->Status === 'Waiting for Revision') {
+            $researchTitle->Status = 'Revision Submitted';
+            $researchTitle->save();
+        }
+
         return redirect()->back()->with('success', 'File updated successfully!');
     }
 }

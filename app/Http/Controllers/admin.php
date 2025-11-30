@@ -319,6 +319,41 @@ public function applications(Request $request)
             }
         }
         // ---------------------------------------------------------
+        // CASE C: Status Actions (Revision, Panel, Approved)
+        // ---------------------------------------------------------
+        elseif ($request->has('status_action') && $request->status_action) {
+            $action = $request->status_action;
+            $newStatus = $action;
+            $submission->Status = $newStatus;
+            $submission->save();
+
+            if ($action === 'Waiting for Revision') {
+                $message = "Your submission requires revision.";
+                if ($request->remarks) {
+                    $message .= "\n\nRemarks/Requirements: " . $request->remarks;
+                }
+            } elseif ($action === 'Panel Deliberation') {
+                $request->validate(['appointment_date' => 'required|date']);
+                Appointment::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => $submission->user_id,
+                    'appointment_date' => $request->appointment_date,
+                    'stage' => 'Panel Deliberation',
+                ]);
+                $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
+                $message = "Your research is scheduled for Panel Deliberation on: {$dateFormatted}.";
+                if ($request->remarks) {
+                    $message .= "\n\nRemarks: " . $request->remarks;
+                }
+            } elseif ($action === 'Approved') {
+                $message = "Congratulations! Your research has been Approved.";
+                $message .= "\n\nYour Research Ethics Clearance Certificate has been issued.";
+                
+                // Generate Certificate
+                $this->generateCertificate($submission);
+            }
+        }
+        // ---------------------------------------------------------
         // CASE C: Generic Status Update (Fallback)
         // ---------------------------------------------------------
         else {
@@ -687,6 +722,70 @@ public function previewLetter(Request $request)
         
         return response()->json([
             'has_recommendation_letter' => $hasLetter
+        ]);
+    }
+
+    private function generateCertificate($submission)
+    {
+        $user = User::find($submission->user_id);
+        
+        $pdf = new Fpdi();
+        $pdf->AddPage();
+        
+        // Header
+        $pdf->SetFont('Arial', 'B', 16);
+        $pdf->Cell(0, 10, 'RESEARCH ETHICS CLEARANCE', 0, 1, 'C');
+        $pdf->Ln(10);
+        
+        // Date
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->Cell(0, 10, 'Date: ' . date('F j, Y'), 0, 1, 'R');
+        $pdf->Ln(10);
+        
+        // Body
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->MultiCell(0, 10, "This is to certify that the research protocol titled:");
+        $pdf->Ln(5);
+        
+        $pdf->SetFont('Arial', 'B', 14);
+        $pdf->MultiCell(0, 10, strtoupper($submission->Study_Protocol_title), 0, 'C');
+        $pdf->Ln(5);
+        
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->MultiCell(0, 10, "Submitted by:");
+        $pdf->Ln(5);
+        
+        $pdf->SetFont('Arial', 'B', 14);
+        $pdf->MultiCell(0, 10, strtoupper($user->first_name . ' ' . $user->last_name), 0, 'C');
+        $pdf->Ln(10);
+        
+        $pdf->SetFont('Arial', '', 12);
+        $text = "Has been reviewed by the Research Ethics Office and has been granted ETHICAL CLEARANCE. The researcher is hereby authorized to proceed with the data collection as described in the approved protocol.";
+        $pdf->MultiCell(0, 10, $text);
+        $pdf->Ln(20);
+        
+        // Signature
+        $pdf->Cell(0, 10, '_________________________', 0, 1, 'R');
+        $pdf->Cell(0, 10, 'Ethics Review Chair       ', 0, 1, 'R');
+
+        // Output
+        $fileName = 'Clearance_' . $submission->id . '.pdf';
+        $filePath = 'certificates/' . $fileName;
+        
+        // Ensure directory exists
+        if (!Storage::disk('public')->exists('certificates')) {
+            Storage::disk('public')->makeDirectory('certificates');
+        }
+        
+        $pdf->Output('F', storage_path('app/public/' . $filePath));
+        
+        // Save to Database
+        researcher_files::create([
+            'research_title_id' => $submission->id,
+            'filename' => 'Ethics Clearance Certificate',
+            'filetype' => 'certificate',
+            'filepath' => 'storage/' . $filePath,
+            'user_id' => $submission->user_id,
         ]);
     }
 }

@@ -33,75 +33,36 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
+                    @forelse($datas as $data)
                     <tr class="group hover:bg-slate-50 transition-colors">
                         <td class="p-5">
-                            <p class="font-bold text-slate-800 mb-1">Impact of Social Media on Youth Mental Health</p>
-                            <p class="text-xs text-slate-500">By <span class="font-semibold text-slate-700">Dr. Maria Cruz</span></p>
+                            <p class="font-bold text-slate-800 mb-1">{{ $data->Study_Protocol_title }}</p>
+                            <p class="text-xs text-slate-500">By <span class="font-semibold text-slate-700">{{ $data->author->first_name }} {{ $data->author->last_name }}</span></p>
                         </td>
-                        <td class="p-5 text-sm text-slate-600">Oct 20, 2025</td>
+                        <td class="p-5 text-sm text-slate-600">{{ $data->created_at->format('M d, Y') }}</td>
                         <td class="p-5">
-                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">Unclassified</span>
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                                {{ $data->Review_Type ?? 'Unclassified' }}
+                            </span>
                         </td>
                         <td class="p-5 text-center">
-                            <button onclick="openModal('edit-modal-0')" class="text-brand-primary hover:bg-red-50 p-2 rounded-lg transition-colors text-sm font-bold">
+                            <button onclick="openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }})" class="text-brand-primary hover:bg-red-50 p-2 rounded-lg transition-colors text-sm font-bold">
                                 Classify
                             </button>
                         </td>
                     </tr>
-                    
-                    <tr class="group hover:bg-slate-50 transition-colors">
-                        <td class="p-5">
-                            <p class="font-bold text-slate-800 mb-1">AI Ethics Framework for Clinical Trials</p>
-                            <p class="text-xs text-slate-500">By <span class="font-semibold text-slate-700">Prof. John Reyes</span></p>
-                        </td>
-                        <td class="p-5 text-sm text-slate-600">Oct 15, 2025</td>
-                        <td class="p-5">
-                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">Full Review</span>
-                        </td>
-                        <td class="p-5 text-center">
-                            <button onclick="openModal('edit-modal-1')" class="text-slate-400 hover:text-brand-primary hover:bg-slate-100 p-2 rounded-lg transition-colors">
-                                <span class="material-symbols-outlined">edit</span>
-                            </button>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="p-12 text-center text-slate-400">
+                            <p>No protocols found for review.</p>
                         </td>
                     </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div class="edit-modal-0 hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-[scaleIn_0.2s_ease-out]">
-            <div class="bg-slate-900 p-5">
-                <h2 class="text-lg font-bold text-white">Classify Protocol</h2>
-            </div>
-            <div class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Review Type</label>
-                    <div class="space-y-2">
-                        <label class="flex items-center p-3 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
-                            <input type="radio" name="type" class="text-brand-primary focus:ring-brand-primary" checked>
-                            <span class="ml-3 text-sm font-bold text-slate-700">Full Review</span>
-                        </label>
-                        <label class="flex items-center p-3 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
-                            <input type="radio" name="type" class="text-brand-primary focus:ring-brand-primary">
-                            <span class="ml-3 text-sm font-bold text-slate-700">Expedited Review</span>
-                        </label>
-                        <label class="flex items-center p-3 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
-                            <input type="radio" name="type" class="text-brand-primary focus:ring-brand-primary">
-                            <span class="ml-3 text-sm font-bold text-slate-700">Exempt from Review</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6 border-t border-slate-100 flex justify-end gap-3">
-                <button onclick="closeModal('edit-modal-0')" class="px-4 py-2 text-slate-500 font-bold hover:bg-slate-50 rounded-lg">Cancel</button>
-                <button onclick="closeModal('edit-modal-0')" class="px-6 py-2 bg-brand-primary text-white font-bold rounded-lg hover:bg-red-800 transition-colors">Save</button>
-            </div>
-        </div>
-    </div>
+    @include('admin.partials.status_modal')
 
-    <script>
-        function openModal(name) { document.querySelector('.' + name).classList.remove('hidden'); }
-        function closeModal(name) { document.querySelector('.' + name).classList.add('hidden'); }
-    </script>
 </x-admin_layout>

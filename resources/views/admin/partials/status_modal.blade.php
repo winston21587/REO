@@ -65,7 +65,7 @@
                             <label class="block text-sm font-bold text-slate-700 mb-3">Review Classification</label>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <!-- Expedited -->
-                                <div onclick="selectReviewType('Expedited Review', this)" class="review-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-[#8B0000] hover:shadow-md transition-all group">
+                                <div onclick="selectReviewType('Expedited Review', this)" class="review-option cursor-pointer relative bg-white border-2 border-slate-200 rounded-xl p-4 hover:border-[#8B0000] hover:shadow-md transition-all group">
                                     <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
                                         <i class="fas fa-check-circle text-[#8B0000]"></i>
                                     </div>
@@ -77,7 +77,7 @@
                                 </div>
 
                                 <!-- Exempt -->
-                                <div onclick="selectReviewType('Exempt Review', this)" class="review-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-[#8B0000] hover:shadow-md transition-all group">
+                                <div onclick="selectReviewType('Exempt Review', this)" class="review-option cursor-pointer relative bg-white border-2 border-slate-200 rounded-xl p-4 hover:border-[#8B0000] hover:shadow-md transition-all group">
                                     <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
                                         <i class="fas fa-check-circle text-[#8B0000]"></i>
                                     </div>
@@ -89,7 +89,7 @@
                                 </div>
 
                                 <!-- Full Board -->
-                                <div onclick="selectReviewType('Full Board Review', this)" class="review-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-[#8B0000] hover:shadow-md transition-all group">
+                                <div onclick="selectReviewType('Full Board Review', this)" class="review-option cursor-pointer relative bg-white border-2 border-slate-200 rounded-xl p-4 hover:border-[#8B0000] hover:shadow-md transition-all group">
                                     <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
                                         <i class="fas fa-check-circle text-[#8B0000]"></i>
                                     </div>
@@ -100,9 +100,9 @@
                                     <p class="text-[10px] text-slate-500 mt-1">High risk / Vulnerable</p>
                                 </div>
                             </div>
-
-                            </div>
                         </div>
+
+
 
                         <!-- 2. Status Actions -->
                         <div class="{{ request()->routeIs('admin.applications') ? 'hidden' : '' }}">
@@ -223,21 +223,6 @@
             element.querySelector('.check-icon').classList.remove('opacity-0');
             element.querySelector('.icon-box').classList.remove('text-slate-400');
             element.querySelector('.icon-box').classList.add('text-[#8B0000]');
-            
-            // 3. Show Recommendation Button & Update Link
-            const recSection = document.getElementById('recommendationSection');
-            const recBtn = document.getElementById('recommendationBtn');
-            
-            recSection.classList.remove('hidden');
-            
-            // Get base URL (without query params)
-            let baseUrl = recBtn.getAttribute('data-base-href');
-            if (!baseUrl) {
-                baseUrl = recBtn.href.split('?')[0];
-                recBtn.setAttribute('data-base-href', baseUrl);
-            }
-            
-            recBtn.href = `${baseUrl}?review_type=${encodeURIComponent(type)}`;
         }
 
         function selectStatus(status, element) {
@@ -289,9 +274,6 @@
             element.querySelector('.check-icon').classList.remove('opacity-0');
             element.querySelector('.icon-box').classList.remove('text-slate-400');
             element.querySelector('.icon-box').classList.add(activeText);
-            
-            // Hide Recommendation Button since it's for review type
-            document.getElementById('recommendationSection').classList.add('hidden');
         }
 
         async function openStatusModal(id, title) {
@@ -299,26 +281,6 @@
             const form = document.getElementById('statusForm');
             form.action = `/admin/update-status/${id}`;
             
-            // Update Recommendation Letter Button Base Link
-            const recBtn = document.getElementById('recommendationBtn');
-            recBtn.href = `/admin/recommendation-letter/${id}`;
-            recBtn.setAttribute('data-base-href', `/admin/recommendation-letter/${id}`);
-            
-            // Hide section initially
-            document.getElementById('recommendationSection').classList.add('hidden');
-            
-            // Check if letter exists
-            document.getElementById('letterIndicator').classList.add('hidden');
-            try {
-                const response = await fetch(`/admin/check-file-status/${id}`);
-                const data = await response.json();
-                if (data.has_recommendation_letter) {
-                    document.getElementById('letterIndicator').classList.remove('hidden');
-                }
-            } catch (e) {
-                console.log('Could not check file status');
-            }
-
             // Reset UI
             document.getElementById('reviewTypeInput').value = "";
             document.getElementById('appointmentDate').value = "";
@@ -404,6 +366,24 @@
         // Handle Form Submission via AJAX for better UX
         document.getElementById('statusForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Client-side Validation
+            const reviewType = document.getElementById('reviewTypeInput').value;
+            const statusAction = document.getElementById('statusActionInput').value;
+            const appointmentDate = document.getElementById('appointmentDate').value;
+            
+            // If on Applications page, Review Type is required
+            if (isApplicationsPage && !reviewType) {
+                alert('Please select a Review Classification.');
+                return;
+            }
+            
+            // Appointment Date is required if Review Type is selected or for specific statuses
+            if ((reviewType || statusAction === 'Panel Deliberation') && !appointmentDate) {
+                alert('Please set an Appointment Date.');
+                return;
+            }
+
             const btn = document.getElementById('submitStatusBtn');
             const originalText = btn.textContent;
             btn.disabled = true;
@@ -415,20 +395,36 @@
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
                 });
+                
                 const result = await response.json();
 
-                if (result.success) {
-                    closeStatusModal();
-                    // Optional: Reload page or update table row
-                    window.location.reload(); 
+                if (response.ok && result.success) {
+                    if (result.redirect) {
+                        window.location.href = result.redirect;
+                    } else {
+                        closeStatusModal();
+                        // Show success message or reload
+                        window.location.reload(); 
+                    }
                 } else {
-                    alert('Error: ' + (result.message || 'Unknown error'));
+                    // Handle Validation Errors
+                    if (result.errors) {
+                        let errorMsg = 'Validation Error:\n';
+                        for (const [key, messages] of Object.entries(result.errors)) {
+                            errorMsg += `- ${messages[0]}\n`;
+                        }
+                        alert(errorMsg);
+                    } else {
+                        alert('Error: ' + (result.message || 'Unknown error'));
+                    }
                 }
             } catch (error) {
-                alert('An error occurred. Please try again.');
+                console.error(error);
+                alert('An error occurred. Please check the console for details.');
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;

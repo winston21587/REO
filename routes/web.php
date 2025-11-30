@@ -149,4 +149,5 @@ Route::middleware(['auth'])->group(function () {
         // Route::post('/admin/submission/{id}/incomplete', [admin::class, 'markAsIncomplete'])->name('admin.markIncomplete');
     });
 
+    Route::post('/admin/recommendation-letter/finalize/{id}', [admin::class, 'finalizeReview'])->name('admin.recommendation.finalize');
 });

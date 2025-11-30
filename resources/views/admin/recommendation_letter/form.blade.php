@@ -180,6 +180,25 @@
                     </button>
                 </div>
 
+                <!-- Finalize / Proceed Section -->
+                @if(session('success') || (isset($hasLetter) && $hasLetter))
+                <div class="mt-8 pt-6 border-t border-slate-200 animate-[fadeIn_0.5s_ease-out]">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div>
+                            <h4 class="font-bold text-blue-900 text-lg">Ready to Proceed?</h4>
+                            <p class="text-blue-700 text-sm mt-1">Once the letter is generated and saved, you can move this protocol to the next stage.</p>
+                        </div>
+                        <form action="{{ route('admin.recommendation.finalize', $submission->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-900/20 flex items-center gap-2">
+                                <span>Proceed to {{ $submission->Review_Type === 'Full Board Review' ? 'Panel Deliberation' : 'Revision' }}</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endif
+
             </form>
         </div>
     </div>

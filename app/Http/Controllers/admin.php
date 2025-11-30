@@ -496,13 +496,18 @@ public function applications(Request $request)
                 'stage' => $request->review_type, // e.g., 'Expedited Review'
             ]);
 
-            $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
-            $message = "Your research has been classified as **{$request->review_type}**.\n";
-            $message .= "An appointment/deadline has been set for: {$dateFormatted}.";
-
-            if ($request->remarks) {
-                $message .= "\n\nRemarks: " . $request->remarks;
+            // Redirect to Recommendation Letter Form
+            // We do NOT finalize the status to "Waiting for Revision" yet.
+            // The letter generation step will handle that.
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true, 
+                    'redirect' => route('admin.recommendation.form', $id)
+                ]);
             }
+            
+            return redirect()->route('admin.recommendation.form', $id);
         }
         // ---------------------------------------------------------
         // CASE C: Status Actions (Revision, Panel, Approved)
@@ -897,7 +902,9 @@ public function previewLetter(Request $request)
                 'filetype' => 'recommendation letter',
             ]);
 
-            return redirect()->route('admin.applications')->with('success', 'Recommendation Letter generated and saved successfully.');
+            // Redirect back to the form with success message
+            // The user will manually click "Proceed to Revision"
+            return redirect()->back()->with('success', 'Recommendation Letter generated and saved successfully. You can now proceed to the next stage.');
         }
     }
 
@@ -910,6 +917,24 @@ public function previewLetter(Request $request)
             'has_recommendation_letter' => $hasLetter
         ]);
     }
+
+    public function finalizeReview($id)
+    {
+        $submission = Research_title::findOrFail($id);
+        
+        // Finalize Status Update
+        if ($submission->Review_Type === 'Full Board Review') {
+            $submission->Status = 'Panel Deliberation';
+            $redirectRoute = 'admin.applications'; 
+        } else {
+            $submission->Status = 'Waiting for Revision';
+            $redirectRoute = 'admin.revisions';
+        }
+        $submission->save();
+
+        return redirect()->route($redirectRoute)->with('success', 'Protocol status updated successfully.');
+    }
+
 
     private function generateCertificate($submission)
     {

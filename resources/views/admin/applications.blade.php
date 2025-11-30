@@ -137,119 +137,242 @@
         </div>
     </div>
 
-<div id="statusModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="statusModalContent">
-            <div class="bg-[#1a0505] p-6 border-b border-white/10">
-                <h3 class="text-white font-bold text-lg">Update Review Status</h3>
-                <p id="statusModalTitle" class="text-slate-400 text-xs mt-1 line-clamp-1">Protocol Title</p>
-            </div>
-            <form id="statusForm" method="POST" class="p-6 space-y-6">
-                @csrf
-                
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
-                    <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center shrink-0">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-blue-800 uppercase tracking-wider mb-1">AI Recommendation</p>
-                        <p class="text-sm text-slate-700">Based on content analysis:</p>
-                        <div class="mt-2 inline-flex items-center gap-2 bg-white px-3 py-1 rounded-lg border border-blue-200 shadow-sm">
-                            <span class="w-2 h-2 rounded-full bg-orange-400"></span>
-                            <span class="text-sm font-bold text-slate-800">Expedited Review</span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="border-b border-slate-100 pb-6">
-                    <div class="flex justify-between items-end mb-2">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Step 1: Required Action</label>
-                        <span id="fileSavedBadge" class="hidden bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-                            <i class="fas fa-check-circle"></i> File Saved
-                        </span>
+
+    <!-- Status Update Modal -->
+    <div id="statusModal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeStatusModal()"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div id="statusModalContent" class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg scale-95 duration-300">
+                    
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-[#8B0000] to-[#600000] px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white font-heading" id="modal-title">Update Status</h3>
+                        <button onclick="closeStatusModal()" class="text-white/70 hover:text-white transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
 
-                    <div id="step1Box" class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 transition-colors">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
-                                <i class="fas fa-file-contract text-xl"></i>
+                    <div class="px-6 py-6 space-y-6">
+                        <p id="statusModalTitle" class="text-sm font-medium text-slate-500 border-b border-slate-100 pb-4"></p>
+
+                        <form id="statusForm" method="POST" class="space-y-6">
+                            @csrf
+                            
+                            <!-- 1. AI Analysis Section -->
+                            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                        <i class="fas fa-robot text-[#8B0000] mr-1"></i> AI Analysis
+                                    </h4>
+                                    <span id="aiStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-500">Ready</span>
+                                </div>
+                                
+                                <div id="aiLoading" class="hidden text-center py-4">
+                                    <i class="fas fa-circle-notch fa-spin text-[#8B0000] text-xl"></i>
+                                    <p class="text-xs text-slate-500 mt-2">Reading Assessment Form...</p>
+                                </div>
+
+                                <div id="aiResult" class="hidden space-y-2">
+                                    <div class="flex items-start gap-3">
+                                        <div class="mt-0.5">
+                                            <i class="fas fa-lightbulb text-yellow-500"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-slate-500">Suggested Review Type:</p>
+                                            <p id="aiSuggestionText" class="text-sm font-bold text-slate-800">Expedited Review</p>
+                                            <p id="aiReasoning" class="text-xs text-slate-400 mt-1 italic">Based on checked boxes in the form.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="aiError" class="hidden text-center py-2">
+                                    <p class="text-xs text-red-500"><i class="fas fa-exclamation-circle"></i> Could not analyze file.</p>
+                                </div>
                             </div>
+
+                            <!-- 2. Review Type Selection (Box Style) -->
                             <div>
-                                <p class="text-sm font-bold text-slate-700">Result of Review</p>
-                                <p id="step1Desc" class="text-xs text-slate-400">Generate and save to unlock Step 2.</p>
+                                <label class="block text-sm font-bold text-slate-700 mb-3">Review Classification</label>
+                                <input type="hidden" id="reviewTypeInput" name="review_type" required>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                                    <!-- Option 1: Expedited -->
+                                    <div class="review-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-[#8B0000]/50 hover:bg-red-50/50 transition-all group" onclick="selectReviewType('Expedited', this)">
+                                        <div class="absolute top-3 right-3 opacity-0 check-icon text-[#8B0000]">
+                                            <i class="fas fa-check-circle text-lg"></i>
+                                        </div>
+                                        <div class="mb-2 text-slate-400 group-hover:text-[#8B0000] icon-box">
+                                            <i class="fas fa-running text-2xl"></i>
+                                        </div>
+                                        <h5 class="font-bold text-slate-700 text-sm mb-1">Expedited</h5>
+                                        <p class="text-[10px] text-slate-500 leading-tight">Minimal risk, faster processing.</p>
+                                    </div>
+
+                                    <!-- Option 2: Exempt -->
+                                    <div class="review-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-[#8B0000]/50 hover:bg-red-50/50 transition-all group" onclick="selectReviewType('Exempt', this)">
+                                        <div class="absolute top-3 right-3 opacity-0 check-icon text-[#8B0000]">
+                                            <i class="fas fa-check-circle text-lg"></i>
+                                        </div>
+                                        <div class="mb-2 text-slate-400 group-hover:text-[#8B0000] icon-box">
+                                            <i class="fas fa-shield-alt text-2xl"></i>
+                                        </div>
+                                        <h5 class="font-bold text-slate-700 text-sm mb-1">Exempt</h5>
+                                        <p class="text-[10px] text-slate-500 leading-tight">Less than minimal risk.</p>
+                                    </div>
+
+                                    <!-- Option 3: Full Review -->
+                                    <div class="review-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-[#8B0000]/50 hover:bg-red-50/50 transition-all group" onclick="selectReviewType('Full Review', this)">
+                                        <div class="absolute top-3 right-3 opacity-0 check-icon text-[#8B0000]">
+                                            <i class="fas fa-check-circle text-lg"></i>
+                                        </div>
+                                        <div class="mb-2 text-slate-400 group-hover:text-[#8B0000] icon-box">
+                                            <i class="fas fa-users text-2xl"></i>
+                                        </div>
+                                        <h5 class="font-bold text-slate-700 text-sm mb-1">Full Review</h5>
+                                        <p class="text-[10px] text-slate-500 leading-tight">High risk, requires meeting.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendation Letter Button (Moved Here) -->
+                                <div id="recommendationSection" class="hidden flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 animate-[fadeIn_0.3s_ease-out]">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-[#8B0000]">
+                                            <i class="fas fa-file-signature"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-slate-700">Recommendation Letter</h4>
+                                            <p class="text-[10px] text-slate-500">Generate Result of Review Form</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span id="letterIndicator" class="hidden text-[10px] font-bold px-2 py-1 rounded bg-green-100 text-green-600 flex items-center gap-1">
+                                            <i class="fas fa-check-circle"></i> Generated
+                                        </span>
+                                        <a id="recommendationBtn" href="#" target="_blank" class="px-3 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 hover:text-[#8B0000] transition-colors shadow-sm">
+                                            Generate
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <a id="generateBtnLink" href="#" target="_blank" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 hover:text-[#8B0000] hover:border-[#8B0000] transition-all shadow-sm flex items-center gap-2">
-                            <i class="fas fa-print"></i> <span id="generateBtnText">Open Generator</span>
-                        </a>
+
+                            <!-- 3. Appointment Date -->
+                            <div>
+                                <label for="appointmentDate" class="block text-sm font-bold text-slate-700 mb-2">Set Appointment / Deadline</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="far fa-calendar-alt text-slate-400"></i>
+                                    </div>
+                                    <input type="date" id="appointmentDate" name="appointment_date" class="w-full pl-10 pr-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all" required>
+                                </div>
+                            </div>
+
+                            <!-- 4. Message Box -->
+                            <div>
+                                <label for="remarks" class="block text-sm font-bold text-slate-700 mb-2">Notification Message <span class="text-slate-400 font-normal text-xs">(Optional)</span></label>
+                                <textarea id="remarks" name="remarks" rows="3" class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none" placeholder="Add any specific instructions or remarks for the researcher..."></textarea>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex gap-3 pt-4 border-t border-slate-100">
+                                <button type="button" onclick="closeStatusModal()" class="flex-1 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" id="submitStatusBtn" class="flex-1 px-4 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] transition-colors shadow-lg shadow-red-900/20 flex justify-center items-center gap-2">
+                                    <span>Update & Notify</span> <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
-                <div id="statusSection" class="space-y-4 opacity-50 grayscale pointer-events-none transition-all duration-300">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Step 2: Finalize Status</label>
-                        <span id="lockMessage" class="text-[10px] text-red-500 font-bold"><i class="fas fa-lock"></i> Generate letter to unlock</span>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Set Review Classification</label>
-                        <select id="reviewTypeSelect" name="review_type" disabled class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-slate-50">
-                            <option value="Exempt">Exempt Review</option>
-                            <option value="Expedited" selected>Expedited Review</option>
-                            <option value="Full Board">Full Board Review</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">New Application Status</label>
-                        <select id="statusSelect" name="status" disabled class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-slate-50">
-                            <option value="Waiting for Revision">Waiting for Revision</option>
-                            <option value="Under Review">Under Review</option>
-                            <option value="Approved">Approved</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="closeStatusModal()" class="px-4 py-2 text-slate-600 font-bold text-sm hover:bg-slate-50 rounded-lg transition-colors">Cancel</button>
-                    <button type="submit" id="submitStatusBtn" disabled class="px-4 py-2 bg-[#8B0000] text-white font-bold text-sm rounded-lg hover:bg-[#6d0000] transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-                        Confirm Update
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
     <script>
+        function selectReviewType(type, element) {
+            // 1. Update Hidden Input
+            document.getElementById('reviewTypeInput').value = type;
+
+            // 2. Visual Selection
+            // Remove active class from all options
+            document.querySelectorAll('.review-option').forEach(el => {
+                el.classList.remove('border-[#8B0000]', 'bg-red-50');
+                el.classList.add('border-slate-200');
+                el.querySelector('.check-icon').classList.add('opacity-0');
+                el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
+                el.querySelector('.icon-box').classList.add('text-slate-400');
+            });
+
+            // Add active class to clicked option
+            element.classList.remove('border-slate-200');
+            element.classList.add('border-[#8B0000]', 'bg-red-50');
+            element.querySelector('.check-icon').classList.remove('opacity-0');
+            element.querySelector('.icon-box').classList.remove('text-slate-400');
+            element.querySelector('.icon-box').classList.add('text-[#8B0000]');
+            
+            // 3. Show Recommendation Button & Update Link
+            const recSection = document.getElementById('recommendationSection');
+            const recBtn = document.getElementById('recommendationBtn');
+            
+            recSection.classList.remove('hidden');
+            
+            // Get base URL (without query params)
+            let baseUrl = recBtn.getAttribute('data-base-href');
+            if (!baseUrl) {
+                baseUrl = recBtn.href.split('?')[0];
+                recBtn.setAttribute('data-base-href', baseUrl);
+            }
+            
+            recBtn.href = `${baseUrl}?review_type=${encodeURIComponent(type)}`;
+        }
+
         async function openStatusModal(id, title) {
             document.getElementById('statusModalTitle').textContent = title;
-            document.getElementById('statusForm').action = `/admin/update-status/${id}`;
-            const genLink = document.getElementById('generateBtnLink');
-            genLink.href = `/admin/letter/create/${id}`;
+            const form = document.getElementById('statusForm');
+            form.action = `/admin/update-status/${id}`;
             
-            // 1. Reset UI to Locked State
-            lockStep2();
-
-            // 2. Check if file already exists
+            // Update Recommendation Letter Button Base Link
+            const recBtn = document.getElementById('recommendationBtn');
+            recBtn.href = `/admin/recommendation-letter/${id}`;
+            recBtn.setAttribute('data-base-href', `/admin/recommendation-letter/${id}`);
+            
+            // Hide section initially
+            document.getElementById('recommendationSection').classList.add('hidden');
+            
+            // Check if letter exists
+            document.getElementById('letterIndicator').classList.add('hidden');
             try {
                 const response = await fetch(`/admin/check-file-status/${id}`);
                 const data = await response.json();
-
-                if (data.has_letter) {
-                    unlockStep2(); // Auto unlock if file exists
-                    document.getElementById('generateBtnText').textContent = "View / Regenerate";
-                } else {
-                    document.getElementById('generateBtnText').textContent = "Open Generator";
-                    
-                    // Add listener to unlock when clicked (Optimistic unlock)
-                    // In a real app, you might want to wait for them to come back, 
-                    // but for smooth UX, we unlock after they click the generator.
-                    genLink.onclick = function() {
-                        setTimeout(unlockStep2, 2000); 
-                    };
+                if (data.has_recommendation_letter) {
+                    document.getElementById('letterIndicator').classList.remove('hidden');
                 }
-            } catch (error) {
-                console.error("Error checking file status", error);
+            } catch (e) {
+                console.log('Could not check file status');
             }
+
+            // Reset UI
+            document.getElementById('reviewTypeInput').value = "";
+            document.getElementById('appointmentDate').value = "";
+            document.getElementById('remarks').value = ""; // Reset message box
+            
+            // Reset Box Selection Visuals
+            document.querySelectorAll('.review-option').forEach(el => {
+                el.classList.remove('border-[#8B0000]', 'bg-red-50');
+                el.classList.add('border-slate-200');
+                el.querySelector('.check-icon').classList.add('opacity-0');
+                el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
+                el.querySelector('.icon-box').classList.add('text-slate-400');
+            });
+
+            document.getElementById('aiResult').classList.add('hidden');
+            document.getElementById('aiError').classList.add('hidden');
+            document.getElementById('aiLoading').classList.remove('hidden');
+            document.getElementById('aiStatusBadge').textContent = "Analyzing...";
+            document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-600 animate-pulse";
 
             // Show Modal
             const modal = document.getElementById('statusModal');
@@ -260,41 +383,48 @@
                 content.classList.remove('scale-95');
                 content.classList.add('scale-100');
             }, 10);
-        }
 
-        function lockStep2() {
-            const statusSection = document.getElementById('statusSection');
-            const submitBtn = document.getElementById('submitStatusBtn');
-            const inputs = ['reviewTypeSelect', 'statusSelect'];
-            const lockMsg = document.getElementById('lockMessage');
-            const badge = document.getElementById('fileSavedBadge');
-            const box = document.getElementById('step1Box');
+            // Trigger AI Analysis
+            try {
+                const response = await fetch(`/admin/analyze-protocol-type/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
 
-            statusSection.classList.add('opacity-50', 'grayscale', 'pointer-events-none');
-            submitBtn.disabled = true;
-            inputs.forEach(id => document.getElementById(id).disabled = true);
-            lockMsg.classList.remove('hidden');
-            badge.classList.add('hidden');
-            box.classList.remove('border-green-200', 'bg-green-50');
-        }
+                document.getElementById('aiLoading').classList.add('hidden');
 
-        function unlockStep2() {
-            const statusSection = document.getElementById('statusSection');
-            const submitBtn = document.getElementById('submitStatusBtn');
-            const inputs = ['reviewTypeSelect', 'statusSelect'];
-            const lockMsg = document.getElementById('lockMessage');
-            const badge = document.getElementById('fileSavedBadge');
-            const box = document.getElementById('step1Box');
+                if (data.found && data.suggestion) {
+                    document.getElementById('aiResult').classList.remove('hidden');
+                    document.getElementById('aiSuggestionText').textContent = data.suggestion.recommended_type;
+                    document.getElementById('aiReasoning').textContent = data.suggestion.reasoning;
+                    
+                    // Auto-select if high confidence
+                    if (data.suggestion.confidence === 'High') {
+                        const type = data.suggestion.recommended_type;
+                        // Find the box that matches and click it
+                        const boxes = document.querySelectorAll('.review-option');
+                        if (type.includes('Expedited')) selectReviewType('Expedited Review', boxes[0]);
+                        else if (type.includes('Exempt')) selectReviewType('Exempt Review', boxes[1]);
+                        else if (type.includes('Full')) selectReviewType('Full Board Review', boxes[2]);
+                    }
 
-            statusSection.classList.remove('opacity-50', 'grayscale', 'pointer-events-none');
-            submitBtn.disabled = false;
-            inputs.forEach(id => document.getElementById(id).disabled = false);
-            lockMsg.classList.add('hidden');
-            
-            // Show Success Indicators
-            badge.classList.remove('hidden');
-            box.classList.add('border-green-200', 'bg-green-50');
-            box.classList.remove('border-slate-200', 'bg-slate-50');
+                    document.getElementById('aiStatusBadge').textContent = "Complete";
+                    document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-600";
+                } else {
+                    throw new Error(data.message || "Analysis failed");
+                }
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('aiLoading').classList.add('hidden');
+                document.getElementById('aiError').classList.remove('hidden');
+                document.getElementById('aiStatusBadge').textContent = "Failed";
+                document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-600";
+            }
         }
 
         function closeStatusModal() {
@@ -305,6 +435,40 @@
             content.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
+
+        // Handle Form Submission via AJAX for better UX
+        document.getElementById('statusForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitStatusBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating...';
+
+            try {
+                const formData = new FormData(this);
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    closeStatusModal();
+                    // Optional: Reload page or update table row
+                    window.location.reload(); 
+                } else {
+                    alert('Error: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('An error occurred. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
     </script>
 
 </x-admin_layout>

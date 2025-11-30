@@ -22,7 +22,7 @@
                 </div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Submissions</p>
                 <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800">1,250</h3>
+                    <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($totalSubmissions) }}</h3>
                     <span class="text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-arrow-up"></i> 12%</span>
                 </div>
             </div>
@@ -34,8 +34,8 @@
                 </div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Approved</p>
                 <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800">856</h3>
-                    <span class="text-xs font-bold text-slate-400 mb-1">68% Rate</span>
+                    <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($approvedCount) }}</h3>
+                    <span class="text-xs font-bold text-slate-400 mb-1">{{ $approvalRate }}% Rate</span>
                 </div>
             </div>
 
@@ -58,7 +58,7 @@
                 </div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Researchers</p>
                 <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800">342</h3>
+                    <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($activeResearchers) }}</h3>
                     <span class="text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-arrow-up"></i> 5%</span>
                 </div>
             </div>
@@ -99,24 +99,28 @@
                 <div>
                     <h3 class="text-lg font-bold text-slate-800 mb-6">Completion Status</h3>
                     <div class="flex items-end gap-4 mb-6">
-                        <p class="text-4xl font-extrabold text-slate-900">85%</p>
+                        <p class="text-4xl font-extrabold text-slate-900">{{ $completionRate }}%</p>
                         <span class="mb-2 text-sm text-slate-500 font-medium">Completion Rate</span>
                     </div>
                 </div>
                 
                 <div class="flex items-end gap-4 h-40">
                     <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-                        <div class="w-full bg-[#8B0000] rounded-t-lg relative group-hover:bg-red-700 transition-all" style="height: 80%;">
-                            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">80%</div>
+                        <div class="w-full bg-[#8B0000] rounded-t-lg relative group-hover:bg-red-700 transition-all" style="height: {{ $totalSubmissions > 0 ? ($doneCount / $totalSubmissions) * 100 : 0 }}%;">
+                            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">{{ $doneCount }}</div>
                         </div>
                         <p class="text-center text-xs font-bold text-slate-500">Done</p>
                     </div>
                     <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-                        <div class="w-full bg-slate-200 rounded-t-lg relative group-hover:bg-slate-300 transition-all" style="height: 90%;"></div>
+                        <div class="w-full bg-slate-200 rounded-t-lg relative group-hover:bg-slate-300 transition-all" style="height: {{ $totalSubmissions > 0 ? ($activeCount / $totalSubmissions) * 100 : 0 }}%;">
+                             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">{{ $activeCount }}</div>
+                        </div>
                         <p class="text-center text-xs font-bold text-slate-500">Active</p>
                     </div>
                     <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-                        <div class="w-full bg-slate-100 rounded-t-lg relative group-hover:bg-slate-200 transition-all" style="height: 30%;"></div>
+                        <div class="w-full bg-slate-100 rounded-t-lg relative group-hover:bg-slate-200 transition-all" style="height: {{ $totalSubmissions > 0 ? ($pendingCount / $totalSubmissions) * 100 : 0 }}%;">
+                             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">{{ $pendingCount }}</div>
+                        </div>
                         <p class="text-center text-xs font-bold text-slate-500">Pending</p>
                     </div>
                 </div>

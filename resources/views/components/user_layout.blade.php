@@ -237,6 +237,7 @@
             }
         });
     </script>
-<x-flash />
+    <x-first_time_popup />
+    <x-flash />
 </body>
 </html>

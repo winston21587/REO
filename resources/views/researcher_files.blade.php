@@ -28,7 +28,13 @@
                             <i class="fas {{ $file->filetype === 'pdf' ? 'fa-file-pdf' : 'fa-file-word' }} text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-800">{{ ucfirst($file->category ?? 'Document') }}</h3>
+                            <h3 class="font-bold text-slate-800">
+                                @if($file->filetype === 'recommendation letter')
+                                    Recommendation Letter
+                                @else
+                                    {{ ucfirst($file->category ?? $file->filetype ?? 'Document') }}
+                                @endif
+                            </h3>
                             <p class="text-xs text-slate-400 truncate max-w-[200px]">{{ $file->filename }}</p>
                         </div>
                     </div>

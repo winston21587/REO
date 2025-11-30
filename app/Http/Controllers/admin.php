@@ -276,7 +276,9 @@ public function applications(Request $request)
         $query->where(function($q) {
             $q->where('Status', 'For Initial Review')
               ->orWhere('Status', 'Complete - Awaiting Hardcopy')
-              ->orWhere('Status', 'Hardcopy Received - For Initial Review');
+              ->orWhere('Status', 'Hardcopy Received - For Initial Review')
+              ->orWhere('Status', 'Under Review')
+              ->orWhere('Status', 'Panel Deliberation'); // Added to keep visible
         });
 
         // 2. Handle Search
@@ -769,9 +771,11 @@ public function previewLetter(Request $request)
     // 3. Recommendation Letter Feature
     public function showRecommendationLetterForm($id)
     {
-        $submission = Research_title::with(['author', 'files'])->findOrFail($id);
-        // Check for both old and new filetypes for backward compatibility
-        $hasLetter = $submission->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty();
+        $submission = Research_title::with(['author', 'files', 'adminFiles'])->findOrFail($id);
+        
+        // Check for both old and new filetypes in both relationships
+        $hasLetter = $submission->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty() 
+                  || $submission->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty();
         
         return view('admin.recommendation_letter.form', compact('submission', 'hasLetter'));
     }
@@ -927,8 +931,9 @@ public function previewLetter(Request $request)
 
     public function checkFileStatus($id)
     {
-        $submission = Research_title::with('files')->findOrFail($id);
-        $hasLetter = $submission->files->where('filetype', 'Result of Review (Admin Generated)')->isNotEmpty();
+        $submission = Research_title::with(['files', 'adminFiles'])->findOrFail($id);
+        $hasLetter = $submission->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty()
+                  || $submission->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty();
         
         return response()->json([
             'has_recommendation_letter' => $hasLetter
@@ -1172,4 +1177,5 @@ public function previewLetter(Request $request)
         $meeting->save();
         return back()->with('success', 'Meeting status updated successfully.');
     }
+
 }

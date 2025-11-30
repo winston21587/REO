@@ -3,12 +3,12 @@
         
         <div class="flex flex-col md:flex-row justify-between items-end pb-6 border-b border-slate-200">
             <div>
-                <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Revisions</h1>
-                <p class="text-slate-500 mt-2 text-sm">Manage protocols requiring or submitting revisions.</p>
+                <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Certifications</h1>
+                <p class="text-slate-500 mt-2 text-sm">View approved protocols and manage clearance certificates.</p>
             </div>
             <div class="flex gap-2 mt-4 md:mt-0">
-                <form action="{{ route('admin.revisions') }}" method="GET" class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search revisions..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent w-64 shadow-sm">
+                <form action="{{ route('admin.certifications') }}" method="GET" class="relative">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search approved protocols..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent w-64 shadow-sm">
                     <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#8B0000]">
                         <i class="fas fa-search"></i>
                     </button>
@@ -24,8 +24,8 @@
                             <th class="p-6">Protocol ID</th>
                             <th class="p-6">Research Title</th>
                             <th class="p-6">Principal Investigator</th>
-                            <th class="p-6">Last Updated</th>
-                            <th class="p-6">Status</th>
+                            <th class="p-6">Approval Date</th>
+                            <th class="p-6">Certificate</th>
                             <th class="p-6 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -54,23 +54,21 @@
                             </td>
                             <td class="p-6">
                                 <div class="flex items-center gap-2 text-sm text-slate-600">
-                                    <i class="far fa-clock text-slate-400"></i>
+                                    <i class="far fa-calendar-check text-green-500"></i>
                                     {{ $data->updated_at->format('M d, Y') }}
                                 </div>
                             </td>
                             <td class="p-6">
                                 @php
-                                    $statusColors = [
-                                        'Waiting for Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
-                                        'Revision Submitted' => 'bg-purple-50 text-purple-700 border-purple-100',
-                                        'Checking of Revisions' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                                    ];
-                                    $colorClass = $statusColors[$data->Status] ?? 'bg-slate-50 text-slate-700 border-slate-100';
+                                    $certificate = $data->files->firstWhere('filetype', 'certificate');
                                 @endphp
-                                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }} inline-flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                                    {{ $data->Status }}
-                                </span>
+                                @if($certificate)
+                                    <a href="{{ asset($certificate->filepath) }}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                @else
+                                    <span class="text-xs text-slate-400 italic">Generating...</span>
+                                @endif
                             </td>
                             <td class="p-6 text-right relative">
                                 <div class="relative" x-data="{ open: false }">
@@ -85,9 +83,6 @@
                                             <a href="{{ route('admin.view_files', $data->id) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
                                                 <i class="fas fa-eye w-4"></i> View Files
                                             </a>
-                                            <button @click="open = false; openStatusModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                <i class="fas fa-sync-alt w-4"></i> Update Status
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -96,8 +91,8 @@
                         @empty
                         <tr>
                             <td colspan="6" class="p-12 text-center text-slate-400">
-                                <i class="fas fa-check-circle text-4xl mb-4 text-slate-300"></i>
-                                <p>No revisions pending.</p>
+                                <i class="fas fa-award text-4xl mb-4 text-slate-300"></i>
+                                <p>No approved protocols found.</p>
                             </td>
                         </tr>
                         @endforelse
@@ -109,8 +104,4 @@
             </div>
         </div>
     </div>
-
-    <!-- Include Status Update Modal -->
-    @include('admin.partials.status_modal')
-
 </x-admin_layout>

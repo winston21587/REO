@@ -70,3 +70,28 @@ I have successfully enhanced the UI for the REO Admin Portal, focusing on a prem
 - **User Feedback:** Review the changes and provide feedback on the design.
 - **Integration:** Connect the "Meeting & Agenda" mock data to a real database backend.
 - **Further Testing:** Conduct user acceptance testing (UAT) to ensure all workflows function as expected.
+
+## Revision Stage & Final Approval
+### Revision Cycle
+1.  **Admin Request**:
+    - In the "Update Status" modal, Admins can select **"Needs Revision"**.
+    - This updates the status to `Waiting for Revision`.
+    - Remarks are displayed to the researcher.
+2.  **Researcher Update**:
+    - Researchers see the `Waiting for Revision` status.
+    - Updating a file via the "Update Revision" form automatically changes the status to `Revision Submitted`.
+    - This notifies the Admin (via status change) that action is required.
+
+### Panel Deliberation
+- Admins can select **"Panel Deliberation"** in the status modal.
+- This sets an appointment date and updates the status to `Panel Deliberation`.
+
+### Final Approval & Certificate
+1.  **Approval**:
+    - Admins select **"Approve"** in the status modal.
+    - This updates the status to `Approved`.
+    - **Automatic Certificate Generation**: A "Research Ethics Clearance" certificate (PDF) is automatically generated and saved.
+2.  **Certificate Issuance**:
+    - Researchers see the `Approved` status (Green).
+    - A **"Download Certificate"** button appears on their dashboard.
+    - The certificate is also available in the Document Manager.

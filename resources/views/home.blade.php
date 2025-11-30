@@ -47,12 +47,14 @@
 
                 $statusColor = match($title->status) {
                     'Approved' => 'green',
-                    'Returned' => 'red',
+                    'Returned', 'Waiting for Revision' => 'orange',
+                    'Panel Deliberation' => 'blue',
                     default => 'orange',
                 };
                 $statusIcon = match($title->status) {
                     'Approved' => 'fa-check-circle',
-                    'Returned' => 'fa-exclamation-circle',
+                    'Returned', 'Waiting for Revision' => 'fa-exclamation-circle',
+                    'Panel Deliberation' => 'fa-users',
                     default => 'fa-clock',
                 };
             @endphp
@@ -124,8 +126,26 @@
                                 <a href="{{ route('manage.files', $title->id) }}" class="w-full py-3 px-6 bg-[#8B0000] text-white rounded-xl font-bold text-center shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-xl transition-all flex items-center justify-center gap-2">
                                     <i class="fas fa-folder-open"></i> Manage Files
                                 </a>
-                                @if($title->status === 'Returned')
-                                    <button class="w-full py-3 px-6 bg-white border-2 border-red-100 text-red-700 rounded-xl font-bold hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
+                                
+                                @php
+                                    $recommendationLetter = $title->files->firstWhere('filetype', 'recommendation letter');
+                                    $certificate = $title->files->firstWhere('filetype', 'certificate');
+                                @endphp
+
+                                @if($recommendationLetter)
+                                    <a href="{{ route('manage.files', $title->id) }}" class="w-full py-3 px-6 bg-white border-2 border-[#8B0000] text-[#8B0000] rounded-xl font-bold hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
+                                        <i class="fas fa-certificate"></i> View Recommendation Letter
+                                    </a>
+                                @endif
+
+                                @if($certificate)
+                                    <a href="{{ route('manage.files', $title->id) }}" class="w-full py-3 px-6 bg-green-50 border-2 border-green-500 text-green-700 rounded-xl font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
+                                        <i class="fas fa-award"></i> Download Certificate
+                                    </a>
+                                @endif
+
+                                @if($title->status === 'Returned' || $title->status === 'Waiting for Revision')
+                                    <button class="w-full py-3 px-6 bg-white border-2 border-orange-100 text-orange-700 rounded-xl font-bold hover:bg-orange-50 transition-colors flex items-center justify-center gap-2">
                                         <i class="fas fa-comment-alt"></i> View Feedback
                                     </button>
                                 @endif

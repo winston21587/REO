@@ -38,6 +38,7 @@ public function submitTitle(Request $request)
     $validated = $request->validate([
         'Study_Protocol_title' => 'required|string|max:255',
         'Research_Category' => 'required|string|max:255',
+        'other_category' => 'nullable|string|max:255',
         'Adviser' => 'required|string|max:255',
 
         // PDF uploads
@@ -107,10 +108,16 @@ public function submitTitle(Request $request)
         }
     }
 
+    // Handle "Other" category
+    $finalCategory = $validated['Research_Category'];
+    if ($finalCategory === 'Other' && !empty($validated['other_category'])) {
+        $finalCategory = $validated['other_category'];
+    }
+
     // ✅ Create research title
     $research = Research_title::create([
         'Study_Protocol_title' => $validated['Study_Protocol_title'],
-        'Research_Category' => $validated['Research_Category'],
+        'Research_Category' => $finalCategory,
         'Created_by' => $user->name,
         'user_id' => $user->id,
         'Official_Receipt_Number' => 011,
@@ -128,7 +135,7 @@ public function submitTitle(Request $request)
     public function showTitles()
     {
         $user = Auth::user();
-        $titles = Research_title::where('user_id', $user->id)->orderBy('created_at', 'desc')->paginate(9);
+        $titles = Research_title::with('files')->where('user_id', $user->id)->orderBy('created_at', 'desc')->paginate(9);
 
         return view('home', compact('titles'));
     }
@@ -163,6 +170,13 @@ public function submitTitle(Request $request)
             'filepath' => 'storage/' . $path,
             'filetype' => $request->file('file')->getClientOriginalExtension(),
         ]);
+
+        // Check and Update Research Status
+        $researchTitle = Research_title::find($id);
+        if ($researchTitle && $researchTitle->Status === 'Waiting for Revision') {
+            $researchTitle->Status = 'Revision Submitted';
+            $researchTitle->save();
+        }
 
         return redirect()->back()->with('success', 'File updated successfully!');
     }

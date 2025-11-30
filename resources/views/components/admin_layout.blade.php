@@ -60,6 +60,14 @@
                             <i class="fas fa-folder-open w-5 text-center"></i>
                             <span class="flex-1">Active Protocols</span>
                         </a>
+                        <a href="{{ route('admin.revisions') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.revisions') ? 'active' : '' }}">
+                            <i class="fas fa-sync-alt w-5 text-center"></i>
+                            <span class="flex-1">Revisions</span>
+                        </a>
+                        <a href="{{ route('admin.certifications') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.certifications') ? 'active' : '' }}">
+                            <i class="fas fa-certificate w-5 text-center"></i>
+                            <span class="flex-1">Certifications</span>
+                        </a>
                     </div>
                 </div>
 

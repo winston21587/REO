@@ -45,18 +45,26 @@
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <i class="fas fa-tag text-slate-400 group-focus-within:text-[#8B0000] transition-colors"></i>
                                     </div>
-                                    <select name="Research_Category" id="Research_Category" 
+                                    <select name="Research_Category" id="Research_Category" onchange="toggleOtherCategory(this)"
                                         class="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200 appearance-none cursor-pointer" required>
                                         <option value="" disabled selected>Select research category</option>
-                                        <option value="Faculty Research">Faculty Research</option>
-                                        <option value="Graduate Student Research">Graduate Student Research</option>
-                                        <option value="Undergraduate Student Research">Undergraduate Student Research</option>
-                                        <option value="Externally Funded Research">Externally Funded Research</option>
-                                        <option value="Institutional Research">Institutional Research</option>
+                                        <option value="WMSU Undergraduate Thesis - 300.00">WMSU Undergraduate Thesis - 300.00</option>
+                                        <option value="WMSU Master's Thesis - 700.00">WMSU Master's Thesis - 700.00</option>
+                                        <option value="WMSU Dissertation - 1,500.00">WMSU Dissertation - 1,500.00</option>
+                                        <option value="WMSU Institutionally Funded Research - 2,000.00">WMSU Institutionally Funded Research - 2,000.00</option>
+                                        <option value="Externally Funded Research / Other Institution - 3,000.00">Externally Funded Research / Other Institution - 3,000.00</option>
+                                        <option value="Other">Other</option>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                                         <i class="fas fa-chevron-down text-slate-400"></i>
                                     </div>
+                                </div>
+                                <!-- Other Category Input -->
+                                <div id="other_category_container" class="hidden mt-3 animate-[fadeIn_0.3s_ease-out]">
+                                    <label for="other_category" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Specify Other Category</label>
+                                    <input type="text" name="other_category" id="other_category" 
+                                        class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10 transition-all"
+                                        placeholder="Please specify...">
                                 </div>
                             </div>
 
@@ -338,6 +346,42 @@
                 listContainer.innerHTML = html;
             }
         }
+
+        function toggleOtherCategory(select) {
+            const container = document.getElementById('other_category_container');
+            const input = document.getElementById('other_category');
+            
+            if (select.value === 'Other') {
+                container.classList.remove('hidden');
+                input.required = true;
+                input.focus();
+            } else {
+                container.classList.add('hidden');
+                input.required = false;
+                input.value = '';
+            }
+        }
+
+        // File Size Validation
+        document.getElementById('submission-form').addEventListener('submit', function(e) {
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            let totalSize = 0;
+            const maxSize = 25 * 1024 * 1024; // 25MB in bytes
+
+            fileInputs.forEach(input => {
+                if (input.files.length > 0) {
+                    Array.from(input.files).forEach(file => {
+                        totalSize += file.size;
+                    });
+                }
+            });
+
+            if (totalSize > maxSize) {
+                e.preventDefault();
+                const sizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
+                alert(`Total file size (${sizeInMB} MB) exceeds the maximum limit of 25 MB.\n\nPlease reduce the file sizes or upload fewer files.`);
+            }
+        });
     </script>
     @endverbatim
 

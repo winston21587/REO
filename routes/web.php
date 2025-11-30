@@ -150,6 +150,7 @@ Route::middleware(['auth'])->group(function () {
         // Route::post('/admin/{id}/set-initial-review', [admin::class, 'setInitialReview'])->name('submissions.setInitialReview');
         // Route::post('/admin/submission/{id}/complete', [admin::class, 'markAsComplete'])->name('admin.markComplete');
         // Route::post('/admin/submission/{id}/incomplete', [admin::class, 'markAsIncomplete'])->name('admin.markIncomplete');
+        Route::post('/admin/certificate/upload/{id}', [admin::class, 'uploadCertificate'])->name('admin.certificate.upload');
         Route::post('/admin/recommendation-letter/finalize/{id}', [admin::class, 'finalizeReview'])->name('admin.recommendation.finalize');
         Route::get('/admin/recommendation-letter/view-saved/{id}', [admin::class, 'viewSavedRecommendationLetter'])->name('admin.recommendation.view_saved');
     });

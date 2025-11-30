@@ -61,14 +61,17 @@
                             </td>
                             <td class="p-6">
                                 @php
-                                    $certificate = $data->files->firstWhere('filetype', 'certificate');
+                                    $certificate = $data->adminFiles->firstWhere('filetype', 'certificate');
+                                    $approvalLetter = $data->adminFiles->firstWhere('filetype', 'Approval Letter');
                                 @endphp
-                                @if($certificate)
-                                    <a href="{{ asset($certificate->filepath) }}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors">
-                                        <i class="fas fa-download"></i> Download
-                                    </a>
+                                @if($certificate && $approvalLetter)
+                                    <span class="text-xs text-green-700 font-bold bg-green-50 px-2 py-1 rounded border border-green-100">
+                                        <i class="fas fa-check-circle mr-1"></i> Generated
+                                    </span>
                                 @else
-                                    <span class="text-xs text-slate-400 italic">Generating...</span>
+                                    <span class="text-xs text-orange-500 font-bold bg-orange-50 px-2 py-1 rounded border border-orange-100">
+                                        <i class="fas fa-clock mr-1"></i> Pending Upload
+                                    </span>
                                 @endif
                             </td>
                             <td class="p-6 text-right relative">
@@ -84,6 +87,14 @@
                                             <a href="{{ route('admin.view_files', $data->id) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
                                                 <i class="fas fa-eye w-4"></i> View Files
                                             </a>
+                                            @if($certificate && $approvalLetter)
+                                                <button onclick="openViewCertificatesModal('{{ asset($approvalLetter->filepath) }}', '{{ asset($certificate->filepath) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
+                                                    <i class="fas fa-certificate w-4"></i> View Certificates
+                                                </button>
+                                            @endif
+                                            <button onclick="openUploadCertificateModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors text-left">
+                                                <i class="fas fa-upload w-4"></i> Upload Documents
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -105,4 +116,8 @@
             </div>
         </div>
     </div>
+    
+    @include('admin.partials.upload_certificate_modal')
+    @include('admin.partials.view_certificates_modal')
+
 </x-admin_layout>

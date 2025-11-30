@@ -29,24 +29,34 @@
                 // Tracker Logic
                 $steps = [
                     1 => ['label' => 'Submitted', 'icon' => 'fa-paper-plane'],
-                    2 => ['label' => 'Review & Revision', 'icon' => 'fa-search'],
-                    3 => ['label' => 'Deliberation', 'icon' => 'fa-clipboard-check'],
-                    4 => ['label' => 'Certificate', 'icon' => 'fa-certificate'],
+                    2 => ['label' => 'Review', 'icon' => 'fa-search'],
+                    3 => ['label' => 'Revision', 'icon' => 'fa-edit'],
+                    4 => ['label' => 'Deliberation', 'icon' => 'fa-clipboard-check'],
+                    5 => ['label' => 'Certificate', 'icon' => 'fa-certificate'],
                 ];
 
                 $currentStep = 1;
-                $status = $title->status ?? '';
+                $status = $title->Status ?? $title->status ?? '';
 
-                if (str_contains($status, 'Approved') || str_contains($status, 'Complete')) {
+                // Normalize status for comparison
+                $checkStatus = trim($status);
+
+                if (stripos($checkStatus, 'Approved') !== false || stripos($checkStatus, 'Complete') !== false || stripos($checkStatus, 'Certification') !== false) {
+                    $currentStep = 5;
+                } elseif ($checkStatus === 'Panel Deliberation') {
                     $currentStep = 4;
-                } elseif ($status === 'Panel Deliberation') {
-                    $currentStep = 3;
-                } elseif (in_array($status, [
-                    'For Initial Review', 
+                } elseif (in_array($checkStatus, [
                     'Waiting for Revision', 
+                    'Modifications Required',
                     'Revision Submitted', 
                     'Checking of Revisions', 
                     'Submission of Revisions / Resubmission', 
+                    'Returned',
+                    'Disapproved'
+                ])) {
+                    $currentStep = 3;
+                } elseif (in_array($checkStatus, [
+                    'For Initial Review', 
                     'Hardcopy Received - For Initial Review'
                 ])) {
                     $currentStep = 2;
@@ -54,14 +64,16 @@
 
                 $statusColor = match($title->status) {
                     'Approved' => 'green',
-                    'Returned', 'Waiting for Revision' => 'orange',
+                    'Returned', 'Waiting for Revision', 'Modifications Required' => 'orange',
                     'Panel Deliberation' => 'blue',
+                    'Disapproved' => 'red',
                     default => 'orange',
                 };
                 $statusIcon = match($title->status) {
                     'Approved' => 'fa-check-circle',
-                    'Returned', 'Waiting for Revision' => 'fa-exclamation-circle',
+                    'Returned', 'Waiting for Revision', 'Modifications Required' => 'fa-edit',
                     'Panel Deliberation' => 'fa-users',
+                    'Disapproved' => 'fa-times-circle',
                     default => 'fa-clock',
                 };
             @endphp
@@ -98,7 +110,12 @@
                                         {{ $data['label'] }}
                                     </span>
                                     @if($isCurrent)
-                                        <span class="absolute -bottom-6 text-[10px] font-bold text-slate-400 animate-pulse">Current Stage</span>
+                                        <div class="absolute -bottom-10 w-48 flex flex-col items-center">
+                                            <span class="text-[10px] font-bold text-[#8B0000] animate-pulse text-center">{{ $title->status }}</span>
+                                            @if($currentStep === 2 && $title->Review_Type)
+                                                <span class="text-[9px] font-medium text-slate-500 mt-0.5">({{ $title->Review_Type }})</span>
+                                            @endif
+                                        </div>
                                     @endif
                                 </div>
                             @endforeach
@@ -118,7 +135,7 @@
                                 <div class="flex items-center gap-3 mb-4">
                                     <span class="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider bg-{{ $statusColor }}-100 text-{{ $statusColor }}-700 flex items-center gap-2">
                                         <i class="fas {{ $statusIcon }}"></i>
-                                        {{ $title->status ?? 'Pending Review' }}
+                                        {{ $title->Status ?? $title->status ?? 'Pending Review' }}
                                     </span>
                                     <span class="text-slate-400 text-sm font-medium">
                                         <i class="far fa-calendar-alt mr-1"></i> Submitted on {{ $title->created_at->format('F d, Y') }}
@@ -134,21 +151,10 @@
                                     <i class="fas fa-folder-open"></i> Manage Files
                                 </a>
                                 
-                                @php
-                                    $recommendationLetter = $title->files->firstWhere('filetype', 'recommendation letter');
-                                    $certificate = $title->files->firstWhere('filetype', 'certificate');
-                                @endphp
-
-                                @if($recommendationLetter)
-                                    <a href="{{ route('manage.files', $title->id) }}" class="w-full py-3 px-6 bg-white border-2 border-[#8B0000] text-[#8B0000] rounded-xl font-bold hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
-                                        <i class="fas fa-certificate"></i> View Recommendation Letter
-                                    </a>
-                                @endif
-
-                                @if($certificate)
-                                    <a href="{{ route('manage.files', $title->id) }}" class="w-full py-3 px-6 bg-green-50 border-2 border-green-500 text-green-700 rounded-xl font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
-                                        <i class="fas fa-award"></i> Download Certificate
-                                    </a>
+                                @if($title->status === 'Approved')
+                                    <div class="w-full py-3 px-6 bg-green-50 border-2 border-green-500 text-green-700 rounded-xl font-bold flex items-center justify-center gap-2">
+                                        <i class="fas fa-check-circle"></i> Approved
+                                    </div>
                                 @endif
 
                                 @if($title->status === 'Returned' || $title->status === 'Waiting for Revision')

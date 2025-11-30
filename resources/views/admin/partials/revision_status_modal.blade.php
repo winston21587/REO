@@ -33,17 +33,29 @@
                         <!-- Status Actions -->
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-3">Status Actions</label>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <!-- Needs Revision -->
-                                <div onclick="selectRevisionStatus('Waiting for Revision', this)" class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-orange-400 hover:shadow-md transition-all group">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <!-- Modifications Required -->
+                                <div onclick="selectRevisionStatus('Modifications Required', this)" class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-orange-400 hover:shadow-md transition-all group">
                                     <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
                                         <i class="fas fa-check-circle text-orange-500"></i>
                                     </div>
                                     <div class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-orange-500">
                                         <i class="fas fa-edit text-lg"></i>
                                     </div>
-                                    <h4 class="font-bold text-slate-800 text-sm">Needs Revision</h4>
-                                    <p class="text-[10px] text-slate-500 mt-1">Request changes</p>
+                                    <h4 class="font-bold text-slate-800 text-sm">Modifications Required</h4>
+                                    <p class="text-[10px] text-slate-500 mt-1">Minor or Major revisions</p>
+                                </div>
+
+                                <!-- Disapproved -->
+                                <div onclick="selectRevisionStatus('Disapproved', this)" class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-red-400 hover:shadow-md transition-all group">
+                                    <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
+                                        <i class="fas fa-check-circle text-red-500"></i>
+                                    </div>
+                                    <div class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-red-500">
+                                        <i class="fas fa-times-circle text-lg"></i>
+                                    </div>
+                                    <h4 class="font-bold text-slate-800 text-sm">Disapproved</h4>
+                                    <p class="text-[10px] text-slate-500 mt-1">Serious ethical violations</p>
                                 </div>
 
                                 <!-- Panel Deliberation -->
@@ -127,9 +139,12 @@
             let activeClass = '';
             let activeText = '';
             
-            if (status === 'Waiting for Revision') {
+            if (status === 'Modifications Required') {
                 activeClass = 'border-orange-400 bg-orange-50';
                 activeText = 'text-orange-500';
+            } else if (status === 'Disapproved') {
+                activeClass = 'border-red-400 bg-red-50';
+                activeText = 'text-red-500';
             } else if (status === 'Panel Deliberation') {
                 activeClass = 'border-blue-400 bg-blue-50';
                 activeText = 'text-blue-500';
@@ -157,10 +172,10 @@
             
             // Reset Box Selection Visuals
             document.querySelectorAll('.revision-status-option').forEach(el => {
-                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
+                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-red-400', 'bg-red-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
                 el.classList.add('border-slate-200');
                 el.querySelector('.check-icon').classList.add('opacity-0');
-                el.querySelector('.icon-box').classList.remove('text-orange-500', 'text-blue-500', 'text-green-500');
+                el.querySelector('.icon-box').classList.remove('text-orange-500', 'text-red-500', 'text-blue-500', 'text-green-500');
                 el.querySelector('.icon-box').classList.add('text-slate-400');
             });
 

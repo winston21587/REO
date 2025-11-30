@@ -170,6 +170,91 @@
         </div>
     </div>
 
+    <!-- Protocol Key Dates Section -->
+    <div class="grid md:grid-cols-2 gap-6">
+        <!-- Upcoming Protocol Appointments -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 class="font-semibold text-slate-800">Upcoming Protocol Appointments</h3>
+            </div>
+            <div class="divide-y divide-slate-100">
+                @forelse($upcomingAppointments as $appointment)
+                <div class="p-4 hover:bg-slate-50 transition-colors">
+                    <div class="flex items-start gap-3">
+                        @php
+                            $isPickup = $appointment->stage === 'Certificate Pickup';
+                            $colorClass = $isPickup ? 'green' : 'blue';
+                            $icon = $isPickup ? 'fa-certificate' : 'fa-users';
+                        @endphp
+                        <div class="flex-shrink-0 w-10 h-10 bg-{{ $colorClass }}-50 text-{{ $colorClass }}-600 rounded-lg flex flex-col items-center justify-center border border-{{ $colorClass }}-100">
+                            <span class="text-[10px] font-bold uppercase">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M') }}</span>
+                            <span class="text-sm font-bold leading-none">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d') }}</span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 line-clamp-1">{{ $appointment->research->Study_Protocol_title ?? 'Unknown Protocol' }}</h4>
+                            <div class="flex items-center gap-2 text-xs text-slate-500 mt-1">
+                                <span class="px-1.5 py-0.5 bg-{{ $colorClass }}-100 text-{{ $colorClass }}-700 rounded-md font-medium flex items-center gap-1">
+                                    <i class="fas {{ $icon }} text-[10px]"></i> {{ $appointment->stage }}
+                                </span>
+                                <span>•</span>
+                                <span>{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('h:i A') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="p-6 text-center text-slate-500 text-sm">
+                    No upcoming appointments.
+                </div>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Recent Protocol Activity -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 class="font-semibold text-slate-800">Recent Protocol Activity</h3>
+            </div>
+            <div class="divide-y divide-slate-100">
+                @forelse($recentActivities as $activity)
+                <div class="p-4 hover:bg-slate-50 transition-colors">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 mt-1">
+                            @if($activity->Status === 'Approved')
+                                <i class="fa-solid fa-circle-check text-green-500 text-lg"></i>
+                            @elseif($activity->Status === 'Modifications Required' || $activity->Status === 'Waiting for Revision')
+                                <i class="fa-solid fa-circle-exclamation text-orange-500 text-lg"></i>
+                            @elseif($activity->Status === 'For Initial Review')
+                                <i class="fa-solid fa-circle-play text-blue-500 text-lg"></i>
+                            @else
+                                <i class="fa-solid fa-circle-info text-slate-400 text-lg"></i>
+                            @endif
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 line-clamp-1">{{ $activity->Study_Protocol_title }}</h4>
+                            <div class="flex items-center gap-2 text-xs text-slate-500 mt-1">
+                                <span class="font-medium 
+                                    @if($activity->Status === 'Approved') text-green-600 
+                                    @elseif(in_array($activity->Status, ['Modifications Required', 'Waiting for Revision'])) text-orange-600 
+                                    @elseif($activity->Status === 'For Initial Review') text-blue-600 
+                                    @endif">
+                                    {{ $activity->Status }}
+                                </span>
+                                <span>•</span>
+                                <span>{{ $activity->updated_at->diffForHumans() }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="p-6 text-center text-slate-500 text-sm">
+                    No recent activity.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
     <!-- Schedule Modal (Alpine.js) -->
     <div x-show="showScheduleModal" 
          class="fixed inset-0 z-50 overflow-y-auto" 

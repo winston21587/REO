@@ -519,10 +519,23 @@ public function applications(Request $request)
             $submission->Status = $newStatus;
             $submission->save();
 
-            if ($action === 'Waiting for Revision') {
-                $message = "Your submission requires revision.";
+            if ($action === 'Modifications Required') {
+                $newStatus = 'Waiting for Revision'; // Map to internal status
+                $submission->Status = $newStatus;
+                $submission->save();
+                
+                $message = "Your submission requires modifications.";
                 if ($request->remarks) {
                     $message .= "\n\nRemarks/Requirements: " . $request->remarks;
+                }
+            } elseif ($action === 'Disapproved') {
+                $newStatus = 'Disapproved';
+                $submission->Status = $newStatus;
+                $submission->save();
+                
+                $message = "Your research protocol has been Disapproved.";
+                if ($request->remarks) {
+                    $message .= "\n\nReason: " . $request->remarks;
                 }
             } elseif ($action === 'Panel Deliberation') {
                 $request->validate(['appointment_date' => 'required|date']);
@@ -999,6 +1012,73 @@ public function previewLetter(Request $request)
     // generateCertificate method removed as per request
 
 
+    public function uploadCertificate(Request $request, $id)
+    {
+        $request->validate([
+            'cover_letter' => 'required|file|mimes:pdf|max:10240',
+            'certificate' => 'required|file|mimes:pdf|max:10240',
+            'pickup_date' => 'required|date|after_or_equal:today',
+        ]);
+
+        $submission = Research_title::findOrFail($id);
+        $user = User::find($submission->user_id);
+
+        // Handle Cover Letter
+        if ($request->hasFile('cover_letter')) {
+            $file = $request->file('cover_letter');
+            $filename = 'Approval_Letter_' . $submission->id . '_' . time() . '.pdf';
+            $path = $file->storeAs('certificates', $filename, 'public');
+
+            researcher_files::create([
+                'research_title_id' => $submission->id,
+                'filename' => 'Cover Letter of Approval',
+                'filetype' => 'Approval Letter',
+                'filepath' => 'storage/' . $path,
+                'user_id' => $submission->user_id,
+            ]);
+        }
+
+        // Handle Certificate
+        if ($request->hasFile('certificate')) {
+            $file = $request->file('certificate');
+            $filename = 'Clearance_' . $submission->id . '_' . time() . '.pdf';
+            $path = $file->storeAs('certificates', $filename, 'public');
+
+            researcher_files::create([
+                'research_title_id' => $submission->id,
+                'filename' => 'Ethics Clearance Certificate',
+                'filetype' => 'certificate',
+                'filepath' => 'storage/' . $path,
+                'user_id' => $submission->user_id,
+            ]);
+        }
+
+        // Format Date
+    $pickupDate = \Carbon\Carbon::parse($request->pickup_date);
+    $formattedDate = $pickupDate->format('F j, Y');
+
+    // Create Appointment for Pickup
+    Appointment::create([
+        'research_title_id' => $submission->id,
+        'user_id' => $submission->user_id,
+        'appointment_date' => $pickupDate->setTime(9, 0), // Default to 9:00 AM
+        'stage' => 'Certificate Pickup',
+        'status' => 'Scheduled',
+        'remarks' => 'Please bring valid ID.'
+    ]);
+
+    // Notify User
+    UserNotification::create([
+        'user_id' => $submission->user_id,
+        'research_id' => $submission->id,
+        'title' => 'Certification Documents Ready',
+        'message' => "Your Cover Letter of Approval and Research Ethics Clearance Certificate have been generated. They are ready for pickup at the REO building on {$formattedDate}.",
+        'type' => 'status_update',
+        'is_read' => false
+    ]);
+        return back()->with('success', 'Certification documents uploaded and user notified.');
+    }
+
     public function revisions(Request $request)
     {
         $query = Research_title::with('author')
@@ -1020,7 +1100,7 @@ public function previewLetter(Request $request)
 
     public function certifications(Request $request)
     {
-        $query = Research_title::with(['author', 'files'])
+        $query = Research_title::with(['author', 'files', 'adminFiles'])
             ->where('Status', 'Approved');
 
         if ($request->has('search')) {
@@ -1044,7 +1124,26 @@ public function previewLetter(Request $request)
         
         $nextMeeting = $upcomingMeetings->first();
 
-        return view('admin.meetings.index', compact('upcomingMeetings', 'nextMeeting'));
+        // Fetch Upcoming Appointments (e.g., Panel Deliberation)
+        $upcomingAppointments = Appointment::with('research')
+            ->where('appointment_date', '>=', now())
+            ->orderBy('appointment_date', 'asc')
+            ->limit(5)
+            ->get();
+
+        // Fetch Recent Protocol Activities (Key Statuses)
+        $recentActivities = Research_title::whereIn('Status', [
+                'For Initial Review', 
+                'Modifications Required', 
+                'Waiting for Revision', 
+                'Approved',
+                'Panel Deliberation'
+            ])
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('admin.meetings.index', compact('upcomingMeetings', 'nextMeeting', 'upcomingAppointments', 'recentActivities'));
     }
 
     public function storeMeeting(Request $request)

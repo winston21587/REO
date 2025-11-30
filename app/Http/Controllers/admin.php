@@ -298,7 +298,14 @@ public function applications(Request $request)
             // Actually, the user prompt implies this IS the status update.
             
             $submission->Review_Type = $request->review_type;
-            $submission->Status = 'Under Review'; // Moving it forward
+            
+            // Use status_action if provided (e.g. from auto-set JS), otherwise default to 'Under Review'
+            if ($request->has('status_action') && !empty($request->status_action)) {
+                $submission->Status = $request->status_action;
+            } else {
+                $submission->Status = 'Under Review'; 
+            }
+            
             $submission->save();
 
             // Create Appointment

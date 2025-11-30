@@ -98,7 +98,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1">
-                            <label class="text-xs font-bold text-slate-700 uppercase">Email Address</label>
+                            <label class="text-xs font-bold text-slate-700 uppercase">WMSU Email Address</label>
                             <input type="email" name="email" id="emailField" value="{{ old('email') }}" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="juan@wmsu.edu.ph">
                             <p id="emailHint" class="text-[10px] text-[#8B0000] hidden mt-1">* Must be a valid WMSU email (@wmsu.edu.ph)</p>
                             @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror

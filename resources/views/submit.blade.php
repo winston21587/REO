@@ -424,7 +424,9 @@
                 if (input.files.length > 0) {
                     hasFiles = true;
                     Array.from(input.files).forEach(file => {
-                        formData.append('research_files[]', file);
+                        // Use the input name (e.g., files[application_form]) as the key
+                        // This allows the backend to identify the document type
+                        formData.append(input.name, file);
                     });
                 }
             });
@@ -443,7 +445,10 @@
             try {
                 const response = await fetch("{{ route('submit.ai_check') }}", {
                     method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value },
+                    headers: { 
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json'
+                    },
                     body: formData
                 });
 

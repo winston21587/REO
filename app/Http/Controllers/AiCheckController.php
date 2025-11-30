@@ -50,46 +50,69 @@ class AiCheckController extends Controller
     public function checkDocuments(Request $request)
     {
         $request->validate([
-            'research_files.*' => 'required|file|mimes:pdf,doc,docx|max:10240', // 10MB max per file
+            'files' => 'required|array',
+            'files.supplementary_docs' => 'nullable|array',
+            'files.supplementary_docs.*' => 'file|mimes:pdf,doc,docx|max:51200',
+            
+            // Explicitly validate single files to avoid "files.*" failing on the supplementary_docs array
+            'files.application_form' => 'nullable|file|mimes:pdf,doc,docx|max:51200',
+            'files.research_protocol' => 'nullable|file|mimes:pdf,doc,docx|max:51200',
+            'files.technical_clearance' => 'nullable|file|mimes:pdf,doc,docx|max:51200',
+            'files.data_collection_instruments' => 'nullable|file|mimes:pdf,doc,docx|max:51200',
+            'files.informed_consent' => 'nullable|file|mimes:pdf,doc,docx|max:51200',
+            'files.curriculum_vitae' => 'nullable|file|mimes:pdf,doc,docx|max:51200',
+            'files.study_protocol_form' => 'nullable|file|mimes:pdf,doc,docx|max:51200',
+            'files.informed_consent_form' => 'nullable|file|mimes:pdf,doc,docx|max:51200',
+            'files.exempt_review_form' => 'nullable|file|mimes:pdf,doc,docx|max:51200',
         ]);
 
+        // Map input names to human-readable document types
+        $documentTypes = [
+            'application_form' => 'Application Form for Research Ethics Review',
+            'research_protocol' => 'Research Protocol / Proposal',
+            'technical_clearance' => 'Technical Review Clearance',
+            'data_collection_instruments' => 'Data Collection Instrument/s',
+            'informed_consent' => 'Informed Consent / Assent',
+            'curriculum_vitae' => 'Curriculum Vitae of Researcher/s',
+            'study_protocol_form' => 'Completed Study Protocol Assessment Form',
+            'informed_consent_form' => 'Completed Informed Consent Assessment Form',
+            'exempt_review_form' => 'Completed Exempt Review Assessment Form',
+            'supplementary_docs' => 'Supplementary Document',
+        ];
+
         $extractedTexts = [];
-        foreach ($request->file('research_files') as $file) {
-            $originalName = $file->getClientOriginalName();
-            $extension = $file->getClientOriginalExtension();
-            $text = '';
-
-            try {
-                if ($extension === 'pdf') {
-                    $popplerPath = base_path('resources\poppler-25.07.0\Library\bin\pdftotext.exe');
-
-                    $text = (new Pdf($popplerPath))
-                        ->setPdf($file->path())
-                        ->text();
-
-                    // Path to your Poppler executable
-                    // $text = (new Pdf('resources\poppler-25.07.0\Library\bin\pdftotext.exe'))->setPdf($file->path())->text();
+        
+        if ($request->has('files')) {
+            foreach ($request->file('files') as $key => $fileOrFiles) {
+                // Handle array inputs (like supplementary_docs[])
+                $files = is_array($fileOrFiles) ? $fileOrFiles : [$fileOrFiles];
+                
+                foreach ($files as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $extension = $file->getClientOriginalExtension();
+                    $text = '';
                     
-                // } elseif (in_array($extension, ['doc', 'docx'])) {
-                //     $phpWord = IOFactory::load($file->path());
-                //     foreach ($phpWord->getSections() as $section) {
-                //         foreach ($section->getElements() as $element) {
-                //             if (method_exists($element, 'getText')) {
-                //                 $text .= $element->getText() . ' ';
-                //             }
-                //         }
-                //     }
-                // }
-                } elseif (in_array($extension, ['doc', 'docx'])) {
-                    $text = $this->safeExtractWord($file->path());
+                    // Determine expected document type
+                    $expectedType = $documentTypes[$key] ?? 'Unknown Document Type';
+
+                    try {
+                        if ($extension === 'pdf') {
+                            $popplerPath = base_path('resources\poppler-25.07.0\Library\bin\pdftotext.exe');
+                            $text = (new Pdf($popplerPath))->setPdf($file->path())->text();
+                        } elseif (in_array($extension, ['doc', 'docx'])) {
+                            $text = $this->safeExtractWord($file->path());
+                        }
+
+                        // Limit text to avoid token limits (approx 10k chars per doc)
+                        $text = substr($text, 0, 10000);
+
+                        $extractedTexts[] = "-- DOCUMENT START --\nFILENAME: {$originalName}\nEXPECTED_TYPE: {$expectedType}\nCONTENT:\n{$text}\n-- DOCUMENT END --";
+
+                    } catch (\Exception $e) {
+                        Log::error("Failed to extract text from {$originalName}: " . $e->getMessage());
+                        return response()->json(['error' => "Could not process file: {$originalName}. Ensure it is not corrupted."], 500);
+                    }
                 }
-
-
-                $extractedTexts[] = "-- DOCUMENT: {$originalName} --\n{$text}";
-
-            } catch (\Exception $e) {
-                Log::error("Failed to extract text from {$originalName}: " . $e->getMessage());
-                return response()->json(['error' => "Could not process file: {$originalName}. Ensure it is not corrupted."], 500);
             }
         }
 
@@ -109,8 +132,8 @@ class AiCheckController extends Controller
 
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $apiKey,
-            'HTTP-Referer' => config('app.url'),      // Uses http://reo.test from your .env file 
-            'X-Title' => config('app.name'),          // Uses Laravel from your .env file 
+            'HTTP-Referer' => config('app.url'),
+            'X-Title' => config('app.name'),
         ])->timeout(120)->post('https://openrouter.ai/api/v1/chat/completions', [
             'model' => 'google/gemini-2.5-flash-lite',
             'messages' => [
@@ -126,17 +149,12 @@ class AiCheckController extends Controller
 
         $result = $response->json();
         
-        // Correctly parse the OpenAI-compatible response from OpenRouter
-        // Correctly parse the OpenAI-compatible response from OpenRouter
         $content = $result['choices'][0]['message']['content'] ?? '';
-        
-        // Clean up markdown code blocks if present
         $content = preg_replace('/^```json\s*|\s*```$/', '', trim($content));
         
         $aiFeedback = json_decode($content, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            // Fallback if JSON parsing fails
             Log::error('AI JSON Parse Error: ' . json_last_error_msg() . ' Content: ' . $content);
             return response()->json(['error' => 'Failed to parse AI response. Please try again.'], 500);
         }
@@ -147,42 +165,62 @@ class AiCheckController extends Controller
     private function getAiPromptTemplate(): string
     {
         return <<<PROMPT
-**Persona:** You are an AI Research Compliance Assistant. Your function is to meticulously pre-screen research documents against a list of formatting and content requirements before they are formally submitted to a Research Ethics Office. You are detail-oriented, precise, and helpful.
+**Persona:** You are a strict AI Research Compliance Officer. Your job is to verify that uploaded documents MATCH their expected type and meet specific requirements.
 
-**Task:** I will provide you with the content of several research documents. You must analyze EACH document ONLY against its specific requirements listed below and generate a compliance report. The file names will be provided.
+**Task:** I will provide you with the text content of several files. Each file is marked with its FILENAME and EXPECTED_TYPE.
+You must verify:
+1.  **Identity Check:** Does the content of the file actually match the EXPECTED_TYPE? (e.g., If expected is "Application Form", but the content looks like a "Curriculum Vitae", it FAILS).
+2.  **Requirement Check:** Does it meet the specific requirements for that type?
 
-**Document Requirements:**
-1.  **Application Form (PDF):**
-    * Must contain a clear indication of a signature (e.g., an electronic signature like "/s/ Researcher Name", a signature placeholder like "[SIGNATURE HERE]", or text confirming a signature is present).
-2.  **Research Protocol/Proposal (PDF):**
-    * Must show evidence of page numbers (e.g., "Page 1 of 10").
-    * Must show evidence of line numbers (e.g., numbers at the beginning of paragraphs or lines).
-3.  **Technical Review Clearance (PDF):**
-    * Confirm its presence. No content check is needed.
-4.  **Data Collection Instruments (PDF):**
-    * Must show evidence of page numbers.
-    * Must show evidence of line numbers.
-5.  **Informed Consent/Assent (PDF):**
-    * Must show evidence of page numbers.
-    * Must show evidence of line numbers.
-6.  **Curriculum Vitae of Researcher/s (PDF):**
-    * Confirm its presence. No content check is needed.
-7.  **Completed Study Protocol Assessment Form (Word):**
-    * Scan the text for any fields marked with an asterisk (*) that appear to be empty or have placeholder text (e.g., "*Response: [enter text here]" or "*Name: ").
-8.  **Completed Informed Consent Assessment Form (Word):**
-    * Scan the text for any fields marked with an asterisk (*) that appear to be empty or have placeholder text.
-9.  **Completed Exempt Review Assessment Form (Word):**
-    * Scan the text for any fields marked with an asterisk (*) that appear to be empty or have placeholder text.
-10. **Other documents (e.g., NCIP Clearance, MOA):**
-    * Must contain a clear indication of a signature.
+**Specific Requirements per Type:**
+
+1.  **Application Form for Research Ethics Review:**
+    *   **Identity:** Must look like a formal application form.
+    *   **Requirement:** Must contain a signature or a placeholder for a signature (e.g., "/s/", "Signed:", "[Signature]").
+
+2.  **Research Protocol / Proposal:**
+    *   **Identity:** Must be a research proposal/protocol document.
+    *   **Requirement:** Must have page numbers (e.g., "Page X") AND line numbers (numbers at start of lines).
+
+3.  **Technical Review Clearance:**
+    *   **Identity:** Must be a clearance certificate or approval document.
+    *   **Requirement:** Must contain signatures of panel members.
+
+4.  **Data Collection Instrument/s:**
+    *   **Identity:** Must be a survey, questionnaire, or interview guide.
+    *   **Requirement:** Must have page numbers AND line numbers.
+
+5.  **Informed Consent / Assent:**
+    *   **Identity:** Must be a consent form for participants.
+    *   **Requirement:** Must have page numbers AND line numbers.
+
+6.  **Curriculum Vitae of Researcher/s:**
+    *   **Identity:** Must be a CV or Resume.
+    *   **Requirement:** None (just identity check).
+
+7.  **Completed Study Protocol Assessment Form:**
+    *   **Identity:** Must be an assessment form.
+    *   **Requirement:** Check for empty required fields (marked with *).
+
+8.  **Completed Informed Consent Assessment Form:**
+    *   **Identity:** Must be an assessment form.
+    *   **Requirement:** Check for empty required fields.
+
+9.  **Completed Exempt Review Assessment Form:**
+    *   **Identity:** Must be an assessment form.
+    *   **Requirement:** Check for empty required fields.
 
 **Output Format:**
-Return ONLY a valid JSON array of objects. Do not include any markdown formatting (like ```json). Each object must have the following keys:
-- "document_name": The name of the file.
-- "status": "pass" or "fail".
-- "issues": A string describing the issues, or "All clear" if passed.
+Return ONLY a valid JSON array of objects. No markdown.
+[
+    {
+        "document_name": "filename.pdf",
+        "status": "pass" or "fail",
+        "issues": "Description of failure (e.g., 'Wrong document type: Uploaded a CV instead of Application Form' or 'Missing line numbers'). If pass, use 'All clear'."
+    }
+]
 
-**Begin Analysis:** Here are the documents.
+**Begin Analysis:**
 PROMPT;
     }
     public function analyzeProtocolType(Request $request, $id)

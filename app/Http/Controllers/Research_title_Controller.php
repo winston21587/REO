@@ -42,20 +42,20 @@ public function submitTitle(Request $request)
         'Adviser' => 'required|string|max:255',
 
         // PDF uploads
-        'files.application_form' => 'required|file|mimes:pdf|max:20480',
-        'files.research_protocol' => 'required|file|mimes:pdf|max:20480',
-        'files.technical_clearance' => 'required|file|mimes:pdf|max:20480',
-        'files.data_collection_instruments' => 'required|file|mimes:pdf|max:20480',
-        'files.informed_consent' => 'required|file|mimes:pdf|max:20480',
-        'files.curriculum_vitae' => 'required|file|mimes:pdf|max:20480',
+        'files.application_form' => 'required|file|mimes:pdf|max:25600',
+        'files.research_protocol' => 'required|file|mimes:pdf|max:25600',
+        'files.technical_clearance' => 'required|file|mimes:pdf|max:25600',
+        'files.data_collection_instruments' => 'required|file|mimes:pdf|max:25600',
+        'files.informed_consent' => 'required|file|mimes:pdf|max:25600',
+        'files.curriculum_vitae' => 'required|file|mimes:pdf|max:25600',
 
         // Word document uploads
-        'files.study_protocol_form' => 'required|file|mimes:doc,docx|max:20480',
-        'files.informed_consent_form' => 'required|file|mimes:doc,docx|max:20480',
-        'files.exempt_review_form' => 'required|file|mimes:doc,docx|max:20480',
+        'files.study_protocol_form' => 'required|file|mimes:doc,docx|max:25600',
+        'files.informed_consent_form' => 'required|file|mimes:doc,docx|max:25600',
+        'files.exempt_review_form' => 'required|file|mimes:doc,docx|max:25600',
 
         // Optional supplementary files
-        'files.supplementary_docs.*' => 'nullable|file|mimes:pdf|max:20480',
+        'files.supplementary_docs.*' => 'nullable|file|mimes:pdf|max:25600',
     ]);
 
     // ✅ Define document types for looping

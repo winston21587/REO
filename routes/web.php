@@ -113,8 +113,11 @@ Route::middleware(['auth'])->group(function () {
         // The Main Update Logic (Covers Triage Modal)
         Route::post('/admin/update-status/{id}', [admin::class, 'updateStatus'])->name('admin.updateStatus');
         
+    Route::get('/admin/revisions', [admin::class, 'revisions'])->name('admin.revisions');
+    Route::get('/admin/certifications', [admin::class, 'certifications'])->name('admin.certifications');
+    Route::get('/admin/view_files/{id}', [admin::class, 'viewFiles'])->name('admin.view_files');
+
         Route::post('/admin/assign-reviewers/{id}', [admin::class, 'assignReviewers'])->name('admin.assignReviewers');
-        Route::get('/admin/view-files/{id}', [admin::class, 'viewFiles'])->name('admin.view_files');
 
         Route::get('/admin/letter/create/{id}', [admin::class, 'showLetterForm'])->name('admin.letter.form');
         Route::post('/admin/letter/preview', [admin::class, 'previewLetter'])->name('admin.letter.preview');

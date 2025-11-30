@@ -87,8 +87,7 @@ public function applications(Request $request)
         $query->where(function($q) {
             $q->where('Status', 'For Initial Review')
               ->orWhere('Status', 'Complete - Awaiting Hardcopy')
-              ->orWhere('Status', 'Hardcopy Received - For Initial Review')
-              ->orWhere('Status', 'LIKE', '%Revision%'); // Matches 'Waiting for Revision', 'Checking of Revisions', etc.
+              ->orWhere('Status', 'Hardcopy Received - For Initial Review');
         });
 
         // 2. Handle Search
@@ -787,5 +786,43 @@ public function previewLetter(Request $request)
             'filepath' => 'storage/' . $filePath,
             'user_id' => $submission->user_id,
         ]);
+    }
+
+    public function revisions(Request $request)
+    {
+        $query = Research_title::with('author')
+            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']);
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('Study_Protocol_title', 'like', "%{$search}%")
+                  ->orWhereHas('author', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $datas = $query->orderBy('updated_at', 'desc')->paginate(10);
+        return view('admin.revisions', compact('datas'));
+    }
+
+    public function certifications(Request $request)
+    {
+        $query = Research_title::with(['author', 'files'])
+            ->where('Status', 'Approved');
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('Study_Protocol_title', 'like', "%{$search}%")
+                  ->orWhereHas('author', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $datas = $query->orderBy('updated_at', 'desc')->paginate(10);
+        return view('admin.certifications', compact('datas'));
     }
 }

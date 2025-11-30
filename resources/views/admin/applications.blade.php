@@ -47,9 +47,9 @@
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
                             <th class="p-6">Protocol ID</th>
                             <th class="p-6">Research Title</th>
-                            <th class="p-6">Principal Investigator</th>
+                            <th class="p-6">Researcher</th>
                             <th class="p-6">Submission Date</th>
-                            <th class="p-6">Status</th>
+                            <th class="p-6">Status / Review Type</th>
                             <th class="p-6 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -65,15 +65,14 @@
                                 <p class="font-bold text-slate-800 text-sm line-clamp-1 group-hover:text-[#8B0000] transition-colors" title="{{ $data->Study_Protocol_title }}">
                                     {{ $data->Study_Protocol_title }}
                                 </p>
-                                <p class="text-xs text-slate-400 mt-1">{{ $data->review_type ?? 'Standard Review' }}</p>
                             </td>
                             <td class="p-6">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
-                                        {{ substr($data->author->name ?? 'U', 0, 1) }}
+                                        {{ substr($data->author->first_name ?? 'U', 0, 1) }}
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-slate-700">{{ $data->author->name ?? 'Unknown' }}</p>
+                                        <p class="text-sm font-medium text-slate-700">{{ $data->author->first_name ?? '' }} {{ $data->author->last_name ?? 'Unknown' }}</p>
                                         <p class="text-[10px] text-slate-400">{{ $data->author->email ?? '' }}</p>
                                     </div>
                                 </div>
@@ -98,6 +97,14 @@
                                         'Checking of Revisions' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
                                     ];
                                     $colorClass = $statusColors[$data->Status] ?? 'bg-slate-50 text-slate-700 border-slate-100';
+                                    
+                                    // Display Review Type if set, otherwise Status
+                                    $displayStatus = $data->Review_Type ? $data->Review_Type : $data->Status;
+                                @endphp
+                                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }}">
+                                    {{ $displayStatus }}
+                                </span>
+                            </td>
                                 @endphp
                                 <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }} inline-flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
@@ -131,6 +138,20 @@
                                                     <i class="fas fa-sync-alt w-4"></i> Update Status
                                                 </button>
                                             @endif
+                                            @php
+                                                $recLetter = $data->files->where('filetype', 'recommendation letter')->first();
+                                            @endphp
+
+                                            @if($recLetter)
+                                                <a href="{{ asset('storage/' . $recLetter->filepath) }}" target="_blank" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
+                                                    <i class="fas fa-file-pdf w-4"></i> View Recommendation Letter
+                                                </a>
+                                            @elseif($data->Review_Type)
+                                                <a href="{{ route('admin.recommendation.form', $data->id) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
+                                                    <i class="fas fa-file-signature w-4"></i> Generate Recommendation Letter
+                                                </a>
+                                            @endif
+
                                             <button @click="open = false; openReviewersModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
                                                 <i class="fas fa-users-cog w-4"></i> Assign Reviewers
                                             </button>
@@ -155,446 +176,7 @@
 
 
 
-    <!-- Status Update Modal -->
-    <div id="statusModal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeStatusModal()"></div>
-
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div id="statusModalContent" class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg scale-95 duration-300">
-                    
-                    <!-- Header -->
-                    <div class="bg-gradient-to-r from-[#8B0000] to-[#600000] px-6 py-4 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-white font-heading" id="modal-title">Update Status</h3>
-                        <button onclick="closeStatusModal()" class="text-white/70 hover:text-white transition-colors">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-
-                    <div class="px-6 py-6 space-y-6">
-                        <p id="statusModalTitle" class="text-sm font-medium text-slate-500 border-b border-slate-100 pb-4"></p>
-
-                        <form id="statusForm" method="POST" class="space-y-6">
-                            @csrf
-                            
-                            <!-- 1. AI Analysis Section -->
-                            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                                <div class="flex justify-between items-center mb-3">
-                                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                        <i class="fas fa-robot text-[#8B0000] mr-1"></i> AI Analysis
-                                    </h4>
-                                    <span id="aiStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-500">Ready</span>
-                                </div>
-                                
-                                <div id="aiLoading" class="hidden text-center py-4">
-                                    <i class="fas fa-circle-notch fa-spin text-[#8B0000] text-xl"></i>
-                                    <p class="text-xs text-slate-500 mt-2">Reading Assessment Form...</p>
-                                </div>
-
-                                <div id="aiResult" class="hidden space-y-2">
-                                    <div class="flex items-start gap-3">
-                                        <div class="mt-0.5">
-                                            <i class="fas fa-lightbulb text-yellow-500"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs text-slate-500">Suggested Review Type:</p>
-                                            <p id="aiSuggestionText" class="text-sm font-bold text-slate-800">Expedited Review</p>
-                                            <p id="aiReasoning" class="text-xs text-slate-400 mt-1 italic">Based on checked boxes in the form.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div id="aiError" class="hidden text-center py-2">
-                                    <p class="text-xs text-red-500"><i class="fas fa-exclamation-circle"></i> Could not analyze file.</p>
-                                </div>
-                            </div>
-
-                            <!-- 2. Review Type Selection (Box Style) -->
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-3">Review Classification</label>
-                                <input type="hidden" id="reviewTypeInput" name="review_type" required>
-                                
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                                    <!-- Option 1: Expedited -->
-                                    <div class="review-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-[#8B0000]/50 hover:bg-red-50/50 transition-all group" onclick="selectReviewType('Expedited', this)">
-                                        <div class="absolute top-3 right-3 opacity-0 check-icon text-[#8B0000]">
-                                            <i class="fas fa-check-circle text-lg"></i>
-                                        </div>
-                                        <div class="mb-2 text-slate-400 group-hover:text-[#8B0000] icon-box">
-                                            <i class="fas fa-running text-2xl"></i>
-                                        </div>
-                                        <h5 class="font-bold text-slate-700 text-sm mb-1">Expedited</h5>
-                                        <p class="text-[10px] text-slate-500 leading-tight">Minimal risk, faster processing.</p>
-                                    </div>
-
-                                    <!-- Option 2: Exempt -->
-                                    <div class="review-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-[#8B0000]/50 hover:bg-red-50/50 transition-all group" onclick="selectReviewType('Exempt', this)">
-                                        <div class="absolute top-3 right-3 opacity-0 check-icon text-[#8B0000]">
-                                            <i class="fas fa-check-circle text-lg"></i>
-                                        </div>
-                                        <div class="mb-2 text-slate-400 group-hover:text-[#8B0000] icon-box">
-                                            <i class="fas fa-shield-alt text-2xl"></i>
-                                        </div>
-                                        <h5 class="font-bold text-slate-700 text-sm mb-1">Exempt</h5>
-                                        <p class="text-[10px] text-slate-500 leading-tight">Less than minimal risk.</p>
-                                    </div>
-
-                                    <!-- Option 3: Full Review -->
-                                    <div class="review-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-[#8B0000]/50 hover:bg-red-50/50 transition-all group" onclick="selectReviewType('Full Review', this)">
-                                        <div class="absolute top-3 right-3 opacity-0 check-icon text-[#8B0000]">
-                                            <i class="fas fa-check-circle text-lg"></i>
-                                        </div>
-                                        <div class="mb-2 text-slate-400 group-hover:text-[#8B0000] icon-box">
-                                            <i class="fas fa-users text-2xl"></i>
-                                        </div>
-                                        <h5 class="font-bold text-slate-700 text-sm mb-1">Full Review</h5>
-                                        <p class="text-[10px] text-slate-500 leading-tight">High risk, requires meeting.</p>
-                                    </div>
-                                </div>
-
-                                <!-- Status Actions Section -->
-                                <div class="border-t border-slate-100 pt-4 mt-4">
-                                    <label class="block text-sm font-bold text-slate-700 mb-3">Update Status</label>
-                                    <input type="hidden" id="statusActionInput" name="status_action">
-                                    
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <!-- Needs Revision -->
-                                        <div class="status-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-orange-400/50 hover:bg-orange-50/50 transition-all group" onclick="selectStatus('Waiting for Revision', this)">
-                                            <div class="absolute top-3 right-3 opacity-0 check-icon text-orange-500">
-                                                <i class="fas fa-check-circle text-lg"></i>
-                                            </div>
-                                            <div class="mb-2 text-slate-400 group-hover:text-orange-500 icon-box">
-                                                <i class="fas fa-edit text-2xl"></i>
-                                            </div>
-                                            <h5 class="font-bold text-slate-700 text-sm mb-1">Needs Revision</h5>
-                                            <p class="text-[10px] text-slate-500 leading-tight">Request changes from researcher.</p>
-                                        </div>
-
-                                        <!-- Panel Deliberation -->
-                                        <div class="status-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-blue-400/50 hover:bg-blue-50/50 transition-all group" onclick="selectStatus('Panel Deliberation', this)">
-                                            <div class="absolute top-3 right-3 opacity-0 check-icon text-blue-500">
-                                                <i class="fas fa-check-circle text-lg"></i>
-                                            </div>
-                                            <div class="mb-2 text-slate-400 group-hover:text-blue-500 icon-box">
-                                                <i class="fas fa-gavel text-2xl"></i>
-                                            </div>
-                                            <h5 class="font-bold text-slate-700 text-sm mb-1">Panel Deliberation</h5>
-                                            <p class="text-[10px] text-slate-500 leading-tight">For Full Review protocols.</p>
-                                        </div>
-
-                                        <!-- Approve -->
-                                        <div class="status-option cursor-pointer relative rounded-xl border-2 border-slate-200 p-4 hover:border-green-400/50 hover:bg-green-50/50 transition-all group" onclick="selectStatus('Approved', this)">
-                                            <div class="absolute top-3 right-3 opacity-0 check-icon text-green-500">
-                                                <i class="fas fa-check-circle text-lg"></i>
-                                            </div>
-                                            <div class="mb-2 text-slate-400 group-hover:text-green-500 icon-box">
-                                                <i class="fas fa-award text-2xl"></i>
-                                            </div>
-                                            <h5 class="font-bold text-slate-700 text-sm mb-1">Approve</h5>
-                                            <p class="text-[10px] text-slate-500 leading-tight">Issue Clearance Certificate.</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Recommendation Letter Button (Moved Here) -->
-                                <div id="recommendationSection" class="hidden flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 animate-[fadeIn_0.3s_ease-out]">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-[#8B0000]">
-                                            <i class="fas fa-file-signature"></i>
-                                        </div>
-                                        <div>
-                                            <h4 class="text-sm font-bold text-slate-700">Recommendation Letter</h4>
-                                            <p class="text-[10px] text-slate-500">Generate Result of Review Form</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span id="letterIndicator" class="hidden text-[10px] font-bold px-2 py-1 rounded bg-green-100 text-green-600 flex items-center gap-1">
-                                            <i class="fas fa-check-circle"></i> Generated
-                                        </span>
-                                        <a id="recommendationBtn" href="#" target="_blank" class="px-3 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 hover:text-[#8B0000] transition-colors shadow-sm">
-                                            Generate
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 3. Appointment Date -->
-                            <div>
-                                <label for="appointmentDate" class="block text-sm font-bold text-slate-700 mb-2">Set Appointment / Deadline</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="far fa-calendar-alt text-slate-400"></i>
-                                    </div>
-                                    <input type="date" id="appointmentDate" name="appointment_date" class="w-full pl-10 pr-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all" required>
-                                </div>
-                            </div>
-
-                            <!-- 4. Message Box -->
-                            <div>
-                                <label for="remarks" class="block text-sm font-bold text-slate-700 mb-2">Notification Message <span class="text-slate-400 font-normal text-xs">(Optional)</span></label>
-                                <textarea id="remarks" name="remarks" rows="3" class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none" placeholder="Add any specific instructions or remarks for the researcher..."></textarea>
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="flex gap-3 pt-4 border-t border-slate-100">
-                                <button type="button" onclick="closeStatusModal()" class="flex-1 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors">
-                                    Cancel
-                                </button>
-                                <button type="submit" id="submitStatusBtn" class="flex-1 px-4 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] transition-colors shadow-lg shadow-red-900/20 flex justify-center items-center gap-2">
-                                    <span>Update & Notify</span> <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function selectReviewType(type, element) {
-            // 1. Update Hidden Input
-            document.getElementById('reviewTypeInput').value = type;
-            document.getElementById('statusActionInput').value = ''; // Clear status action
-
-            // 2. Visual Selection
-            // Remove active class from all options (Review Types)
-            document.querySelectorAll('.review-option').forEach(el => {
-                el.classList.remove('border-[#8B0000]', 'bg-red-50');
-                el.classList.add('border-slate-200');
-                el.querySelector('.check-icon').classList.add('opacity-0');
-                el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
-                el.querySelector('.icon-box').classList.add('text-slate-400');
-            });
-
-            // Remove active class from all options (Status Actions)
-            document.querySelectorAll('.status-option').forEach(el => {
-                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
-                el.classList.add('border-slate-200');
-                el.querySelector('.check-icon').classList.add('opacity-0');
-                // Reset icon colors
-                const iconBox = el.querySelector('.icon-box');
-                iconBox.classList.remove('text-orange-500', 'text-blue-500', 'text-green-500');
-                iconBox.classList.add('text-slate-400');
-            });
-
-            // Add active class to clicked option
-            element.classList.remove('border-slate-200');
-            element.classList.add('border-[#8B0000]', 'bg-red-50');
-            element.querySelector('.check-icon').classList.remove('opacity-0');
-            element.querySelector('.icon-box').classList.remove('text-slate-400');
-            element.querySelector('.icon-box').classList.add('text-[#8B0000]');
-            
-            // 3. Show Recommendation Button & Update Link
-            const recSection = document.getElementById('recommendationSection');
-            const recBtn = document.getElementById('recommendationBtn');
-            
-            recSection.classList.remove('hidden');
-            
-            // Get base URL (without query params)
-            let baseUrl = recBtn.getAttribute('data-base-href');
-            if (!baseUrl) {
-                baseUrl = recBtn.href.split('?')[0];
-                recBtn.setAttribute('data-base-href', baseUrl);
-            }
-            
-            recBtn.href = `${baseUrl}?review_type=${encodeURIComponent(type)}`;
-        }
-
-        function selectStatus(status, element) {
-            // 1. Update Hidden Input
-            document.getElementById('statusActionInput').value = status;
-            document.getElementById('reviewTypeInput').value = ''; // Clear review type
-
-            // 2. Visual Selection
-            // Remove active class from all options (Review Types)
-            document.querySelectorAll('.review-option').forEach(el => {
-                el.classList.remove('border-[#8B0000]', 'bg-red-50');
-                el.classList.add('border-slate-200');
-                el.querySelector('.check-icon').classList.add('opacity-0');
-                el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
-                el.querySelector('.icon-box').classList.add('text-slate-400');
-            });
-
-            // Remove active class from all options (Status Actions)
-            document.querySelectorAll('.status-option').forEach(el => {
-                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
-                el.classList.add('border-slate-200');
-                el.querySelector('.check-icon').classList.add('opacity-0');
-                // Reset icon colors
-                const iconBox = el.querySelector('.icon-box');
-                iconBox.classList.remove('text-orange-500', 'text-blue-500', 'text-green-500');
-                iconBox.classList.add('text-slate-400');
-            });
-
-            // Add active class to clicked option
-            element.classList.remove('border-slate-200');
-            
-            let activeClass = '';
-            let activeText = '';
-            
-            if (status === 'Waiting for Revision') {
-                activeClass = 'border-orange-400 bg-orange-50';
-                activeText = 'text-orange-500';
-            } else if (status === 'Panel Deliberation') {
-                activeClass = 'border-blue-400 bg-blue-50';
-                activeText = 'text-blue-500';
-            } else if (status === 'Approved') {
-                activeClass = 'border-green-400 bg-green-50';
-                activeText = 'text-green-500';
-            }
-
-            const classes = activeClass.split(' ');
-            element.classList.add(...classes);
-            
-            element.querySelector('.check-icon').classList.remove('opacity-0');
-            element.querySelector('.icon-box').classList.remove('text-slate-400');
-            element.querySelector('.icon-box').classList.add(activeText);
-            
-            // Hide Recommendation Button since it's for review type
-            document.getElementById('recommendationSection').classList.add('hidden');
-        }
-
-        async function openStatusModal(id, title) {
-            document.getElementById('statusModalTitle').textContent = title;
-            const form = document.getElementById('statusForm');
-            form.action = `/admin/update-status/${id}`;
-            
-            // Update Recommendation Letter Button Base Link
-            const recBtn = document.getElementById('recommendationBtn');
-            recBtn.href = `/admin/recommendation-letter/${id}`;
-            recBtn.setAttribute('data-base-href', `/admin/recommendation-letter/${id}`);
-            
-            // Hide section initially
-            document.getElementById('recommendationSection').classList.add('hidden');
-            
-            // Check if letter exists
-            document.getElementById('letterIndicator').classList.add('hidden');
-            try {
-                const response = await fetch(`/admin/check-file-status/${id}`);
-                const data = await response.json();
-                if (data.has_recommendation_letter) {
-                    document.getElementById('letterIndicator').classList.remove('hidden');
-                }
-            } catch (e) {
-                console.log('Could not check file status');
-            }
-
-            // Reset UI
-            document.getElementById('reviewTypeInput').value = "";
-            document.getElementById('appointmentDate').value = "";
-            document.getElementById('remarks').value = ""; // Reset message box
-            
-            // Reset Box Selection Visuals
-            document.querySelectorAll('.review-option').forEach(el => {
-                el.classList.remove('border-[#8B0000]', 'bg-red-50');
-                el.classList.add('border-slate-200');
-                el.querySelector('.check-icon').classList.add('opacity-0');
-                el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
-                el.querySelector('.icon-box').classList.add('text-slate-400');
-            });
-
-            document.getElementById('aiResult').classList.add('hidden');
-            document.getElementById('aiError').classList.add('hidden');
-            document.getElementById('aiLoading').classList.remove('hidden');
-            document.getElementById('aiStatusBadge').textContent = "Analyzing...";
-            document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-600 animate-pulse";
-
-            // Show Modal
-            const modal = document.getElementById('statusModal');
-            const content = document.getElementById('statusModalContent');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-                content.classList.add('scale-100');
-            }, 10);
-
-            // Trigger AI Analysis
-            try {
-                const response = await fetch(`/admin/analyze-protocol-type/${id}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-
-                document.getElementById('aiLoading').classList.add('hidden');
-
-                if (data.found && data.suggestion) {
-                    document.getElementById('aiResult').classList.remove('hidden');
-                    document.getElementById('aiSuggestionText').textContent = data.suggestion.recommended_type;
-                    document.getElementById('aiReasoning').textContent = data.suggestion.reasoning;
-                    
-                    // Auto-select if high confidence
-                    if (data.suggestion.confidence === 'High') {
-                        const type = data.suggestion.recommended_type;
-                        // Find the box that matches and click it
-                        const boxes = document.querySelectorAll('.review-option');
-                        if (type.includes('Expedited')) selectReviewType('Expedited Review', boxes[0]);
-                        else if (type.includes('Exempt')) selectReviewType('Exempt Review', boxes[1]);
-                        else if (type.includes('Full')) selectReviewType('Full Board Review', boxes[2]);
-                    }
-
-                    document.getElementById('aiStatusBadge').textContent = "Complete";
-                    document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-600";
-                } else {
-                    throw new Error(data.message || "Analysis failed");
-                }
-
-            } catch (error) {
-                console.error(error);
-                document.getElementById('aiLoading').classList.add('hidden');
-                document.getElementById('aiError').classList.remove('hidden');
-                document.getElementById('aiStatusBadge').textContent = "Failed";
-                document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-600";
-            }
-        }
-
-        function closeStatusModal() {
-            const modal = document.getElementById('statusModal');
-            const content = document.getElementById('statusModalContent');
-            modal.classList.add('opacity-0');
-            content.classList.remove('scale-100');
-            content.classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        // Handle Form Submission via AJAX for better UX
-        document.getElementById('statusForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitStatusBtn');
-            const originalText = btn.textContent;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating...';
-
-            try {
-                const formData = new FormData(this);
-                const response = await fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                const result = await response.json();
-
-                if (result.success) {
-                    closeStatusModal();
-                    // Optional: Reload page or update table row
-                    window.location.reload(); 
-                } else {
-                    alert('Error: ' + (result.message || 'Unknown error'));
-                }
-            } catch (error) {
-                alert('An error occurred. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = originalText;
-            }
-        });
-    </script>
+    <!-- Include Status Update Modal -->
+    @include('admin.partials.status_modal')
 
 </x-admin_layout>

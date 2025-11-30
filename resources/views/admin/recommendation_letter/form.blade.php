@@ -20,14 +20,19 @@
 
                 <!-- Existing Letter Indicator -->
                 @if(isset($hasLetter) && $hasLetter)
-                <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 animate-pulse">
-                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                        <i class="fas fa-check-circle text-xl"></i>
+                <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between gap-3 animate-pulse">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                            <i class="fas fa-check-circle text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-green-800">Recommendation Letter Already Generated</h4>
+                            <p class="text-xs text-green-600">A letter has already been created for this protocol.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4 class="text-sm font-bold text-green-800">Recommendation Letter Already Generated</h4>
-                        <p class="text-xs text-green-600">A letter has already been created for this protocol. Generating again will create a new version.</p>
-                    </div>
+                    <a href="{{ route('admin.recommendation.view_saved', $submission->id) }}" target="_blank" class="px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                        <i class="fas fa-eye"></i> View Letter
+                    </a>
                 </div>
                 @endif
 

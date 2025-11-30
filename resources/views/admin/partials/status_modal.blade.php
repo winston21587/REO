@@ -403,13 +403,9 @@
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    if (result.redirect) {
-                        window.location.href = result.redirect;
-                    } else {
-                        closeStatusModal();
-                        // Show success message or reload
-                        window.location.reload(); 
-                    }
+                    closeStatusModal();
+                    // Show success message or reload
+                    window.location.reload(); 
                 } else {
                     // Handle Validation Errors
                     if (result.errors) {

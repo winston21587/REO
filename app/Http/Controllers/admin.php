@@ -503,11 +503,11 @@ public function applications(Request $request)
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true, 
-                    'redirect' => route('admin.recommendation.form', $id)
+                    // 'redirect' => route('admin.recommendation.form', $id) // REMOVED REDIRECT
                 ]);
             }
             
-            return redirect()->route('admin.recommendation.form', $id);
+            return redirect()->back()->with('success', 'Review Type updated. Please proceed to generate the Recommendation Letter.');
         }
         // ---------------------------------------------------------
         // CASE C: Status Actions (Revision, Panel, Approved)
@@ -770,9 +770,26 @@ public function previewLetter(Request $request)
     public function showRecommendationLetterForm($id)
     {
         $submission = Research_title::with(['author', 'files'])->findOrFail($id);
-        $hasLetter = $submission->files->where('filetype', 'Result of Review (Admin Generated)')->isNotEmpty();
+        // Check for both old and new filetypes for backward compatibility
+        $hasLetter = $submission->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty();
         
         return view('admin.recommendation_letter.form', compact('submission', 'hasLetter'));
+    }
+
+    public function viewSavedRecommendationLetter($id)
+    {
+        $file = researcher_files::where('research_title_id', $id)
+            ->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])
+            ->latest()
+            ->firstOrFail();
+
+        $path = str_replace('storage/', '', $file->filepath);
+        
+        if (!Storage::disk('public')->exists($path)) {
+            return back()->with('error', 'File not found.');
+        }
+
+        return response()->file(storage_path('app/public/' . $path));
     }
 
     public function generateRecommendationLetter(Request $request)
@@ -899,7 +916,7 @@ public function previewLetter(Request $request)
                 'research_title_id' => $submission->id,
                 'filename' => $filename,
                 'filepath' => $path,
-                'filetype' => 'recommendation letter',
+                'filetype' => 'Result of Review (Admin Generated)',
             ]);
 
             // Redirect back to the form with success message
@@ -911,7 +928,7 @@ public function previewLetter(Request $request)
     public function checkFileStatus($id)
     {
         $submission = Research_title::with('files')->findOrFail($id);
-        $hasLetter = $submission->files->where('filetype', 'recommendation letter')->isNotEmpty();
+        $hasLetter = $submission->files->where('filetype', 'Result of Review (Admin Generated)')->isNotEmpty();
         
         return response()->json([
             'has_recommendation_letter' => $hasLetter

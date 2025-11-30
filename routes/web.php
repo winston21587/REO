@@ -90,6 +90,8 @@ Route::middleware(['auth'])->group(function () {
         // Settings Routes
         Route::post('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.update_profile');
         Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.update_password');
+        Route::post('/settings/preferences/email', [SettingsController::class, 'updateEmailPreferences'])->name('settings.update_email_preferences');
+        Route::post('/settings/preferences/display', [SettingsController::class, 'updateDisplayPreferences'])->name('settings.update_display_preferences');
         Route::delete('/settings/account', [SettingsController::class, 'deleteAccount'])->name('settings.delete_account');
     });
 

@@ -73,4 +73,41 @@ class SettingsController extends Controller
 
         return back()->with('error', 'Failed to delete account.');
     }
+
+    public function updateEmailPreferences(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Validate input (expecting booleans or "on" from checkboxes)
+        $preferences = [
+            'submission_status' => $request->has('submission_status'),
+            'appointment_reminders' => $request->has('appointment_reminders'),
+            'new_resources' => $request->has('new_resources'),
+        ];
+
+        $user->email_preferences = $preferences;
+        $user->save();
+
+        return back()->with('success', 'Email preferences updated successfully.');
+    }
+
+    public function updateDisplayPreferences(Request $request)
+    {
+        $user = Auth::user();
+        
+        $request->validate([
+            'theme' => 'required|in:light,dark',
+            'density' => 'required|in:comfortable,compact',
+        ]);
+
+        $preferences = [
+            'theme' => $request->theme,
+            'density' => $request->density,
+        ];
+
+        $user->display_preferences = $preferences;
+        $user->save();
+
+        return back()->with('success', 'Display settings updated successfully.');
+    }
 }

@@ -37,6 +37,8 @@ class User extends Authenticatable
         'member_type',
         'expertise',
         'training_completed',
+        'email_preferences',
+        'display_preferences',
     ];
 
     /**
@@ -63,6 +65,8 @@ class User extends Authenticatable
             'external_user' => 'boolean',
             'expertise' => 'array',
             'training_completed' => 'boolean',
+            'email_preferences' => 'array',
+            'display_preferences' => 'array',
         ];
     }
 }

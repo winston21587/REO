@@ -41,6 +41,18 @@
             </div>
 
             <div class="p-8 md:p-10">
+                @if(session('success'))
+                    <div class="bg-green-50 border border-green-200 text-green-800 text-xs font-bold px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="bg-red-50 border border-red-200 text-red-800 text-xs font-bold px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle text-red-600"></i>
+                        {{ session('error') }}
+                    </div>
+                @endif
                 <div class="text-center mb-8">
                     <p class="text-sm text-slate-600">
                         We've sent a 6-digit code to<br>

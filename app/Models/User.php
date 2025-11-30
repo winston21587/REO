@@ -32,6 +32,7 @@ class User extends Authenticatable
         'institute',
         'external_user',
         'contact',
+        'first_time',
     ];
 
     /**

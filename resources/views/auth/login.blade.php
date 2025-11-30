@@ -63,6 +63,19 @@
                     <p class="mt-2 text-slate-500">Please sign in to your researcher account.</p>
                 </div>
 
+                @if(session('success'))
+                    <div class="bg-green-50 border border-green-200 text-green-800 text-xs font-bold px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="bg-red-50 border border-red-200 text-red-800 text-xs font-bold px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle text-red-600"></i>
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('login') }}" class="space-y-6">
                     @csrf
                     

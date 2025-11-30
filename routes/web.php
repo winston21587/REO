@@ -53,7 +53,7 @@ Route::middleware(['auth'])->group(function () {
         $notifications = UserNotification::where('user_id', Auth::id())
                             ->orderBy('created_at', 'desc')
                             ->get();
-        return view('user.notifications', compact('notifications'));
+        return view('notifications', compact('notifications'));
     })->name('notifications.index');
 
     Route::post('/notifications/{id}/read', function ($id) {
@@ -97,7 +97,7 @@ Route::middleware(['auth'])->group(function () {
     // ADMIN ROUTES
     // ====================================================
     Route::middleware(['role:admin'])->group(function () {
-        Route::get('/admin', function(){ return view('admin.analytics'); })->name('admin.analytics');
+        Route::get('/admin', [admin::class, 'analytics'])->name('admin.analytics');
         Route::get('/admin/appointment', function(){ return view('admin.appointment'); })->name('admin.appointment');
         Route::get('/admin/users', function(){ return view('admin.manage_users'); })->name('admin.manage_users');
         Route::get('/admin/staff', function(){ return view('admin.manage_staff'); })->name('admin.manage_staff');
@@ -119,6 +119,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/letter/create/{id}', [admin::class, 'showLetterForm'])->name('admin.letter.form');
         Route::post('/admin/letter/preview', [admin::class, 'previewLetter'])->name('admin.letter.preview');
         Route::get('/admin/check-file-status/{id}', [admin::class, 'checkFileStatus']);
+        Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol');
+        
+        // Recommendation Letter Routes
+        Route::get('/admin/recommendation-letter/{id}', [admin::class, 'showRecommendationLetterForm'])->name('admin.recommendation.form');
+        Route::post('/admin/recommendation-letter/generate', [admin::class, 'generateRecommendationLetter'])->name('admin.recommendation.generate');
         // --- DEPRECATED ROUTES (Logic merged into updateStatus) ---
         // Route::post('/admin/{id}/set-initial-review', [admin::class, 'setInitialReview'])->name('submissions.setInitialReview');
         // Route::post('/admin/submission/{id}/complete', [admin::class, 'markAsComplete'])->name('admin.markComplete');

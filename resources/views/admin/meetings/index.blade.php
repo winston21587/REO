@@ -170,6 +170,95 @@
         </div>
     </div>
 
+
+
+    <!-- Next Protocol Appointment Hero Card -->
+    @php
+        $nextAppointment = $upcomingAppointments->first();
+    @endphp
+    @if($nextAppointment)
+    <div class="bg-gradient-to-br from-[#8B0000] to-[#500000] rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+        
+        <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+                <div class="flex items-center gap-2 text-white/80 text-sm font-medium mb-2">
+                    <span class="px-2 py-0.5 rounded-full bg-white/20 border border-white/10">Next Protocol Appointment</span>
+                    <span>•</span>
+                    <span>{{ \Carbon\Carbon::parse($nextAppointment->appointment_date)->format('l, F j, Y') }}</span>
+                </div>
+                <h2 class="text-3xl font-bold mb-2 line-clamp-1">{{ $nextAppointment->research->Study_Protocol_title ?? 'Unknown Protocol' }}</h2>
+                <div class="flex items-center gap-4 text-white/90">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-regular fa-clock"></i>
+                        <span>{{ \Carbon\Carbon::parse($nextAppointment->appointment_date)->format('h:i A') }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>{{ $nextAppointment->stage === 'Certificate Pickup' ? 'REO Office' : 'Conference Room' }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid {{ $nextAppointment->stage === 'Certificate Pickup' ? 'fa-certificate' : 'fa-users' }}"></i>
+                        <span>{{ $nextAppointment->stage }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div x-data="{
+                days: '00',
+                hours: '00',
+                minutes: '00',
+                seconds: '00',
+                target: new Date('{{ \Carbon\Carbon::parse($nextAppointment->appointment_date)->toIso8601String() }}'),
+                start() {
+                    this.update();
+                    setInterval(() => this.update(), 1000);
+                },
+                update() {
+                    const now = new Date().getTime();
+                    const distance = this.target - now;
+                    if (distance < 0) {
+                        this.days = '00'; this.hours = '00'; this.minutes = '00'; this.seconds = '00';
+                        return;
+                    }
+                    this.days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                    this.hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                    this.minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                    this.seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+                }
+            }" x-init="start()" class="flex flex-col gap-3 min-w-[240px]">
+                <div class="text-center p-4 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="flex items-center justify-center gap-2 text-2xl font-bold font-mono">
+                        <div class="flex flex-col">
+                            <span x-text="days"></span>
+                            <span class="text-[10px] font-normal text-white/60 uppercase tracking-wider">Days</span>
+                        </div>
+                        <span class="text-white/40 -mt-4">:</span>
+                        <div class="flex flex-col">
+                            <span x-text="hours"></span>
+                            <span class="text-[10px] font-normal text-white/60 uppercase tracking-wider">Hrs</span>
+                        </div>
+                        <span class="text-white/40 -mt-4">:</span>
+                        <div class="flex flex-col">
+                            <span x-text="minutes"></span>
+                            <span class="text-[10px] font-normal text-white/60 uppercase tracking-wider">Mins</span>
+                        </div>
+                        <span class="text-white/40 -mt-4">:</span>
+                        <div class="flex flex-col">
+                            <span x-text="seconds"></span>
+                            <span class="text-[10px] font-normal text-white/60 uppercase tracking-wider">Secs</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="flex items-center justify-center gap-2 px-4 py-2 bg-white text-[#8B0000] rounded-lg hover:bg-red-50 transition-colors font-bold">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>View Details</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Protocol Key Dates Section -->
     <div class="grid md:grid-cols-2 gap-6">
         <!-- Upcoming Protocol Appointments -->

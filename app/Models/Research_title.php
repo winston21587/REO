@@ -18,19 +18,14 @@ class Research_title extends Model
         'Review_Type',
         'Created_by',
         'Official_Receipt_Number',
-        'user_id',
+        'researcher_id',  // since researher belongs to user (one to one) just store it onto the user side
         'Adviser',
     ];
-    // Relationship: each research title belongs to a user
-    public function user()
+    // Relationship: each research title belongs to a researcher
+    public function researcher()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Researcher::class);
     }
-
-    public function author()
-{
-    return $this->belongsTo(User::class, 'user_id');
-}
 
     // Relationship: each research title belongs to a researcher file
 public function files()

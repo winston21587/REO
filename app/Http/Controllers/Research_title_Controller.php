@@ -118,9 +118,9 @@ public function submitTitle(Request $request)
     $research = Research_title::create([
         'Study_Protocol_title' => $validated['Study_Protocol_title'],
         'Research_Category' => $finalCategory,
-        'Created_by' => $user->name,
-        'user_id' => $user->id,
-        'Official_Receipt_Number' => 011,
+        'Created_by' => $user->first_name . ' ' . $user->last_name,  // unesserasy but aight (will remove)
+        'researcher_id' => $user->researcher->id,  //since researher belongs to user (one to one) just store it onto the user side
+        'Official_Receipt_Number' => '011',
         'Adviser' => $validated['Adviser'],
     ]);
 
@@ -135,7 +135,13 @@ public function submitTitle(Request $request)
     public function showTitles()
     {
         $user = Auth::user();
-        $titles = Research_title::with('files')->where('user_id', $user->id)->orderBy('created_at', 'desc')->paginate(9);
+        if (!$user->researcher) {
+            return redirect()->back()->with('error', 'You are not registered as a researcher.');
+       }
+        $titles = Research_title::with('files')
+            ->where('researcher_id', $user->researcher->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(9);
 
         return view('home', compact('titles'));
     }
@@ -184,9 +190,10 @@ public function submitTitle(Request $request)
     public function viewRecommendationLetter($id)
     {
         $researchTitle = Research_title::findOrFail($id);
+        $user = Auth::user();
 
         // Security: Ensure user owns the title
-        if ($researchTitle->user_id !== Auth::id()) {
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -210,8 +217,9 @@ public function submitTitle(Request $request)
     public function submitRevisions($id)
     {
         $researchTitle = Research_title::findOrFail($id);
+        $user = Auth::user();
 
-        if ($researchTitle->user_id !== Auth::id()) {
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
             abort(403, 'Unauthorized action.');
         }
 

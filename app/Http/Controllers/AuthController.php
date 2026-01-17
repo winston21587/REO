@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Researcher;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
@@ -37,9 +38,6 @@ class AuthController extends Controller
                 return redirect()->route('home');
             }
             return redirect()->intended(route('home'));
-
-            
-            
         }
 
         return back()->withErrors([
@@ -52,6 +50,11 @@ class AuthController extends Controller
     {
         return view('auth.register');
     }
+
+
+    // external and internal functions are acceptable for now but next update
+    //  will have a single function for both internal and external users
+
 
     // Handle registration form
     public function register_internal(Request $request)
@@ -77,17 +80,21 @@ class AuthController extends Controller
             'first_name'  => $data['FirstName'],
             'middle_name' => $data['MiddleName'] ?? null,
             'last_name' => $data['LastName'],
-            'college' => $data['college'] ?? null,
-            'department' => $data['department'] ?? null,
-            'contact' => $data['contact'] ?? null,
-            'course' => $data['course'] ?? null,
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
-            'external_user' =>  false,
             'role'     => 'researcher', // default role
             'verification_code' => $verificationCode,
             'is_verified' => false,
         ]);
+
+            Researcher::create([
+                'user_id' => $user->id,
+                'college' => $data['college'] ?? null,
+                'department' => $data['department'] ?? null,
+                'contact' => $data['contact'] ?? null,
+                'course' => $data['course'] ?? null,
+                'external_user' => false,
+            ]);
     
 
     // Send email with verification code
@@ -119,15 +126,19 @@ class AuthController extends Controller
             'first_name'  => $data['FirstName'],
             'middle_name' => $data['MiddleName'] ?? null,
             'last_name' => $data['LastName'],
-            'contact' => $data['contact'] ?? null,
             'email'    => $data['email'],
-            'institute' => $data['institute'] ?? null, 
             'password' => Hash::make($data['password']),
-            'external_user' =>  false,
             'role'     => 'researcher', // default role
             'verification_code' => $verificationCode,
             'is_verified' => false,
         ]);
+
+            Researcher::create([
+                'user_id' => $user->id,
+                'contact' => $data['contact'] ?? null,
+                'institute' => $data['institute'] ?? null,
+                'external_user' => true,
+            ]);
     
 
     // Send email with verification code

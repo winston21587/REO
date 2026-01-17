@@ -18,10 +18,12 @@ return new class extends Migration
             $table->string('Review_Type')->default('N/A');
             $table->string('Created_by')->nullable();
             $table->string('Status')->default('Pending');
+            $table->integer('ai_score')->default(0); // 0-100%
+            $table->boolean('is_human_verified')->default(false);
             $table->string('Adviser')->nullable();
             $table->integer('Official_Receipt_Number')->default(null);
-            $table->foreignId('user_id')
-                  ->constrained('users')
+            $table->foreignId('researcher_id')   // this is for internal users
+                  ->constrained('researchers')
                   ->onDelete('cascade');
 
             // $table->foreignId('researcher_file_id')

@@ -19,6 +19,12 @@ return new class extends Migration
             $table->string('filepath');
             $table->string('filetype');
             $table->string('category')->nullable();
+            
+            $table->foreignId('research_title_id')
+                  ->nullable()
+                  ->constrained('research_title_information')
+                  ->onDelete('cascade');
+
             $table->timestamps();
         });
     }

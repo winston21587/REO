@@ -11,6 +11,7 @@
         class="slide-content absolute bottom-[30%] left-[6%] md:left-[10%] z-20 max-w-[700px] text-left text-white p-[20px]">
         <h2 class="mb-[20px] text-[2.5rem] md:text-[2.5rem] font-bold leading-tight drop-shadow-lg">
           Welcome to REO: Where Research Meets Collaboration
+          [BETA]
         </h2>
         <p class="text-[1.1rem] leading-[1.7] md:text-[1.25rem] drop-shadow-md">
           At REO, we’re creating a space where students, faculty, and researchers come together to innovate, share knowledge, and grow. Whether you're looking to collaborate on research projects, share valuable resources, or connect with peers, REO is your go-to hub for academic success.

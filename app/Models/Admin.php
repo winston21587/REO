@@ -13,8 +13,16 @@ class Admin extends Model
         'user_id',
         'member_type',
         'position',
+        'expertise',
+        'college',
+        'training_completed',
+        'external_user',
     ];
 
+    protected $casts = [
+        'expertise' => 'array',
+    ];
+    
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -46,7 +46,7 @@ return new class extends Migration
             $table->string('course')->nullable();
             $table->boolean('external_user')->default(false);
             $table->string('contact')->nullable();
-            
+        
             $table->json('expertise')->nullable();
             $table->boolean('training_completed')->default(false);
             
@@ -60,6 +60,11 @@ return new class extends Migration
             $table->string('member_type')->nullable(); // Scientist or Non-Scientist
             $table->string('position')->nullable(); // Chair, Vice-Chair, Secretary, Member
             
+            $table->string('college')->nullable();
+            $table->json('expertise')->nullable();
+            $table->boolean('training_completed')->default(false);
+            $table->boolean('external_user')->default(false); //might indicate its an external admin? maybe
+
             $table->timestamps();
         });
 

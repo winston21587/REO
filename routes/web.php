@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\admin;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Research_title_Controller;
 use App\Http\Controllers\AiCheckController;
 use App\Http\Controllers\SettingsController;
@@ -101,57 +101,57 @@ Route::middleware(['auth'])->group(function () {
     // ADMIN ROUTES
     // ====================================================
     Route::middleware(['role:admin'])->group(function () {
-        Route::get('/admin', [admin::class, 'analytics'])->name('admin.analytics');
+        Route::get('/admin', [AdminController::class, 'analytics'])->name('admin.analytics');
         Route::get('/admin/appointment', function(){ return view('admin.appointment'); })->name('admin.appointment');
-        Route::get('/admin/users', [admin::class, 'manageUsers'])->name('admin.manage_users');
-        Route::post('/admin/users/create', [admin::class, 'createUser'])->name('admin.users.create');
-        Route::post('/admin/users/{id}/toggle-status', [admin::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
-        Route::delete('/admin/users/{id}', [admin::class, 'deleteUser'])->name('admin.users.delete');
+        Route::get('/admin/users', [AdminController::class, 'manageUsers'])->name('admin.manage_users');
+        Route::post('/admin/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
+        Route::post('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
+        Route::delete('/admin/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
         
-        Route::get('/admin/staff', [admin::class, 'manageStaff'])->name('admin.manage_staff');
-        Route::post('/admin/staff', [admin::class, 'storeStaff'])->name('admin.staff.store');
-        Route::put('/admin/staff/{id}', [admin::class, 'updateStaff'])->name('admin.staff.update');
-        Route::delete('/admin/staff/{id}', [admin::class, 'deleteStaff'])->name('admin.staff.delete');
+        Route::get('/admin/staff', [AdminController::class, 'manageStaff'])->name('admin.manage_staff');
+        Route::post('/admin/staff', [AdminController::class, 'storeStaff'])->name('admin.staff.store');
+        Route::put('/admin/staff/{id}', [AdminController::class, 'updateStaff'])->name('admin.staff.update');
+        Route::delete('/admin/staff/{id}', [AdminController::class, 'deleteStaff'])->name('admin.staff.delete');
 
-        Route::get('/admin/meetings', [admin::class, 'meetings'])->name('admin.meetings');
-        Route::post('/admin/meetings', [admin::class, 'storeMeeting'])->name('admin.meetings.store');
-        Route::get('/admin/meetings/{id}', [admin::class, 'showMeeting'])->name('admin.meetings.show');
-    Route::delete('/admin/meetings/{id}', [admin::class, 'destroyMeeting'])->name('admin.meetings.destroy');
-        Route::post('/admin/meetings/{id}/agenda', [admin::class, 'storeAgendaItem'])->name('admin.meetings.agenda.store');
-        Route::put('/admin/agenda/{id}', [admin::class, 'updateAgendaItem'])->name('admin.agenda.update');
-        Route::delete('/admin/agenda/{id}', [admin::class, 'destroyAgendaItem'])->name('admin.agenda.destroy');
-        Route::put('/admin/meetings/{id}/status', [admin::class, 'updateMeetingStatus'])->name('admin.meetings.status');
-        Route::get('/admin/new', [admin::class, 'newSubmissions'])->name('admin.NewSubmissions');
-        Route::get('/admin/Review', [admin::class, 'GetReview'])->name('admin.Review');
-        Route::get('/admin/Revision', [admin::class, 'GetRevision'])->name('admin.Revision');
+        Route::get('/admin/meetings', [AdminController::class, 'meetings'])->name('admin.meetings');
+        Route::post('/admin/meetings', [AdminController::class, 'storeMeeting'])->name('admin.meetings.store');
+        Route::get('/admin/meetings/{id}', [AdminController::class, 'showMeeting'])->name('admin.meetings.show');
+    Route::delete('/admin/meetings/{id}', [AdminController::class, 'destroyMeeting'])->name('admin.meetings.destroy');
+        Route::post('/admin/meetings/{id}/agenda', [AdminController::class, 'storeAgendaItem'])->name('admin.meetings.agenda.store');
+        Route::put('/admin/agenda/{id}', [AdminController::class, 'updateAgendaItem'])->name('admin.agenda.update');
+        Route::delete('/admin/agenda/{id}', [AdminController::class, 'destroyAgendaItem'])->name('admin.agenda.destroy');
+        Route::put('/admin/meetings/{id}/status', [AdminController::class, 'updateMeetingStatus'])->name('admin.meetings.status');
+        Route::get('/admin/new', [AdminController::class, 'newSubmissions'])->name('admin.NewSubmissions');
+        Route::get('/admin/Review', [AdminController::class, 'GetReview'])->name('admin.Review');
+        Route::get('/admin/Revision', [AdminController::class, 'GetRevision'])->name('admin.Revision');
         Route::get('/admin/file', function (){ return view('admin.view_asessment'); })->name('admin.file');
 
-        Route::get('/admin/applications', [admin::class, 'applications'])->name('admin.applications');
+        Route::get('/admin/applications', [AdminController::class, 'applications'])->name('admin.applications');
         
         // The Main Update Logic (Covers Triage Modal)
-        Route::post('/admin/update-status/{id}', [admin::class, 'updateStatus'])->name('admin.updateStatus');
+        Route::post('/admin/update-status/{id}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
         
-    Route::get('/admin/revisions', [admin::class, 'revisions'])->name('admin.revisions');
-    Route::get('/admin/certifications', [admin::class, 'certifications'])->name('admin.certifications');
-    Route::get('/admin/view_files/{id}', [admin::class, 'viewFiles'])->name('admin.view_files');
-    Route::get('/admin/file-serve/{id}', [admin::class, 'serveFile'])->name('admin.serve_file');
+    Route::get('/admin/revisions', [AdminController::class, 'revisions'])->name('admin.revisions');
+    Route::get('/admin/certifications', [AdminController::class, 'certifications'])->name('admin.certifications');
+    Route::get('/admin/view_files/{id}', [AdminController::class, 'viewFiles'])->name('admin.view_files');
+    Route::get('/admin/file-serve/{id}', [AdminController::class, 'serveFile'])->name('admin.serve_file');
 
-        Route::post('/admin/assign-reviewers/{id}', [admin::class, 'assignReviewers'])->name('admin.assignReviewers');
+        Route::post('/admin/assign-reviewers/{id}', [AdminController::class, 'assignReviewers'])->name('admin.assignReviewers');
 
-        Route::get('/admin/letter/create/{id}', [admin::class, 'showLetterForm'])->name('admin.letter.form');
-        Route::post('/admin/letter/preview', [admin::class, 'previewLetter'])->name('admin.letter.preview');
-        Route::get('/admin/check-file-status/{id}', [admin::class, 'checkFileStatus']);
+        Route::get('/admin/letter/create/{id}', [AdminController::class, 'showLetterForm'])->name('admin.letter.form');
+        Route::post('/admin/letter/preview', [AdminController::class, 'previewLetter'])->name('admin.letter.preview');
+        Route::get('/admin/check-file-status/{id}', [AdminController::class, 'checkFileStatus']);
         Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol');
         
         // Recommendation Letter Routes
-        Route::get('/admin/recommendation-letter/{id}', [admin::class, 'showRecommendationLetterForm'])->name('admin.recommendation.form');
-        Route::post('/admin/recommendation-letter/generate', [admin::class, 'generateRecommendationLetter'])->name('admin.recommendation.generate');
+        Route::get('/admin/recommendation-letter/{id}', [AdminController::class, 'showRecommendationLetterForm'])->name('admin.recommendation.form');
+        Route::post('/admin/recommendation-letter/generate', [AdminController::class, 'generateRecommendationLetter'])->name('admin.recommendation.generate');
         // --- DEPRECATED ROUTES (Logic merged into updateStatus) ---
-        // Route::post('/admin/{id}/set-initial-review', [admin::class, 'setInitialReview'])->name('submissions.setInitialReview');
-        // Route::post('/admin/submission/{id}/complete', [admin::class, 'markAsComplete'])->name('admin.markComplete');
-        // Route::post('/admin/submission/{id}/incomplete', [admin::class, 'markAsIncomplete'])->name('admin.markIncomplete');
-        Route::post('/admin/certificate/upload/{id}', [admin::class, 'uploadCertificate'])->name('admin.certificate.upload');
-        Route::post('/admin/recommendation-letter/finalize/{id}', [admin::class, 'finalizeReview'])->name('admin.recommendation.finalize');
-        Route::get('/admin/recommendation-letter/view-saved/{id}', [admin::class, 'viewSavedRecommendationLetter'])->name('admin.recommendation.view_saved');
+        // Route::post('/admin/{id}/set-initial-review', [AdminController::class, 'setInitialReview'])->name('submissions.setInitialReview');
+        // Route::post('/admin/submission/{id}/complete', [AdminController::class, 'markAsComplete'])->name('admin.markComplete');
+        // Route::post('/admin/submission/{id}/incomplete', [AdminController::class, 'markAsIncomplete'])->name('admin.markIncomplete');
+        Route::post('/admin/certificate/upload/{id}', [AdminController::class, 'uploadCertificate'])->name('admin.certificate.upload');
+        Route::post('/admin/recommendation-letter/finalize/{id}', [AdminController::class, 'finalizeReview'])->name('admin.recommendation.finalize');
+        Route::get('/admin/recommendation-letter/view-saved/{id}', [AdminController::class, 'viewSavedRecommendationLetter'])->name('admin.recommendation.view_saved');
     });
 });

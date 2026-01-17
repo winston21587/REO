@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
 use App\Models\User;
+use App\Models\Researcher;
+use App\Models\Admin;
+use App\Models\College;
 use App\Notifications\SubmissionAppointed;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Mail;
@@ -20,7 +23,7 @@ use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Hash;
 
-class admin extends Controller
+class AdminController extends Controller
 {
 
     public function createUser(Request $request)
@@ -32,16 +35,21 @@ class admin extends Controller
             'college' => 'required|string',
         ]);
 
-        User::create([
+        $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
-            'college' => $request->college,
             'role' => 'researcher',
             'password' => Hash::make('password'), // Default password
             'email_verified_at' => now(), // Auto-verify since admin created it
             'external_user' => false,
         ]);
+
+        Researcher::create([
+            'user_id' => $user->id,
+            'college' => $request->college,  //make more in the future
+        ]);
+
 
         return back()->with('success', 'Researcher added successfully!');
     }
@@ -71,7 +79,7 @@ class admin extends Controller
         return back()->with('success', 'User deleted successfully.');
     }
 
-    public function manageStaff()
+    public function manageStaff()    //just counts how much staff there is
     {
         $staff = User::where('role', 'reo_member')->get();
         
@@ -93,9 +101,11 @@ class admin extends Controller
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'email' => 'required|email|unique:users',
+
             'position' => 'required|string',
             'member_type' => 'required|in:Scientist,Non-Scientist,Non-Affiliated',
             'expertise' => 'nullable|string', // Comma separated tags
+
             'college' => 'nullable|string',
             'training_completed' => 'nullable',
         ]);
@@ -103,19 +113,25 @@ class admin extends Controller
         // Process expertise tags
         $expertise = $request->expertise ? array_map('trim', explode(',', $request->expertise)) : [];
 
-        User::create([
+        $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
             'role' => 'reo_member',
+            // 'college' => $request->college,
+            // 'training_completed' => $request->has('training_completed'),  further discussion needed
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'external_user' => $request->member_type === 'Non-Affiliated',
+        ]);
+
+        Admin::create([
+            'user_id' => $user->id,
             'position' => $request->position,
             'member_type' => $request->member_type,
             'expertise' => $expertise,
             'college' => $request->college,
             'training_completed' => $request->has('training_completed'),
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'external_user' => $request->member_type === 'Non-Affiliated',
         ]);
 
         return back()->with('success', 'Member added successfully!');
@@ -135,7 +151,7 @@ class admin extends Controller
 
         $expertise = $request->expertise ? array_map('trim', explode(',', $request->expertise)) : [];
 
-        $user->update([
+        $user->admin->update([
             'position' => $request->position,
             'member_type' => $request->member_type,
             'expertise' => $expertise,
@@ -187,17 +203,20 @@ class admin extends Controller
         }
 
         $users = $query->paginate(10);
-        
+
+       
         // Full list of WMSU Colleges
-        $colleges = [
-            "College of Computing Studies",
-            "College of Engineering",
-            "College of Science and Mathematics",
-            "College of Liberal Arts",
-            "College of Teacher Education",
-            "College of Nursing",
-            "College of Criminal Justice Education"
-        ];
+        $colleges = College::all();
+
+        // $colleges = [
+        //     "College of Computing Studies",
+        //     "College of Engineering",
+        //     "College of Science and Mathematics",
+        //     "College of Liberal Arts",
+        //     "College of Teacher Education",
+        //     "College of Nursing",
+        //     "College of Criminal Justice Education"
+        // ];
 
         return view('admin.manage_users', compact('users', 'colleges'));
     }
@@ -309,7 +328,7 @@ public function applications(Request $request)
     public function GetReview()
     {
                 $datas = Research_title::with('author')
-            ->where('Status', 'For inital Review')
+            ->where('Status', 'For Initial Review')
             ->get();
         return view('admin.review', compact('datas'));    
     }
@@ -423,7 +442,7 @@ public function applications(Request $request)
     public function updateStatus(Request $request, $id)
     {
         $submission = Research_title::findOrFail($id);
-        $user = User::find($submission->user_id);
+        $user = Researcher::find($submission->researcher_id);
         
         $message = ""; 
         $newStatus = "";
@@ -447,6 +466,7 @@ public function applications(Request $request)
                     'appointment_date' => $request->appointment_date,
                     'stage' => 'Hardcopy Submission',
                 ]);
+                
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
                 $message = "Your submission document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
             } elseif ($request->classification === 'Incomplete') {
@@ -657,81 +677,81 @@ public function assignReviewers(Request $request, $id)
     public function viewFiles($id)
     {
         // Mock Data Handling for Demo
-        $mockData = collect([
-            101 => (object)[
-                'id' => 101,
-                'Study_Protocol_title' => 'Impact of Remote Learning on Student Mental Health',
-                'Research_Category' => 'Social Science',
-                'created_at' => \Carbon\Carbon::now()->subDays(2),
-                'reoc_code' => 'REO-2024-001',
-                'author' => (object)['first_name' => 'Maria', 'last_name' => 'Clara', 'college' => 'College of Education', 'email' => 'maria@example.com'],
-                'files' => collect([
-                    (object)['filename' => 'Protocol_Draft_v1.pdf'],
-                    (object)['filename' => 'Informed_Consent.pdf']
-                ])
-            ],
-            102 => (object)[
-                'id' => 102,
-                'Study_Protocol_title' => 'Biodiversity Assessment of Mount Makiling',
-                'Research_Category' => 'Environmental Science',
-                'created_at' => \Carbon\Carbon::now()->subDays(5),
-                'reoc_code' => 'REO-2024-002',
-                'author' => (object)['first_name' => 'Jose', 'last_name' => 'Rizal', 'college' => 'College of Forestry', 'email' => 'jose@example.com'],
-                'files' => collect([
-                    (object)['filename' => 'Field_Study_Plan.pdf'],
-                    (object)['filename' => 'Permits.pdf']
-                ])
-            ],
-            103 => (object)[
-                'id' => 103,
-                'Study_Protocol_title' => 'Telemedicine Adoption in Rural Health Units',
-                'Research_Category' => 'Public Health',
-                'created_at' => \Carbon\Carbon::now()->subDays(1),
-                'reoc_code' => 'REO-2024-003',
-                'author' => (object)['first_name' => 'Apolinario', 'last_name' => 'Mabini', 'college' => 'College of Medicine', 'email' => 'apol@example.com'],
-                'files' => collect([
-                    (object)['filename' => 'Research_Proposal.pdf']
-                ])
-            ],
-            201 => (object)[
-                'id' => 201,
-                'Study_Protocol_title' => 'AI-Driven Traffic Management System',
-                'Research_Category' => 'Technology',
-                'created_at' => \Carbon\Carbon::now()->subWeeks(1),
-                'reoc_code' => 'REO-2024-004',
-                'author' => (object)['first_name' => 'Andres', 'last_name' => 'Bonifacio', 'college' => 'College of Engineering', 'email' => 'andres@example.com'],
-                'files' => collect([
-                    (object)['filename' => 'System_Architecture.pdf']
-                ])
-            ],
-            202 => (object)[
-                'id' => 202,
-                'Study_Protocol_title' => 'Traditional Healing Practices in Rural Areas',
-                'Research_Category' => 'Anthropology',
-                'created_at' => \Carbon\Carbon::now()->subWeeks(2),
-                'reoc_code' => 'REO-2024-005',
-                'author' => (object)['first_name' => 'Gabriela', 'last_name' => 'Silang', 'college' => 'College of Arts and Sciences', 'email' => 'gabriela@example.com'],
-                'files' => collect([
-                    (object)['filename' => 'Interview_Guide.pdf']
-                ])
-            ],
-            203 => (object)[
-                'id' => 203,
-                'Study_Protocol_title' => 'Microplastic Contamination in Laguna de Bay',
-                'Research_Category' => 'Environmental Science',
-                'created_at' => \Carbon\Carbon::now()->subWeeks(3),
-                'reoc_code' => 'REO-2024-006',
-                'author' => (object)['first_name' => 'Emilio', 'last_name' => 'Aguinaldo', 'college' => 'College of Agriculture', 'email' => 'emilio@example.com'],
-                'files' => collect([
-                    (object)['filename' => 'Lab_Results.pdf']
-                ])
-            ]
-        ]);
+        // $mockData = collect([
+        //     101 => (object)[
+        //         'id' => 101,
+        //         'Study_Protocol_title' => 'Impact of Remote Learning on Student Mental Health',
+        //         'Research_Category' => 'Social Science',
+        //         'created_at' => \Carbon\Carbon::now()->subDays(2),
+        //         'reoc_code' => 'REO-2024-001',
+        //         'author' => (object)['first_name' => 'Maria', 'last_name' => 'Clara', 'college' => 'College of Education', 'email' => 'maria@example.com'],
+        //         'files' => collect([
+        //             (object)['filename' => 'Protocol_Draft_v1.pdf'],
+        //             (object)['filename' => 'Informed_Consent.pdf']
+        //         ])
+        //     ],
+        //     102 => (object)[
+        //         'id' => 102,
+        //         'Study_Protocol_title' => 'Biodiversity Assessment of Mount Makiling',
+        //         'Research_Category' => 'Environmental Science',
+        //         'created_at' => \Carbon\Carbon::now()->subDays(5),
+        //         'reoc_code' => 'REO-2024-002',
+        //         'author' => (object)['first_name' => 'Jose', 'last_name' => 'Rizal', 'college' => 'College of Forestry', 'email' => 'jose@example.com'],
+        //         'files' => collect([
+        //             (object)['filename' => 'Field_Study_Plan.pdf'],
+        //             (object)['filename' => 'Permits.pdf']
+        //         ])
+        //     ],
+        //     103 => (object)[
+        //         'id' => 103,
+        //         'Study_Protocol_title' => 'Telemedicine Adoption in Rural Health Units',
+        //         'Research_Category' => 'Public Health',
+        //         'created_at' => \Carbon\Carbon::now()->subDays(1),
+        //         'reoc_code' => 'REO-2024-003',
+        //         'author' => (object)['first_name' => 'Apolinario', 'last_name' => 'Mabini', 'college' => 'College of Medicine', 'email' => 'apol@example.com'],
+        //         'files' => collect([
+        //             (object)['filename' => 'Research_Proposal.pdf']
+        //         ])
+        //     ],
+        //     201 => (object)[
+        //         'id' => 201,
+        //         'Study_Protocol_title' => 'AI-Driven Traffic Management System',
+        //         'Research_Category' => 'Technology',
+        //         'created_at' => \Carbon\Carbon::now()->subWeeks(1),
+        //         'reoc_code' => 'REO-2024-004',
+        //         'author' => (object)['first_name' => 'Andres', 'last_name' => 'Bonifacio', 'college' => 'College of Engineering', 'email' => 'andres@example.com'],
+        //         'files' => collect([
+        //             (object)['filename' => 'System_Architecture.pdf']
+        //         ])
+        //     ],
+        //     202 => (object)[
+        //         'id' => 202,
+        //         'Study_Protocol_title' => 'Traditional Healing Practices in Rural Areas',
+        //         'Research_Category' => 'Anthropology',
+        //         'created_at' => \Carbon\Carbon::now()->subWeeks(2),
+        //         'reoc_code' => 'REO-2024-005',
+        //         'author' => (object)['first_name' => 'Gabriela', 'last_name' => 'Silang', 'college' => 'College of Arts and Sciences', 'email' => 'gabriela@example.com'],
+        //         'files' => collect([
+        //             (object)['filename' => 'Interview_Guide.pdf']
+        //         ])
+        //     ],
+        //     203 => (object)[
+        //         'id' => 203,
+        //         'Study_Protocol_title' => 'Microplastic Contamination in Laguna de Bay',
+        //         'Research_Category' => 'Environmental Science',
+        //         'created_at' => \Carbon\Carbon::now()->subWeeks(3),
+        //         'reoc_code' => 'REO-2024-006',
+        //         'author' => (object)['first_name' => 'Emilio', 'last_name' => 'Aguinaldo', 'college' => 'College of Agriculture', 'email' => 'emilio@example.com'],
+        //         'files' => collect([
+        //             (object)['filename' => 'Lab_Results.pdf']
+        //         ])
+        //     ]
+        // ]);
 
-        if ($mockData->has($id)) {
-            $researchTitle = $mockData->get($id);
-            return view('admin.view_files', compact('researchTitle'));
-        }
+        // if ($mockData->has($id)) {
+        //     $researchTitle = $mockData->get($id);
+        //     return view('admin.view_files', compact('researchTitle'));
+        // }
 
         $researchTitle = Research_title::with('author', 'files')->findOrFail($id);
         return view('admin.view_files', compact('researchTitle'));
@@ -1054,7 +1074,7 @@ public function previewLetter(Request $request)
         }
 
         // Format Date
-    $pickupDate = \Carbon\Carbon::parse($request->pickup_date);
+    $pickupDate = Carbon::parse($request->pickup_date);
     $formattedDate = $pickupDate->format('F j, Y');
 
     // Create Appointment for Pickup
@@ -1211,7 +1231,7 @@ public function previewLetter(Request $request)
         AgendaItem::create([
             'meeting_id' => $meetingId,
             'section' => $request->section,
-            'content' => $request->content,
+            'content' => $request->input('content'),
             'order' => $request->order,
         ]);
 
@@ -1229,7 +1249,7 @@ public function previewLetter(Request $request)
 
         $item->update([
             'section' => $request->section,
-            'content' => $request->content,
+            'content' => $request->input('content'),
         ]);
 
         return back()->with('success', 'Agenda item updated successfully.');

@@ -17,13 +17,13 @@ class Researcher extends Model
         'course',
         'external_user',
         'contact',
-        'expertise',
+        // 'expertise',
         'training_completed',
     ];
 
     protected $casts = [
         'external_user' => 'boolean',
-        'expertise' => 'array',
+        // 'expertise' => 'array',
         'training_completed' => 'boolean',
     ];
 

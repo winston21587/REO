@@ -15,6 +15,10 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        $this->call([
+            UserSeeder::class,
+        ]);
+
         // Seed AI Compliance Data for existing Research Titles
         $titles = \App\Models\Research_title::all();
         foreach ($titles as $title) {

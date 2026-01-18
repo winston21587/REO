@@ -30,7 +30,7 @@
     @endif
 
     <div class="max-w-5xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
-        <div class="mb-10 border-b border-slate-200 pb-6">
+        <div class="mb-10 border-b border-slate-200 pt-3 pb-6">
             <h1 class="text-3xl font-extrabold text-slate-900 font-heading">Account Settings</h1>
             <p class="text-slate-500 mt-2">Manage your profile information, security, and preferences.</p>
         </div>

@@ -123,7 +123,7 @@
     <div class="reoc-join-content flex-1 min-w-[300px] p-[10px]">
       <div class="before:block before:w-[50px] before:h-[4px] before:bg-[#8B0000] before:mb-[12px]"></div>
       <h2 class="reoc-join-title text-[2.2rem] text-[#333] mb-[20px]">Join Us Now</h2>
-      <p class="reoc-join-text text-[1rem] text-[#555] leading-[1.6] mb-[30px] font-bold">Why should you join REOC? As a
+      <p class="reoc-join-text text-[1rem] text-[#555] leading-[1.6] mb-[30px] font-bold">Why should you join REO? As a
         premier school research facility, REO offers you access to cutting-edge technology, expert mentorship, and a
         vibrant community passionate about innovation.</p>
       <a href="{{ route('register') }}"

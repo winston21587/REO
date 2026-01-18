@@ -469,7 +469,7 @@ public function applications(Request $request)
                 ]);
                 
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
-                $message = "Your submission document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
+                $message = "Your submission \"{$submission->Study_Protocol_title}\" document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
             } elseif ($request->classification === 'Incomplete') {
                 $request->validate(['remarks' => 'nullable|string']);
                 $newStatus = 'Incomplete';
@@ -516,6 +516,16 @@ public function applications(Request $request)
                 'user_id' => $user->user_id,
                 'appointment_date' => $request->appointment_date,
                 'stage' => $request->review_type, // e.g., 'Expedited Review'
+            ]);
+
+            // Notify the user about the Review Type assignment
+            UserNotification::create([
+                'user_id' => $user->user_id,
+                'research_id' => $submission->id,
+                'title' => 'Status Update: Under Review',
+                'message' => "Your research protocol \"{$submission->Study_Protocol_title}\" has been assigned for {$request->review_type}.",
+                'type' => 'status_update',
+                'is_read' => false
             ]);
 
             // Redirect to Recommendation Letter Form
@@ -981,6 +991,17 @@ public function previewLetter(Request $request)
                 'filename' => $filename,
                 'filepath' => $path,
                 'filetype' => 'Result of Review (Admin Generated)',
+            ]);
+
+            // Notify the user
+            $user = $submission->researcher->user; // Get user from submission
+            UserNotification::create([
+                'user_id' => $user->id, // or $user->user_id if depending on relationship structure
+                'research_id' => $submission->id,
+                'title' => 'Result of Review Available',
+                'message' => "Your Result of Review letter for \"{$submission->Study_Protocol_title}\" has been generated. You may now view it in your dashboard.",
+                'type' => 'document_upload', // or 'status_update'
+                'is_read' => false
             ]);
 
             // Redirect back to the form with success message

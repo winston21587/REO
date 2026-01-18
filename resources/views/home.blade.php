@@ -30,7 +30,7 @@
                     @php
                         // Tracker Logic
                         $steps = [
-                            1 => ['label' => 'Submitted', 'icon' => 'fa-paper-plane'],
+                            1 => ['label' => 'Submission', 'icon' => 'fa-paper-plane'],
                             2 => ['label' => 'Review', 'icon' => 'fa-search'],
                             3 => ['label' => 'Revision', 'icon' => 'fa-edit'],
                             4 => ['label' => 'Deliberation', 'icon' => 'fa-clipboard-check'],
@@ -41,9 +41,11 @@
                         $status = $title->Status ?? $title->status ?? '';
                         $checkStatus = trim($status);
 
-                        if (stripos($checkStatus, 'Incomplete') !== false) {
-                            $currentStep = 1;
-                        } elseif (stripos($checkStatus, 'Approved') !== false || (stripos($checkStatus, 'Complete') !== false && stripos($checkStatus, 'Incomplete') === false) || stripos($checkStatus, 'Certification') !== false) {
+                        if (in_array($checkStatus, ['Incomplete', 'Pending', 'Submitted'])) {
+                             $currentStep = 1;
+                        } elseif (str_contains($checkStatus, 'Complete - Awaiting Hardcopy') || str_contains($checkStatus, 'Hardcopy Received') || str_contains($checkStatus, 'For Initial Review') || str_contains($checkStatus, 'Under Review')) {
+                             $currentStep = 2; // Review Tracker
+                        } elseif (stripos($checkStatus, 'Approved') !== false || stripos($checkStatus, 'Certification') !== false) {
                             $currentStep = 5;
                         } elseif ($checkStatus === 'Panel Deliberation') {
                             $currentStep = 4;

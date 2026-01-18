@@ -32,7 +32,7 @@ class AuthController extends Controller
             $user = Auth::user();
 
             if($user->role === 'admin'){
-                return redirect()->route('admin.Analytics');
+                return redirect()->route('admin.analytics');
             }
             if($user->role === 'researcher'){
                 return redirect()->route('home');

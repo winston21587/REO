@@ -288,7 +288,7 @@ class AdminController extends Controller
     }
 public function applications(Request $request)
     {
-        $query = Research_title::with(['author', 'files', 'adminFiles']);
+        $query = Research_title::with(['researcher.user', 'files', 'adminFiles']);
 
         // 1. STRICT CONSTRAINT: Only "For Initial Review" and "Revision" statuses
         // This ensures the page ONLY accepts these titles, regardless of other inputs.
@@ -304,8 +304,9 @@ public function applications(Request $request)
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('Study_Protocol_title', 'like', "%{$search}%")
-                  ->orWhereHas('author', function($q2) use ($search) {
-                      $q2->where('name', 'like', "%{$search}%"); 
+                  ->orWhereHas('researcher.user', function($q2) use ($search) {
+                      $q2->where('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%"); 
                   });
             });
         }
@@ -398,12 +399,12 @@ public function applications(Request $request)
 
         $pendingSubmissions = Research_title::where('Status', 'Pending') 
                                 ->orderBy('created_at', 'desc') // Show newest first
-                                ->get();
+                                ->paginate(5, ['*'], 'pending_page');
 
         // 3. Fetch Incomplete Submissions
         $incompleteSubmissions = Research_title::where('Status', 'Incomplete')
                                 ->orderBy('created_at', 'desc')
-                                ->get();
+                                ->paginate(5, ['*'], 'incomplete_page');
 
         // Fallback to DB if needed, or just use mock for demo
         // $pendingSubmissions = Research_title::with('author')->where('Status', 'Pending')->get();
@@ -462,7 +463,7 @@ public function applications(Request $request)
                 $submission->save();
                 $appointment = Appointment::create([
                     'research_title_id' => $submission->id,
-                    'user_id' => $submission->user_id,
+                    'user_id' => $user->user_id,
                     'appointment_date' => $request->appointment_date,
                     'stage' => 'Hardcopy Submission',
                 ]);
@@ -512,7 +513,7 @@ public function applications(Request $request)
             // Create Appointment
             Appointment::create([
                 'research_title_id' => $submission->id,
-                'user_id' => $submission->user_id,
+                'user_id' => $user->user_id,
                 'appointment_date' => $request->appointment_date,
                 'stage' => $request->review_type, // e.g., 'Expedited Review'
             ]);
@@ -561,7 +562,7 @@ public function applications(Request $request)
                 $request->validate(['appointment_date' => 'required|date']);
                 Appointment::create([
                     'research_title_id' => $submission->id,
-                    'user_id' => $submission->user_id,
+                    'user_id' => $user->user_id,
                     'appointment_date' => $request->appointment_date,
                     'stage' => 'Panel Deliberation',
                 ]);
@@ -592,7 +593,7 @@ public function applications(Request $request)
 
         // Notification Logic
         UserNotification::create([
-            'user_id' => $submission->user_id,
+            'user_id' => $user->user_id,
             'research_id' => $submission->id,
             'title' => 'Status Update: ' . $newStatus,
             'message' => $message,

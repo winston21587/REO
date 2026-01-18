@@ -1002,7 +1002,7 @@ public function previewLetter(Request $request)
 
     public function finalizeReview($id)
     {
-        $submission = Research_title::findOrFail($id);
+        $submission = Research_title::with('researcher')->findOrFail($id);
         
         $userMessage = '';
         
@@ -1018,7 +1018,7 @@ public function previewLetter(Request $request)
         
         // Notify the user
         UserNotification::create([
-            'user_id' => $submission->user_id,
+            'user_id' => $submission->researcher->user_id,
             'research_id' => $submission->id,
             'title' => 'Status Update: Waiting for Revision',
             'message' => $userMessage,

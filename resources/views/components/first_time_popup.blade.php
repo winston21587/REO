@@ -23,6 +23,20 @@
             <!-- Scrollable Content -->
             <div class="p-8 overflow-y-auto custom-scrollbar space-y-6 text-sm text-slate-600 leading-relaxed">
                 
+                <!-- Dry Run Notice -->
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-4 animate-pulse">
+                    <div class="text-amber-600">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-amber-800 font-bold mb-1">Temporary Agreement (Dry Run)</h3>
+                        <p class="text-amber-700 text-xs">
+                            Please be advised that this system is currently in a <strong>Dry Run / Testing Phase</strong>. 
+                            All data submitted will be recorded for validation purposes. By proceeding, you acknowledge this testing environment.
+                        </p>
+                    </div>
+                </div>
+                
                 <!-- Section 1 -->
                 <div class="space-y-2">
                     <h3 class="text-[#8B0000] font-bold text-base flex items-center gap-2">

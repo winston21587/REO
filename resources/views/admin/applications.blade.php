@@ -98,8 +98,11 @@
                                     ];
                                     $colorClass = $statusColors[$data->Status] ?? 'bg-slate-50 text-slate-700 border-slate-100';
                                     
-                                    // Display Review Type if set, otherwise Status
-                                    $displayStatus = $data->Review_Type ? $data->Review_Type : $data->Status;
+                                    // Prioritize Status for specific workflow steps, otherwise use Review Type if available
+                                    $displayStatus = $data->Status;
+                                    if ($data->Review_Type && !in_array($data->Status, ['Complete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review'])) {
+                                        $displayStatus = $data->Review_Type;
+                                    }
                                 @endphp
                                 <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }}">
                                     {{ $displayStatus }}

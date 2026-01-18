@@ -39,7 +39,9 @@
                     $status = $title->Status ?? $title->status ?? '';
                     $checkStatus = trim($status);
 
-                    if (stripos($checkStatus, 'Approved') !== false || stripos($checkStatus, 'Complete') !== false || stripos($checkStatus, 'Certification') !== false) {
+                    if (stripos($checkStatus, 'Incomplete') !== false) {
+                        $currentStep = 1;
+                    } elseif (stripos($checkStatus, 'Approved') !== false || (stripos($checkStatus, 'Complete') !== false && stripos($checkStatus, 'Incomplete') === false) || stripos($checkStatus, 'Certification') !== false) {
                         $currentStep = 5;
                     } elseif ($checkStatus === 'Panel Deliberation') {
                         $currentStep = 4;
@@ -62,7 +64,7 @@
 
                     $statusColor = match($title->status) {
                         'Approved' => 'green',
-                        'Returned', 'Waiting for Revision', 'Modifications Required' => 'orange',
+                        'Returned', 'Waiting for Revision', 'Modifications Required', 'Incomplete' => 'orange',
                         'Panel Deliberation' => 'blue',
                         'Disapproved' => 'red',
                         default => 'orange',
@@ -70,6 +72,7 @@
                     $statusIcon = match($title->status) {
                         'Approved' => 'fa-check-circle',
                         'Returned', 'Waiting for Revision', 'Modifications Required' => 'fa-edit',
+                        'Incomplete' => 'fa-exclamation-circle',
                         'Panel Deliberation' => 'fa-users',
                         'Disapproved' => 'fa-times-circle',
                         default => 'fa-clock',
@@ -108,6 +111,7 @@
                                     <i class="fas fa-folder-open"></i> Manage Files
                                 </a>
                                 
+                                <div class="flex flex-col gap-2">
                                 @if($title->status === 'Approved')
                                     <div class="w-full py-3 px-6 bg-green-50 border-2 border-green-500 text-green-700 rounded-xl font-bold flex items-center justify-center gap-2">
                                         <i class="fas fa-check-circle"></i> Approved
@@ -117,6 +121,14 @@
                                         <i class="fas fa-envelope-open-text"></i> View Result Letter
                                     </a>
                                 @endif
+
+                                @if($title->status === 'Incomplete')
+                                     <!-- Incomplete Status Action, maybe link to manage files or show message -->
+                                     <div class="px-3 py-2 text-xs text-orange-600 font-bold text-center bg-orange-50 rounded-lg border border-orange-100">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i> Check Requirements
+                                     </div>
+                                @endif
+                                </div>
 
                                 @if($title->status === 'Returned' || $title->status === 'Waiting for Revision')
                                     <button class="w-full py-3 px-6 bg-white border-2 border-orange-100 text-orange-700 rounded-xl font-bold hover:bg-orange-50 transition-colors flex items-center justify-center gap-2">
@@ -167,7 +179,7 @@
                 </div>
 
                 <!-- Info Modal -->
-                <dialog id="info-modal-{{ $title->id }}" class="rounded-2xl p-0 backdrop:bg-slate-900/50 w-full max-w-md open:animate-[fadeIn_0.2s_ease-out]">
+                <dialog id="info-modal-{{ $title->id }}" class="m-auto rounded-2xl p-0 backdrop:bg-slate-900/50 w-full max-w-md open:animate-[fadeIn_0.2s_ease-out]">
                     <div class="bg-white p-6">
                         <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
                             <h3 class="font-bold text-lg text-slate-800">Protocol Details</h3>

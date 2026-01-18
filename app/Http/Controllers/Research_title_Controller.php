@@ -5,130 +5,120 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Research_title;
 use App\Models\researcher_files;
-use Illuminate\Support\Facades\Auth;  // need this for the auth::user
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class Research_title_Controller extends Controller
 {
-      public function showSubmit()
+    public function showSubmit()
     {
         return view('submit');
     }
-//     public function fetchFiles($id)
-// {
-//     $files = researcher_files::where('id', function($query) use ($id) {
-//         $query->select('researcher_file_id')
-//               ->from('research_titles')
-//               ->where('id', $id)
-//               ->limit(1);
-//     })->get();
-
-//     return response()->json($files);
-// }
 
 
 
 
 
-public function submitTitle(Request $request)
-{
-    $user = Auth::user();
 
-    // ✅ Validation
-    $validated = $request->validate([
-        'Study_Protocol_title' => 'required|string|max:255',
-        'Research_Category' => 'required|string|max:255',
-        'other_category' => 'nullable|string|max:255',
-        'Adviser' => 'required|string|max:255',
+    public function submitTitle(Request $request)
+    {
+        $user = Auth::user();
 
-        // PDF uploads
-        'files.application_form' => 'required|file|mimes:pdf|max:25600',
-        'files.research_protocol' => 'required|file|mimes:pdf|max:25600',
-        'files.technical_clearance' => 'required|file|mimes:pdf|max:25600',
-        'files.data_collection_instruments' => 'required|file|mimes:pdf|max:25600',
-        'files.informed_consent' => 'required|file|mimes:pdf|max:25600',
-        'files.curriculum_vitae' => 'required|file|mimes:pdf|max:25600',
+        // ✅ Validation
+        $validated = $request->validate([
+            'Study_Protocol_title' => 'required|string|max:255',
+            'Research_Category' => 'required|string|max:255',
+            'other_category' => 'nullable|string|max:255',
+            'Adviser' => 'required|string|max:255',
 
-        // Word document uploads
-        'files.study_protocol_form' => 'required|file|mimes:doc,docx|max:25600',
-        'files.informed_consent_form' => 'required|file|mimes:doc,docx|max:25600',
-        'files.exempt_review_form' => 'required|file|mimes:doc,docx|max:25600',
+            // PDF uploads
+            'files.application_form' => 'required|file|mimes:pdf|max:25600',
+            'files.research_protocol' => 'required|file|mimes:pdf|max:25600',
+            'files.technical_clearance' => 'required|file|mimes:pdf|max:25600',
+            'files.data_collection_instruments' => 'required|file|mimes:pdf|max:25600',
+            'files.informed_consent' => 'required|file|mimes:pdf|max:25600',
+            'files.curriculum_vitae' => 'required|file|mimes:pdf|max:25600',
 
-        // Optional supplementary files
-        'files.supplementary_docs.*' => 'nullable|file|mimes:pdf|max:25600',
-    ]);
+            // Word document uploads
+            'files.study_protocol_form' => 'required|file|mimes:doc,docx|max:25600',
+            'files.informed_consent_form' => 'required|file|mimes:doc,docx|max:25600',
+            'files.exempt_review_form' => 'required|file|mimes:doc,docx|max:25600',
 
-    // ✅ Define document types for looping
-    $fileFields = [
-        'application_form',
-        'research_protocol',
-        'technical_clearance',
-        'data_collection_instruments',
-        'informed_consent',
-        'curriculum_vitae',
-        'study_protocol_form',
-        'informed_consent_form',
-        'exempt_review_form',
-    ];
+            // Optional supplementary files
+            'files.supplementary_docs.*' => 'nullable|file|mimes:pdf|max:25600',
+        ]);
 
-    $uploadedFileIds = [];
+        // ✅ Define document types for looping
+        $fileFields = [
+            'application_form',
+            'research_protocol',
+            'technical_clearance',
+            'data_collection_instruments',
+            'informed_consent',
+            'curriculum_vitae',
+            'study_protocol_form',
+            'informed_consent_form',
+            'exempt_review_form',
+        ];
 
-    // ✅ Store main documents
-    foreach ($fileFields as $field) {
-        if ($request->hasFile("files.$field")) {
-            $file = $request->file("files.$field");
-            $filename = time() . '_' . $field . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('research_files', $filename, 'public');
+        $uploadedFileIds = [];
 
-            $fileRecord = researcher_files::create([
-                'filename' => $filename,
-                'filepath' => 'storage/' . $path,
-                'filetype' => $file->getClientOriginalExtension(),
-                'category' => $field,
-            ]);
+        // ✅ Store main documents
+        foreach ($fileFields as $field) {
+            if ($request->hasFile("files.$field")) {
+                $file = $request->file("files.$field");
+                $filename = time() . '_' . $field . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('research_files', $filename, 'public');
 
-            $uploadedFileIds[] = $fileRecord->id;
+                $fileRecord = researcher_files::create([
+                    'filename' => $filename,
+                    'filepath' => 'storage/' . $path,
+                    'filetype' => $file->getClientOriginalExtension(),
+                    'category' => $field,
+                ]);
+
+                $uploadedFileIds[] = $fileRecord->id;
+            }
         }
-    }
 
-    // ✅ Handle supplementary files
-    if ($request->hasFile('files.supplementary_docs')) {
-        foreach ($request->file('files.supplementary_docs') as $file) {
-            $filename = time() . '_supplementary_' . $file->getClientOriginalName();
-            $path = $file->storeAs('research_files', $filename, 'public');
+        // ✅ Handle supplementary files
+        if ($request->hasFile('files.supplementary_docs')) {
+            foreach ($request->file('files.supplementary_docs') as $file) {
+                $filename = time() . '_supplementary_' . $file->getClientOriginalName();
+                $path = $file->storeAs('research_files', $filename, 'public');
 
-            $fileRecord = researcher_files::create([
-                'filename' => $filename,
-                'filepath' => 'storage/' . $path,
-                'filetype' => $file->getClientOriginalExtension(),
-                'category' => 'supplementary_docs',
-            ]);
+                $fileRecord = researcher_files::create([
+                    'filename' => $filename,
+                    'filepath' => 'storage/' . $path,
+                    'filetype' => $file->getClientOriginalExtension(),
+                    'category' => 'supplementary_docs',
+                ]);
 
-            $uploadedFileIds[] = $fileRecord->id;
+                $uploadedFileIds[] = $fileRecord->id;
+            }
         }
+
+        // Handle "Other" category
+        $finalCategory = $validated['Research_Category'];
+        if ($finalCategory === 'Other' && !empty($validated['other_category'])) {
+            $finalCategory = $validated['other_category'];
+        }
+
+        // ✅ Create research title
+        $research = Research_title::create([
+            'Study_Protocol_title' => $validated['Study_Protocol_title'],
+            'Research_Category' => $finalCategory,
+            'Created_by' => $user->first_name . ' ' . $user->last_name,
+            'researcher_id' => $user->researcher->id,
+            'Official_Receipt_Number' => '011',
+            'Adviser' => $validated['Adviser'],
+        ]);
+
+        // ✅ Attach files to pivot table
+        $research->files()->attach($uploadedFileIds);
+
+        return redirect(route('home'))->with('success', 'Research title and all required documents successfully submitted!');
     }
-
-    // Handle "Other" category
-    $finalCategory = $validated['Research_Category'];
-    if ($finalCategory === 'Other' && !empty($validated['other_category'])) {
-        $finalCategory = $validated['other_category'];
-    }
-
-    // ✅ Create research title
-    $research = Research_title::create([
-        'Study_Protocol_title' => $validated['Study_Protocol_title'],
-        'Research_Category' => $finalCategory,
-        'Created_by' => $user->first_name . ' ' . $user->last_name,  // unesserasy but aight (will remove)
-        'researcher_id' => $user->researcher->id,  //since researher belongs to user (one to one) just store it onto the user side
-        'Official_Receipt_Number' => '011',
-        'Adviser' => $validated['Adviser'],
-    ]);
-
-    // ✅ Attach files to pivot table
-    $research->files()->attach($uploadedFileIds);
-
-    return redirect(route('home'))->with('success', 'Research title and all required documents successfully submitted!');
-}
 
 
 
@@ -137,7 +127,7 @@ public function submitTitle(Request $request)
         $user = Auth::user();
         if (!$user->researcher) {
             return redirect()->back()->with('error', 'You are not registered as a researcher.');
-       }
+        }
         $titles = Research_title::with('files')
             ->where('researcher_id', $user->researcher->id)
             ->orderBy('created_at', 'desc')
@@ -177,12 +167,7 @@ public function submitTitle(Request $request)
             'filetype' => $request->file('file')->getClientOriginalExtension(),
         ]);
 
-        // Status update removed to allow manual submission
-        // $researchTitle = Research_title::find($id);
-        // if ($researchTitle && $researchTitle->Status === 'Waiting for Revision') {
-        //     $researchTitle->Status = 'Revision Submitted';
-        //     $researchTitle->save();
-        // }
+
 
         return redirect()->back()->with('success', 'File updated successfully!');
     }
@@ -211,7 +196,7 @@ public function submitTitle(Request $request)
         // Note: The filepath in DB is 'storage/uploads/...', but Storage::disk('public') expects 'uploads/...'
         // We need to strip 'storage/' prefix if it exists.
         $storagePath = str_replace('storage/', '', $file->filepath);
-        
+
         return response()->file(storage_path('app/public/' . $storagePath));
     }
     public function submitRevisions($id)
@@ -226,7 +211,7 @@ public function submitTitle(Request $request)
         if ($researchTitle->Status === 'Waiting for Revision') {
             $researchTitle->Status = 'Revision Submitted';
             $researchTitle->save();
-            
+
             // Notify Admin (Optional but good practice)
             // UserNotification::create([...]); 
 
@@ -237,5 +222,3 @@ public function submitTitle(Request $request)
     }
 }
 
-
-// INSERT INTO researcher_files ( filename, filepath,filetype, created_at, updated_at) VALUES ( 'sample.pdf', 'research_files/sample.pdf','protocol form', NOW(), NOW());

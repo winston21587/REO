@@ -1,116 +1,176 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WMSU REO | Research Excellence</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
-    
-    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Alpine.js Plugins & Core -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
-        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Montserrat', sans-serif;
+        }
+
         /* Crucial for your Original Slider */
-        .slide.active { opacity: 1 !important; z-index: 1 !important; }
+        .slide.active {
+            opacity: 1 !important;
+            z-index: 1 !important;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 </head>
-<body class="bg-surface-50 text-slate-800 antialiased selection:bg-[#8B0000] selection:text-white">
 
-    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b border-transparent">
-        <div class="max-w-7xl mx-auto px-6 h-[80px] flex justify-between items-center">
+<body class="bg-surface-50 text-slate-800 antialiased selection:bg-[#8B0000] selection:text-white" x-data="{ 
+        mobileOpen: false, 
+        scrolled: false,
+        lastScroll: 0,
+        init() {
+            // Check initial scroll position
+            this.handleScroll();
+        },
+        handleScroll() {
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            const heroHeight = window.innerHeight - 100;
+            
+            // 1. Color State Logic
+            this.scrolled = currentScroll > heroHeight;
+            
+            // 2. Smart Hide/Show Logic
+            const header = document.getElementById('navbar');
+            if (header) {
+                if (currentScroll > this.lastScroll && currentScroll > 100 && !this.mobileOpen) {
+                    header.classList.add('-translate-y-full');
+                } else {
+                    header.classList.remove('-translate-y-full');
+                }
+            }
+            
+            this.lastScroll = currentScroll <= 0 ? 0 : currentScroll;
+        }
+    }" @scroll.window="handleScroll()">
+
+    <!-- Header / Navbar
+         - 'fixed top-0 w-full z-50': Stays at top
+         - 'transition-transform duration-300': For the Hide/Show slide effect
+         - 'transition-colors duration-300': For the Transparency -> White fade
+    -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b border-transparent"
+        :class="{ 
+            'bg-white/95 backdrop-blur-md shadow-sm border-slate-200/50': scrolled || mobileOpen,
+            'bg-transparent': !scrolled && !mobileOpen 
+        }">
+
+        <div class="max-w-7xl mx-auto px-6 h-[80px] flex justify-between items-center relative">
+
+            <!-- Logo Section -->
             <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
-                <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30 shadow-lg group-hover:scale-105 transition-transform duration-300">
-                    <img src="{{ asset('images/reoc-nobg.png') }}" alt="Logo" class="w-full h-full object-cover bg-white" />
+                <div
+                    class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30 shadow-lg group-hover:scale-105 transition-transform duration-300 relative">
+                    <img src="{{ asset('images/reoc-nobg.png') }}" alt="Logo"
+                        class="w-full h-full object-cover bg-white" />
+                    <!-- Dark overlay when scrolled for better contrast if needed, or keep white bg -->
                 </div>
-                <div class="flex flex-col">
-                    <h1 class="text-white text-xl font-extrabold tracking-tight leading-none group-hover:opacity-90 transition-opacity">WMSU REO</h1>
-                    <span class="text-white/70 text-[10px] font-medium uppercase tracking-widest">Research Ethics Office</span>
+                <div class="flex flex-col transition-colors duration-300">
+                    <h1 class="text-xl font-extrabold tracking-tight leading-none group-hover:opacity-90"
+                        :class="scrolled || mobileOpen ? 'text-[#8B0000]' : 'text-white'">
+                        WMSU REO
+                    </h1>
+                    <span class="text-[10px] font-medium uppercase tracking-widest transition-colors duration-300"
+                        :class="scrolled || mobileOpen ? 'text-slate-500' : 'text-white/70'">
+                        Research Ethics Office
+                    </span>
                 </div>
             </div>
 
+            <!-- Desktop Navigation -->
             <div class="hidden md:flex items-center gap-6 nav-right">
-                <span class="text-sm font-medium text-white/80">
+                <span class="text-sm font-medium transition-colors duration-300"
+                    :class="scrolled || mobileOpen ? 'text-slate-600' : 'text-white/80'">
                     Have an account?
                 </span>
-                <button id="nav-cta-btn" onclick="location.href='{{ route('login') }}'" class="bg-white text-[#8B0000] px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95">
+
+                <button onclick="location.href='{{ route('login') }}'"
+                    class="px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 border-2"
+                    :class="scrolled || mobileOpen 
+                        ? 'bg-[#8B0000] text-white border-transparent hover:bg-[#700000]' 
+                        : 'bg-white text-[#8B0000] border-transparent hover:bg-slate-100'">
                     Access Portal
                 </button>
             </div>
 
-            <div id="hamburger" class="md:hidden text-2xl text-white cursor-pointer p-2 hover:bg-white/10 rounded-lg transition-colors">
-                <i class="fas fa-bars"></i>
+            <!-- Mobile Hamburger -->
+            <button @click="mobileOpen = !mobileOpen"
+                class="md:hidden text-2xl p-2 rounded-lg transition-colors focus:outline-none"
+                :class="scrolled || mobileOpen ? 'text-slate-800 hover:bg-slate-100' : 'text-white hover:bg-white/10'">
+                <!-- Icon swaps based on state -->
+                <i class="fas" :class="mobileOpen ? 'fa-times' : 'fa-bars'"></i>
+            </button> <!-- Added closing tag here -->
+        </div>
+
+        <!-- Mobile Dropdown Menu -->
+        <div x-show="mobileOpen" x-collapse x-cloak
+            class="md:hidden absolute top-[80px] left-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-xl overflow-hidden">
+
+            <div class="p-6 flex flex-col gap-6">
+                <!-- Welcome/Context -->
+                <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <div class="w-10 h-10 rounded-full bg-[#8B0000] text-white flex items-center justify-center">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-slate-800">Welcome Researcher!</p>
+                        <p class="text-xs text-slate-500">Access the portal to submit protocols.</p>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col gap-3">
+                    <a href="{{ route('login') }}"
+                        class="flex items-center justify-center gap-2 w-full bg-[#8B0000] text-white py-3 rounded-lg font-bold shadow-md hover:bg-[#7d0000] transition-colors">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+
+                    <a href="{{ route('register') }}"
+                        class="flex items-center justify-center gap-2 w-full bg-white text-slate-700 border border-slate-200 py-3 rounded-lg font-bold hover:bg-slate-50 hover:text-[#8B0000] transition-colors">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div id="mobileMenu" class="fixed inset-0 bg-[#1a0505]/95 z-40 flex flex-col justify-center items-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl">
-        <button id="closeMobile" class="absolute top-6 right-6 text-white text-3xl"><i class="fas fa-times"></i></button>
-        <span class="text-lg text-white/60">Have an account?</span>
-        <a href="{{ route('login') }}" class="text-3xl font-bold text-white">Login</a>
-        <a href="{{ route('register') }}" class="text-xl font-bold text-white/70 border-t border-white/10 pt-4 mt-4">Register</a>
-    </div>
-  
     <main>
         {{ $slot }}
     </main>
 
-    <script>
-        const navbar = document.getElementById('navbar');
-        const navTexts = document.querySelectorAll('.nav-right span');
-        const navBtn = document.getElementById('nav-cta-btn'); // Targeted ID
-        const navLogoText = document.querySelector('nav h1');
-        const navLogoSub = document.querySelector('nav span');
-        const hamburger = document.getElementById('hamburger');
-
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 20) {
-                // Scrolled State (White Bar)
-                navbar.classList.add('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'border-slate-200/50');
-                navbar.classList.remove('border-transparent');
-                
-                // Text Colors
-                navLogoText.classList.replace('text-white', 'text-[#8B0000]');
-                navLogoSub.classList.replace('text-white/70', 'text-slate-500');
-                navTexts.forEach(el => el.classList.replace('text-white/80', 'text-slate-600'));
-                hamburger.classList.replace('text-white', 'text-slate-800');
-                
-                // Button: RED Background, WHITE Text
-                navBtn.classList.remove('bg-white', 'text-[#8B0000]');
-                navBtn.classList.add('bg-[#8B0000]', 'text-white'); 
-            } else {
-                // Top State (Transparent)
-                navbar.classList.remove('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'border-slate-200/50');
-                navbar.classList.add('border-transparent');
-                
-                // Text Colors
-                navLogoText.classList.replace('text-[#8B0000]', 'text-white');
-                navLogoSub.classList.replace('text-slate-500', 'text-white/70');
-                navTexts.forEach(el => el.classList.replace('text-slate-600', 'text-white/80'));
-                hamburger.classList.replace('text-slate-800', 'text-white');
-
-                // Button: WHITE Background, RED Text
-                navBtn.classList.add('bg-white', 'text-[#8B0000]');
-                navBtn.classList.remove('bg-[#8B0000]', 'text-white');
-            }
-        });
-
-        const mobileMenu = document.getElementById('mobileMenu');
-        const closeMobile = document.getElementById('closeMobile');
-
-        hamburger.addEventListener('click', () => {
-            mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
-        });
-        closeMobile.addEventListener('click', () => {
-            mobileMenu.classList.add('opacity-0', 'pointer-events-none');
-        });
-    </script>
+    <!-- Scroll logic moved to Alpine.js x-data -->
 </body>
+
 </html>

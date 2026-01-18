@@ -179,16 +179,26 @@
                             </span>
                         </div>
                     </div>
-                    <!-- Hamburger Button (Animated) -->
-                    <button @click="mobileOpen = !mobileOpen"
-                        class="w-10 h-10 flex flex-col items-center justify-center gap-1.5 focus:outline-none group">
-                        <span class="w-6 h-0.5 bg-slate-800 rounded-full transition-all duration-300 origin-center"
-                            :class="{'rotate-45 translate-y-2': mobileOpen}"></span>
-                        <span class="w-6 h-0.5 bg-slate-800 rounded-full transition-all duration-300"
-                            :class="{'opacity-0 scale-0': mobileOpen}"></span>
-                        <span class="w-6 h-0.5 bg-slate-800 rounded-full transition-all duration-300 origin-center"
-                            :class="{'-rotate-45 -translate-y-2': mobileOpen}"></span>
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <!-- Mobile Notification Trigger -->
+                        <button 
+                            class="notification-trigger w-10 h-10 flex items-center justify-center text-slate-500 hover:text-[#8B0000] rounded-full hover:bg-slate-50 transition-all relative focus:outline-none active:scale-95">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span
+                                class="absolute top-2 right-2 w-2 h-2 bg-[#8B0000] border border-white rounded-full animate-pulse"></span>
+                        </button>
+                        
+                        <!-- Hamburger Button (Animated) -->
+                        <button @click="mobileOpen = !mobileOpen"
+                            class="w-10 h-10 flex flex-col items-center justify-center gap-1.5 focus:outline-none group">
+                            <span class="w-6 h-0.5 bg-slate-800 rounded-full transition-all duration-300 origin-center"
+                                :class="{'rotate-45 translate-y-2': mobileOpen}"></span>
+                            <span class="w-6 h-0.5 bg-slate-800 rounded-full transition-all duration-300"
+                                :class="{'opacity-0 scale-0': mobileOpen}"></span>
+                            <span class="w-6 h-0.5 bg-slate-800 rounded-full transition-all duration-300 origin-center"
+                                :class="{'-rotate-45 -translate-y-2': mobileOpen}"></span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Mobile Dropdown Menu -->
@@ -261,16 +271,19 @@
                 <header
                     class="hidden lg:flex items-center justify-end px-8 py-4 bg-white border-b border-slate-200 sticky top-0 z-30">
                     <div class="flex items-center gap-4 relative">
-                        <button id="notification-btn"
-                            class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-[#8B0000] transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2">
+                        <!-- Desktop Notification Trigger -->
+                        <button
+                            class="notification-trigger w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-[#8B0000] transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2">
                             <i class="fas fa-bell text-xl"></i>
                             <span
                                 class="absolute top-2 right-2 w-2.5 h-2.5 bg-[#8B0000] border-2 border-white rounded-full animate-pulse"></span>
                         </button>
-                        <x-notification-tab />
                     </div>
                 </header>
             @endif
+
+            <!-- Global Notification Tab (Available for both Mobile & Desktop) -->
+            <x-notification-tab />
 
             <main class="flex-1 p-6 pt-20 lg:pt-6">
                 <x-profile />
@@ -301,10 +314,11 @@
             }
 
             // --- Notification Logic ---
-            const btn = document.getElementById('notification-btn');
+            // Select ALL notification triggers (Mobile & Desktop)
+            const btns = document.querySelectorAll('.notification-trigger');
             const panel = document.getElementById('notifications-panel');
 
-            if (btn && panel) {
+            if (btns.length > 0 && panel) {
                 let isOpen = false;
 
                 function toggleNotifications(e) {
@@ -326,13 +340,23 @@
                     }
                 }
 
+                // Attach event to all buttons
+                btns.forEach(btn => btn.addEventListener('click', toggleNotifications));
+
                 document.addEventListener('click', function (e) {
-                    if (isOpen && !panel.contains(e.target) && !btn.contains(e.target)) {
+                    // Check if click is outside panel AND outside ANY trigger button
+                    let clickedInsideButton = false;
+                    btns.forEach(btn => {
+                        if (btn.contains(e.target)) clickedInsideButton = true;
+                    });
+
+                    if (isOpen && !panel.contains(e.target) && !clickedInsideButton) {
+                        // Close it
+                        isOpen = true; // wait, logic was: toggle(e) toggles layout. 
+                        // If we are open, we want to close.
                         toggleNotifications(e);
                     }
                 });
-
-                btn.addEventListener('click', toggleNotifications);
             }
         });
     </script>

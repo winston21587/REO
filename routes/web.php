@@ -39,13 +39,13 @@ Route::get('/legal/terms-of-service', function () { return view('legal.terms'); 
 Route::get('/legal/accessibility', function () { return view('legal.accessibility'); })->name('policy.accessibility');
 
 
+Route::get('logout', [AuthController::class, 'logout']); // Fallback if needed
 // ====================================================
 // AUTHENTICATED ROUTES (Shared by ALL logged-in users)
 // ====================================================
 Route::middleware(['auth'])->group(function () {
     
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('logout', [AuthController::class, 'logout']); // Fallback if needed
     Route::post('/accept-terms', [AuthController::class, 'acceptTerms'])->name('accept.terms');
 
     // --- NOTIFICATION ROUTES (Accessible by Admin & Researcher) ---

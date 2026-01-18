@@ -16,7 +16,7 @@
             <form action="{{ route('admin.recommendation.generate') }}" method="POST" target="_blank" class="p-8 space-y-8">
                 @csrf
                 <input type="hidden" name="id" value="{{ $submission->id }}">
-                <input type="hidden" name="email" value="{{ $submission->author->email ?? '' }}">
+                <input type="hidden" name="email" value="{{ $submission->researcher->user->email ?? '' }}">
 
                 <!-- Existing Letter Indicator -->
                 @if(isset($hasLetter) && $hasLetter)

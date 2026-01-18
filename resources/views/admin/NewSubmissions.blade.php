@@ -2,7 +2,8 @@
     <div class="max-w-7xl mx-auto py-8 animate-[fadeInUp_0.5s_ease-out]">
 
         <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             
             <!-- Recent Submissions Column -->
             <div class="space-y-6 flex flex-col h-full">
@@ -58,16 +59,9 @@
                 </div>
                 
                 <!-- Pagination (Static for UI) -->
-                <div class="flex items-center justify-between pt-4 mt-auto">
-                    <span class="text-xs text-slate-400 font-medium">Previous</span>
-                    <div class="flex gap-1">
-                        <button class="w-8 h-8 rounded-lg bg-[#dc2626] text-white text-xs font-bold shadow-md">1</button>
-                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">2</button>
-                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">3</button>
-                        <span class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs">...</span>
-                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">10</button>
-                    </div>
-                    <span class="text-xs text-slate-500 font-bold cursor-pointer hover:text-[#8B0000]">Next</span>
+                <!-- Pagination -->
+                <div class="mt-auto pt-4">
+                    {{ $pendingSubmissions->appends(['incomplete_page' => $incompleteSubmissions->currentPage()])->links() }}
                 </div>
             </div>
 
@@ -122,13 +116,8 @@
                     @endforelse
                 </div>
                 
-                <div class="flex items-center justify-between pt-4 mt-auto">
-                    <span class="text-xs text-slate-400 font-medium">Previous</span>
-                    <div class="flex gap-1">
-                        <button class="w-8 h-8 rounded-lg bg-[#dc2626] text-white text-xs font-bold shadow-md">1</button>
-                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold transition-colors">2</button>
-                    </div>
-                    <span class="text-xs text-slate-500 font-bold cursor-pointer hover:text-[#8B0000]">Next</span>
+                <div class="mt-auto pt-4">
+                     {{ $incompleteSubmissions->appends(['pending_page' => $pendingSubmissions->currentPage()])->links() }}
                 </div>
             </div>
 
@@ -137,8 +126,8 @@
 
     <!-- Triage Modal -->
 <div id="triageModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="modalContent">
-            <div class="bg-[#1a0505] p-6 border-b border-white/10 relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col" id="modalContent">
+            <div class="bg-[#1a0505] p-6 border-b border-white/10 relative overflow-hidden flex-shrink-0">
                 <div class="absolute top-0 right-0 p-4 opacity-10">
                     <i class="fas fa-gavel text-6xl text-white"></i>
                 </div>
@@ -146,9 +135,9 @@
                 <p class="text-slate-400 text-xs mt-1 relative z-10">Determine the level of review required (SOP 04/05/06).</p>
             </div>
             
-            <form id="triageForm" method="POST" action="">
+            <form id="triageForm" method="POST" action="" class="flex flex-col flex-1 overflow-hidden">
                 @csrf
-                <div class="p-6 space-y-6">
+                <div class="p-6 space-y-6 overflow-y-auto flex-1">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Protocol Title</label>
                         <p id="modalTitle" class="text-slate-800 font-bold bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm leading-relaxed"></p>
@@ -206,7 +195,7 @@
                     </div>
                 </div>
 
-                <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
+                <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 flex-shrink-0">
                     <button type="button" onclick="closeTriage()" class="px-5 py-2.5 text-slate-600 font-bold text-sm hover:bg-white hover:text-slate-800 rounded-lg transition-all border border-transparent hover:border-slate-200">Cancel</button>
                     <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white font-bold text-sm rounded-lg shadow-lg hover:bg-[#6d0000] hover:shadow-xl transition-all transform hover:-translate-y-0.5">Confirm & Send</button>
                 </div>

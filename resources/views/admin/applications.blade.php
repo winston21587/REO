@@ -69,11 +69,11 @@
                             <td class="p-6">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
-                                        {{ substr($data->author->first_name ?? 'U', 0, 1) }}
+                                        {{ substr($data->researcher->user->first_name ?? 'U', 0, 1) }}
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-slate-700">{{ $data->author->first_name ?? '' }} {{ $data->author->last_name ?? 'Unknown' }}</p>
-                                        <p class="text-[10px] text-slate-400">{{ $data->author->email ?? '' }}</p>
+                                        <p class="text-sm font-medium text-slate-700">{{ $data->researcher->user->first_name ?? '' }} {{ $data->researcher->user->last_name ?? 'Unknown' }}</p>
+                                        <p class="text-[10px] text-slate-400">{{ $data->researcher->user->email ?? '' }}</p>
                                     </div>
                                 </div>
                             </td>
@@ -98,8 +98,11 @@
                                     ];
                                     $colorClass = $statusColors[$data->Status] ?? 'bg-slate-50 text-slate-700 border-slate-100';
                                     
-                                    // Display Review Type if set, otherwise Status
-                                    $displayStatus = $data->Review_Type ? $data->Review_Type : $data->Status;
+                                    // Prioritize Status for specific workflow steps, otherwise use Review Type if available
+                                    $displayStatus = $data->Status;
+                                    if ($data->Review_Type && !in_array($data->Status, ['Complete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review'])) {
+                                        $displayStatus = $data->Review_Type;
+                                    }
                                 @endphp
                                 <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }}">
                                     {{ $displayStatus }}

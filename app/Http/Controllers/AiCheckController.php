@@ -242,17 +242,17 @@ PROMPT;
         // 2. Extract Text
         $text = '';
         try {
-            $path = storage_path('app/public/' . $fileRecord->file_path); // Adjust based on your storage config
-            // If using local disk, might be: storage_path('app/' . $fileRecord->file_path) or public_path(...)
+            $path = storage_path('app/public/' . $fileRecord->filepath); // Adjust based on your storage config
+            // If using local disk, might be: storage_path('app/' . $fileRecord->filepath) or public_path(...)
             // Assuming 'public' disk:
             if (!file_exists($path)) {
                  // Try relative to public path if storage link is set up
-                 $path = public_path('storage/' . $fileRecord->file_path);
+                 $path = public_path('storage/' . $fileRecord->filepath);
             }
             
             if (!file_exists($path)) {
                  // Fallback: try to find it via the model's path attribute directly if it's absolute or relative
-                 $path = $fileRecord->file_path; 
+                 $path = $fileRecord->filepath; 
             }
 
 

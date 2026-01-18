@@ -31,7 +31,7 @@ class Research_title extends Model
 public function files()
 {
     return $this->belongsToMany(
-            Researcher_files::class,
+            researcher_files::class,
                 'research_title_files',
       'research_title_id',
       'researcher_file_id')
@@ -40,7 +40,7 @@ public function files()
 
 public function adminFiles()
 {
-    return $this->hasMany(Researcher_files::class, 'research_title_id');
+    return $this->hasMany(researcher_files::class, 'research_title_id');
 }
 
 public function appointment()

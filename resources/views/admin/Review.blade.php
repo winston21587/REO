@@ -37,7 +37,7 @@
                     <tr class="group hover:bg-slate-50 transition-colors">
                         <td class="p-5">
                             <p class="font-bold text-slate-800 mb-1">{{ $data->Study_Protocol_title }}</p>
-                            <p class="text-xs text-slate-500">By <span class="font-semibold text-slate-700">{{ $data->author->first_name }} {{ $data->author->last_name }}</span></p>
+                            <p class="text-xs text-slate-500">By <span class="font-semibold text-slate-700">{{ $data->researcher->user->first_name }} {{ $data->researcher->user->last_name }}</span></p>
                         </td>
                         <td class="p-5 text-sm text-slate-600">{{ $data->created_at->format('M d, Y') }}</td>
                         <td class="p-5">

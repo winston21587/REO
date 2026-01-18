@@ -164,11 +164,11 @@
                     
                     <div class="flex items-center gap-5 relative z-10">
                         <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#8B0000] to-red-900 text-white flex items-center justify-center font-bold text-2xl shadow-lg shadow-red-900/20 ring-4 ring-red-50">
-                            {{ substr($researchTitle->author->first_name ?? 'U', 0, 1) }}
+                            {{ substr($researchTitle->researcher->user->first_name ?? 'U', 0, 1) }}
                         </div>
                         <div>
-                            <p class="font-bold text-slate-900 text-lg leading-tight">{{ $researchTitle->author->first_name ?? 'Unknown' }} {{ $researchTitle->author->last_name ?? '' }}</p>
-                            <p class="text-xs text-slate-500 font-bold uppercase tracking-wide mt-1">{{ $researchTitle->author->college ?? 'External Researcher' }}</p>
+                            <p class="font-bold text-slate-900 text-lg leading-tight">{{ $researchTitle->researcher->user->first_name ?? 'Unknown' }} {{ $researchTitle->researcher->user->last_name ?? '' }}</p>
+                            <p class="text-xs text-slate-500 font-bold uppercase tracking-wide mt-1">{{ $researchTitle->researcher->college ?? 'External Researcher' }}</p>
                         </div>
                     </div>
                 </div>

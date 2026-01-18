@@ -328,7 +328,7 @@ public function applications(Request $request)
 
     public function GetReview()
     {
-                $datas = Research_title::with('author')
+                $datas = Research_title::with('researcher.user')
             ->where('Status', 'For Initial Review')
             ->get();
         return view('admin.Review', compact('datas'));    
@@ -336,7 +336,7 @@ public function applications(Request $request)
 
         public function GetRevision()
     {
-                $datas = Research_title::with('author')
+                $datas = Research_title::with('researcher.user')
             ->where('Status', 'Revision')
             ->get();
         return view('admin.Revisions', compact('datas'));    
@@ -754,7 +754,7 @@ public function assignReviewers(Request $request, $id)
         //     return view('admin.view_files', compact('researchTitle'));
         // }
 
-        $researchTitle = Research_title::with('author', 'files')->findOrFail($id);
+        $researchTitle = Research_title::with('researcher.user', 'files')->findOrFail($id);
         return view('admin.view_files', compact('researchTitle'));
     }
 
@@ -788,7 +788,7 @@ public function assignReviewers(Request $request, $id)
     // 1. Show the Checklist Form (Replaces RC_letter.php)
     public function showLetterForm($id)
     {
-        $submission = Research_title::with('author')->findOrFail($id);
+        $submission = Research_title::with('researcher.user')->findOrFail($id);
         return view('admin.recommendation_letter.form', compact('submission'));
     }
 
@@ -831,7 +831,7 @@ public function previewLetter(Request $request)
     // 3. Recommendation Letter Feature
     public function showRecommendationLetterForm($id)
     {
-        $submission = Research_title::with(['author', 'files', 'adminFiles'])->findOrFail($id);
+        $submission = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
         
         // Check for both old and new filetypes in both relationships
         $hasLetter = $submission->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty() 
@@ -1102,15 +1102,16 @@ public function previewLetter(Request $request)
 
     public function revisions(Request $request)
     {
-        $query = Research_title::with('author')
+        $query = Research_title::with('researcher.user')
             ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions', 'Panel Deliberation']);
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('Study_Protocol_title', 'like', "%{$search}%")
-                  ->orWhereHas('author', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
+                  ->orWhereHas('researcher.user', function($q) use ($search) {
+                      $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
                   });
             });
         }
@@ -1121,15 +1122,16 @@ public function previewLetter(Request $request)
 
     public function certifications(Request $request)
     {
-        $query = Research_title::with(['author', 'files', 'adminFiles'])
+        $query = Research_title::with(['researcher.user', 'files', 'adminFiles'])
             ->where('Status', 'Approved');
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('Study_Protocol_title', 'like', "%{$search}%")
-                  ->orWhereHas('author', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
+                  ->orWhereHas('researcher.user', function($q) use ($search) {
+                      $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
                   });
             });
         }

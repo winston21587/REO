@@ -170,7 +170,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </td>test
+                            </td>
                         </tr>
                         @empty
                         <tr>

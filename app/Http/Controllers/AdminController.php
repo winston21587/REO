@@ -788,7 +788,7 @@ public function assignReviewers(Request $request, $id)
     public function showLetterForm($id)
     {
         $submission = Research_title::with('author')->findOrFail($id);
-        return view('admin.letter_generator.form', compact('submission'));
+        return view('admin.recommendation_letter.form', compact('submission'));
     }
 
     // 2. Show the Printable Letter (The Output)
@@ -796,9 +796,9 @@ public function previewLetter(Request $request)
     {
         $data = $request->validate([
             'submission_id' => 'required',
-            'protocol_issues' => 'array',
-            'consent_issues' => 'array',
-            'recommended_actions' => 'array',
+            'ethics_review_1' => 'array',
+            'ethics_review_2' => 'array',
+            'Recommended_Actions' => 'array',
             'review_type' => 'required|string',
             'remarks' => 'nullable|string'
         ]);
@@ -806,7 +806,7 @@ public function previewLetter(Request $request)
         $submission = Research_title::with('author')->findOrFail($request->submission_id);
 
         // A. Render View to String
-        $htmlContent = view('admin.letter_generator.print', compact('submission', 'data'))->render();
+        $htmlContent = view('admin.recommendation_letter.print', compact('submission', 'data'))->render();
 
         // B. Generate Filename
         $timestamp = now()->format('Ymd_His');

@@ -267,7 +267,7 @@ class AdminController extends Controller
         $humanVerifiedCount = Research_title::where('is_human_verified', true)->count();
         $humanVerifiedRate = $totalSubmissions > 0 ? round(($humanVerifiedCount / $totalSubmissions) * 100) : 0;
 
-        return view('admin.analytics', compact(
+        return view('admin.Analytics', compact(
             'totalSubmissions', 
             'approvedCount', 
             'approvalRate', 
@@ -284,7 +284,7 @@ class AdminController extends Controller
 
     public function index($request)
     {
-        return view('admin.analytics');
+        return view('admin.Analytics');
     }
 public function applications(Request $request)
     {
@@ -330,7 +330,7 @@ public function applications(Request $request)
                 $datas = Research_title::with('author')
             ->where('Status', 'For Initial Review')
             ->get();
-        return view('admin.review', compact('datas'));    
+        return view('admin.Review', compact('datas'));    
     }
 
         public function GetRevision()
@@ -338,7 +338,7 @@ public function applications(Request $request)
                 $datas = Research_title::with('author')
             ->where('Status', 'Revision')
             ->get();
-        return view('admin.revisions', compact('datas'));    
+        return view('admin.Revisions', compact('datas'));    
     }
     public function newSubmissions()
     {
@@ -1115,7 +1115,7 @@ public function previewLetter(Request $request)
         }
 
         $datas = $query->orderBy('updated_at', 'desc')->paginate(10);
-        return view('admin.revisions', compact('datas'));
+        return view('admin.Revisions', compact('datas'));
     }
 
     public function certifications(Request $request)

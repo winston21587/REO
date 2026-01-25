@@ -47,12 +47,12 @@
                     <li class="flex flex-col md:flex-row items-center md:items-start gap-2 md:gap-3">
                         <i class="fas fa-map-marker-alt mt-1 text-brand-primary hidden md:block"></i>
                         <span class="md:hidden font-bold text-brand-primary mb-1">Address</span>
-                        <span>Normal Road, Baliwasan,<br>Zamboanga City 7000</span>
+                        <span> 2nd floor, Research Center WMSU <br>Normal Road, Baliwasan, Zamboanga City 7000</span>
                     </li>
                     <li class="flex flex-col md:flex-row items-center gap-2 md:gap-3">
                         <i class="fas fa-phone-alt text-brand-primary hidden md:block"></i>
                         <span class="md:hidden font-bold text-brand-primary">Phone</span>
-                        <span>(062) 991-1771 loc 123</span>
+                        <span>0997 632 3622</span>
                     </li>
                     <li class="flex flex-col md:flex-row items-center gap-2 md:gap-3">
                         <i class="fas fa-envelope text-brand-primary hidden md:block"></i>

@@ -824,8 +824,8 @@ public function previewLetter(Request $request)
         $filename = "Result_of_Review_{$submission->id}_{$timestamp}.html";
         $path = "uploads/research_{$submission->id}/" . $filename;
 
-        // C. Save HTML File to Storage (public disk)
-        Storage::disk('public')->put($path, $htmlContent);
+        // C. Save HTML File to Storage (public folder)
+        Storage::disk('public_uploads')->put($path, $htmlContent);
 
         // D. Save Record in Database
         researcher_files::create([
@@ -859,11 +859,11 @@ public function previewLetter(Request $request)
 
         $path = str_replace('storage/', '', $file->filepath);
         
-        if (!Storage::disk('public')->exists($path)) {
+        if (!Storage::disk('public_uploads')->exists($path)) {
             return back()->with('error', 'File not found.');
         }
 
-        return response()->file(storage_path('app/public/' . $path));
+        return response()->file(public_path($path));
     }
 
     public function generateRecommendationLetter(Request $request)
@@ -979,11 +979,11 @@ public function previewLetter(Request $request)
             $path = "uploads/research_{$submission->id}/" . $filename;
             
             // Ensure directory exists
-            if (!Storage::disk('public')->exists("uploads/research_{$submission->id}")) {
-                Storage::disk('public')->makeDirectory("uploads/research_{$submission->id}");
+            if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
+                Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
             }
 
-            Storage::disk('public')->put($path, $pdf->Output('S'));
+            Storage::disk('public_uploads')->put($path, $pdf->Output('S'));
 
             // Save to DB
             researcher_files::create([

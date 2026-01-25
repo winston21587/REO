@@ -68,11 +68,11 @@ class Research_title_Controller extends Controller
             if ($request->hasFile("files.$field")) {
                 $file = $request->file("files.$field");
                 $filename = time() . '_' . $field . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('research_files', $filename, 'public');
+                $path = $file->storeAs('uploads/research_files', $filename, 'public_uploads');
 
                 $fileRecord = researcher_files::create([
                     'filename' => $filename,
-                    'filepath' => 'storage/' . $path,
+                    'filepath' => $path, // No storage/ prefix needing removal later if we stick to this
                     'filetype' => $file->getClientOriginalExtension(),
                     'category' => $field,
                 ]);
@@ -85,11 +85,11 @@ class Research_title_Controller extends Controller
         if ($request->hasFile('files.supplementary_docs')) {
             foreach ($request->file('files.supplementary_docs') as $file) {
                 $filename = time() . '_supplementary_' . $file->getClientOriginalName();
-                $path = $file->storeAs('research_files', $filename, 'public');
+                $path = $file->storeAs('uploads/research_files', $filename, 'public_uploads');
 
                 $fileRecord = researcher_files::create([
                     'filename' => $filename,
-                    'filepath' => 'storage/' . $path,
+                    'filepath' => $path,
                     'filetype' => $file->getClientOriginalExtension(),
                     'category' => 'supplementary_docs',
                 ]);
@@ -158,12 +158,12 @@ class Research_title_Controller extends Controller
         }
 
         // Store new file
-        $path = $request->file('file')->store('research_files', 'public');
+        $path = $request->file('file')->store('uploads/research_files', 'public_uploads');
 
         // Update record
         $researchFile->update([
             'filename' => $request->file('file')->getClientOriginalName(),
-            'filepath' => 'storage/' . $path,
+            'filepath' => $path,
             'filetype' => $request->file('file')->getClientOriginalExtension(),
         ]);
 
@@ -188,16 +188,15 @@ class Research_title_Controller extends Controller
             ->latest()
             ->first();
 
-        if (!$file || !Storage::disk('public')->exists(str_replace('storage/', '', $file->filepath))) {
+        if (!$file || !Storage::disk('public_uploads')->exists(str_replace('storage/', '', $file->filepath))) {
             return back()->with('error', 'Recommendation letter not found.');
         }
 
         // Serve the file
-        // Note: The filepath in DB is 'storage/uploads/...', but Storage::disk('public') expects 'uploads/...'
-        // We need to strip 'storage/' prefix if it exists.
+        // Note: The filepath in DB acts as relative path for public_uploads disk (once prefix stripped if any)
         $storagePath = str_replace('storage/', '', $file->filepath);
 
-        return response()->file(storage_path('app/public/' . $storagePath));
+        return response()->file(public_path($storagePath));
     }
     public function submitRevisions($id)
     {

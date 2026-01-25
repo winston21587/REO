@@ -2,8 +2,11 @@
     <div class="max-w-5xl mx-auto py-12 px-4 sm:px-6 animate-[fadeInUp_0.5s_ease-out]">
         
         <div class="text-center mb-16">
-            <h1 class="text-4xl font-extrabold text-slate-900 font-heading tracking-tight">Submission Roadmap</h1>
-            <p class="text-slate-500 mt-4 text-lg max-w-2xl mx-auto">Follow these steps to ensure a smooth and successful ethics review process.</p>
+            @if(isset($contents['instructions_header_image']))
+                <img src="{{ asset($contents['instructions_header_image']) }}" class="w-full h-48 object-cover rounded-2xl mb-8 shadow-sm">
+            @endif
+            <h1 class="text-4xl font-extrabold text-slate-900 font-heading tracking-tight">{{ $contents['instructions_title'] ?? 'Submission Roadmap' }}</h1>
+            <p class="text-slate-500 mt-4 text-lg max-w-2xl mx-auto">{{ $contents['instructions_intro'] ?? 'Follow these steps to ensure a smooth and successful ethics review process.' }}</p>
         </div>
 
         <div class="relative">

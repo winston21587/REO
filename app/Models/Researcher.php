@@ -13,11 +13,11 @@ class Researcher extends Model
         'user_id',
         'college',
         'department',
+        'program',
         'institute',
-        'course',
         'external_user',
         'contact',
-        // 'expertise',
+        'expertise',
         'training_completed',
     ];
 

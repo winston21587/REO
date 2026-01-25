@@ -8,9 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
+    <link rel="icon" type="image/x-icon" href="{{isset($cms['website_logo']) ? asset($cms['website_logo']) : '' }}" >
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -25,13 +26,13 @@
         
         <div class="hidden md:flex w-1/2 relative text-white flex-col justify-center p-12 lg:p-16">
             <div class="absolute inset-0 z-0">
-                <img src="{{ asset('images/wmsu1.jpg') }}" class="w-full h-full object-cover" alt="WMSU Campus">
+                <img src="{{ isset($contents['login_image']) ? asset($contents['login_image']) : asset('images/wmsu1.jpg') }}" class="w-full h-full object-cover" alt="WMSU Campus">
                 <div class="absolute inset-0 bg-black/30"></div>
             </div>
             
             <div class="relative z-10 max-w-lg animate-[fadeInUp_0.8s_ease-out]">
                 <div class="w-16 h-16 flex items-center justify-center mb-8">
-                    <img src="{{ asset('images/reoc-nobg.png') }}" class="w-10 h-10 drop-shadow-md">
+                    <img src="{{isset($cms['website_logo']) ? asset($cms['website_logo']) : '' }}" class="w-10 h-10 drop-shadow-md">
                 </div>
                 
                 <h1 class="text-5xl lg:text-6xl font-extrabold font-heading tracking-tight leading-tight drop-shadow-xl">
@@ -97,13 +98,16 @@
                             <label for="password" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
                             <a href="{{ route('password.request') }}" class="text-xs text-[#8B0000] font-bold hover:underline">Forgot password?</a>
                         </div>
-                        <div class="relative group">
+                        <div class="relative group" x-data="{ show: false }">
                             <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#8B0000] transition-colors">
                                 <i class="fas fa-lock"></i>
                             </span>
-                            <input id="password" type="password" name="password" required 
-                                class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] transition-all outline-none text-slate-800 placeholder-slate-400 font-medium"
+                            <input id="password" :type="show ? 'text' : 'password'" name="password" required 
+                                class="w-full pl-11 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] transition-all outline-none text-slate-800 placeholder-slate-400 font-medium"
                                 placeholder="••••••••">
+                            <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-slate-700 focus:outline-none">
+                                <i class="fas" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
+                            </button>
                         </div>
                         @error('password') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
                     </div>

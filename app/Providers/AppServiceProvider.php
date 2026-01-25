@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use App\Models\CmsContent;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Auth;
 class AppServiceProvider extends ServiceProvider
@@ -37,6 +38,10 @@ public function boot()
             $view->with('notifications', $notifications)
                  ->with('unreadCount', $unreadCount);
         }
+        
+        // Share CMS content globally
+        $cms = CmsContent::all()->pluck('value', 'key');
+        $view->with('cms', $cms);
     });
 }
 }

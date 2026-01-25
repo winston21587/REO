@@ -14,6 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
             $middleware->alias([
         'role' => \App\Http\Middleware\RoleMiddleware::class,
     ]);
+        
+    $middleware->redirectGuestsTo(fn (Illuminate\Http\Request $request) => route('login'));
+    $middleware->redirectUsersTo(function (Illuminate\Http\Request $request) {
+        $user = Auth::user();
+        if ($user && $user->role === 'admin') {
+            return route('admin.analytics');
+        }
+        return route('home');
+    });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {

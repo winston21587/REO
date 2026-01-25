@@ -6,32 +6,52 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\College;
 
 class SettingsController extends Controller
 {
+    public function index()
+    {
+        $colleges = College::with('departments.programs')->get();
+        return view('user_settings', compact('colleges'));
+    }
+
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
         
         $request->validate([
             'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
             'institute' => 'nullable|string|max:255',
             'college' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:255',
+            'program' => 'nullable|string|max:255',
+            'contact' => 'nullable|string|max:11',
         ]);
 
-        $user->first_name = $request->first_name;
-        $user->last_name = $request->last_name;
+        $user->update([
+            'first_name' => $request->first_name,
+            'middle_name' => $request->middle_name,
+            'last_name' => $request->last_name,
+        ]);
 
-        if ($user->external_user) {
-            $user->institute = $request->institute;
-        } else {
-            $user->college = $request->college;
-            $user->department = $request->department;
+        if ($user->researcher) {
+            $researcherData = [
+                'contact' => $request->contact,
+            ];
+
+            if ($user->researcher->external_user) {
+                $researcherData['institute'] = $request->institute;
+            } else {
+                $researcherData['college'] = $request->college;
+                $researcherData['department'] = $request->department;
+                $researcherData['program'] = $request->program;
+            }
+
+            $user->researcher->update($researcherData);
         }
-
-        $user->save();
 
         return back()->with('success', 'Profile updated successfully.');
     }

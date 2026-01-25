@@ -4,53 +4,46 @@
 
     <div
       class="slide active absolute inset-0 w-full h-screen opacity-0 transition-opacity duration-1000 bg-cover bg-center"
-      style="background-image: url('./images/reocpic.jpg');">
+      style="background-image: url('{{ isset($contents['hero_image_1']) ? asset($contents['hero_image_1']) : '' }}');">
       <div class="overlay absolute inset-0 bg-black/60 z-10"></div>
 
       <div
         class="slide-content absolute top-[25%] bottom-auto left-[6%] md:top-auto md:bottom-[30%] md:left-[10%] z-20 max-w-[700px] text-left text-white p-[20px]">
         <h2 class="mb-[20px] text-3xl md:text-5xl font-bold leading-tight drop-shadow-lg">
-          Welcome to REO: Where Research Meets Collaboration
-          [BETA TEST]
+          {{ $contents['hero_title_1'] ?? 'Empty' }}
         </h2>
         <p class="text-lg md:text-xl drop-shadow-md leading-relaxed">
-          At REO, we’re creating a space where students, faculty, and researchers come together to innovate, share
-          knowledge, and grow. Whether you're looking to collaborate on research projects, share valuable resources, or
-          connect with peers, REO is your go-to hub for academic success.
+          {{ $contents['hero_text_1'] ?? 'Empty' }}
         </p>
       </div>
     </div>
 
     <div class="slide absolute inset-0 w-full h-screen opacity-0 transition-opacity duration-1000 bg-cover bg-center"
-      style="background-image: url('./images/reoc2.jpg');">
+      style="background-image: url('{{ isset($contents['hero_image_2']) ? asset($contents['hero_image_2']) : '' }}');">
       <div class="overlay absolute inset-0 bg-black/60 z-10"></div>
 
       <div
         class="slide-content absolute top-[25%] bottom-auto left-[6%] md:top-auto md:bottom-[30%] md:left-[10%] z-20 max-w-[700px] text-left text-white p-[20px]">
         <h2 class="mb-[20px] text-3xl md:text-5xl font-bold leading-tight drop-shadow-lg">
-          Collaborate, Share, Achieve
+          {{ $contents['hero_title_2'] ?? 'Empty' }}
         </h2>
         <p class="text-lg md:text-xl drop-shadow-md leading-relaxed">
-          The power of collaboration lies in the exchange of ideas. REO makes it easy for students to pass materials,
-          participate in discussions, and contribute to ongoing research projects. From sharing research papers to
-          organizing study sessions, everything you need to stay connected and productive is just a click away.
+          {{ $contents['hero_text_2'] ?? 'Empty' }}
         </p>
       </div>
     </div>
 
     <div class="slide absolute inset-0 w-full h-screen opacity-0 transition-opacity duration-1000 bg-cover bg-center"
-      style="background-image: url('./images/reoc3.jpg');">
+      style="background-image: url('{{ isset($contents['hero_image_3']) ? asset($contents['hero_image_3']) : '' }}');">
       <div class="overlay absolute inset-0 bg-black/60 z-10"></div>
 
       <div
         class="slide-content absolute top-[25%] bottom-auto left-[6%] md:top-auto md:bottom-[30%] md:left-[10%] z-20 max-w-[700px] text-left text-white p-[20px]">
         <h2 class="mb-[20px] text-3xl md:text-5xl font-bold leading-tight drop-shadow-lg">
-          Effortless Meeting & Event Coordination
+          {{ $contents['hero_title_3'] ?? 'Empty' }}
         </h2>
         <p class="text-lg md:text-xl drop-shadow-md leading-relaxed">
-          Tired of juggling schedules and missing important events? REO streamlines the process of meeting organization.
-          Plan study groups, research sessions, or school events with ease. Our intuitive platform lets you set dates,
-          send invitations, and manage attendance—all in one place.
+          {{ $contents['hero_text_3'] ?? 'Empty' }}
         </p>
       </div>
     </div>
@@ -69,11 +62,11 @@
 
         <div class="relative">
           <div class="absolute -inset-4 bg-brand-primary/5 rounded-2xl rotate-3"></div>
-          <img src="./images/msg2.png" alt="WMSU REO Visual"
+          <img src="{{ isset($contents['purpose_image']) ? asset($contents['purpose_image']) : '' }}" alt="WMSU REO Visual"
             class="relative rounded-xl shadow-2xl w-full object-cover z-10 transform transition-transform hover:scale-[1.01] duration-500">
           <div
             class="absolute -bottom-10 -right-10 bg-white p-6 rounded-xl shadow-xl z-20 hidden md:block max-w-xs border-l-4 border-brand-primary">
-            <p class="text-brand-dark font-bold text-lg">"Safeguarding the welfare of participants."</p>
+            <p class="text-brand-dark font-bold text-lg">"{{ $contents['purpose_text'] ?? 'Empty' }}"</p>
             <p class="text-slate-500 text-sm mt-2">- REO Core Value</p>
           </div>
         </div>
@@ -81,7 +74,7 @@
         <div class="space-y-8">
           <div>
             <h2 class="text-[#8B0000] text-sm font-bold uppercase tracking-widest mb-2">Our Purpose</h2>
-            <h3 class="text-4xl font-bold text-slate-900 mb-6">Upholding Ethical Standards</h3>
+            <h3 class="text-4xl font-bold text-slate-900 mb-6">{{ $contents['purpose_title'] ?? 'Empty' }}</h3>
           </div>
 
           <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
@@ -89,8 +82,7 @@
               <i class="fas fa-shield-alt text-white text-xl"></i>
             </div>
             <h4 class="text-xl font-bold text-slate-800 mb-2">Mission</h4>
-            <p class="text-slate-600 leading-relaxed">WMSU-REO/CERC safeguards the general welfare of human participants
-              and animal subjects in the conduct of research.</p>
+            <p class="text-slate-600 leading-relaxed">{{ $contents['mission_text'] ?? 'Empty' }}</p>
           </div>
 
           <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
@@ -98,8 +90,7 @@
               <i class="fas fa-eye text-white text-xl"></i>
             </div>
             <h4 class="text-xl font-bold text-slate-800 mb-2">Vision</h4>
-            <p class="text-slate-600 leading-relaxed">To be an accredited board instituted to conduct ethics review in
-              various fields of research involving human and animal subjects.</p>
+            <p class="text-slate-600 leading-relaxed">{{ $contents['vision_text'] ?? 'Empty' }}</p>
           </div>
 
           <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
@@ -107,8 +98,7 @@
               <i class="fas fa-bullseye text-white text-xl"></i>
             </div>
             <h4 class="text-xl font-bold text-slate-800 mb-2">Goals</h4>
-            <p class="text-slate-600 leading-relaxed">WMSU-REO attempts to achieve the following goals: 1. Conduct a
-              quality and standard ethical review process for all researches.</p>
+            <p class="text-slate-600 leading-relaxed">{{ $contents['goals_text'] ?? 'Empty' }}</p>
           </div>
         </div>
       </div>
@@ -118,14 +108,14 @@
   <div
     class="reoc-join-wrapper max-w-[1400px] mx-auto flex items-center justify-between flex-wrap p-[40px_20px] md:p-[60px_80px]">
     <div class="reoc-join-image flex-1 min-w-[300px] p-[10px]">
-      <img src="./images/join.png" alt="Art Style Image" class="max-w-full h-auto rounded-[12px]">
+      <img src="{{ isset($contents['join_image']) ? asset($contents['join_image']) : './images/join.png' }}" alt="Art Style Image" class="max-w-full h-auto rounded-[12px]">
     </div>
     <div class="reoc-join-content flex-1 min-w-[300px] p-[10px]">
       <div class="before:block before:w-[50px] before:h-[4px] before:bg-[#8B0000] before:mb-[12px]"></div>
-      <h2 class="reoc-join-title text-[2.2rem] text-[#333] mb-[20px]">Join Us Now</h2>
-      <p class="reoc-join-text text-[1rem] text-[#555] leading-[1.6] mb-[30px] font-bold">Why should you join REO? As a
-        premier school research facility, REO offers you access to cutting-edge technology, expert mentorship, and a
-        vibrant community passionate about innovation.</p>
+      <h2 class="reoc-join-title text-[2.2rem] text-[#333] mb-[20px]">{{ $contents['join_title'] ?? 'Empty' }}</h2>
+      <p class="reoc-join-text text-[1rem] text-[#555] leading-[1.6] mb-[30px] font-bold">
+        {{ $contents['join_text'] ?? 'Empty' }}
+      </p>
       <a href="{{ route('register') }}"
         class="reoc-join-btn inline-block bg-[#8B0000] text-white px-[26px] py-[12px] font-[700] rounded-[6px] hover:bg-red-800 transition-colors">Join
         Us</a>

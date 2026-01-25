@@ -138,54 +138,112 @@
             </div>
             <form action="{{ route('settings.update_profile') }}" method="POST" class="p-8 space-y-5">
                 @csrf
-                <div class="grid grid-cols-2 gap-5">
+                <h3 class="text-xs font-bold text-[#8B0000] uppercase tracking-wider border-b border-slate-200 pb-2 mb-4 mt-2">Personal Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">First Name</label>
-                        <input type="text" name="first_name" value="{{ Auth::user()->first_name }}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-brand-primary outline-none">
+                        <input type="text" name="first_name" value="{{ Auth::user()->first_name }}" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] focus:ring-1 focus:ring-[#8B0000] outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Middle Name</label>
+                        <input type="text" name="middle_name" value="{{ Auth::user()->middle_name }}" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] focus:ring-1 focus:ring-[#8B0000] outline-none transition-all">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Last Name</label>
-                        <input type="text" name="last_name" value="{{ Auth::user()->last_name }}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-brand-primary outline-none">
+                        <input type="text" name="last_name" value="{{ Auth::user()->last_name }}" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] focus:ring-1 focus:ring-[#8B0000] outline-none transition-all">
                     </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email Address</label>
-                    <input type="email" value="{{ Auth::user()->email }}" disabled class="w-full p-3 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed">
-                    <p class="text-[10px] text-slate-400 mt-1">Email cannot be changed. Contact admin for assistance.</p>
                 </div>
                 
-                @if(Auth::user()->external_user)
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Institution / Agency</label>
-                    <input type="text" name="institute" value="{{ Auth::user()->institute }}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-brand-primary outline-none">
-                </div>
-                @else
+                <h3 class="text-xs font-bold text-[#8B0000] uppercase tracking-wider border-b border-slate-200 pb-2 mb-4 mt-6">Contact & Security</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">College</label>
-                        <div class="relative">
-                            <select name="college" id="settingsCollegeSelect" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] outline-none appearance-none cursor-pointer">
-                                <option value="" disabled>Select College</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email Address</label>
+                        <input type="email" value="{{ Auth::user()->email }}" disabled class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed">
+                        <p class="text-[10px] text-slate-400 mt-1">Contact admin to change email.</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Department</label>
-                        <div class="relative">
-                            <select name="department" id="settingsDeptSelect" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] outline-none appearance-none cursor-pointer">
-                                <option value="" disabled>Select Department</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
-                                <i class="fas fa-chevron-down text-xs"></i>
+                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contact No.</label>
+                         <input type="text" name="contact" value="{{ Auth::user()->researcher->contact ?? '' }}" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] focus:ring-1 focus:ring-[#8B0000] outline-none transition-all" placeholder="09123456789">
+                    </div>
+                </div>
+                
+                @if(Auth::user()->researcher && Auth::user()->researcher->external_user)
+                <h3 class="text-xs font-bold text-[#8B0000] uppercase tracking-wider border-b border-slate-200 pb-2 mb-4 mt-6">Affiliation</h3>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Institution / Agency</label>
+                    <input type="text" name="institute" value="{{ Auth::user()->researcher->institute }}" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] focus:ring-1 focus:ring-[#8B0000] outline-none transition-all">
+                </div>
+                @elseif(Auth::user()->researcher)
+                
+                <div class="mt-6 pt-2 bg-slate-50 rounded-xl border border-slate-200 p-5"
+                    x-data="{ 
+                        colleges: {{ Js::from($colleges) }},
+                        selectedCollege: '{{ Auth::user()->researcher->college ?? '' }}',
+                        selectedDept: '{{ Auth::user()->researcher->department ?? '' }}',
+                        selectedProgram: '{{ Auth::user()->researcher->program ?? '' }}',
+                        
+                        get currentDepartments() {
+                            const college = this.colleges.find(c => c.name === this.selectedCollege);
+                            return college ? college.departments : [];
+                        },
+                        
+                        get currentPrograms() {
+                            const dept = this.currentDepartments.find(d => d.name === this.selectedDept);
+                            return dept ? dept.programs : [];
+                        }
+                    }"
+                >
+                    <h3 class="text-xs font-bold text-[#8B0000] uppercase tracking-wider border-b border-slate-200 pb-2 mb-4">Academic Details</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">College</label>
+                            <div class="relative">
+                                <select name="college" x-model="selectedCollege" @change="selectedDept = ''; selectedProgram = ''" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] focus:ring-1 focus:ring-[#8B0000] outline-none appearance-none cursor-pointer hover:shadow-sm transition-shadow">
+                                    <option value="" disabled>Select College</option>
+                                    <template x-for="college in colleges" :key="college.id">
+                                        <option :value="college.name" x-text="college.name"></option>
+                                    </template>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Department</label>
+                                <div class="relative">
+                                    <select name="department" x-model="selectedDept" @change="selectedProgram = ''" :disabled="!selectedCollege" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] focus:ring-1 focus:ring-[#8B0000] outline-none appearance-none cursor-pointer hover:shadow-sm transition-shadow disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                                        <option value="" disabled x-text="selectedCollege ? 'Select Department' : 'Select College First'"></option>
+                                        <template x-for="dept in currentDepartments" :key="dept.id">
+                                            <option :value="dept.name" x-text="dept.name"></option>
+                                        </template>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Program</label>
+                                <div class="relative">
+                                    <select name="program" x-model="selectedProgram" :disabled="!selectedDept" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] focus:ring-1 focus:ring-[#8B0000] outline-none appearance-none cursor-pointer hover:shadow-sm transition-shadow disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                                        <option value="" disabled x-text="selectedDept ? 'Select Program' : 'Select Department First'"></option>
+                                        <template x-for="prog in currentPrograms" :key="prog.id">
+                                            <option :value="prog.name" x-text="prog.name"></option>
+                                        </template>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 @endif
-
+ 
                 <div class="pt-4 flex justify-end gap-3">
                     <button type="button" onclick="closeModal('profile-modal')" class="px-5 py-2.5 rounded-xl text-slate-500 font-bold hover:bg-slate-50">Cancel</button>
                     <button type="submit" class="px-6 py-2.5 rounded-xl bg-[#8B0000] text-white font-bold shadow-lg hover:bg-red-900 transition-all">Save Changes</button>
@@ -283,83 +341,5 @@
         function closeModal(id) {
             document.getElementById(id).classList.add('hidden');
         }
-
-        // Academic Data Structure (Same as Register)
-        const academicData = {
-            "College of Computing Studies": {
-                "Department of Computer Science": ["BS Computer Science", "BS Information Technology", "Master in Information Technology"],
-                "Department of Computer Engineering": ["BS Computer Engineering"]
-            },
-            "College of Engineering": {
-                "Department of Civil Engineering": ["BS Civil Engineering", "BS Sanitary Engineering"],
-                "Department of Electrical Engineering": ["BS Electrical Engineering"],
-                "Department of Mechanical Engineering": ["BS Mechanical Engineering"]
-            },
-            "College of Science and Mathematics": {
-                "Department of Mathematics": ["BS Mathematics", "BS Statistics"],
-                "Department of Biology": ["BS Biology", "MS Biology"],
-                "Department of Physics": ["BS Physics"]
-            },
-            "College of Liberal Arts": {
-                "Department of English": ["AB English Language Studies"],
-                "Department of Political Science": ["AB Political Science"],
-                "Department of Psychology": ["BS Psychology"]
-            },
-            "College of Teacher Education": {
-                "Department of Elementary Education": ["BE Elementary Education"],
-                "Department of Secondary Education": ["BE Secondary Education"]
-            },
-            "College of Nursing": {
-                "Department of Nursing": ["BS Nursing"]
-            },
-            "College of Criminal Justice Education": {
-                "Department of Criminology": ["BS Criminology"]
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const collegeSelect = document.getElementById('settingsCollegeSelect');
-            const deptSelect = document.getElementById('settingsDeptSelect');
-            
-            // Only proceed if elements exist (internal users)
-            if (collegeSelect && deptSelect) {
-                const userCollege = "{{ Auth::user()->college }}";
-                const userDept = "{{ Auth::user()->department }}";
-
-                // Populate Colleges
-                for (const college in academicData) {
-                    const option = document.createElement('option');
-                    option.value = college;
-                    option.textContent = college;
-                    if (college === userCollege) option.selected = true;
-                    collegeSelect.appendChild(option);
-                }
-
-                // Function to populate departments
-                function populateDepartments(selectedCollege, selectedDept = null) {
-                    deptSelect.innerHTML = '<option value="" disabled selected>Select Department</option>';
-                    
-                    if (selectedCollege && academicData[selectedCollege]) {
-                        for (const dept in academicData[selectedCollege]) {
-                            const option = document.createElement('option');
-                            option.value = dept;
-                            option.textContent = dept;
-                            if (dept === selectedDept) option.selected = true;
-                            deptSelect.appendChild(option);
-                        }
-                    }
-                }
-
-                // Initial Population
-                if (userCollege) {
-                    populateDepartments(userCollege, userDept);
-                }
-
-                // Handle Change
-                collegeSelect.addEventListener('change', function() {
-                    populateDepartments(this.value);
-                });
-            }
-        });
     </script>
 </x-user_layout>

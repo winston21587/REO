@@ -8,9 +8,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
+    <link rel="icon" type="image/x-icon" href="{{ isset($cms['website_logo']) ? asset($cms['website_logo']) : '' }}" >
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -24,7 +26,7 @@
 <body class="antialiased h-screen flex items-center justify-center overflow-hidden bg-[#1a0505]">
 
     <div class="fixed inset-0 z-0">
-        <img src="{{ asset('images/wmsu2.jpg') }}" alt="WMSU Background" class="w-full h-full object-cover opacity-40">
+        <img src="{{ isset($contents['register_image']) ? asset($contents['register_image']) : asset('images/wmsu2.jpg') }}" alt="WMSU Background" class="w-full h-full object-cover opacity-40">
         <div class="absolute inset-0 from-[#8B0000]/90 via-[#1a0505]/95 to-black/90 mix-blend-multiply"></div>
     </div>
 
@@ -36,7 +38,7 @@
             <div class="relative z-10">
                 <div class="flex items-center gap-3 mb-8">
                     <div class="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/20">
-                        <img src="{{ asset('images/reoc-nobg.png') }}" class="w-6 h-6">
+                        <img src="{{ isset($cms['website_logo']) ? asset($cms['website_logo']) : '' }}" class="w-6 h-6">
                     </div>
                     <span class="font-heading font-bold text-xl tracking-wide">WMSU REO</span>
                 </div>
@@ -105,12 +107,29 @@
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Contact No.</label>
-                            <input type="text" name="contact" value="{{ old('contact') }}" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="09123456789">
+                            <input type="text" name="contact" value="{{ old('contact') }}" required maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="09123456789">
                             @error('contact') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
-                    <div id="wmsuFields" class="space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-200 transition-all duration-300">
+                    <div id="wmsuFields" class="space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-200 transition-all duration-300"
+                        x-data="{ 
+                            colleges: {{ Js::from($colleges) }},
+                            selectedCollege: '{{ old('college') }}',
+                            selectedDept: '{{ old('department') }}',
+                            selectedProgram: '{{ old('program') }}',
+                            
+                            get currentDepartments() {
+                                const college = this.colleges.find(c => c.name === this.selectedCollege);
+                                return college ? college.departments : [];
+                            },
+                            
+                            get currentPrograms() {
+                                const dept = this.currentDepartments.find(d => d.name === this.selectedDept);
+                                return dept ? dept.programs : [];
+                            }
+                        }"
+                    >
                         <h3 class="text-xs font-bold text-[#8B0000] uppercase tracking-wider border-b border-slate-200 pb-2 mb-3">Academic Details</h3>
                         
                         <div class="space-y-4">
@@ -118,9 +137,11 @@
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-700">College</label>
                                 <div class="relative">
-                                    <select name="college" id="collegeSelect" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none cursor-pointer transition-shadow hover:shadow-sm">
+                                    <select name="college" x-model="selectedCollege" @change="selectedDept = ''; selectedProgram = ''" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none cursor-pointer transition-shadow hover:shadow-sm">
                                         <option value="" disabled selected>Select College</option>
-                                        <!-- Populated by JS -->
+                                        <template x-for="college in colleges" :key="college.id">
+                                            <option :value="college.name" x-text="college.name"></option>
+                                        </template>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
                                         <i class="fas fa-chevron-down text-xs"></i>
@@ -134,8 +155,11 @@
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-slate-700">Department</label>
                                     <div class="relative">
-                                        <select name="department" id="deptSelect" disabled class="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none cursor-not-allowed transition-all">
-                                            <option value="" disabled selected>Select Department</option>
+                                        <select name="department" x-model="selectedDept" @change="selectedProgram = ''" :disabled="!selectedCollege" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none transition-all disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                                            <option value="" disabled selected x-text="selectedCollege ? 'Select Department' : 'Select College First'"></option>
+                                            <template x-for="dept in currentDepartments" :key="dept.id">
+                                                <option :value="dept.name" x-text="dept.name"></option>
+                                            </template>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
                                             <i class="fas fa-chevron-down text-xs"></i>
@@ -148,14 +172,17 @@
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-slate-700">Course / Program</label>
                                     <div class="relative">
-                                        <select name="course" id="courseSelect" disabled class="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none cursor-not-allowed transition-all">
-                                            <option value="" disabled selected>Select Course</option>
+                                        <select name="program" x-model="selectedProgram" :disabled="!selectedDept" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none transition-all disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                                            <option value="" disabled selected x-text="selectedDept ? 'Select Course' : 'Select Department First'"></option>
+                                            <template x-for="prog in currentPrograms" :key="prog.id">
+                                                <option :value="prog.name" x-text="prog.name"></option>
+                                            </template>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
                                             <i class="fas fa-chevron-down text-xs"></i>
                                         </div>
                                     </div>
-                                    @error('course') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                                    @error('program') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         </div>
@@ -172,12 +199,22 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Password</label>
-                            <input type="password" name="password" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="••••••••">
+                            <div class="relative" x-data="{ show: false }">
+                                <input :type="show ? 'text' : 'password'" name="password" required class="w-full px-4 py-2.5 pr-10 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="••••••••">
+                                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                                    <i class="fas" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                </button>
+                            </div>
                             @error('password') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Confirm Password</label>
-                            <input type="password" name="password_confirmation" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="••••••••">
+                            <div class="relative" x-data="{ show: false }">
+                                <input :type="show ? 'text' : 'password'" name="password_confirmation" required class="w-full px-4 py-2.5 pr-10 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm" placeholder="••••••••">
+                                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                                    <i class="fas" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -197,107 +234,29 @@
 
     <script>
         const toggle = document.getElementById('isNotWmsu');
+        // Toggle External/WMSU User Logic
         const wmsuFields = document.getElementById('wmsuFields');
         const externalFields = document.getElementById('externalFields');
-        const emailField = document.getElementById('emailField');
-        const emailHint = document.getElementById('emailHint');
         const hiddenExternalInput = document.getElementById('externalUserValue');
-        const form = document.getElementById('signupForm');
-
-        // Inputs to toggle
-        const wmsuInputs = wmsuFields.querySelectorAll('input, select');
-        const externalInputs = externalFields.querySelectorAll('input, select');
-
-        // Academic Data Structure
-        const academicData = {
-            "College of Computing Studies": {
-                "Department of Computer Science": ["BS Computer Science", "BS Information Technology", "Master in Information Technology"],
-                "Department of Computer Engineering": ["BS Computer Engineering"]
-            },
-            "College of Engineering": {
-                "Department of Civil Engineering": ["BS Civil Engineering", "BS Sanitary Engineering"],
-                "Department of Electrical Engineering": ["BS Electrical Engineering"],
-                "Department of Mechanical Engineering": ["BS Mechanical Engineering"]
-            },
-            "College of Science and Mathematics": {
-                "Department of Mathematics": ["BS Mathematics", "BS Statistics"],
-                "Department of Biology": ["BS Biology", "MS Biology"],
-                "Department of Physics": ["BS Physics"]
-            },
-            "College of Liberal Arts": {
-                "Department of English": ["AB English Language Studies"],
-                "Department of Political Science": ["AB Political Science"],
-                "Department of Psychology": ["BS Psychology"]
-            },
-            "College of Teacher Education": {
-                "Department of Elementary Education": ["BE Elementary Education"],
-                "Department of Secondary Education": ["BE Secondary Education"]
-            },
-            "College of Nursing": {
-                "Department of Nursing": ["BS Nursing"]
-            },
-            "College of Criminal Justice Education": {
-                "Department of Criminology": ["BS Criminology"]
-            }
-        };
-
-        const collegeSelect = document.getElementById('collegeSelect');
-        const deptSelect = document.getElementById('deptSelect');
-        const courseSelect = document.getElementById('courseSelect');
-
-        // Populate Colleges
-        for (const college in academicData) {
-            const option = document.createElement('option');
-            option.value = college;
-            option.textContent = college;
-            collegeSelect.appendChild(option);
-        }
-
-        // Handle College Change
-        collegeSelect.addEventListener('change', function() {
-            const selectedCollege = this.value;
-            
-            // Reset Department
-            deptSelect.innerHTML = '<option value="" disabled selected>Select Department</option>';
-            deptSelect.disabled = false;
-            deptSelect.classList.remove('bg-slate-100', 'cursor-not-allowed');
-            deptSelect.classList.add('bg-white', 'cursor-pointer');
-
-            // Reset Course
-            courseSelect.innerHTML = '<option value="" disabled selected>Select Course</option>';
-            courseSelect.disabled = true;
-            courseSelect.classList.add('bg-slate-100', 'cursor-not-allowed');
-            courseSelect.classList.remove('bg-white', 'cursor-pointer');
-
-            if (selectedCollege && academicData[selectedCollege]) {
-                for (const dept in academicData[selectedCollege]) {
-                    const option = document.createElement('option');
-                    option.value = dept;
-                    option.textContent = dept;
-                    deptSelect.appendChild(option);
-                }
-            }
-        });
-
-        // Handle Department Change
-        deptSelect.addEventListener('change', function() {
-            const selectedCollege = collegeSelect.value;
-            const selectedDept = this.value;
-
-            // Reset Course
-            courseSelect.innerHTML = '<option value="" disabled selected>Select Course</option>';
-            courseSelect.disabled = false;
-            courseSelect.classList.remove('bg-slate-100', 'cursor-not-allowed');
-            courseSelect.classList.add('bg-white', 'cursor-pointer');
-
-            if (selectedCollege && selectedDept && academicData[selectedCollege][selectedDept]) {
-                const courses = academicData[selectedCollege][selectedDept];
-                courses.forEach(course => {
-                    const option = document.createElement('option');
-                    option.value = course;
-                    option.textContent = course;
-                    courseSelect.appendChild(option);
-                });
+        
+        // This is now handled by Alpine.js for WMSU users
+        // External user logic remains here if needed or can be moved to Alpine too
+        
+        document.getElementById('isNotWmsu').addEventListener('change', function() {
+            if(this.checked) {
+                // External User
+                wmsuFields.classList.add('hidden');
+                externalFields.classList.remove('hidden');
+                hiddenExternalInput.value = '1';
+                // Remove required from WMSU inputs
+                wmsuFields.querySelectorAll('select').forEach(el => el.required = false);
+            } else {
+                // Internal User
+                wmsuFields.classList.remove('hidden');
+                externalFields.classList.add('hidden');
+                hiddenExternalInput.value = '0';
+                 // Add specific required via Alpine binding mostly, but ensure basics
+                 wmsuFields.querySelectorAll('select').forEach(el => el.required = true);
             }
         });
 

@@ -15,4 +15,9 @@ class College extends Model
         'color_assign',
         'code',
     ];
+
+    public function departments()
+    {
+        return $this->hasMany(Department::class);
+    }
 }

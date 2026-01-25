@@ -8,13 +8,16 @@ use App\Http\Controllers\AiCheckController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Auth; // Needed for Auth::id()
 use App\Models\UserNotification; // Needed for the Notification route
+use App\Models\CmsContent;
+use App\Http\Controllers\CmsController;
 
 // ====================================================
 // PUBLIC ROUTES
 // ====================================================
 
 Route::get('/', function () {
-    return view('index');
+    $contents = CmsContent::all()->pluck('value', 'key');
+    return view('index', compact('contents'));
 })->name('index');
 
 Route::middleware('guest')->group(function () {
@@ -35,14 +38,25 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::get('/legal/privacy-policy', function () {
-    return view('legal.privacy'); })->name('policy.privacy');
-Route::get('/legal/terms-of-service', function () {
-    return view('legal.terms'); })->name('policy.terms');
-Route::get('/legal/accessibility', function () {
-    return view('legal.accessibility'); })->name('policy.accessibility');
+    $contents = CmsContent::all()->pluck('value', 'key');
+    return view('legal.privacy', compact('contents')); 
+})->name('policy.privacy');
 
+Route::get('/legal/terms-of-service', function () {
+    $contents = CmsContent::all()->pluck('value', 'key');
+    return view('legal.terms', compact('contents')); 
+})->name('policy.terms');
+
+Route::get('/legal/accessibility', function () {
+    $contents = CmsContent::all()->pluck('value', 'key');
+    return view('legal.accessibility', compact('contents')); 
+})->name('policy.accessibility');
 
 Route::get('logout', [AuthController::class, 'logout']); // Fallback if needed
+
+
+
+
 // ====================================================
 // AUTHENTICATED ROUTES (Shared by ALL logged-in users)
 // ====================================================
@@ -59,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
         return view('notifications', compact('notifications'));
     })->name('notifications.index');
 
+
     Route::post('/notifications/{id}/read', function ($id) {
         $notification = UserNotification::findOrFail($id);
         // Security check: ensure user owns the notification
@@ -67,6 +82,8 @@ Route::middleware(['auth'])->group(function () {
         }
         return back();
     })->name('notifications.read');
+
+
     Route::post('/notifications/mark-all-read', function () {
         UserNotification::where('user_id', Auth::id())
             ->where('is_read', false)
@@ -81,11 +98,15 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:researcher'])->group(function () {
         Route::get('/home', [Research_title_Controller::class, 'showTitles'])->name('home');
         Route::get('/resources', function () {
-            return view('resources'); })->name('resources');
+            $contents = CmsContent::all()->pluck('value', 'key');
+            return view('resources', compact('contents')); 
+        })->name('resources');
+
         Route::get('/instructions', function () {
-            return view('instructions'); })->name('instructions');
-        Route::get('/settings', function () {
-            return view('user_settings'); })->name('settings');
+            $contents = CmsContent::all()->pluck('value', 'key');
+            return view('instructions', compact('contents')); 
+        })->name('instructions');
+        Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
         Route::get('/submit', [Research_title_Controller::class, 'showSubmit'])->name('submit');
         Route::post('/submit', [Research_title_Controller::class, 'submitTitle'])->name('submit.title');
@@ -159,5 +180,30 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/certificate/upload/{id}', [AdminController::class, 'uploadCertificate'])->name('admin.certificate.upload');
         Route::post('/admin/recommendation-letter/finalize/{id}', [AdminController::class, 'finalizeReview'])->name('admin.recommendation.finalize');
         Route::get('/admin/recommendation-letter/view-saved/{id}', [AdminController::class, 'viewSavedRecommendationLetter'])->name('admin.recommendation.view_saved');
+
+        // CMS Routes
+
+       // groups all the routes
+       //makes it so that every route is this class      then makes it so that all names are this class
+        Route::controller(CmsController::class)->prefix('admin/cms')->name('admin.cms.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/content', 'content')->name('content');         // though still need to add the class function
+            Route::post('/content', 'updateContent')->name('content.update');
+            Route::get('/categories', 'categories')->name('categories');
+            Route::post('/categories', 'storeCategory')->name('categories.store');
+            Route::put('/categories/{id}', 'updateCategory')->name('categories.update');
+            Route::delete('/categories/{id}', 'destroyCategory')->name('categories.destroy');
+            Route::post('/colleges', 'storeCollege')->name('colleges.store');
+            Route::put('/colleges/{id}', 'updateCollege')->name('colleges.update');
+            Route::delete('/colleges/{id}', 'destroyCollege')->name('colleges.destroy');
+
+            Route::get('/departments', 'departments')->name('departments');
+            Route::post('/departments', 'storeDepartment')->name('departments.store');
+            Route::put('/departments/{id}', 'updateDepartment')->name('departments.update');
+            Route::delete('/departments/{id}', 'destroyDepartment')->name('departments.destroy');
+            Route::post('/programs', 'storeProgram')->name('programs.store');
+            Route::put('/programs/{id}', 'updateProgram')->name('programs.update');
+            Route::delete('/programs/{id}', 'destroyProgram')->name('programs.destroy');
+        });
     });
 });

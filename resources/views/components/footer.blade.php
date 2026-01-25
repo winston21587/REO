@@ -1,4 +1,7 @@
 <footer class="bg-red-950 text-white border-t border-white/10 font-sans">
+    @php
+        $cms = \App\Models\CmsContent::all()->pluck('value', 'key');
+    @endphp
     <div class="max-w-7xl mx-auto px-6 py-8 md:py-16">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 text-center md:text-left">
 
@@ -12,15 +15,14 @@
                     </div>
                 </div>
                 <p class="text-slate-400 text-sm leading-relaxed mb-6">
-                    Safeguarding the rights and welfare of human participants in research through ethical review and
-                    compliance.
+                    {{ $cms['footer_description'] ?? 'Empty' }}
                 </p>
                 <div class="flex gap-4 justify-center md:justify-start">
-                    <a href="https://www.facebook.com/profile.php?id=100066732383288" target="_blank"
+                    <a href="{{ $cms['footer_facebook'] ?? 'Empty' }}" target="_blank"
                         class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#1877F2] transition-colors text-white/70 hover:text-white">
                         <i class="fab fa-facebook-f"></i>
                     </a>
-                    <a href="mailto:reo@wmsu.edu.ph"
+                    <a href="mailto:{{ $cms['footer_email'] ?? 'reo@wmsu.edu.ph' }}"
                         class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-primary transition-colors text-white/70 hover:text-white">
                         <i class="fas fa-envelope"></i>
                     </a>
@@ -47,17 +49,17 @@
                     <li class="flex flex-col md:flex-row items-center md:items-start gap-2 md:gap-3">
                         <i class="fas fa-map-marker-alt mt-1 text-brand-primary hidden md:block"></i>
                         <span class="md:hidden font-bold text-brand-primary mb-1">Address</span>
-                        <span> 2nd floor, Research Center WMSU <br>Normal Road, Baliwasan, Zamboanga City 7000</span>
+                        <span>{!! nl2br(e($cms['footer_address'] ?? "Empty")) !!}</span>
                     </li>
                     <li class="flex flex-col md:flex-row items-center gap-2 md:gap-3">
                         <i class="fas fa-phone-alt text-brand-primary hidden md:block"></i>
                         <span class="md:hidden font-bold text-brand-primary">Phone</span>
-                        <span>0997 632 3622</span>
+                        <span>{{ $cms['footer_phone'] ?? 'Empty' }}</span>
                     </li>
                     <li class="flex flex-col md:flex-row items-center gap-2 md:gap-3">
                         <i class="fas fa-envelope text-brand-primary hidden md:block"></i>
                         <span class="md:hidden font-bold text-brand-primary">Email</span>
-                        <span>reo@wmsu.edu.ph</span>
+                        <span>{{ $cms['footer_email'] ?? 'Empty' }}</span>
                     </li>
                 </ul>
             </div>

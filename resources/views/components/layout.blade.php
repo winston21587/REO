@@ -12,7 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@600;700;800&display=swap"
         rel="stylesheet">
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ isset($cms['website_logo']) ? asset($cms['website_logo']) : '' }}">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -93,7 +93,7 @@
             <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
                 <div
                     class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30 shadow-lg group-hover:scale-105 transition-transform duration-300 relative">
-                    <img src="{{ asset('images/reoc-nobg.png') }}" alt="Logo"
+                    <img src="{{ isset($cms['website_logo']) ? asset($cms['website_logo']) : '' }}" alt="Logo"
                         class="w-full h-full object-cover bg-white" />
                     <!-- Dark overlay when scrolled for better contrast if needed, or keep white bg -->
                 </div>

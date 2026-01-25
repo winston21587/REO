@@ -11,19 +11,23 @@ use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use App\Mail\ResetPasswordMail;
 
+use App\Models\CmsContent;
+use App\Models\College;
+
 class AuthController extends Controller
 {
 
     public function showLogin()
     {
-        return view('auth.login');
+        $contents = CmsContent::all()->pluck('value', 'key');
+        return view('auth.login', compact('contents'));
     }
 
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|min:6',
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
 
         if (Auth::attempt($credentials)) {
@@ -48,7 +52,9 @@ class AuthController extends Controller
 
     public function showRegister()
     {
-        return view('auth.register');
+        $contents = CmsContent::all()->pluck('value', 'key');
+        $colleges = College::with('departments.programs')->get();
+        return view('auth.register', compact('contents', 'colleges'));
     }
 
 
@@ -68,7 +74,7 @@ class AuthController extends Controller
             'password' => 'required|min:6|confirmed', 
             'college' => 'required|string|max:155',  
             'department' => 'required|string|max:155',   
-            'course' => 'required|string|max:155', 
+            'program' => 'required|string|max:155', 
             'contact' => 'nullable|string|max:11',
 
         ]);
@@ -92,7 +98,7 @@ class AuthController extends Controller
                 'college' => $data['college'] ?? null,
                 'department' => $data['department'] ?? null,
                 'contact' => $data['contact'] ?? null,
-                'course' => $data['course'] ?? null,
+                'program' => $data['program'] ?? null,
                 'external_user' => false,
             ]);
     

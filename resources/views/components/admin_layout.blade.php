@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-    <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
+    <link rel="icon" type="image/x-icon" href="{{ isset($cms['website_logo']) ? asset($cms['website_logo']) : '' }}" >
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -22,6 +22,33 @@
             border-left: 4px solid #8B0000;
             color: white;
         }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4); 
+        }
+        
+        /* Dark scrollbar for main content area (light bg) */
+        main ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        main ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+        }
+        main ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -31,7 +58,7 @@
             <div class="h-20 flex items-center px-8 border-b border-white/5 bg-gradient-to-r from-[#8B0000]/20 to-transparent">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg overflow-hidden">
-                         <img src="{{ asset('images/reoc-nobg.png') }}" class="w-6 h-6">
+                         <img src="{{ isset($cms['website_logo']) ? asset($cms['website_logo']) : '' }}" class="w-6 h-6">
                     </div>
                     <div>
                         <h1 class="font-heading font-bold text-lg tracking-wide">REO Admin</h1>
@@ -85,6 +112,24 @@
                         <a href="{{ route('admin.manage_users') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.manage_users') ? 'active' : '' }}">
                             <i class="fas fa-user-graduate w-5 text-center"></i>
                             <span class="flex-1">Researchers</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">System Management</p>
+                    <div class="space-y-1">
+                        <a href="{{ route('admin.cms.content') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.cms.content') ? 'active' : '' }}">
+                            <i class="fas fa-desktop w-5 text-center"></i>
+                            <span class="flex-1">Website Content</span>
+                        </a>
+                        <a href="{{ route('admin.cms.index') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.cms.index') || request()->routeIs('admin.cms.pages') ? 'active' : '' }}">
+                            <i class="fas fa-file-alt w-5 text-center"></i>
+                            <span class="flex-1">Page Content</span>
+                        </a>        </a>
+                        <a href="{{ route('admin.cms.departments') }}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.cms.departments') ? 'active' : '' }}">
+                            <i class="fas fa-building w-5 text-center"></i>
+                            <span class="flex-1">Departments & Programs</span>
                         </a>
                     </div>
                 </div>

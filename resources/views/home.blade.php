@@ -42,9 +42,9 @@
                         $checkStatus = trim($status);
 
                         if (in_array($checkStatus, ['Incomplete', 'Pending', 'Submitted'])) {
-                             $currentStep = 1;
+                            $currentStep = 1;
                         } elseif (str_contains($checkStatus, 'Complete - Awaiting Hardcopy') || str_contains($checkStatus, 'Hardcopy Received') || str_contains($checkStatus, 'For Initial Review') || str_contains($checkStatus, 'Under Review')) {
-                             $currentStep = 2; // Review Tracker
+                            $currentStep = 2; // Review Tracker
                         } elseif (stripos($checkStatus, 'Approved') !== false || stripos($checkStatus, 'Certification') !== false) {
                             $currentStep = 5;
                         } elseif ($checkStatus === 'Panel Deliberation') {
@@ -103,6 +103,14 @@
                                             <i class="fas {{ $statusIcon }}"></i>
                                             {{ $title->Status ?? $title->status ?? 'Pending Review' }}
                                         </span>
+
+                                        @if($title->Review_Type && $title->Review_Type !== 'N/A')
+                                            <span
+                                                class="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 flex items-center gap-2">
+                                                <i class="fas fa-clipboard-list"></i>
+                                                {{ $title->Review_Type }}
+                                            </span>
+                                        @endif
                                         <span class="text-slate-400 text-sm font-medium">
                                             <i class="far fa-calendar-alt mr-1"></i> Submitted on
                                             {{ $title->created_at->format('F d, Y') }}
@@ -189,8 +197,8 @@
                                                 <!-- Icon Bubble -->
                                                 <div
                                                     class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center border-4 transition-all duration-300 bg-white
-                                                            {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }}
-                                                            {{ $isCurrent ? 'scale-110 shadow-lg shadow-red-900/20 ring-4 ring-red-50' : '' }}">
+                                                                        {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }}
+                                                                        {{ $isCurrent ? 'scale-110 shadow-lg shadow-red-900/20 ring-4 ring-red-50' : '' }}">
                                                     <i
                                                         class="fas {{ $data['icon'] }} {{ $isActive ? '' : 'text-slate-300' }} text-sm"></i>
                                                 </div>
@@ -198,7 +206,7 @@
                                                 <!-- Label & Status Text -->
                                                 <div class="md:text-center md:absolute md:top-14 md:w-32 md:-ml-11">
                                                     <span class="block text-xs md:text-[10px] font-bold uppercase tracking-wider transition-colors duration-300
-                                                                {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }}">
+                                                                            {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }}">
                                                         {{ $data['label'] }}
                                                     </span>
                                                     @if($isCurrent)
@@ -240,7 +248,8 @@
                                     <label
                                         class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Category</label>
                                     <p class="text-slate-800 font-bold bg-slate-50 p-3 rounded-lg">
-                                        {{ $title->Research_Category }}</p>
+                                        {{ $title->Research_Category }}
+                                    </p>
                                 </div>
                                 <div>
                                     <label

@@ -30,7 +30,7 @@
         @foreach($researchTitle->files as $file)
             <div class="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group">
                 @php 
-                    $isPdf = $file->filetype === 'pdf' || $file->filetype === 'recommendation letter' || $file->filetype === 'certificate'; 
+                    $isPdf = $file->filetype === 'pdf' || $file->filetype === 'recommendation letter' || $file->filetype === 'certificate' || $file->filetype === 'Result of Review (Admin Generated)'; 
                 @endphp
                 <div class="p-4 flex items-start justify-between gap-4">
                     <div class="flex items-center gap-3 min-w-0">
@@ -46,7 +46,11 @@
                                 {{ $file->filename }}
                             </h4>
                             <p class="text-xs text-slate-400 mt-0.5 uppercase tracking-wider font-bold">
-                                {{ $file->filetype === 'recommendation letter' ? 'Recommendation Letter' : ($file->filetype === 'certificate' ? 'Clearance Certificate' : $file->filetype) }}
+                                {{ 
+                                    $file->filetype === 'recommendation letter' ? 'Recommendation Letter' : 
+                                    ($file->filetype === 'certificate' ? 'Clearance Certificate' : 
+                                    ($file->filetype === 'Result of Review (Admin Generated)' ? 'Result of Review' : $file->filetype)) 
+                                }}
                             </p>
                         </div>
                     </div>
@@ -75,7 +79,7 @@
                 </div>
 
                 <!-- Update Form (Hidden for Generated Files) -->
-                @if($file->filetype !== 'recommendation letter' && $file->filetype !== 'certificate')
+                @if($file->filetype !== 'recommendation letter' && $file->filetype !== 'certificate' && $file->filetype !== 'Result of Review (Admin Generated)')
                     <div class="p-3 bg-white border-t border-slate-100">
                         <form action="{{ route('update.file', $researchTitle->id) }}" method="POST" enctype="multipart/form-data" class="flex gap-2">
                             @csrf

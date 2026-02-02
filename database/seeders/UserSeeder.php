@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
                 'user_id' => $researcherUser->id,
                 'college' => 'College of computing studies',
                 'department' => 'Computer Science',
-                'course' => 'BS Computer Science',
+                'program' => 'BS Computer Science',
                 'external_user' => false,
             ]);
         }

@@ -43,7 +43,7 @@ return new class extends Migration
             $table->string('college')->nullable();
             $table->string('department')->nullable();
             $table->string('institute')->nullable();
-            $table->string('course')->nullable();
+            $table->string('program')->nullable();
             $table->boolean('external_user')->default(false);
             $table->string('contact')->nullable();
         

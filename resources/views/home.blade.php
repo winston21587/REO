@@ -164,39 +164,67 @@
 
                             <!-- Embedded Tracker -->
                             <!-- Embedded Responsive Tracker -->
-                            <div class="pt-6 border-t border-slate-100 relative">
+                            <div class="pt-8 border-t border-slate-100 relative mt-8">
                                 <!-- Container -->
-                                <div class="relative px-2 md:px-4">
+                                <div class="relative px-4 md:px-8">
+                                    <!-- Use px-8 (2rem) for unified desktop padding to make math easier -->
+                                    <!-- Bubble size w-10 (2.5rem), Center is 1.25rem -->
+                                    <!-- Line Start = Padding + Center = 2rem + 1.25rem = 3.25rem -->
 
                                     <!-- Desktop Background Line (Horizontal) -->
-                                    <div
-                                        class="hidden md:block absolute top-[1.25rem] left-4 right-4 h-1 bg-slate-100 rounded-full z-0">
-                                    </div>
+                                    <!-- Top should be center of h-10 (1.25rem/20px). Line h-1 (0.25rem/4px). Top = 1.25rem - 0.125rem = 1.125rem approx 18px -->
+                                    <div class="hidden md:block absolute top-[1.15rem] left-[3.25rem] right-[3.25rem] h-1 bg-slate-100 rounded-full z-0"></div>
 
                                     <!-- Desktop Active Progress (Horizontal) -->
-                                    <div class="hidden md:block absolute top-[1.25rem] left-4 h-1 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
-                                        style="width: {{ ($currentStep - 1) / (count($steps) - 1) * 100 }}%"></div>
-
-                                    <!-- Mobile Background Line (Vertical) -->
-                                    <div
-                                        class="md:hidden absolute left-[1.15rem] top-4 bottom-4 w-1 bg-slate-100 rounded-full z-0">
+                                    <!-- Width calculation: Active Step Index / Total Segments. 
+                                         $currentStep is 1-based. Index = $currentStep - 1.
+                                         Total Steps = count($steps). Segments = count($steps) - 1.
+                                         Percent = Index / Segments * 100. 
+                                    -->
+                                    <div class="hidden md:block absolute top-[1.15rem] left-[3.25rem] h-1 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
+                                        style="width: calc({{ ($currentStep - 1) / (count($steps) - 1) * 100 }}% - 6.5rem)">
+                                        <!-- Note: The width needs to be relative to the *line container*, not the parent. 
+                                             But we are using simple width %. The parent is full width.
+                                             If we use absolute left/right on the background line, its width is (100% - 6.5rem).
+                                             So we should set the active line max-width or effectively scale it.
+                                             
+                                             Better approach: Calculate width percentage of the *available line space*.
+                                             Line Space = 100% - 6.5rem.
+                                             Active Width = (Percent * Line Space).
+                                        -->
+                                    </div>
+                                    <!-- 
+                                      Correction: Percentage width in style is relative to the *parent* (container).
+                                      We need the bar to fill a percentage of the *line distance*.
+                                      Let's use a nested structure for easier width control. 
+                                    -->
+                                    
+                                    <!-- Re-implementing with a wrapper for the lines to simplify width math -->
+                                    <div class="hidden md:block absolute top-[1.15rem] left-[3.25rem] right-[3.25rem] h-1 z-0">
+                                        <div class="absolute inset-0 bg-slate-100 rounded-full"></div>
+                                        <div class="absolute top-0 left-0 h-full bg-[#8B0000] rounded-full transition-all duration-1000 ease-out"
+                                             style="width: {{ ($currentStep - 1) / (count($steps) - 1) * 100 }}%"></div>
                                     </div>
 
-                                    <!-- Mobile Active Progress (Vertical) -->
-                                    <div class="md:hidden absolute left-[1.15rem] top-4 w-1 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
-                                        style="height: {{ ($currentStep - 1) / (count($steps) - 1) * 100 }}%"></div>
+                                    <!-- Mobile Background Line (Vertical) -->
+                                    <!-- Mobile Padding px-4 (1rem). Bubble center 1.25rem. Line Left = 2.25rem. -->
+                                    <div class="md:hidden absolute left-[2.25rem] top-5 bottom-5 w-1 z-0">
+                                        <div class="absolute inset-0 bg-slate-100 rounded-full"></div>
+                                        <div class="absolute top-0 left-0 w-full bg-[#8B0000] rounded-full transition-all duration-1000 ease-out"
+                                             style="height: {{ ($currentStep - 1) / (count($steps) - 1) * 100 }}%"></div>
+                                    </div>
 
                                     <!-- Steps Wrapper -->
-                                    <div class="flex flex-col md:flex-row justify-between gap-6 md:gap-0 relative z-10">
+                                    <div class="flex flex-col md:flex-row justify-between gap-8 md:gap-0 relative z-10 w-full">
                                         @foreach($steps as $step => $data)
                                             @php
                                                 $isActive = $step <= $currentStep;
                                                 $isCurrent = $step === $currentStep;
                                             @endphp
-                                            <div class="flex items-center md:flex-col md:items-center gap-4 md:gap-2 group">
+                                            <div class="flex items-center md:flex-col md:items-center gap-4 md:gap-3 group">
                                                 <!-- Icon Bubble -->
                                                 <div
-                                                    class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center border-4 transition-all duration-300 bg-white
+                                                    class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center border-[3px] transition-all duration-300 bg-white relative z-10
                                                                         {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }}
                                                                         {{ $isCurrent ? 'scale-110 shadow-lg shadow-red-900/20 ring-4 ring-red-50' : '' }}">
                                                     <i
@@ -204,15 +232,15 @@
                                                 </div>
 
                                                 <!-- Label & Status Text -->
-                                                <div class="md:text-center md:absolute md:top-14 md:w-32 md:-ml-11">
+                                                <!-- Adjusted positioning for labels -->
+                                                <div class="md:text-center md:absolute md:top-14 md:w-32 md:left-1/2 md:-translate-x-1/2">
                                                     <span class="block text-xs md:text-[10px] font-bold uppercase tracking-wider transition-colors duration-300
                                                                             {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }}">
                                                         {{ $data['label'] }}
                                                     </span>
                                                     @if($isCurrent)
                                                         <span
-                                                            class="block md:hidden text-[10px] font-bold text-slate-500 mt-0.5">Current
-                                                            Status</span>
+                                                            class="block md:hidden text-[10px] font-bold text-slate-500 mt-0.5">Current</span>
                                                         <div class="hidden md:block mt-1">
                                                             <span
                                                                 class="text-[9px] font-bold text-[#8B0000] animate-pulse bg-red-50 px-2 py-0.5 rounded-full inline-block">
@@ -226,7 +254,7 @@
                                     </div>
 
                                     <!-- Add extra spacing at bottom for desktop labels -->
-                                    <div class="hidden md:block h-8"></div>
+                                    <div class="hidden md:block h-10"></div>
                                 </div>
                             </div>
                         </div>

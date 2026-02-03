@@ -1,13 +1,41 @@
 <x-admin_layout>
-    <div class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
+    <div id="analytics-dashboard" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
         
         <div class="flex flex-col md:flex-row justify-between items-end pb-6 border-b border-slate-200">
             <div>
                 <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Analytics & Reports</h1>
                 <p class="text-slate-500 mt-2 text-sm">Real-time insights into research submission performance.</p>
             </div>
-            <div class="flex gap-2 mt-4 md:mt-0">
-                <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
+            <div class="flex gap-2 mt-4 md:mt-0 items-center">
+                <!-- Date Filter Form -->
+                <form method="GET" action="{{ route('admin.analytics') }}" class="flex gap-2 items-center">
+                    <select name="month" class="px-3 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer">
+                        @foreach(range(1, 12) as $m)
+                            <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
+                                {{ DateTime::createFromFormat('!m', $m)->format('F') }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <select name="year" class="px-3 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer">
+                        @foreach($availableYears as $year)
+                            <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @endforeach
+                        @if(!in_array(date('Y'), $availableYears->toArray()))
+                             <option value="{{ date('Y') }}" {{ $selectedYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
+                        @endif
+                    </select>
+
+                    <button type="submit" class="px-4 py-2 bg-[#8B0000] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-800 transition-colors shadow-sm">
+                        Filter
+                    </button>
+                </form>
+
+                <div class="h-8 w-px bg-slate-200 mx-2"></div>
+
+                <button id="exportPdfBtn" onclick="exportToPdf()" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
                     <i class="fas fa-download"></i> Export PDF
                 </button>
             </div>
@@ -64,187 +92,183 @@
             </div>
         </div>
 
-        <section class="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 relative overflow-hidden">
-            <div class="absolute top-0 right-0 p-8 opacity-10">
-                <i class="fas fa-chart-line text-9xl text-[#8B0000]"></i>
-            </div>
-            
-            <div class="relative z-10">
-                <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1">Submission Trends</h2>
-                <div class="flex items-end gap-4 mb-8">
-                    <p class="text-5xl font-extrabold text-slate-900">Monthly Overview</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Daily Trend (Takes up 2/3) -->
+            <section class="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-8 opacity-10">
+                    <i class="fas fa-chart-line text-9xl text-[#8B0000]"></i>
                 </div>
+                
+                <div class="relative z-10">
+                    <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1">Submission Trends</h2>
+                    <div class="flex items-end gap-4 mb-8">
+                        <p class="text-5xl font-extrabold text-slate-900">Daily Overview</p>
+                        <p class="text-sm text-slate-500 font-medium mb-1.5">{{ DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} {{ $selectedYear }}</p>
+                    </div>
 
-                <div class="h-80 w-full">
-                    <canvas id="submissionTrendChart"></canvas>
+                    <div class="h-80 w-full">
+                        <canvas id="dailyTrendChart"></canvas>
+                    </div>
                 </div>
+            </section>
+
+            <!-- Right Column: Pie Charts (Takes up 1/3) -->
+            <div class="space-y-8">
+                <!-- Pie Chart 1: Review Type -->
+                <section class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Review Type Distribution ({{ $selectedYear }})</h3>
+                    <div class="h-64">
+                        <canvas id="reviewTypeChart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Pie Chart 2: Status Overview -->
+                <section class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Approval Status ({{ $selectedYear }})</h3>
+                    <div class="h-64">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </section>
             </div>
-        </section>
+        </div>
 
         <!-- Chart.js CDN -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const ctx = document.getElementById('submissionTrendChart').getContext('2d');
-                
-                // Create Gradient
-                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, 'rgba(139, 0, 0, 0.2)'); // #8B0000 with opacity
+                // --- 1. Daily Trend Chart ---
+                const ctxDaily = document.getElementById('dailyTrendChart').getContext('2d');
+                const gradient = ctxDaily.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(139, 0, 0, 0.2)');
                 gradient.addColorStop(1, 'rgba(139, 0, 0, 0)');
 
-                const monthlyData = @json($monthlyData);
+                const dailyData = @json($dailyData);
+                const dayLabels = @json($dayLabels);
 
-                new Chart(ctx, {
+                new Chart(ctxDaily, {
                     type: 'line',
                     data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        labels: dayLabels,
                         datasets: [{
                             label: 'Submissions',
-                            data: monthlyData,
+                            data: dailyData,
                             borderColor: '#8B0000',
                             backgroundColor: gradient,
                             borderWidth: 3,
                             pointBackgroundColor: '#fff',
                             pointBorderColor: '#8B0000',
-                            pointBorderWidth: 2,
                             pointRadius: 4,
                             pointHoverRadius: 6,
                             fill: true,
-                            tension: 0.4 // Smooth curve
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0 } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+
+                // --- 2. Review Type Pie Chart ---
+                const ctxReview = document.getElementById('reviewTypeChart').getContext('2d');
+                const reviewStats = @json($reviewTypeStats);
+                
+                new Chart(ctxReview, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(reviewStats),
+                        datasets: [{
+                            data: Object.values(reviewStats),
+                            backgroundColor: ['#8B0000', '#F59E0B', '#10B981', '#3B82F6'],
+                            borderWidth: 0
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: '#1e293b',
-                                padding: 12,
-                                titleFont: {
-                                    family: "'Inter', sans-serif",
-                                    size: 13
-                                },
-                                bodyFont: {
-                                    family: "'Inter', sans-serif",
-                                    size: 13,
-                                    weight: 'bold'
-                                },
-                                displayColors: false,
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.parsed.y + ' Submissions';
-                                    }
-                                }
-                            }
+                            legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: '#f1f5f9',
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    font: {
-                                        family: "'Inter', sans-serif",
-                                        size: 11
-                                    },
-                                    color: '#64748b',
-                                    padding: 10,
-                                    precision: 0
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false,
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    font: {
-                                        family: "'Inter', sans-serif",
-                                        size: 11,
-                                        weight: 'bold'
-                                    },
-                                    color: '#94a3b8',
-                                    padding: 10
-                                }
-                            }
+                        cutout: '70%'
+                    }
+                });
+
+                // --- 3. Status Pie Chart ---
+                const ctxStatus = document.getElementById('statusChart').getContext('2d');
+                const statusStats = @json($statusStats);
+
+                new Chart(ctxStatus, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(statusStats),
+                        datasets: [{
+                            data: Object.values(statusStats),
+                            backgroundColor: [
+                                '#10B981', // Approved (Green)
+                                '#EF4444'  // Disapproved (Red)
+                            ].concat(['#CBD5E1', '#F59E0B']), // Fallback colors
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }
                         }
                     }
                 });
             });
+
+            // --- Export to PDF Function ---
+            function exportToPdf() {
+                const element = document.getElementById('analytics-dashboard');
+                const btn = document.getElementById('exportPdfBtn');
+                
+                // Visual feedback
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                btn.disabled = true;
+
+                // Use html2canvas to capture the element
+                html2canvas(element, {
+                    scale: 2, // Higher quality
+                    useCORS: true, // Handle external images if any
+                    logging: false
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); // Landscape, mm, A4
+                    
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    // Add image to PDF
+                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                    pdf.save('Analytics_Report_{{ date("Y-m-d") }}.pdf');
+                    
+                    // Reset button
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }).catch(err => {
+                    console.error('PDF Generation Error:', err);
+                    alert('Failed to generate PDF. Please check console for details.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            }
         </script>
 
-        <div class="grid md:grid-cols-2 gap-8">
-            <section class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 flex flex-col justify-between">
-                <div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-6">Completion Status</h3>
-                    <div class="flex items-end gap-4 mb-6">
-                        <p class="text-4xl font-extrabold text-slate-900">{{ $completionRate }}%</p>
-                        <span class="mb-2 text-sm text-slate-500 font-medium">Completion Rate</span>
-                    </div>
-                </div>
-                
-                <div class="flex items-end gap-4 h-40">
-                    <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-                        <div class="w-full bg-[#8B0000] rounded-t-lg relative group-hover:bg-red-700 transition-all" style="height: {{ $totalSubmissions > 0 ? ($doneCount / $totalSubmissions) * 100 : 0 }}%;">
-                            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">{{ $doneCount }}</div>
-                        </div>
-                        <p class="text-center text-xs font-bold text-slate-500">Done</p>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-                        <div class="w-full bg-slate-200 rounded-t-lg relative group-hover:bg-slate-300 transition-all" style="height: {{ $totalSubmissions > 0 ? ($activeCount / $totalSubmissions) * 100 : 0 }}%;">
-                             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">{{ $activeCount }}</div>
-                        </div>
-                        <p class="text-center text-xs font-bold text-slate-500">Active</p>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-                        <div class="w-full bg-slate-100 rounded-t-lg relative group-hover:bg-slate-200 transition-all" style="height: {{ $totalSubmissions > 0 ? ($pendingCount / $totalSubmissions) * 100 : 0 }}%;">
-                             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">{{ $pendingCount }}</div>
-                        </div>
-                        <p class="text-center text-xs font-bold text-slate-500">Pending</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-slate-900 text-white p-8 rounded-2xl shadow-lg relative overflow-hidden">
-                <div class="absolute -right-10 -top-10 w-40 h-40 bg-[#8B0000] rounded-full blur-3xl opacity-30"></div>
-
-                <h3 class="text-lg font-bold mb-6 relative z-10">AI Compliance Checks</h3>
-                
-                <div class="space-y-6 relative z-10">
-                    <div>
-                        <div class="flex justify-between mb-2 text-sm font-medium">
-                            <span class="text-slate-300">AI Generated Content (Avg)</span>
-                            <span class="text-white">{{ $avgAiScore }}%</span>
-                        </div>
-                        <div class="w-full bg-white/10 rounded-full h-2">
-                            <div class="bg-[#8B0000] h-2 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.5)] transition-all duration-1000 ease-out" style="width: {{ $avgAiScore }}%"></div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <div class="flex justify-between mb-2 text-sm font-medium">
-                            <span class="text-slate-300">Human Verified</span>
-                            <span class="text-white">{{ $humanVerifiedRate }}%</span>
-                        </div>
-                        <div class="w-full bg-white/10 rounded-full h-2">
-                            <div class="bg-green-500 h-2 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] transition-all duration-1000 ease-out" style="width: {{ $humanVerifiedRate }}%"></div>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 p-4 bg-white/5 rounded-xl border border-white/10">
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            <i class="fas fa-info-circle mr-1"></i> 
-                            Most flagged issues relate to missing page numbers in "Research Protocol" documents.
-                        </p>
-                    </div>
-                </div>
-            </section>
-        </div>
+        <!-- PDF Export Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     </div>
 </x-admin_layout>

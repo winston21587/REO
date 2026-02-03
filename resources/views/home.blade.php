@@ -137,11 +137,6 @@
                                                 class="w-full py-3 px-6 bg-green-50 border-2 border-green-500 text-green-700 rounded-xl font-bold flex items-center justify-center gap-2">
                                                 <i class="fas fa-check-circle"></i> Approved
                                             </div>
-                                        @elseif($hasLetter)
-                                            <a href="{{ route('recommendation.view', $title->id) }}" target="_blank"
-                                                class="w-full py-3 px-6 bg-white border-2 border-emerald-500 text-emerald-700 rounded-xl font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2">
-                                                <i class="fas fa-envelope-open-text"></i> View Result Letter
-                                            </a>
                                         @endif
 
                                         @if($title->status === 'Incomplete')
@@ -161,7 +156,8 @@
                                     @endif
                                 </div>
                             </div>
-
+                            <!-- buggy  -->
+                            <!-- needs fixing  -->
                             <!-- Embedded Tracker -->
                             <!-- Embedded Responsive Tracker -->
                             <div class="pt-8 border-t border-slate-100 relative mt-8">

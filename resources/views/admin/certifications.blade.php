@@ -45,11 +45,16 @@
                             <td class="p-6">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
-                                        {{ substr($data->author->first_name ?? 'U', 0, 1) }}
+                                        {{ substr($data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'U', 0, 1) }}
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-slate-700">{{ $data->author->first_name ?? '' }} {{ $data->author->last_name ?? 'Unknown' }}</p>
-                                        <p class="text-[10px] text-slate-400">{{ $data->author->email ?? '' }}</p>
+                                        <p class="text-sm font-medium text-slate-700">
+                                            {{ $data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'Unknown' }} 
+                                            {{ $data->researcher->user->last_name ?? $data->user->last_name ?? '' }}
+                                        </p>
+                                        <p class="text-[10px] text-slate-400">
+                                            {{ $data->researcher->user->email ?? $data->user->email ?? '' }}
+                                        </p>
                                     </div>
                                 </div>
                             </td>

@@ -30,31 +30,41 @@
         </div>
 
         @php
-            // Server-side filename cleaning to ensure valid JSON and display
-            $cleanFiles = $researchTitle->files->map(function($file) {
-                $filename = $file->filename;
-                // Remove timestamp
-                $clean = preg_replace('/^\d+_/', '', $filename);
-                // Replace underscores/hyphens with spaces
-                $clean = preg_replace('/[_-]/', ' ', $clean);
-                // Replace multiple spaces/newlines
-                $clean = preg_replace('/\s+/', ' ', $clean);
-                // Trim
-                $clean = trim($clean);
-                // Remove extension
-                $clean = preg_replace('/\.[^.]+$/', '', $clean);
-                // Title Case
-                $clean = ucwords(strtolower($clean));
-                
-                $file->clean_filename = $clean ?: 'Unknown File';
-                return $file;
-            });
+            // Server-side filename cleaning
+            $processFiles = function($files, $typeLabel) {
+                return $files->map(function($file) use ($typeLabel) {
+                    $filename = $file->filename;
+                    $clean = preg_replace('/^\d+_/', '', $filename);
+                    $clean = preg_replace('/[_-]/', ' ', $clean);
+                    $clean = preg_replace('/\s+/', ' ', $clean);
+                    $clean = trim($clean);
+                    $clean = preg_replace('/\.[^.]+$/', '', $clean);
+                    $clean = ucwords(strtolower($clean));
+                    
+                    $file->clean_filename = $clean ?: 'Unknown File';
+                    $file->group_label = $typeLabel; // Add group label
+                    return $file;
+                });
+            };
+
+            $allFiles = $researchTitle->files->merge($researchTitle->adminFiles ?? collect());
+            
+            $letters = $allFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->sortByDesc('created_at');
+            $otherFiles = $researchTitle->files->whereNotIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter']);
+
+            $processedLetters = $processFiles($letters, 'Recommendation Letters')->values();
+            $processedOthers = $processFiles($otherFiles, 'Protocol Documents')->values();
+
+            // Merge for Alpine JS, putting letters first
+            $finalFiles = $processedLetters->merge($processedOthers)->values();
         @endphp
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-240px)]" 
              x-data="{ 
-                activeFile: {{ $cleanFiles->isNotEmpty() ? json_encode($cleanFiles->first()) : 'null' }},
-                files: {{ json_encode($cleanFiles) }},
+                activeFile: {{ $finalFiles->isNotEmpty() ? json_encode($finalFiles->first()) : 'null' }},
+                files: {{ json_encode($finalFiles) }},
+                letters: {{ json_encode($processedLetters) }},
+                others: {{ json_encode($processedOthers) }},
                 getFileUrl(file) {
                     return file ? '{{ route('admin.serve_file', 'ID_PLACEHOLDER') }}'.replace('ID_PLACEHOLDER', file.id) : '';
                 }
@@ -85,28 +95,61 @@
                              x-transition:enter-end="transform opacity-100 translate-y-0"
                              class="absolute top-full left-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden ring-1 ring-black/5"
                              style="display: none;">
-                            <div class="p-2 bg-slate-50 border-b border-slate-100">
-                                <p class="text-xs font-bold text-slate-500 px-2 uppercase tracking-wider">Available Documents</p>
-                            </div>
-                            <div class="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
-                                <template x-for="file in files" :key="file.id">
-                                    <button @click="activeFile = file; open = false" 
-                                            class="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group relative overflow-hidden"
-                                            :class="activeFile && activeFile.id === file.id ? 'bg-red-50 text-[#8B0000] ring-1 ring-red-100' : 'hover:bg-slate-50 text-slate-600'">
-                                        
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-                                             :class="activeFile && activeFile.id === file.id ? 'bg-white text-[#8B0000] shadow-sm' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:shadow-sm'">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </div>
-                                        
-                                        <div class="flex-1 min-w-0 z-10">
-                                            <p class="text-sm font-bold truncate" x-text="file.clean_filename"></p>
-                                        </div>
-                                        
-                                        <div x-show="activeFile && activeFile.id === file.id" class="absolute right-3 w-2 h-2 rounded-full bg-[#8B0000]"></div>
-                                    </button>
-                                </template>
-                            </div>
+                            
+                            <!-- Recommendation Letters Section -->
+                            <template x-if="letters.length > 0">
+                                <div>
+                                    <div class="p-2 bg-emerald-50 border-b border-emerald-100">
+                                        <p class="text-xs font-bold text-emerald-600 px-2 uppercase tracking-wider flex items-center gap-2">
+                                            <i class="fas fa-certificate"></i> Recommendation Letters
+                                        </p>
+                                    </div>
+                                    <div class="p-2">
+                                        <template x-for="file in letters" :key="file.id">
+                                            <button @click="activeFile = file; open = false" 
+                                                    class="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group relative overflow-hidden"
+                                                    :class="activeFile && activeFile.id === file.id ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' : 'hover:bg-slate-50 text-slate-600'">
+                                                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                                                     :class="activeFile && activeFile.id === file.id ? 'bg-white text-emerald-600 shadow-sm' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:shadow-sm'">
+                                                    <i class="fas fa-file-contract"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0 z-10">
+                                                    <p class="text-sm font-bold truncate" x-text="file.clean_filename"></p>
+                                                </div>
+                                                <div x-show="activeFile && activeFile.id === file.id" class="absolute right-3 w-2 h-2 rounded-full bg-emerald-500"></div>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Protocol Documents Section -->
+                            <template x-if="others.length > 0">
+                                <div>
+                                    <div class="p-2 bg-slate-50 border-b border-slate-100 border-t">
+                                        <p class="text-xs font-bold text-slate-500 px-2 uppercase tracking-wider flex items-center gap-2">
+                                            <i class="fas fa-folder-open"></i> Protocol Documents
+                                        </p>
+                                    </div>
+                                    <div class="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                                        <template x-for="file in others" :key="file.id">
+                                            <button @click="activeFile = file; open = false" 
+                                                    class="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group relative overflow-hidden"
+                                                    :class="activeFile && activeFile.id === file.id ? 'bg-red-50 text-[#8B0000] ring-1 ring-red-100' : 'hover:bg-slate-50 text-slate-600'">
+                                                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                                                     :class="activeFile && activeFile.id === file.id ? 'bg-white text-[#8B0000] shadow-sm' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:shadow-sm'">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0 z-10">
+                                                    <p class="text-sm font-bold truncate" x-text="file.clean_filename"></p>
+                                                </div>
+                                                <div x-show="activeFile && activeFile.id === file.id" class="absolute right-3 w-2 h-2 rounded-full bg-[#8B0000]"></div>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
                         </div>
                     </div>
 

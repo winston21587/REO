@@ -139,7 +139,7 @@ class Research_title_Controller extends Controller
     // Show all files for a specific research title
     public function manageFiles($id)
     {
-        $researchTitle = Research_title::with('files')->findOrFail($id);
+        $researchTitle = Research_title::with(['files', 'adminFiles'])->findOrFail($id);
         return view('researcher_files', compact('researchTitle'));
     }
 
@@ -198,23 +198,34 @@ class Research_title_Controller extends Controller
 
         return response()->file(public_path($storagePath));
     }
-    public function submitRevisions($id)
+    public function submitRevisions(Request $request, $id)
     {
         $researchTitle = Research_title::findOrFail($id);
         $user = Auth::user();
 
+        // Security check
         if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
             abort(403, 'Unauthorized action.');
         }
 
+        // Validate message if needed (optional)
+        $request->validate([
+            'revision_message' => 'nullable|string|max:1000',
+        ]);
+
         if ($researchTitle->Status === 'Waiting for Revision') {
+            
+            // Create Revision Log
+            \App\Models\RevisionLog::create([
+                'research_title_id' => $researchTitle->id,
+                'user_id' => $user->id,
+                'message' => $request->revision_message,
+            ]);
+
             $researchTitle->Status = 'Revision Submitted';
             $researchTitle->save();
 
-            // Notify Admin (Optional but good practice)
-            // UserNotification::create([...]); 
-
-            return redirect()->route('home')->with('success', 'Revisions submitted successfully! The status has been updated.');
+            return redirect()->route('home')->with('success', 'Revisions submitted successfully! status updated.');
         }
 
         return back()->with('error', 'Unable to submit revisions. Current status: ' . $researchTitle->Status);

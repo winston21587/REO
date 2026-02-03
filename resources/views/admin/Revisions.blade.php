@@ -43,13 +43,17 @@
                                 </p>
                             </td>
                             <td class="p-6">
-                                <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
-                                        {{ substr($data->researcher->user->first_name ?? 'U', 0, 1) }}
+                                        {{ substr($data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'U', 0, 1) }}
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-slate-700">{{ $data->researcher->user->first_name ?? '' }} {{ $data->researcher->user->last_name ?? 'Unknown' }}</p>
-                                        <p class="text-[10px] text-slate-400">{{ $data->researcher->user->email ?? '' }}</p>
+                                        <p class="text-sm font-medium text-slate-700">
+                                            {{ $data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'Unknown' }} 
+                                            {{ $data->researcher->user->last_name ?? $data->user->last_name ?? '' }}
+                                        </p>
+                                        <p class="text-[10px] text-slate-400">
+                                            {{ $data->researcher->user->email ?? $data->user->email ?? '' }}
+                                        </p>
                                     </div>
                                 </div>
                             </td>
@@ -91,7 +95,9 @@
                                                 <i class="fas fa-sync-alt w-4"></i> Update Status
                                             </button>
                                             
-                                            <!-- Proceed to Certification removed as per request -->
+                                            <button onclick='openRevisionLogsModal(@json($data->revisionLogs))' class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
+                                                <i class="fas fa-history w-4"></i> View Logs
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -115,4 +121,74 @@
     </div>
 
     @include('admin.partials.revision_status_modal')
+    
+    <!-- Revision Logs Modal -->
+    <div id="revisionLogsModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="document.getElementById('revisionLogsModal').classList.add('hidden')"></div>
+        
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="fas fa-history text-blue-600"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-xl font-semibold leading-6 text-slate-900" id="modal-title">Revision History</h3>
+                                <div class="mt-4 max-h-[60vh] overflow-y-auto space-y-4 pr-2" id="logsContainer">
+                                    <!-- Logs will be injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" onclick="document.getElementById('revisionLogsModal').classList.add('hidden')"
+                            class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-colors">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openRevisionLogsModal(logs) {
+            const container = document.getElementById('logsContainer');
+            const modal = document.getElementById('revisionLogsModal');
+            
+            container.innerHTML = ''; // Clear previous logs
+            
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-500">
+                        <i class="fas fa-info-circle text-2xl mb-2 text-slate-300"></i>
+                        <p>No revision logs found for this protocol.</p>
+                    </div>
+                `;
+            } else {
+                logs.forEach(log => {
+                    const date = new Date(log.created_at).toLocaleString();
+                    const message = log.message || '<em class="text-slate-400">No message provided</em>';
+                    const userName = log.user ? `${log.user.first_name} ${log.user.last_name}` : 'Unknown User';
+                    
+                    const logItem = `
+                        <div class="relative pl-6 border-l-2 border-slate-200 pb-2 last:pb-0">
+                            <div class="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-slate-300 ring-4 ring-white"></div>
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="text-xs font-bold text-slate-700">${userName}</span>
+                                    <span class="text-[10px] text-slate-400 font-mono">${date}</span>
+                                </div>
+                                <p class="text-sm text-slate-600 whitespace-pre-wrap">${message}</p>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += logItem;
+                });
+            }
+            
+            modal.classList.remove('hidden');
+        }
+    </script>
 </x-admin_layout>

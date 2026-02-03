@@ -221,13 +221,21 @@ class AdminController extends Controller
         return view('admin.manage_users', compact('users', 'colleges'));
     }
 
-    public function analytics()
+    public function analytics(Request $request)
     {
-        // 1. Total Submissions
+        // Date Filter Logic
+        $selectedYear = $request->input('year', date('Y'));
+        $selectedMonth = $request->input('month', date('m'));
+        
+        $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        // 1. Total Submissions (All time)
         $totalSubmissions = Research_title::count();
 
         // 2. Approved (For Initial Review)
-        // Adjust status string if needed based on your DB
         $approvedCount = Research_title::where('Status', 'For Initial Review')->count();
         
         // Calculate Approval Rate
@@ -236,26 +244,48 @@ class AdminController extends Controller
         // 3. Active Researchers
         $activeResearchers = User::where('role', 'researcher')->count();
 
-        // 4. Submission Trends (Monthly for current year)
-        $monthlyStats = Research_title::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-            ->whereYear('created_at', date('Y'))
-            ->groupBy('month')
-            ->pluck('count', 'month')
+        // 4. Submission Trends (Daily for selected month/year)
+        // Use the selected month and year to determine days in that specific month
+        $daysInMonth = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->daysInMonth;
+        
+        $dailyStats = Research_title::selectRaw('DAY(created_at) as day, COUNT(*) as count')
+            ->whereYear('created_at', $selectedYear)
+            ->whereMonth('created_at', $selectedMonth)
+            ->groupBy('day')
+            ->pluck('count', 'day')
             ->toArray();
 
-        // Fill missing months with 0
-        $monthlyData = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $monthlyData[] = $monthlyStats[$i] ?? 0;
+        // Fill missing days with 0
+        $dailyData = [];
+        $dayLabels = [];
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $dailyData[] = $dailyStats[$i] ?? 0;
+            $dayLabels[] = (string)$i;
         }
 
-        // 5. Completion Status Breakdown
+        // 5. Pie Chart: Review Type Distribution (Filtered by Selected Year)
+        $reviewTypeStats = Research_title::selectRaw('Review_Type, COUNT(*) as count')
+            ->whereYear('created_at', $selectedYear)
+            ->groupBy('Review_Type')
+            ->whereNotNull('Review_Type')
+            ->pluck('count', 'Review_Type')
+            ->toArray();
+
+        // 6. Pie Chart: Approval Status (Filtered by Selected Year)
+        $statusStats = Research_title::selectRaw('Status, COUNT(*) as count')
+             ->whereYear('created_at', $selectedYear)
+             ->whereIn('Status', ['Approved', 'Disapproved'])
+             ->groupBy('Status')
+             ->pluck('count', 'Status')
+             ->toArray();
+
+        // 7. Completion Status Breakdown (All time / Current snapshots)
         $statusCounts = Research_title::selectRaw('Status, COUNT(*) as count')
             ->groupBy('Status')
             ->pluck('count', 'Status')
             ->toArray();
 
-        $doneCount = $statusCounts['Completed'] ?? 0; // Adjust 'Completed' to your actual status
+        $doneCount = $statusCounts['Completed'] ?? 0; 
         $activeCount = ($statusCounts['For Initial Review'] ?? 0) + ($statusCounts['Under Review'] ?? 0);
         $pendingCount = $statusCounts['Pending'] ?? 0;
 
@@ -272,13 +302,19 @@ class AdminController extends Controller
             'approvedCount', 
             'approvalRate', 
             'activeResearchers',
-            'monthlyData',
+            'dailyData',
+            'dayLabels',
+            'reviewTypeStats',
+            'statusStats',
             'doneCount',
             'activeCount',
             'pendingCount',
             'completionRate',
             'avgAiScore',
-            'humanVerifiedRate'
+            'humanVerifiedRate',
+            'selectedYear',
+            'selectedMonth',
+            'availableYears'
         ));
     }
 
@@ -334,13 +370,7 @@ public function applications(Request $request)
         return view('admin.Review', compact('datas'));    
     }
 
-        public function GetRevision()
-    {
-                $datas = Research_title::with('researcher.user')
-            ->where('Status', 'Revision')
-            ->get();
-        return view('admin.Revisions', compact('datas'));    
-    }
+
     public function newSubmissions()
     {
         // Mock Data for Pending Submissions
@@ -544,25 +574,20 @@ public function applications(Request $request)
         // ---------------------------------------------------------
         // CASE C: Status Actions (Revision, Panel, Approved)
         // ---------------------------------------------------------
+        // ---------------------------------------------------------
         elseif ($request->has('status_action') && $request->status_action) {
             $action = $request->status_action;
             $newStatus = $action;
-            $submission->Status = $newStatus;
-            $submission->save();
 
             if ($action === 'Modifications Required') {
                 $newStatus = 'Waiting for Revision'; // Map to internal status
-                $submission->Status = $newStatus;
-                $submission->save();
                 
                 $message = "Your submission requires modifications.";
                 if ($request->remarks) {
                     $message .= "\n\nRemarks/Requirements: " . $request->remarks;
                 }
             } elseif ($action === 'Disapproved') {
-                $newStatus = 'Disapproved';
-                $submission->Status = $newStatus;
-                $submission->save();
+                $newStatus = 'Disapproved'; // Explicitly set just in case
                 
                 $message = "Your research protocol has been Disapproved.";
                 if ($request->remarks) {
@@ -584,10 +609,11 @@ public function applications(Request $request)
             } elseif ($action === 'Approved') {
                 $message = "Congratulations! Your research has been Approved.";
                 $message .= "\n\nYour Research Ethics Clearance Certificate is ready. Please check with the Research Ethics Office.";
-                
-                // Certificate generation removed as per request (handled offline)
-                // $this->generateCertificate($submission);
             }
+
+            // Save the final status
+            $submission->Status = $newStatus;
+            $submission->save();
         }
         // ---------------------------------------------------------
         // CASE C: Generic Status Update (Fallback)
@@ -764,7 +790,7 @@ public function assignReviewers(Request $request, $id)
         //     return view('admin.view_files', compact('researchTitle'));
         // }
 
-        $researchTitle = Research_title::with('researcher.user', 'files')->findOrFail($id);
+        $researchTitle = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
         return view('admin.view_files', compact('researchTitle'));
     }
 
@@ -1123,7 +1149,7 @@ public function previewLetter(Request $request)
 
     public function revisions(Request $request)
     {
-        $query = Research_title::with('researcher.user')
+        $query = Research_title::with(['researcher.user', 'revisionLogs.user', 'user'])
             ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions', 'Panel Deliberation']);
 
         if ($request->has('search')) {
@@ -1143,7 +1169,7 @@ public function previewLetter(Request $request)
 
     public function certifications(Request $request)
     {
-        $query = Research_title::with(['researcher.user', 'files', 'adminFiles'])
+        $query = Research_title::with(['researcher.user', 'files', 'adminFiles', 'user'])
             ->where('Status', 'Approved');
 
         if ($request->has('search')) {

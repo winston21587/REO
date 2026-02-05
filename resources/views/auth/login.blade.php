@@ -53,11 +53,11 @@
 
             <div class="w-full max-w-md relative z-10">
 
-                <div class="mb-6">
+                <!-- <div class="mb-6">
                     <a href="{{ route('index') }}" class="text-slate-500 hover:text-[#8B0000] transition-colors font-bold text-sm inline-flex items-center gap-2">
                         <i class="fas fa-arrow-left"></i> Back to Home
                     </a>
-                </div>
+                </div> -->
                 
                 <div class="text-center md:text-left mb-10">
                     <h2 class="text-3xl font-bold text-slate-900 font-heading">Welcome Back</h2>

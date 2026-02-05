@@ -177,7 +177,7 @@
                         </span>
                     </div>
                 </div>
-                
+
                 <!-- Notification Trigger Only (No Hamburger) -->
                 <button
                     class="notification-trigger w-10 h-10 flex items-center justify-center text-slate-500 hover:text-[#8B0000] rounded-full hover:bg-slate-50 transition-all relative focus:outline-none active:scale-95">

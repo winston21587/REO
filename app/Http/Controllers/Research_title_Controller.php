@@ -213,19 +213,27 @@ class Research_title_Controller extends Controller
             'revision_message' => 'nullable|string|max:1000',
         ]);
 
-        if ($researchTitle->Status === 'Waiting for Revision') {
+        if (in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete'])) {
             
-            // Create Revision Log
-            \App\Models\RevisionLog::create([
-                'research_title_id' => $researchTitle->id,
-                'user_id' => $user->id,
-                'message' => $request->revision_message,
-            ]);
+            // Determine new status
+            $newStatus = ($researchTitle->Status === 'Incomplete') ? 'Pending' : 'Revision Submitted';
+            $logMessage = ($newStatus === 'Pending') ? "Resubmitted corrections: " . $request->revision_message : $request->revision_message;
 
-            $researchTitle->Status = 'Revision Submitted';
+            // Create Revision Log (Optional but good for tracking)
+            if ($request->revision_message) {
+                \App\Models\RevisionLog::create([
+                    'research_title_id' => $researchTitle->id,
+                    'user_id' => $user->id,
+                    'message' => $logMessage,
+                ]);
+            }
+
+            $researchTitle->Status = $newStatus;
             $researchTitle->save();
 
-            return redirect()->route('home')->with('success', 'Revisions submitted successfully! status updated.');
+            $successMsg = ($newStatus === 'Pending') ? 'Corrections submitted successfully! Application is now Pending review.' : 'Revisions submitted successfully! Status updated.';
+
+            return redirect()->route('home')->with('success', $successMsg);
         }
 
         return back()->with('error', 'Unable to submit revisions. Current status: ' . $researchTitle->Status);

@@ -167,9 +167,9 @@
                         </div>
                     </div>
 
-                    <div id="appointmentField" class="transition-all duration-300">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Set Appointment Date</label>
-                        <input type="date" name="appointment_date" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm">
+                    <div id="appointmentField" class="transition-all duration-300 bg-white p-4 rounded-2xl border border-slate-200">
+                        <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Hardcopy Deadline / Appointment</label>
+                        <input type="date" name="appointment_date" min="{{ date('Y-m-d') }}" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-slate-50 font-medium text-slate-700">
                     </div>
 
                     <div id="incompleteFields" class="hidden opacity-0 transition-all duration-300 space-y-4">
@@ -322,6 +322,13 @@
             
             titleEl.textContent = title;
             form.action = `/admin/update-status/${id}`; 
+            
+            // Set Date Defaults (Today)
+            const dateInput = document.querySelector('input[name="appointment_date"]');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+            dateInput.min = today;
+
             
             // Default to Complete
             document.querySelector('input[value="Complete"]').checked = true;

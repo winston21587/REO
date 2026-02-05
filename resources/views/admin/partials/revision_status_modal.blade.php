@@ -91,7 +91,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="far fa-calendar-alt text-slate-400"></i>
                                 </div>
-                                <input type="date" id="revisionAppointmentDate" name="appointment_date" class="w-full pl-10 pr-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all">
+                                <input type="date" id="revisionAppointmentDate" name="appointment_date" min="{{ date('Y-m-d') }}" class="w-full pl-10 pr-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all">
                             </div>
                         </div>
 
@@ -167,7 +167,8 @@
             form.action = `/admin/update-status/${id}`;
             
             // Reset UI
-            document.getElementById('revisionAppointmentDate').value = "";
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('revisionAppointmentDate').value = today;
             document.getElementById('revisionRemarks').value = ""; 
             
             // Reset Box Selection Visuals

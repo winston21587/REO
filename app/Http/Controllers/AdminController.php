@@ -506,7 +506,7 @@ public function applications(Request $request)
                 $submission->Status = $newStatus;
                 $submission->save();
                 $missingDocs = $request->input('missing_requirements', []);
-                $message = "Your submission has been marked as Incomplete.";
+                $message = "Your submission \"{$submission->Study_Protocol_title}\" has been marked as Incomplete.";
                 if($request->remarks) { $message .= "\n\nGeneral Remarks: " . $request->remarks; }
                 if (!empty($missingDocs)) {
                     $message .= "\n\nMissing Requirements / Actions Needed:";
@@ -582,14 +582,14 @@ public function applications(Request $request)
             if ($action === 'Modifications Required') {
                 $newStatus = 'Waiting for Revision'; // Map to internal status
                 
-                $message = "Your submission requires modifications.";
+                $message = "Your submission \"{$submission->Study_Protocol_title}\" requires modifications.";
                 if ($request->remarks) {
                     $message .= "\n\nRemarks/Requirements: " . $request->remarks;
                 }
             } elseif ($action === 'Disapproved') {
                 $newStatus = 'Disapproved'; // Explicitly set just in case
                 
-                $message = "Your research protocol has been Disapproved.";
+                $message = "Your research protocol \"{$submission->Study_Protocol_title}\" has been Disapproved.";
                 if ($request->remarks) {
                     $message .= "\n\nReason: " . $request->remarks;
                 }
@@ -602,12 +602,12 @@ public function applications(Request $request)
                     'stage' => 'Panel Deliberation',
                 ]);
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
-                $message = "Your research is scheduled for Panel Deliberation on: {$dateFormatted}.";
+                $message = "Your research \"{$submission->Study_Protocol_title}\" is scheduled for Panel Deliberation on: {$dateFormatted}.";
                 if ($request->remarks) {
                     $message .= "\n\nRemarks: " . $request->remarks;
                 }
             } elseif ($action === 'Approved') {
-                $message = "Congratulations! Your research has been Approved.";
+                $message = "Congratulations! Your research \"{$submission->Study_Protocol_title}\" has been Approved.";
                 $message .= "\n\nYour Research Ethics Clearance Certificate is ready. Please check with the Research Ethics Office.";
             }
 
@@ -623,7 +623,7 @@ public function applications(Request $request)
             $newStatus = $request->status;
             $submission->Status = $newStatus;
             $submission->save();
-            $message = "Your research status has been updated to: {$newStatus}.";
+            $message = "The status of your research \"{$submission->Study_Protocol_title}\" has been updated to: {$newStatus}.";
             if ($request->reason) { $message .= " Remarks: {$request->reason}"; }
         }
 

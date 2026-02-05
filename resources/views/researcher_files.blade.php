@@ -19,18 +19,25 @@
                 </div>
             </div>
 
-            @if($researchTitle->Status === 'Waiting for Revision')
+            @php
+                $canSubmit = in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete']);
+                $isRevision = $researchTitle->Status === 'Waiting for Revision';
+                $submitLabel = $isRevision ? 'Submit Revisions' : 'Submit Corrections';
+                $submitIcon = $isRevision ? 'fa-paper-plane' : 'fa-check-circle';
+            @endphp
+
+            @if($canSubmit)
             <button onclick="document.getElementById('revisionModal').classList.remove('hidden')" 
                     class="group relative inline-flex items-center gap-3 bg-gradient-to-r from-[#8B0000] to-red-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:shadow-red-900/30 hover:-translate-y-1 transition-all duration-300">
                 <span class="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                <i class="fas fa-paper-plane text-lg group-hover:rotate-12 transition-transform"></i>
-                <span>Submit Revisions</span>
+                <i class="fas {{ $submitIcon }} text-lg group-hover:rotate-12 transition-transform"></i>
+                <span>{{ $submitLabel }}</span>
             </button>
             @endif
         </div>
 
-        <!-- Revision Note Modal -->
-        @if($researchTitle->Status === 'Waiting for Revision')
+        <!-- Revision/Correction Modal -->
+        @if($canSubmit)
         <div id="revisionModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="document.getElementById('revisionModal').classList.add('hidden')"></div>
             
@@ -45,15 +52,19 @@
                                         <i class="fas fa-pencil-alt text-[#8B0000]"></i>
                                     </div>
                                     <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                        <h3 class="text-xl font-semibold leading-6 text-slate-900" id="modal-title">Submit Revisions</h3>
+                                        <h3 class="text-xl font-semibold leading-6 text-slate-900" id="modal-title">{{ $submitLabel }}</h3>
                                         <div class="mt-2">
                                             <p class="text-sm text-slate-500 mb-4">
-                                                You are about to submit your revised documents. Please confirm your changes and include a brief note describing what you have updated.
+                                                @if($isRevision)
+                                                    You are about to submit your revised documents. Please confirm your changes and include a brief note describing what you have updated.
+                                                @else
+                                                    You are about to submit your corrected documents. This will alert the admin to review your submission again.
+                                                @endif
                                             </p>
-                                            <label for="revision_message" class="block text-sm font-medium text-slate-700 mb-1">Revision Note (Optional)</label>
+                                            <label for="revision_message" class="block text-sm font-medium text-slate-700 mb-1">Note (Optional)</label>
                                             <textarea name="revision_message" id="revision_message" rows="4" 
                                                 class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#8B0000] focus:ring-[#8B0000] text-sm"
-                                                placeholder="E.g., Updated the methodology section as requested..."></textarea>
+                                                placeholder="{{ $isRevision ? 'E.g., Updated the methodology section...' : 'E.g., Uploaded missing certificate...' }}"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -203,8 +214,8 @@
                     <div class="p-4 bg-white space-y-3">
                         <!-- Update Form -->
                         @php
-                            // Strict check: Upload only allowed if status is 'Waiting for Revision'
-                            $canUpload = ($researchTitle->Status === 'Waiting for Revision');
+                            // Strict check: Upload allowed if status is 'Waiting for Revision' OR 'Incomplete'
+                            $canUpload = in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete']);
                         @endphp
 
                         @if($canUpload)
@@ -216,7 +227,7 @@
                                         <i class="fas fa-cloud-upload-alt group-hover/upload:animate-bounce"></i>
                                         <span>Upload New Version</span>
                                     </div>
-                                    <input type="file" name="file" class="hidden" onchange="this.form.submit()">
+                                    <input type="file" name="file" class="hidden" onchange="this.form.submit()" accept=".{{ $file->filetype }}">
                                 </label>
                             </form>
                         @endif

@@ -2,7 +2,16 @@
     <div class="max-w-5xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
 
         <!-- Welcome Section -->
-        <div class="mb-8 pt-5">
+        <!-- Mobile Header (Compact) -->
+        <div class="md:hidden mb-4 pt-2">
+            <h1 class="text-xl font-extrabold text-slate-900 font-heading tracking-tight leading-tight">
+                Welcome back, <span class="text-[#8B0000]">{{ explode(' ', Auth::user()->first_name)[0] }}</span>!
+            </h1>
+            <p class="text-slate-500 mt-1 text-sm">Here is the status of your research submissions.</p>
+        </div>
+
+        <!-- Desktop Header (Original Spacious) -->
+        <div class="hidden md:block mb-8 pt-5">
             <h1 class="text-3xl font-extrabold text-slate-900 font-heading">
                 Welcome back, <span class="text-[#8B0000]">{{ explode(' ', Auth::user()->first_name)[0] }}</span>!
             </h1>
@@ -97,21 +106,23 @@
                         <div class="p-8 relative z-10">
                             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                                 <div>
-                                    <div class="flex items-center gap-3 mb-4">
-                                        <span
-                                            class="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider bg-{{ $statusColor }}-100 text-{{ $statusColor }}-700 flex items-center gap-2">
-                                            <i class="fas {{ $statusIcon }}"></i>
-                                            {{ $title->Status ?? $title->status ?? 'Pending Review' }}
-                                        </span>
-
-                                        @if($title->Review_Type && $title->Review_Type !== 'N/A')
+                                    <div class="flex flex-col items-start gap-3 md:flex-row md:items-center mb-4">
+                                        <div class="flex flex-wrap items-center gap-2">
                                             <span
-                                                class="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 flex items-center gap-2">
-                                                <i class="fas fa-clipboard-list"></i>
-                                                {{ $title->Review_Type }}
+                                                class="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider bg-{{ $statusColor }}-100 text-{{ $statusColor }}-700 flex items-center gap-2">
+                                                <i class="fas {{ $statusIcon }}"></i>
+                                                {{ $title->Status ?? $title->status ?? 'Pending Review' }}
                                             </span>
-                                        @endif
-                                        <span class="text-slate-400 text-sm font-medium">
+
+                                            @if($title->Review_Type && $title->Review_Type !== 'N/A')
+                                                <span
+                                                    class="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 flex items-center gap-2">
+                                                    <i class="fas fa-clipboard-list"></i>
+                                                    {{ $title->Review_Type }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <span class="text-slate-400 text-sm font-medium md:ml-auto">
                                             <i class="far fa-calendar-alt mr-1"></i> Submitted on
                                             {{ $title->created_at->format('F d, Y') }}
                                         </span>
@@ -169,37 +180,39 @@
 
                                     <!-- Desktop Background Line (Horizontal) -->
                                     <!-- Top should be center of h-10 (1.25rem/20px). Line h-1 (0.25rem/4px). Top = 1.25rem - 0.125rem = 1.125rem approx 18px -->
-                                    <div class="hidden md:block absolute top-[1.15rem] left-[3.25rem] right-[3.25rem] h-1 bg-slate-100 rounded-full z-0"></div>
+                                    <div
+                                        class="hidden md:block absolute top-[1.15rem] left-[3.25rem] right-[3.25rem] h-1 bg-slate-100 rounded-full z-0">
+                                    </div>
 
                                     <!-- Desktop Active Progress (Horizontal) -->
                                     <!-- Width calculation: Active Step Index / Total Segments. 
-                                         $currentStep is 1-based. Index = $currentStep - 1.
-                                         Total Steps = count($steps). Segments = count($steps) - 1.
-                                         Percent = Index / Segments * 100. 
-                                    -->
+                                                                         $currentStep is 1-based. Index = $currentStep - 1.
+                                                                         Total Steps = count($steps). Segments = count($steps) - 1.
+                                                                         Percent = Index / Segments * 100. 
+                                                                    -->
                                     <div class="hidden md:block absolute top-[1.15rem] left-[3.25rem] h-1 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
                                         style="width: calc({{ ($currentStep - 1) / (count($steps) - 1) * 100 }}% - 6.5rem)">
                                         <!-- Note: The width needs to be relative to the *line container*, not the parent. 
-                                             But we are using simple width %. The parent is full width.
-                                             If we use absolute left/right on the background line, its width is (100% - 6.5rem).
-                                             So we should set the active line max-width or effectively scale it.
-                                             
-                                             Better approach: Calculate width percentage of the *available line space*.
-                                             Line Space = 100% - 6.5rem.
-                                             Active Width = (Percent * Line Space).
-                                        -->
+                                                                             But we are using simple width %. The parent is full width.
+                                                                             If we use absolute left/right on the background line, its width is (100% - 6.5rem).
+                                                                             So we should set the active line max-width or effectively scale it.
+
+                                                                             Better approach: Calculate width percentage of the *available line space*.
+                                                                             Line Space = 100% - 6.5rem.
+                                                                             Active Width = (Percent * Line Space).
+                                                                        -->
                                     </div>
                                     <!-- 
-                                      Correction: Percentage width in style is relative to the *parent* (container).
-                                      We need the bar to fill a percentage of the *line distance*.
-                                      Let's use a nested structure for easier width control. 
-                                    -->
-                                    
+                                                                      Correction: Percentage width in style is relative to the *parent* (container).
+                                                                      We need the bar to fill a percentage of the *line distance*.
+                                                                      Let's use a nested structure for easier width control. 
+                                                                    -->
+
                                     <!-- Re-implementing with a wrapper for the lines to simplify width math -->
                                     <div class="hidden md:block absolute top-[1.15rem] left-[3.25rem] right-[3.25rem] h-1 z-0">
                                         <div class="absolute inset-0 bg-slate-100 rounded-full"></div>
                                         <div class="absolute top-0 left-0 h-full bg-[#8B0000] rounded-full transition-all duration-1000 ease-out"
-                                             style="width: {{ ($currentStep - 1) / (count($steps) - 1) * 100 }}%"></div>
+                                            style="width: {{ ($currentStep - 1) / (count($steps) - 1) * 100 }}%"></div>
                                     </div>
 
                                     <!-- Mobile Background Line (Vertical) -->
@@ -207,7 +220,7 @@
                                     <div class="md:hidden absolute left-[2.25rem] top-5 bottom-5 w-1 z-0">
                                         <div class="absolute inset-0 bg-slate-100 rounded-full"></div>
                                         <div class="absolute top-0 left-0 w-full bg-[#8B0000] rounded-full transition-all duration-1000 ease-out"
-                                             style="height: {{ ($currentStep - 1) / (count($steps) - 1) * 100 }}%"></div>
+                                            style="height: {{ ($currentStep - 1) / (count($steps) - 1) * 100 }}%"></div>
                                     </div>
 
                                     <!-- Steps Wrapper -->
@@ -221,17 +234,19 @@
                                                 <!-- Icon Bubble -->
                                                 <div
                                                     class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center border-[3px] transition-all duration-300 bg-white relative z-10
-                                                                        {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }}
-                                                                        {{ $isCurrent ? 'scale-110 shadow-lg shadow-red-900/20 ring-4 ring-red-50' : '' }}">
+                                                                                                                        {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }}
+                                                                                                                        {{ $isCurrent ? 'scale-110 shadow-lg shadow-red-900/20 ring-4 ring-red-50' : '' }}">
                                                     <i
                                                         class="fas {{ $data['icon'] }} {{ $isActive ? '' : 'text-slate-300' }} text-sm"></i>
                                                 </div>
 
                                                 <!-- Label & Status Text -->
                                                 <!-- Adjusted positioning for labels -->
-                                                <div class="md:text-center md:absolute md:top-14 md:w-32 md:left-1/2 md:-translate-x-1/2">
-                                                    <span class="block text-xs md:text-[10px] font-bold uppercase tracking-wider transition-colors duration-300
-                                                                            {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }}">
+                                                <div
+                                                    class="md:text-center md:absolute md:top-14 md:w-32 md:left-1/2 md:-translate-x-1/2">
+                                                    <span
+                                                        class="block text-xs md:text-[10px] font-bold uppercase tracking-wider transition-colors duration-300
+                                                                                                                            {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }}">
                                                         {{ $data['label'] }}
                                                     </span>
                                                     @if($isCurrent)

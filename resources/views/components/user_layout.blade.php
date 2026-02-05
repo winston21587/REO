@@ -239,9 +239,9 @@
             </a>
 
             <!-- New Submission (Floating Center) -->
-            <div class="flex-1 relative h-full flex items-center justify-center pointer-events-none">
+            <div class="flex-1 relative h-full flex items-center justify-center">
                 <a href="{{ route('submit') }}"
-                    class="pointer-events-auto absolute -top-5 bg-[#8B0000] text-white w-14 h-14 rounded-full shadow-lg shadow-red-900/40 flex items-center justify-center ring-4 ring-white transform active:scale-95 transition-all hover:-translate-y-1">
+                    class="absolute -top-5 bg-[#8B0000] text-white w-14 h-14 rounded-full shadow-lg shadow-red-900/40 flex items-center justify-center ring-4 ring-white transform active:scale-95 transition-all hover:-translate-y-1 z-50">
                     <i class="fas fa-plus text-2xl"></i>
                 </a>
             </div>
@@ -286,70 +286,80 @@
             x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0"
             x-transition:leave-end="translate-y-full"
-            class="absolute bottom-0 left-0 w-full bg-white rounded-t-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+            class="absolute bottom-0 left-0 w-full bg-white rounded-t-[32px] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col ring-1 ring-black/5">
 
             <!-- Handle & Header -->
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <h3 class="font-heading font-bold text-lg text-slate-800">Menu</h3>
-                <div class="w-12 h-1.5 bg-slate-200 rounded-full absolute left-1/2 -translate-x-1/2 top-3">
-                </div>
+            <div
+                class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white relative shrink-0">
+                <div class="w-12 h-1.5 bg-slate-200 rounded-full absolute left-1/2 -translate-x-1/2 top-3"></div>
+                <h3 class="font-heading font-extrabold text-xl text-slate-800 mt-2">Menu</h3>
                 <button @click="mobileMenuOpen = false"
-                    class="w-8 h-8 rounded-full bg-slate-200/50 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-colors">
+                    class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-colors mt-2">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
             <div class="p-6 space-y-6 overflow-y-auto">
-                <!-- Profile Card -->
-                <div
-                    class="bg-gradient-to-br from-[#1a0505] to-[#8B0000] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden group">
+                <!-- Profile Card (Redesigned) -->
+                <div class="bg-gradient-to-r from-slate-900 to-[#8B0000] rounded-2xl p-1 shadow-lg relative group">
                     <div
-                        class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-user-circle text-8xl"></i>
-                    </div>
-                    <div class="relative z-10 flex items-center gap-4">
-                        <div
-                            class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl font-bold border-2 border-white/30">
-                            {{ substr(Auth::user()->first_name, 0, 1) }}
+                        class="bg-gradient-to-r from-slate-900 to-[#8B0000] rounded-xl p-5 flex items-center gap-4 relative overflow-hidden">
+                        <!-- Background Pattern -->
+                        <div class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4">
+                            <i class="fas fa-user-circle text-8xl text-white"></i>
                         </div>
-                        <div>
-                            <h4 class="font-bold text-lg">{{ Auth::user()->first_name }}
-                                {{ Auth::user()->last_name }}
+
+                        <!-- Content -->
+                        <div class="relative z-10 shrink-0">
+                            <div
+                                class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl font-bold border-2 border-white/50 text-white shadow-inner">
+                                {{ substr(Auth::user()->first_name ?? 'U', 0, 1) }}
+                            </div>
+                        </div>
+                        <div class="relative z-10 min-w-0 flex-1 text-white">
+                            <h4 class="font-bold text-lg truncate leading-tight">
+                                {{ Auth::user()->first_name ?? 'User' }} {{ Auth::user()->last_name ?? '' }}
                             </h4>
-                            <p class="text-white/70 text-sm">{{ Auth::user()->email }}</p>
+                            <p class="text-white/70 text-sm truncate mb-1">{{ Auth::user()->email ?? '' }}</p>
                             <a href="{{ route('settings') }}"
-                                class="text-xs font-bold text-white/90 underline mt-1 inline-block hover:text-white">Manage
-                                Profile</a>
+                                class="text-xs font-bold text-yellow-400 hover:text-yellow-300 flex items-center gap-1">
+                                <span>Manage Profile</span>
+                                <i class="fas fa-arrow-right text-[10px]"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                <!-- Grid Menu -->
+                <!-- Grid Menu (Redesigned) -->
                 <div class="grid grid-cols-2 gap-4">
                     <a href="{{ route('instructions') }}"
-                        class="flex flex-col items-center p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-md transition-all group">
+                        class="flex flex-col items-center p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-lg hover:-translate-y-0.5 transition-all group active:scale-95">
                         <div
-                            class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                            class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-md">
                             <i class="fas fa-book"></i>
                         </div>
                         <span class="font-bold text-slate-700 text-sm">Guidelines</span>
                     </a>
                     <a href="{{ route('settings') }}"
-                        class="flex flex-col items-center p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-indigo-200 hover:shadow-md transition-all group">
+                        class="flex flex-col items-center p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-indigo-200 hover:shadow-lg hover:-translate-y-0.5 transition-all group active:scale-95">
                         <div
-                            class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                            class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-md">
                             <i class="fas fa-cog"></i>
                         </div>
                         <span class="font-bold text-slate-700 text-sm">Settings</span>
                     </a>
                 </div>
 
-                <!-- Sign Out -->
+                <!-- Sign Out (Redesigned) -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                        class="w-full py-4 rounded-xl border-2 border-slate-100 text-slate-600 font-bold hover:bg-red-50 hover:text-[#8B0000] hover:border-red-100 transition-all flex items-center justify-center gap-2">
-                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                        class="w-full py-4 rounded-xl border-2 border-slate-100 text-slate-600 font-bold hover:bg-red-50 hover:text-[#8B0000] hover:border-red-100 transition-all flex items-center justify-center gap-2 group active:scale-95">
+                        <span
+                            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors group-hover:bg-white">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </span>
+                        <span>Sign Out</span>
                     </button>
                 </form>
             </div>

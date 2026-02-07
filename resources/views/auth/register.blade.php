@@ -205,8 +205,10 @@
                                     <label class="text-xs font-bold text-slate-700">Department</label>
                                     <div class="relative">
                                         <select name="department" x-model="selectedDept" @change="selectedProgram = ''"
-                                            :disabled="!selectedCollege" required
-                                            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none transition-all disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                                            :disabled="!selectedCollege"
+                                            :class="{ 'pointer-events-none opacity-60 bg-slate-100': !selectedCollege, 'bg-white focus:ring-2 focus:ring-[#8B0000]': selectedCollege }"
+                                            required
+                                            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg outline-none text-sm appearance-none transition-all disabled:cursor-not-allowed">
                                             <option value="" disabled selected
                                                 x-text="selectedCollege ? 'Select Department' : 'Select College First'">
                                             </option>
@@ -228,10 +230,11 @@
                                     <label class="text-xs font-bold text-slate-700">Course / Program</label>
                                     <div class="relative">
                                         <select name="program" x-model="selectedProgram" :disabled="!selectedDept"
+                                            :class="{ 'pointer-events-none opacity-60 bg-slate-100': !selectedDept, 'bg-white focus:ring-2 focus:ring-[#8B0000]': selectedDept }"
                                             required
-                                            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none transition-all disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                                            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg outline-none text-sm appearance-none transition-all disabled:cursor-not-allowed">
                                             <option value="" disabled selected
-                                                x-text="selectedDept ? 'Select Course' : 'Select Department First'">
+                                                x-text="!selectedCollege ? 'Select College First' : (!selectedDept ? 'Select Department First' : 'Select Course')">
                                             </option>
                                             <template x-for="prog in currentPrograms" :key="prog.id">
                                                 <option :value="prog.name" x-text="prog.name"></option>

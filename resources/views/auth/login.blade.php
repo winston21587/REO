@@ -120,8 +120,6 @@
                         <div class="flex justify-between items-center">
                             <label for="password"
                                 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
-                            <a href="{{ route('password.request') }}"
-                                class="text-xs text-[#8B0000] font-bold hover:underline">Forgot password?</a>
                         </div>
                         <div class="relative group" x-data="{ show: false }">
                             <span
@@ -137,6 +135,11 @@
                             </button>
                         </div>
                         @error('password') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
+
+                        <div class="flex justify-end mt-2">
+                            <a href="{{ route('password.request') }}"
+                                class="text-xs text-[#8B0000] font-bold hover:underline">Forgot password?</a>
+                        </div>
                     </div>
 
                     <button type="submit"

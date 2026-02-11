@@ -57,7 +57,7 @@ class AdminController extends Controller
     public function toggleUserStatus($id)
     {
         $user = User::findOrFail($id);
-        
+
         if ($user->email_verified_at) {
             $user->email_verified_at = null;
             $message = 'User deactivated successfully.';
@@ -65,9 +65,9 @@ class AdminController extends Controller
             $user->email_verified_at = now();
             $message = 'User activated successfully.';
         }
-        
+
         $user->save();
-        
+
         return back()->with('success', $message);
     }
 
@@ -75,21 +75,21 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
         $user->delete();
-        
+
         return back()->with('success', 'User deleted successfully.');
     }
 
     public function manageStaff()    //just counts how much staff there is
     {
         $staff = User::where('role', 'reo_member')->get();
-        
+
         $stats = [
             'total' => $staff->count(),
             'officers' => $staff->whereIn('position', ['Chair', 'Vice-Chair', 'Secretary'])->count(),
             'trained' => $staff->where('training_completed', true)->count(),
-            'quorum' => ($staff->count() >= 5 && 
-                         $staff->where('member_type', 'Non-Scientist')->count() >= 1 && 
-                         $staff->where('member_type', 'Non-Affiliated')->count() >= 1) ? 'Valid' : 'Invalid'
+            'quorum' => ($staff->count() >= 5 &&
+                $staff->where('member_type', 'Non-Scientist')->count() >= 1 &&
+                $staff->where('member_type', 'Non-Affiliated')->count() >= 1) ? 'Valid' : 'Invalid'
         ];
 
         return view('admin.manage_staff', compact('staff', 'stats'));
@@ -140,7 +140,7 @@ class AdminController extends Controller
     public function updateStaff(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        
+
         $request->validate([
             'position' => 'required|string',
             'member_type' => 'required|in:Scientist,Non-Scientist,Non-Affiliated',
@@ -181,10 +181,10 @@ class AdminController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -204,7 +204,7 @@ class AdminController extends Controller
 
         $users = $query->paginate(10);
 
-       
+
         // Full list of WMSU Colleges
         $colleges = College::all();
 
@@ -226,7 +226,7 @@ class AdminController extends Controller
         // Date Filter Logic
         $selectedYear = $request->input('year', date('Y'));
         $selectedMonth = $request->input('month', date('m'));
-        
+
         $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
             ->distinct()
             ->orderBy('year', 'desc')
@@ -237,7 +237,7 @@ class AdminController extends Controller
 
         // 2. Approved (For Initial Review)
         $approvedCount = Research_title::where('Status', 'For Initial Review')->count();
-        
+
         // Calculate Approval Rate
         $approvalRate = $totalSubmissions > 0 ? round(($approvedCount / $totalSubmissions) * 100) : 0;
 
@@ -247,7 +247,7 @@ class AdminController extends Controller
         // 4. Submission Trends (Daily for selected month/year)
         // Use the selected month and year to determine days in that specific month
         $daysInMonth = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->daysInMonth;
-        
+
         $dailyStats = Research_title::selectRaw('DAY(created_at) as day, COUNT(*) as count')
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
@@ -260,7 +260,7 @@ class AdminController extends Controller
         $dayLabels = [];
         for ($i = 1; $i <= $daysInMonth; $i++) {
             $dailyData[] = $dailyStats[$i] ?? 0;
-            $dayLabels[] = (string)$i;
+            $dayLabels[] = (string) $i;
         }
 
         // 5. Pie Chart: Review Type Distribution (Filtered by Selected Year)
@@ -273,11 +273,11 @@ class AdminController extends Controller
 
         // 6. Pie Chart: Approval Status (Filtered by Selected Year)
         $statusStats = Research_title::selectRaw('Status, COUNT(*) as count')
-             ->whereYear('created_at', $selectedYear)
-             ->whereIn('Status', ['Approved', 'Disapproved'])
-             ->groupBy('Status')
-             ->pluck('count', 'Status')
-             ->toArray();
+            ->whereYear('created_at', $selectedYear)
+            ->whereIn('Status', ['Approved', 'Disapproved'])
+            ->groupBy('Status')
+            ->pluck('count', 'Status')
+            ->toArray();
 
         // 7. Completion Status Breakdown (All time / Current snapshots)
         $statusCounts = Research_title::selectRaw('Status, COUNT(*) as count')
@@ -285,7 +285,7 @@ class AdminController extends Controller
             ->pluck('count', 'Status')
             ->toArray();
 
-        $doneCount = $statusCounts['Completed'] ?? 0; 
+        $doneCount = $statusCounts['Completed'] ?? 0;
         $activeCount = ($statusCounts['For Initial Review'] ?? 0) + ($statusCounts['Under Review'] ?? 0);
         $pendingCount = $statusCounts['Pending'] ?? 0;
 
@@ -298,9 +298,9 @@ class AdminController extends Controller
         $humanVerifiedRate = $totalSubmissions > 0 ? round(($humanVerifiedCount / $totalSubmissions) * 100) : 0;
 
         return view('admin.Analytics', compact(
-            'totalSubmissions', 
-            'approvedCount', 
-            'approvalRate', 
+            'totalSubmissions',
+            'approvedCount',
+            'approvalRate',
             'activeResearchers',
             'dailyData',
             'dayLabels',
@@ -322,28 +322,28 @@ class AdminController extends Controller
     {
         return view('admin.Analytics');
     }
-public function applications(Request $request)
+    public function applications(Request $request)
     {
         $query = Research_title::with(['researcher.user', 'files', 'adminFiles']);
 
         // 1. STRICT CONSTRAINT: Only "For Initial Review" and "Revision" statuses
         // This ensures the page ONLY accepts these titles, regardless of other inputs.
-        $query->where(function($q) {
+        $query->where(function ($q) {
             $q->where('Status', 'For Initial Review')
-              ->orWhere('Status', 'Complete - Awaiting Hardcopy')
-              ->orWhere('Status', 'Hardcopy Received - For Initial Review')
-              ->orWhere('Status', 'Under Review');
+                ->orWhere('Status', 'Complete - Awaiting Hardcopy')
+                ->orWhere('Status', 'Hardcopy Received - For Initial Review')
+                ->orWhere('Status', 'Under Review');
         });
 
         // 2. Handle Search
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('Study_Protocol_title', 'like', "%{$search}%")
-                  ->orWhereHas('researcher.user', function($q2) use ($search) {
-                      $q2->where('first_name', 'like', "%{$search}%")
-                         ->orWhere('last_name', 'like', "%{$search}%"); 
-                  });
+                    ->orWhereHas('researcher.user', function ($q2) use ($search) {
+                        $q2->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -355,7 +355,7 @@ public function applications(Request $request)
         $datas = $query->orderBy('created_at', 'desc')->get();
 
         // Fetch Reviewers for the modal
-        $reviewers = User::whereIn('role', ['admin', 'researcher', 'reviewer'])->get(); 
+        $reviewers = User::whereIn('role', ['admin', 'researcher', 'reviewer'])->get();
 
         return view('admin.applications', compact('datas', 'reviewers'));
     }
@@ -364,10 +364,10 @@ public function applications(Request $request)
 
     public function GetReview()
     {
-                $datas = Research_title::with('researcher.user')
+        $datas = Research_title::with('researcher.user')
             ->where('Status', 'For Initial Review')
             ->get();
-        return view('admin.Review', compact('datas'));    
+        return view('admin.Review', compact('datas'));
     }
 
 
@@ -424,17 +424,17 @@ public function applications(Request $request)
         // ]);
 
         // 2. Fetch Pending Submissions (Recent Submissions)
-    // Adjust 'Pending' to the exact string you use in your DB (e.g., 'For Initial Review' or 'Submitted')
+        // Adjust 'Pending' to the exact string you use in your DB (e.g., 'For Initial Review' or 'Submitted')
 
 
-        $pendingSubmissions = Research_title::where('Status', 'Pending') 
-                                ->orderBy('created_at', 'desc') // Show newest first
-                                ->paginate(5, ['*'], 'pending_page');
+        $pendingSubmissions = Research_title::where('Status', 'Pending')
+            ->orderBy('created_at', 'desc') // Show newest first
+            ->paginate(5, ['*'], 'pending_page');
 
         // 3. Fetch Incomplete Submissions
         $incompleteSubmissions = Research_title::where('Status', 'Incomplete')
-                                ->orderBy('created_at', 'desc')
-                                ->paginate(5, ['*'], 'incomplete_page');
+            ->orderBy('created_at', 'desc')
+            ->paginate(5, ['*'], 'incomplete_page');
 
         // Fallback to DB if needed, or just use mock for demo
         // $pendingSubmissions = Research_title::with('author')->where('Status', 'Pending')->get();
@@ -443,18 +443,18 @@ public function applications(Request $request)
         return view('admin.NewSubmissions', compact('pendingSubmissions', 'incompleteSubmissions'));
     }
 
-// public function updateStatus(Request $request, $id)
+    // public function updateStatus(Request $request, $id)
 // {
 //     $request->validate([
 //         'status' => 'required|string',
 //         'appointment_date' => 'nullable|date'
 //     ]);
 
-//     $submission = Research_title::findOrFail($id);
+    //     $submission = Research_title::findOrFail($id);
 //     $submission->Status = $request->status;
 //     $submission->save();
 
-//     // If the admin marked as "For Initial Review"
+    //     // If the admin marked as "For Initial Review"
 //     if ($request->status === 'For Initial Review') {
 //         $appointment = Appointment::create([
 //             'research_title_id' => $submission->id,
@@ -462,20 +462,20 @@ public function applications(Request $request)
 //             'appointment_date' => $request->appointed_date,
 //         ]);
 
-//         // Notify the user
+    //         // Notify the user
 //         $user = User::find($submission->user_id);
 //         if ($user) {
 //             Notification::send($user, new SubmissionAppointed($submission, $appointment));
 //         }
 //     }
 
-//     return response()->json(['success' => true]);
+    //     return response()->json(['success' => true]);
     public function updateStatus(Request $request, $id)
     {
         $submission = Research_title::findOrFail($id);
         $user = Researcher::find($submission->researcher_id);
-        
-        $message = ""; 
+
+        $message = "";
         $newStatus = "";
 
         // ---------------------------------------------------------
@@ -485,9 +485,9 @@ public function applications(Request $request)
             // ... (Existing Triage Logic - Keep as is or modify if needed) ...
             // For now, I'll assume this part remains for the "Initial Intake" page.
             // If you want to unify, we can, but the user asked for "Applications" page update.
-            
+
             if ($request->classification === 'Complete') {
-                $request->validate(['appointment_date' => 'required|date']);
+                $request->validate(['appointment_date' => 'required|date|after:tomorrow']);
                 $newStatus = 'Complete - Awaiting Hardcopy';
                 $submission->Status = $newStatus;
                 $submission->save();
@@ -497,7 +497,7 @@ public function applications(Request $request)
                     'appointment_date' => $request->appointment_date,
                     'stage' => 'Hardcopy Submission',
                 ]);
-                
+
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
                 $message = "Your submission \"{$submission->Study_Protocol_title}\" document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
             } elseif ($request->classification === 'Incomplete') {
@@ -507,20 +507,24 @@ public function applications(Request $request)
                 $submission->save();
                 $missingDocs = $request->input('missing_requirements', []);
                 $message = "Your submission \"{$submission->Study_Protocol_title}\" has been marked as Incomplete.";
-                if($request->remarks) { $message .= "\n\nGeneral Remarks: " . $request->remarks; }
+                if ($request->remarks) {
+                    $message .= "\n\nGeneral Remarks: " . $request->remarks;
+                }
                 if (!empty($missingDocs)) {
                     $message .= "\n\nMissing Requirements / Actions Needed:";
-                    foreach($missingDocs as $doc) { $message .= "\n- " . $doc; }
+                    foreach ($missingDocs as $doc) {
+                        $message .= "\n- " . $doc;
+                    }
                 }
             }
-        } 
+        }
         // ---------------------------------------------------------
         // CASE B: NEW Update Status Logic (Review Type + Appointment)
         // ---------------------------------------------------------
         elseif ($request->has('review_type')) {
             $request->validate([
                 'review_type' => 'required|string', // Expedited, Exempt, Full Review
-                'appointment_date' => 'required|date',
+                'appointment_date' => 'required|date|after:tomorrow',
             ]);
 
             $newStatus = 'Under Review'; // Or keep it as 'For Initial Review' but with a type? 
@@ -528,16 +532,16 @@ public function applications(Request $request)
             // Let's assume it updates the Review_Type column and sets status to 'Under Review' or keeps it.
             // The user said "update status", so let's set it to 'Under Review' or similar.
             // Actually, the user prompt implies this IS the status update.
-            
+
             $submission->Review_Type = $request->review_type;
-            
+
             // Use status_action if provided (e.g. from auto-set JS), otherwise default to 'Under Review'
             if ($request->has('status_action') && !empty($request->status_action)) {
                 $submission->Status = $request->status_action;
             } else {
-                $submission->Status = 'Under Review'; 
+                $submission->Status = 'Under Review';
             }
-            
+
             $submission->save();
 
             // Create Appointment
@@ -561,14 +565,14 @@ public function applications(Request $request)
             // Redirect to Recommendation Letter Form
             // We do NOT finalize the status to "Waiting for Revision" yet.
             // The letter generation step will handle that.
-            
+
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
-                    'success' => true, 
+                    'success' => true,
                     // 'redirect' => route('admin.recommendation.form', $id) // REMOVED REDIRECT
                 ]);
             }
-            
+
             return redirect()->back()->with('success', 'Review Type updated. Please proceed to generate the Recommendation Letter.');
         }
         // ---------------------------------------------------------
@@ -581,20 +585,20 @@ public function applications(Request $request)
 
             if ($action === 'Modifications Required') {
                 $newStatus = 'Waiting for Revision'; // Map to internal status
-                
+
                 $message = "Your submission \"{$submission->Study_Protocol_title}\" requires modifications.";
                 if ($request->remarks) {
                     $message .= "\n\nRemarks/Requirements: " . $request->remarks;
                 }
             } elseif ($action === 'Disapproved') {
                 $newStatus = 'Disapproved'; // Explicitly set just in case
-                
+
                 $message = "Your research protocol \"{$submission->Study_Protocol_title}\" has been Disapproved.";
                 if ($request->remarks) {
                     $message .= "\n\nReason: " . $request->remarks;
                 }
             } elseif ($action === 'Panel Deliberation') {
-                $request->validate(['appointment_date' => 'required|date']);
+                $request->validate(['appointment_date' => 'required|date|after:tomorrow']);
                 Appointment::create([
                     'research_title_id' => $submission->id,
                     'user_id' => $user->user_id,
@@ -624,7 +628,9 @@ public function applications(Request $request)
             $submission->Status = $newStatus;
             $submission->save();
             $message = "The status of your research \"{$submission->Study_Protocol_title}\" has been updated to: {$newStatus}.";
-            if ($request->reason) { $message .= " Remarks: {$request->reason}"; }
+            if ($request->reason) {
+                $message .= " Remarks: {$request->reason}";
+            }
         }
 
         // Notification Logic
@@ -644,7 +650,7 @@ public function applications(Request $request)
         return redirect()->back()->with('success', 'Status updated successfully');
     }
 
-public function assignReviewers(Request $request, $id)
+    public function assignReviewers(Request $request, $id)
     {
         $request->validate([
             'primary_reviewer' => 'required|exists:users,id',
@@ -652,7 +658,7 @@ public function assignReviewers(Request $request, $id)
         ]);
 
         $submission = Research_title::findOrFail($id);
-        
+
         // Assuming you have these columns in your 'research_titles' table.
         // If not, you need to create a migration to add them.
         $submission->primary_reviewer_id = $request->primary_reviewer;
@@ -797,21 +803,21 @@ public function assignReviewers(Request $request, $id)
     public function serveFile($id)
     {
         $file = researcher_files::findOrFail($id);
-        
+
         // Normalize path: remove 'storage/' prefix if present
         $path = str_replace('storage/', '', $file->filepath);
-        
+
         // 1. Check Storage (Public Disk)
         if (Storage::disk('public')->exists($path)) {
             return response()->file(storage_path('app/public/' . $path));
         }
-        
+
         // 2. Check Public Directory (Direct Access)
         $publicPath = public_path($file->filepath);
         if (file_exists($publicPath)) {
             return response()->file($publicPath);
         }
-        
+
         // 3. Check Storage Path directly (Absolute)
         $storagePath = storage_path('app/public/' . $path);
         if (file_exists($storagePath)) {
@@ -829,7 +835,7 @@ public function assignReviewers(Request $request, $id)
     }
 
     // 2. Show the Printable Letter (The Output)
-public function previewLetter(Request $request)
+    public function previewLetter(Request $request)
     {
         $data = $request->validate([
             'submission_id' => 'required',
@@ -868,11 +874,11 @@ public function previewLetter(Request $request)
     public function showRecommendationLetterForm($id)
     {
         $submission = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
-        
+
         // Check for both old and new filetypes in both relationships
-        $hasLetter = $submission->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty() 
-                  || $submission->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty();
-        
+        $hasLetter = $submission->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty()
+            || $submission->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty();
+
         return view('admin.recommendation_letter.form', compact('submission', 'hasLetter'));
     }
 
@@ -884,7 +890,7 @@ public function previewLetter(Request $request)
             ->firstOrFail();
 
         $path = str_replace('storage/', '', $file->filepath);
-        
+
         if (!Storage::disk('public_uploads')->exists($path)) {
             return back()->with('error', 'File not found.');
         }
@@ -903,20 +909,20 @@ public function previewLetter(Request $request)
         ]);
 
         $submission = Research_title::findOrFail($request->id);
-        
+
         // Initialize FPDI
         $pdf = new \setasign\Fpdi\Fpdi();
-        
+
         // Source file
         $templatePath = resource_path('views/letter/Result-of-Review-Form.pdf');
-        
+
         if (!file_exists($templatePath)) {
             return back()->with('error', 'Template file not found.');
         }
 
         $pageCount = $pdf->setSourceFile($templatePath);
         $tplIdx = $pdf->importPage(1);
-        
+
         $pdf->AddPage();
         $pdf->useTemplate($tplIdx, 0, 0, 210); // A4 width
 
@@ -924,7 +930,7 @@ public function previewLetter(Request $request)
         $pdf->SetTextColor(0, 0, 0);
 
         // Helper function for checks
-        $checkAndMark = function($pdf, $x, $y, $value, $checks) {
+        $checkAndMark = function ($pdf, $x, $y, $value, $checks) {
             if (is_array($checks) && in_array($value, $checks)) {
                 $pdf->SetXY($x, $y);
                 $pdf->Write(0, 'X');
@@ -932,11 +938,11 @@ public function previewLetter(Request $request)
         };
 
         // --- FILL DATA ---
-        
+
         // Title
-        $pdf->SetXY(37, 63); 
+        $pdf->SetXY(37, 63);
         // Truncate title if too long or handle multi-line if needed (simple write for now)
-        $pdf->Write(0, substr($request->title, 0, 80)); 
+        $pdf->Write(0, substr($request->title, 0, 80));
 
         // Review Type
         $pdf->SetXY(47, 70);
@@ -951,7 +957,7 @@ public function previewLetter(Request $request)
         $pdf->Write(0, $request->envelope_type);
 
         // Extra Notes
-        if($request->extraNotes) {
+        if ($request->extraNotes) {
             $pdf->SetXY(15, 125);
             $pdf->MultiCell(180, 5, $request->extraNotes);
         }
@@ -1003,7 +1009,7 @@ public function previewLetter(Request $request)
             // Save and Send
             $filename = "Result_of_Review_{$submission->id}_" . time() . ".pdf";
             $path = "uploads/research_{$submission->id}/" . $filename;
-            
+
             // Ensure directory exists
             if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
                 Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
@@ -1040,8 +1046,8 @@ public function previewLetter(Request $request)
     {
         $submission = Research_title::with(['files', 'adminFiles'])->findOrFail($id);
         $hasLetter = $submission->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty()
-                  || $submission->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty();
-        
+            || $submission->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty();
+
         return response()->json([
             'has_recommendation_letter' => $hasLetter
         ]);
@@ -1050,19 +1056,19 @@ public function previewLetter(Request $request)
     public function finalizeReview($id)
     {
         $submission = Research_title::with('researcher')->findOrFail($id);
-        
+
         $userMessage = '';
-        
+
         // Update status to Waiting for Revision for ALL review types
         $submission->Status = 'Waiting for Revision';
         $message = 'Status updated to Waiting for Revision.';
         $redirectRoute = 'admin.revisions';
-        
+
         // Custom notification message
         $userMessage = "Your research protocol status has been updated to Waiting for Revision. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.";
-        
+
         $submission->save();
-        
+
         // Notify the user
         UserNotification::create([
             'user_id' => $submission->researcher->user_id,
@@ -1072,7 +1078,7 @@ public function previewLetter(Request $request)
             'type' => 'status_update',
             'is_read' => false
         ]);
-        
+
         return redirect()->route($redirectRoute)->with('success', $message);
     }
 
@@ -1122,28 +1128,28 @@ public function previewLetter(Request $request)
         }
 
         // Format Date
-    $pickupDate = Carbon::parse($request->pickup_date);
-    $formattedDate = $pickupDate->format('F j, Y');
+        $pickupDate = Carbon::parse($request->pickup_date);
+        $formattedDate = $pickupDate->format('F j, Y');
 
-    // Create Appointment for Pickup
-    Appointment::create([
-        'research_title_id' => $submission->id,
-        'user_id' => $submission->user_id,
-        'appointment_date' => $pickupDate->setTime(9, 0), // Default to 9:00 AM
-        'stage' => 'Certificate Pickup',
-        'status' => 'Scheduled',
-        'remarks' => 'Please bring valid ID.'
-    ]);
+        // Create Appointment for Pickup
+        Appointment::create([
+            'research_title_id' => $submission->id,
+            'user_id' => $submission->user_id,
+            'appointment_date' => $pickupDate->setTime(9, 0), // Default to 9:00 AM
+            'stage' => 'Certificate Pickup',
+            'status' => 'Scheduled',
+            'remarks' => 'Please bring valid ID.'
+        ]);
 
-    // Notify User
-    UserNotification::create([
-        'user_id' => $submission->user_id,
-        'research_id' => $submission->id,
-        'title' => 'Certification Documents Ready',
-        'message' => "Your Cover Letter of Approval and Research Ethics Clearance Certificate have been generated. They are ready for pickup at the REO building on {$formattedDate}.",
-        'type' => 'status_update',
-        'is_read' => false
-    ]);
+        // Notify User
+        UserNotification::create([
+            'user_id' => $submission->user_id,
+            'research_id' => $submission->id,
+            'title' => 'Certification Documents Ready',
+            'message' => "Your Cover Letter of Approval and Research Ethics Clearance Certificate have been generated. They are ready for pickup at the REO building on {$formattedDate}.",
+            'type' => 'status_update',
+            'is_read' => false
+        ]);
         return back()->with('success', 'Certification documents uploaded and user notified.');
     }
 
@@ -1154,12 +1160,12 @@ public function previewLetter(Request $request)
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('Study_Protocol_title', 'like', "%{$search}%")
-                  ->orWhereHas('researcher.user', function($q) use ($search) {
-                      $q->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('researcher.user', function ($q) use ($search) {
+                        $q->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -1174,12 +1180,12 @@ public function previewLetter(Request $request)
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('Study_Protocol_title', 'like', "%{$search}%")
-                  ->orWhereHas('researcher.user', function($q) use ($search) {
-                      $q->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('researcher.user', function ($q) use ($search) {
+                        $q->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -1191,7 +1197,7 @@ public function previewLetter(Request $request)
         $upcomingMeetings = Meeting::where('meeting_date', '>=', now())
             ->orderBy('meeting_date', 'asc')
             ->get();
-        
+
         $nextMeeting = $upcomingMeetings->first();
 
         // Fetch Upcoming Appointments (e.g., Panel Deliberation)
@@ -1203,12 +1209,12 @@ public function previewLetter(Request $request)
 
         // Fetch Recent Protocol Activities (Key Statuses)
         $recentActivities = Research_title::whereIn('Status', [
-                'For Initial Review', 
-                'Modifications Required', 
-                'Waiting for Revision', 
-                'Approved',
-                'Panel Deliberation'
-            ])
+            'For Initial Review',
+            'Modifications Required',
+            'Waiting for Revision',
+            'Approved',
+            'Panel Deliberation'
+        ])
             ->orderBy('updated_at', 'desc')
             ->limit(10)
             ->get();
@@ -1256,9 +1262,11 @@ public function previewLetter(Request $request)
 
     public function showMeeting($id)
     {
-        $meeting = Meeting::with(['agendaItems' => function($query) {
-            $query->orderBy('order', 'asc');
-        }])->findOrFail($id);
+        $meeting = Meeting::with([
+            'agendaItems' => function ($query) {
+                $query->orderBy('order', 'asc');
+            }
+        ])->findOrFail($id);
 
         return view('admin.meetings.show', compact('meeting'));
     }
@@ -1291,7 +1299,7 @@ public function previewLetter(Request $request)
     public function updateAgendaItem(Request $request, $id)
     {
         $item = AgendaItem::findOrFail($id);
-        
+
         $request->validate([
             'section' => 'required|string',
             'content' => 'nullable|string',
@@ -1315,7 +1323,7 @@ public function previewLetter(Request $request)
     public function updateMeetingStatus(Request $request, $id)
     {
         $meeting = Meeting::findOrFail($id);
-        
+
         if ($request->has('agenda_status')) {
             $meeting->agenda_status = $request->agenda_status;
         }

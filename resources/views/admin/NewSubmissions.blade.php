@@ -157,7 +157,7 @@
                                     <button
                                         onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')"
                                         class="bg-[#fecaca] hover:bg-[#fca5a5] text-[#991b1b] px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm hover:shadow-md active:transform active:scale-95">
-                                        Re-Evaluate
+                                        Re-Check
                                     </button>
                                 </div>
                             </div>

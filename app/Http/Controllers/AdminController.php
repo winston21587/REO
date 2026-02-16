@@ -429,12 +429,12 @@ class AdminController extends Controller
 
         $pendingSubmissions = Research_title::where('Status', 'Pending')
             ->orderBy('created_at', 'desc') // Show newest first
-            ->paginate(5, ['*'], 'pending_page');
+            ->paginate(3, ['*'], 'pending_page');
 
         // 3. Fetch Incomplete Submissions
         $incompleteSubmissions = Research_title::where('Status', 'Incomplete')
             ->orderBy('created_at', 'desc')
-            ->paginate(5, ['*'], 'incomplete_page');
+            ->paginate(3, ['*'], 'incomplete_page');
 
         // Fallback to DB if needed, or just use mock for demo
         // $pendingSubmissions = Research_title::with('author')->where('Status', 'Pending')->get();

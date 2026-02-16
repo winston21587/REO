@@ -11,11 +11,18 @@
         </div>
 
         <!-- Desktop Header (Original Spacious) -->
-        <div class="hidden md:block mb-8 pt-5">
-            <h1 class="text-3xl font-extrabold text-slate-900 font-heading">
-                Welcome back, <span class="text-[#8B0000]">{{ explode(' ', Auth::user()->first_name)[0] }}</span>!
-            </h1>
-            <p class="text-slate-500 mt-2 text-lg">Here is the status of your research submissions.</p>
+        <div class="hidden md:flex justify-between items-center mb-8 pt-5">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 font-heading">
+                    Welcome back, <span class="text-[#8B0000]">{{ explode(' ', Auth::user()->first_name)[0] }}</span>!
+                </h1>
+                <p class="text-slate-500 mt-2 text-lg">Here is the status of your research submissions.</p>
+            </div>
+            
+            <a href="{{ route('submit') }}" class="group flex items-center gap-2 bg-[#8B0000] text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-red-900 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                <i class="fas fa-plus-circle text-lg group-hover:rotate-90 transition-transform duration-300"></i>
+                <span>New Submission</span>
+            </a>
         </div>
 
         @if($titles->isEmpty())

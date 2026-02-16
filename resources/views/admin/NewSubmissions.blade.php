@@ -1,7 +1,6 @@
 <x-admin_layout>
-    <div class="max-w-7xl mx-auto py-8 animate-[fadeInUp_0.5s_ease-out]">
+    <div class="max-w-7xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
 
-        <!-- Main Content Grid -->
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
@@ -74,8 +73,37 @@
 
                 <!-- Pagination (Static for UI) -->
                 <!-- Pagination -->
-                <div class="mt-auto pt-4">
-                    {{ $pendingSubmissions->appends(['incomplete_page' => $incompleteSubmissions->currentPage()])->links() }}
+                <!-- Mini Pagination Footer -->
+                <!-- Classic 3-Item Pagination Footer -->
+                <div
+                    class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+                    <div>
+                        Showing <span
+                            class="font-bold text-slate-700">{{ $pendingSubmissions->firstItem() ?? 0 }}</span> - <span
+                            class="font-bold text-slate-700">{{ $pendingSubmissions->lastItem() ?? 0 }}</span> of <span
+                            class="font-bold text-slate-700">{{ $pendingSubmissions->total() }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <!-- Previous Page Link -->
+                        @if ($pendingSubmissions->onFirstPage())
+                            <span class="opacity-50 cursor-not-allowed text-slate-400"><i
+                                    class="fas fa-chevron-left"></i></span>
+                        @else
+                            <a href="{{ $pendingSubmissions->appends(['incomplete_page' => $incompleteSubmissions->currentPage()])->previousPageUrl() }}"
+                                class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
+                                    class="fas fa-chevron-left"></i></a>
+                        @endif
+
+                        <!-- Next Page Link -->
+                        @if ($pendingSubmissions->hasMorePages())
+                            <a href="{{ $pendingSubmissions->appends(['incomplete_page' => $incompleteSubmissions->currentPage()])->nextPageUrl() }}"
+                                class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
+                                    class="fas fa-chevron-right"></i></a>
+                        @else
+                            <span class="opacity-50 cursor-not-allowed text-slate-400"><i
+                                    class="fas fa-chevron-right"></i></span>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -112,6 +140,11 @@
                                         {{ $sub->created_at->format('Y-m-d') }}
                                     </p>
                                 </div>
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-50 text-red-700 text-[10px] font-bold border border-red-200 uppercase tracking-wider shadow-sm cursor-default flex-shrink-0 ml-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                    Incomplete
+                                </span>
                             </div>
 
                             <div class="flex items-center justify-between mt-4">
@@ -121,8 +154,6 @@
                                 </a>
 
                                 <div class="flex items-center gap-2">
-                                    <span
-                                        class="text-[10px] font-bold text-red-400 uppercase tracking-wider mr-2">Incomplete</span>
                                     <button
                                         onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')"
                                         class="bg-[#fecaca] hover:bg-[#fca5a5] text-[#991b1b] px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm hover:shadow-md active:transform active:scale-95">
@@ -142,8 +173,36 @@
                     @endforelse
                 </div>
 
-                <div class="mt-auto pt-4">
-                    {{ $incompleteSubmissions->appends(['pending_page' => $pendingSubmissions->currentPage()])->links() }}
+                <!-- Classic 3-Item Pagination Footer -->
+                <div
+                    class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+                    <div>
+                        Showing <span
+                            class="font-bold text-slate-700">{{ $incompleteSubmissions->firstItem() ?? 0 }}</span> -
+                        <span class="font-bold text-slate-700">{{ $incompleteSubmissions->lastItem() ?? 0 }}</span> of
+                        <span class="font-bold text-slate-700">{{ $incompleteSubmissions->total() }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <!-- Previous Page Link -->
+                        @if ($incompleteSubmissions->onFirstPage())
+                            <span class="opacity-50 cursor-not-allowed text-slate-400"><i
+                                    class="fas fa-chevron-left"></i></span>
+                        @else
+                            <a href="{{ $incompleteSubmissions->appends(['pending_page' => $pendingSubmissions->currentPage()])->previousPageUrl() }}"
+                                class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
+                                    class="fas fa-chevron-left"></i></a>
+                        @endif
+
+                        <!-- Next Page Link -->
+                        @if ($incompleteSubmissions->hasMorePages())
+                            <a href="{{ $incompleteSubmissions->appends(['pending_page' => $pendingSubmissions->currentPage()])->nextPageUrl() }}"
+                                class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
+                                    class="fas fa-chevron-right"></i></a>
+                        @else
+                            <span class="opacity-50 cursor-not-allowed text-slate-400"><i
+                                    class="fas fa-chevron-right"></i></span>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -223,7 +282,7 @@
                         <label
                             class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Hardcopy
                             Deadline / Appointment</label>
-                        <input type="date" name="appointment_date" min="{{ date('Y-m-d') }}"
+                        <input type="date" name="appointment_date" min="{{ date('Y-m-d', strtotime('+2 days')) }}"
                             class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-slate-50 font-medium text-slate-700">
                     </div>
 
@@ -267,6 +326,9 @@
             </form>
         </div>
     </div>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         // --- Requirement List Logic ---
@@ -388,11 +450,14 @@
             titleEl.textContent = title;
             form.action = `/admin/update-status/${id}`;
 
-            // Set Date Defaults (Today)
+            // Set Date Defaults (2 days from now)
             const dateInput = document.querySelector('input[name="appointment_date"]');
-            const today = new Date().toISOString().split('T')[0];
-            dateInput.value = today;
-            dateInput.min = today;
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() + 2);
+            const minDate = targetDate.toISOString().split('T')[0];
+
+            dateInput.value = minDate;
+            dateInput.min = minDate;
 
 
             // Default to Complete
@@ -418,15 +483,17 @@
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // AJAX Submission
+        // AJAX Submission with SweetAlert2
         document.getElementById('triageForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             const form = e.target;
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerHTML;
 
+            // Visual Feedback
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
 
             try {
                 const response = await fetch(form.action, {
@@ -439,19 +506,79 @@
                 });
 
                 const result = await response.json();
+
                 if (response.ok) {
-                    alert('Status updated successfully!');
                     closeTriage();
+
+                    // Success Modal
+                    await Swal.fire({
+                        title: 'Success!',
+                        text: 'Protocol status has been updated successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'Great!',
+                        confirmButtonColor: '#8B0000',
+                        scrollbarPadding: false,
+                        backdrop: `rgba(15, 23, 42, 0.75)`,
+                        buttonsStyling: false,
+                        showClass: {
+                            popup: 'animate-[fadeInUp_0.3s_ease-out]'
+                        },
+                        hideClass: {
+                            popup: 'animate-[fadeOutDown_0.3s_ease-in]'
+                        },
+                        customClass: {
+                            popup: 'rounded-2xl shadow-2xl border border-slate-200 font-sans p-6',
+                            title: 'font-heading text-2xl text-slate-800 font-bold pt-4',
+                            htmlContainer: 'text-slate-600 text-sm mt-2',
+                            confirmButton: 'bg-[#8B0000] text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-red-900 hover:shadow-xl hover:-translate-y-0.5 transition-all outline-none focus:ring-0 mx-2'
+                        }
+                    });
+
                     window.location.reload();
                 } else {
-                    alert(result.message || 'Error occurred');
+                    // Error Modal
+                    Swal.fire({
+                        title: 'Action Failed',
+                        text: result.message || 'Unable to update status. Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'Okay',
+                        confirmButtonColor: '#334155',
+                        scrollbarPadding: false,
+                        backdrop: `rgba(15, 23, 42, 0.75)`,
+                        buttonsStyling: false,
+                        showClass: {
+                            popup: 'animate-[shake_0.5s_ease-in-out]'
+                        },
+                        customClass: {
+                            popup: 'rounded-2xl shadow-2xl border border-slate-200 font-sans p-6',
+                            title: 'font-heading text-2xl text-slate-800 font-bold pt-4',
+                            htmlContainer: 'text-slate-600 text-sm mt-2',
+                            confirmButton: 'bg-slate-800 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-slate-700 hover:shadow-xl hover:-translate-y-0.5 transition-all outline-none focus:ring-0 mx-2'
+                        }
+                    });
                 }
             } catch (error) {
                 console.error(error);
-                alert('Unexpected error');
+                Swal.fire({
+                    title: 'System Error',
+                    text: 'Something went wrong. Please check your connection.',
+                    icon: 'warning',
+                    confirmButtonText: 'Close',
+                    confirmButtonColor: '#334155',
+                    scrollbarPadding: false,
+                    backdrop: `rgba(15, 23, 42, 0.75)`,
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'rounded-2xl shadow-2xl border border-slate-200 font-sans p-6',
+                        title: 'font-heading text-2xl text-slate-800 font-bold pt-4',
+                        htmlContainer: 'text-slate-600 text-sm mt-2',
+                        confirmButton: 'bg-slate-800 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-slate-700 hover:shadow-xl hover:-translate-y-0.5 transition-all outline-none focus:ring-0 mx-2'
+                    }
+                });
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             }
         });
     </script>

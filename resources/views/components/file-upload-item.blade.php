@@ -21,5 +21,9 @@
         </label>
         
         <span class="file-name text-sm text-slate-400 italic truncate">No file chosen</span>
+        
+        <button type="button" class="clear-btn hidden text-slate-400 hover:text-red-500 transition-colors" onclick="clearFile(this)">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
 </div>

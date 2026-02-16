@@ -402,20 +402,54 @@
         const statusAction = document.getElementById('statusActionInput').value;
         const appointmentDate = document.getElementById('appointmentDate').value;
 
+        // Common SweetAlert2 Config
+        const commonSwalConfig = {
+            scrollbarPadding: false,
+            backdrop: `rgba(15, 23, 42, 0.75)`,
+            buttonsStyling: false,
+            showClass: {
+                popup: 'animate-[fadeInUp_0.3s_ease-out]'
+            },
+            hideClass: {
+                popup: 'animate-[fadeOutDown_0.3s_ease-in]'
+            },
+            customClass: {
+                popup: 'rounded-2xl shadow-2xl border border-slate-200 font-sans p-6',
+                title: 'font-heading text-xl text-slate-800 font-bold pt-4',
+                htmlContainer: 'text-slate-600 text-sm mt-2',
+                confirmButton: 'bg-[#8B0000] text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-red-900 hover:shadow-xl hover:-translate-y-0.5 transition-all outline-none focus:ring-0 mx-2',
+                cancelButton: 'bg-slate-100 text-slate-600 px-8 py-3 rounded-xl font-bold hover:bg-slate-200 transition-all outline-none focus:ring-0 mx-2'
+            }
+        };
+
         // If on Applications page, Review Type is required
         if (isApplicationsPage && !reviewType) {
-            alert('Please select a Review Classification.');
+            Swal.fire({
+                ...commonSwalConfig,
+                title: 'Classification Required',
+                text: 'Please select a Review Classification (Expedited, Exempt, or Full Board) to proceed.',
+                icon: 'warning',
+                confirmButtonText: 'Continue', // Changed to Continue
+                confirmButtonColor: '#8B0000',
+            });
             return;
         }
 
         // Appointment Date is required if Review Type is selected or for specific statuses
         if ((reviewType || statusAction === 'Panel Deliberation') && !appointmentDate) {
-            alert('Please set an Appointment Date.');
+            Swal.fire({
+                ...commonSwalConfig,
+                title: 'Date Required',
+                text: 'Please set an Appointment Date or Deadline for this action.',
+                icon: 'warning',
+                confirmButtonText: 'Okay',
+                confirmButtonColor: '#8B0000',
+            });
             return;
         }
 
         const btn = document.getElementById('submitStatusBtn');
-        const originalText = btn.textContent;
+        const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating...';
 
@@ -434,26 +468,50 @@
 
             if (response.ok && result.success) {
                 closeStatusModal();
-                // Show success message or reload
+
+                await Swal.fire({
+                    ...commonSwalConfig,
+                    title: 'Status Updated!',
+                    text: 'The protocol status has been successfully updated.',
+                    icon: 'success',
+                    confirmButtonText: 'Great!',
+                    confirmButtonColor: '#8B0000',
+                });
+
                 window.location.reload();
             } else {
                 // Handle Validation Errors
+                let errorMsg = result.message || 'Unknown error';
+
                 if (result.errors) {
-                    let errorMsg = 'Validation Error:\n';
+                    errorMsg = 'Please verify the following:\n';
                     for (const [key, messages] of Object.entries(result.errors)) {
-                        errorMsg += `- ${messages[0]}\n`;
+                        errorMsg += `\n• ${messages[0]}`;
                     }
-                    alert(errorMsg);
-                } else {
-                    alert('Error: ' + (result.message || 'Unknown error'));
                 }
+
+                Swal.fire({
+                    ...commonSwalConfig,
+                    title: 'Update Failed',
+                    text: errorMsg,
+                    icon: 'error',
+                    confirmButtonText: 'Okay',
+                    confirmButtonColor: '#334155',
+                });
             }
         } catch (error) {
             console.error(error);
-            alert('An error occurred. Please check the console for details.');
+            Swal.fire({
+                ...commonSwalConfig,
+                title: 'System Error',
+                text: 'An unexpected error occurred. Please check your connection or console.',
+                icon: 'error',
+                confirmButtonText: 'Close',
+                confirmButtonColor: '#334155',
+            });
         } finally {
             btn.disabled = false;
-            btn.textContent = originalText;
+            btn.innerHTML = originalText;
         }
     });
 </script>

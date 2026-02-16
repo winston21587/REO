@@ -9,17 +9,21 @@
                 <h2 class="text-2xl font-extrabold text-slate-800 font-heading">Recent Submissions</h2>
 
                 <!-- Controls -->
+                <!-- Controls -->
+                <!-- Controls -->
                 <div class="flex gap-4">
                     <div class="relative flex-1">
-                        <input type="text" placeholder="Search submissions..."
+                        <input type="text" name="recent_search" id="recent_search_input" value="{{ request('recent_search') }}"
+                            placeholder="Search submissions..."
                             class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-white">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
                     <div class="relative">
-                        <select
+                        <select name="recent_sort" id="recent_sort_input"
                             class="appearance-none pl-4 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-white font-medium text-slate-600 cursor-pointer shadow-sm">
-                            <option>Submission Date</option>
-                            <option>Title</option>
+                            <option value="created_at" {{ request('recent_sort') == 'created_at' ? 'selected' : '' }}>
+                                Submission Date</option>
+                            <option value="Title" {{ request('recent_sort') == 'Title' ? 'selected' : '' }}>Title</option>
                         </select>
                         <i
                             class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
@@ -27,83 +31,9 @@
                 </div>
 
                 <!-- Submissions List -->
-                <div class="space-y-4 flex-1">
-                    @forelse($pendingSubmissions as $sub)
-                        <div
-                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group">
-                            <div class="flex justify-between items-start mb-3">
-                                <div>
-                                    <h3 class="font-bold text-slate-800 text-lg leading-tight group-hover:text-[#8B0000] transition-colors line-clamp-1"
-                                        title="{{ $sub->Study_Protocol_title }}">{{ $sub->Study_Protocol_title }}</h3>
-                                    <p class="text-xs text-slate-500 mt-1 font-medium">Submitted at:
-                                        {{ $sub->created_at->format('Y-m-d') }}
-                                    </p>
-                                </div>
-                                <span
-                                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-yellow-50 text-yellow-700 text-[10px] font-bold border border-yellow-200 uppercase tracking-wider shadow-sm cursor-default flex-shrink-0 ml-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
-                                    Pending
-                                </span>
-                            </div>
-
-                            <div class="flex items-center justify-between mt-4">
-                                <a href="{{ route('admin.view_files', $sub->id) }}"
-                                    class="bg-[#dc2626] hover:bg-[#b91c1c] text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
-                                    View Details
-                                </a>
-
-                                <div class="flex items-center gap-2">
-                                    <button
-                                        onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')"
-                                        class="bg-[#fecaca] hover:bg-[#fca5a5] text-[#991b1b] px-4 py-2 rounded-lg text-xs font-bold transition-all">
-                                        Action
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="bg-white p-12 rounded-2xl border border-slate-100 text-center">
-                            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fas fa-inbox text-3xl text-slate-300"></i>
-                            </div>
-                            <p class="text-slate-500 font-medium">No recent submissions found.</p>
-                        </div>
-                    @endforelse
-                </div>
-
-                <!-- Pagination (Static for UI) -->
-                <!-- Pagination -->
-                <!-- Mini Pagination Footer -->
-                <!-- Classic 3-Item Pagination Footer -->
-                <div
-                    class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-                    <div>
-                        Showing <span
-                            class="font-bold text-slate-700">{{ $pendingSubmissions->firstItem() ?? 0 }}</span> - <span
-                            class="font-bold text-slate-700">{{ $pendingSubmissions->lastItem() ?? 0 }}</span> of <span
-                            class="font-bold text-slate-700">{{ $pendingSubmissions->total() }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <!-- Previous Page Link -->
-                        @if ($pendingSubmissions->onFirstPage())
-                            <span class="opacity-50 cursor-not-allowed text-slate-400"><i
-                                    class="fas fa-chevron-left"></i></span>
-                        @else
-                            <a href="{{ $pendingSubmissions->appends(['incomplete_page' => $incompleteSubmissions->currentPage()])->previousPageUrl() }}"
-                                class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
-                                    class="fas fa-chevron-left"></i></a>
-                        @endif
-
-                        <!-- Next Page Link -->
-                        @if ($pendingSubmissions->hasMorePages())
-                            <a href="{{ $pendingSubmissions->appends(['incomplete_page' => $incompleteSubmissions->currentPage()])->nextPageUrl() }}"
-                                class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
-                                    class="fas fa-chevron-right"></i></a>
-                        @else
-                            <span class="opacity-50 cursor-not-allowed text-slate-400"><i
-                                    class="fas fa-chevron-right"></i></span>
-                        @endif
-                    </div>
+                <!-- Submissions List -->
+                <div id="recent-submissions-wrapper" class="flex-1 flex flex-col min-h-[400px]">
+                    @include('admin.partials.recent_submissions_list')
                 </div>
             </div>
 
@@ -113,96 +43,26 @@
 
                 <div class="flex gap-4">
                     <div class="relative flex-1">
-                        <input type="text" placeholder="Search submissions..."
+                        <input type="text" name="incomplete_search" id="incomplete_search_input" value="{{ request('incomplete_search') }}"
+                            placeholder="Search submissions..."
                             class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-white">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
                     <div class="relative">
-                        <select
+                        <select name="incomplete_sort" id="incomplete_sort_input"
                             class="appearance-none pl-4 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-white font-medium text-slate-600 cursor-pointer shadow-sm">
-                            <option>Submission Date</option>
-                            <option>Title</option>
+                            <option value="created_at" {{ request('incomplete_sort') == 'created_at' ? 'selected' : '' }}>
+                                Submission Date</option>
+                            <option value="Title" {{ request('incomplete_sort') == 'Title' ? 'selected' : '' }}>Title
+                            </option>
                         </select>
                         <i
                             class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                     </div>
                 </div>
 
-                <div class="space-y-4 flex-1">
-                    @forelse($incompleteSubmissions as $sub)
-                        <div
-                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group border-l-4 border-l-red-400">
-                            <div class="flex justify-between items-start mb-3">
-                                <div>
-                                    <h3 class="font-bold text-slate-800 text-lg leading-tight group-hover:text-[#8B0000] transition-colors line-clamp-1"
-                                        title="{{ $sub->Study_Protocol_title }}">{{ $sub->Study_Protocol_title }}</h3>
-                                    <p class="text-xs text-slate-500 mt-1 font-medium">Submitted at:
-                                        {{ $sub->created_at->format('Y-m-d') }}
-                                    </p>
-                                </div>
-                                <span
-                                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-50 text-red-700 text-[10px] font-bold border border-red-200 uppercase tracking-wider shadow-sm cursor-default flex-shrink-0 ml-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                    Incomplete
-                                </span>
-                            </div>
-
-                            <div class="flex items-center justify-between mt-4">
-                                <a href="{{ route('admin.view_files', $sub->id) }}"
-                                    class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
-                                    <i class="fas fa-folder-open"></i> Check Files
-                                </a>
-
-                                <div class="flex items-center gap-2">
-                                    <button
-                                        onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')"
-                                        class="bg-[#fecaca] hover:bg-[#fca5a5] text-[#991b1b] px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm hover:shadow-md active:transform active:scale-95">
-                                        Re-Check
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div
-                            class="bg-white p-12 rounded-2xl border border-slate-100 text-center flex flex-col items-center justify-center h-64">
-                            <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fas fa-check text-2xl text-green-400"></i>
-                            </div>
-                            <p class="text-slate-400 font-medium">No incomplete submissions found.</p>
-                        </div>
-                    @endforelse
-                </div>
-
-                <!-- Classic 3-Item Pagination Footer -->
-                <div
-                    class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-                    <div>
-                        Showing <span
-                            class="font-bold text-slate-700">{{ $incompleteSubmissions->firstItem() ?? 0 }}</span> -
-                        <span class="font-bold text-slate-700">{{ $incompleteSubmissions->lastItem() ?? 0 }}</span> of
-                        <span class="font-bold text-slate-700">{{ $incompleteSubmissions->total() }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <!-- Previous Page Link -->
-                        @if ($incompleteSubmissions->onFirstPage())
-                            <span class="opacity-50 cursor-not-allowed text-slate-400"><i
-                                    class="fas fa-chevron-left"></i></span>
-                        @else
-                            <a href="{{ $incompleteSubmissions->appends(['pending_page' => $pendingSubmissions->currentPage()])->previousPageUrl() }}"
-                                class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
-                                    class="fas fa-chevron-left"></i></a>
-                        @endif
-
-                        <!-- Next Page Link -->
-                        @if ($incompleteSubmissions->hasMorePages())
-                            <a href="{{ $incompleteSubmissions->appends(['pending_page' => $pendingSubmissions->currentPage()])->nextPageUrl() }}"
-                                class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
-                                    class="fas fa-chevron-right"></i></a>
-                        @else
-                            <span class="opacity-50 cursor-not-allowed text-slate-400"><i
-                                    class="fas fa-chevron-right"></i></span>
-                        @endif
-                    </div>
+                <div id="incomplete-submissions-wrapper" class="flex-1 flex flex-col min-h-[400px]">
+                    @include('admin.partials.incomplete_submissions_list')
                 </div>
             </div>
 
@@ -580,6 +440,84 @@
                 submitBtn.innerHTML = originalBtnText;
                 submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = [
+                'recent_search_input', 'recent_sort_input',
+                'incomplete_search_input', 'incomplete_sort_input'
+            ];
+            
+            let debounceTimer;
+
+            // Helper to fetch and update
+            const fetchSubmissions = (params) => {
+                const url = `{{ request()->url() }}?${params.toString()}`;
+                
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update Containers
+                    if (data.recent) {
+                      const recentContainer = document.getElementById('recent-submissions-wrapper');
+                      if (recentContainer) recentContainer.innerHTML = data.recent;
+                    }
+                    if (data.incomplete) {
+                      const incompleteContainer = document.getElementById('incomplete-submissions-wrapper');
+                      if (incompleteContainer) incompleteContainer.innerHTML = data.incomplete;
+                    }
+
+                    // Update URL
+                    window.history.pushState({}, '', url);
+                })
+                .catch(error => console.error('Error:', error));
+            };
+
+            // Event Listeners for Inputs
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', (e) => {
+                    clearTimeout(debounceTimer);
+                    const delay = el.tagName === 'INPUT' ? 500 : 0;
+
+                    debounceTimer = setTimeout(() => {
+                        const params = new URLSearchParams(window.location.search);
+                        
+                        // Update specific param
+                        if (id.includes('recent_search')) params.set('recent_search', e.target.value);
+                        if (id.includes('recent_sort')) params.set('recent_sort', e.target.value);
+                        if (id.includes('incomplete_search')) params.set('incomplete_search', e.target.value);
+                        if (id.includes('incomplete_sort')) params.set('incomplete_sort', e.target.value);
+
+                        // Reset pagination checks
+                        if (id.includes('search')) {
+                            if (id.includes('recent')) params.delete('pending_page');
+                            if (id.includes('incomplete')) params.delete('incomplete_page');
+                        }
+
+                        fetchSubmissions(params);
+                    }, delay);
+                });
+            });
+
+            // Event Delegation for Pagination
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('.pagination-link');
+                if (link) {
+                    e.preventDefault();
+                    const url = new URL(link.href);
+                    const params = new URLSearchParams(url.search);
+                    fetchSubmissions(params);
+                }
+            });
         });
     </script>
 </x-admin_layout>

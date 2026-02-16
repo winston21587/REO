@@ -371,7 +371,7 @@ class AdminController extends Controller
     }
 
 
-    public function newSubmissions()
+    public function newSubmissions(Request $request)
     {
         // Mock Data for Pending Submissions
         // $pendingSubmissions = collect([
@@ -427,18 +427,52 @@ class AdminController extends Controller
         // Adjust 'Pending' to the exact string you use in your DB (e.g., 'For Initial Review' or 'Submitted')
 
 
-        $pendingSubmissions = Research_title::where('Status', 'Pending')
-            ->orderBy('created_at', 'desc') // Show newest first
-            ->paginate(3, ['*'], 'pending_page');
+        // 2. Fetch Pending Submissions (Recent Submissions)
+        $pendingQuery = Research_title::where('Status', 'Pending');
+
+        // Search Filter
+        if ($request->filled('recent_search')) {
+            $pendingQuery->where('Study_Protocol_title', 'like', '%' . $request->recent_search . '%');
+        }
+
+        // Sort Filter
+        if ($request->recent_sort == 'Title') {
+            $pendingQuery->orderBy('Study_Protocol_title', 'asc');
+        } else {
+            $pendingQuery->orderBy('created_at', 'desc');
+        }
+
+        $pendingSubmissions = $pendingQuery->paginate(3, ['*'], 'pending_page')->withQueryString();
+
 
         // 3. Fetch Incomplete Submissions
-        $incompleteSubmissions = Research_title::where('Status', 'Incomplete')
-            ->orderBy('created_at', 'desc')
-            ->paginate(3, ['*'], 'incomplete_page');
+        $incompleteQuery = Research_title::where('Status', 'Incomplete');
+
+        // Search Filter
+        if ($request->filled('incomplete_search')) {
+            $incompleteQuery->where('Study_Protocol_title', 'like', '%' . $request->incomplete_search . '%');
+        }
+
+        // Sort Filter
+        if ($request->incomplete_sort == 'Title') {
+            $incompleteQuery->orderBy('Study_Protocol_title', 'asc');
+        } else {
+            $incompleteQuery->orderBy('created_at', 'desc');
+        }
+
+        $incompleteSubmissions = $incompleteQuery->paginate(3, ['*'], 'incomplete_page')->withQueryString();
 
         // Fallback to DB if needed, or just use mock for demo
         // $pendingSubmissions = Research_title::with('author')->where('Status', 'Pending')->get();
         // $incompleteSubmissions = Research_title::with('author')->where('Status', 'Incomplete')->get();
+
+        // Check for AJAX Request
+        if ($request->ajax()) {
+            return response()->json([
+                'recent' => view('admin.partials.recent_submissions_list', compact('pendingSubmissions', 'incompleteSubmissions'))->render(),
+                'incomplete' => view('admin.partials.incomplete_submissions_list', compact('pendingSubmissions', 'incompleteSubmissions'))->render(),
+            ]);
+        }
 
         return view('admin.NewSubmissions', compact('pendingSubmissions', 'incompleteSubmissions'));
     }

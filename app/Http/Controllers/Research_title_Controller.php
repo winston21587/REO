@@ -214,7 +214,7 @@ class Research_title_Controller extends Controller
         ]);
 
         if (in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete'])) {
-            
+
             // Determine new status
             $newStatus = ($researchTitle->Status === 'Incomplete') ? 'Pending' : 'Revision Submitted';
             $logMessage = ($newStatus === 'Pending') ? "Resubmitted corrections: " . $request->revision_message : $request->revision_message;

@@ -28,8 +28,7 @@
 
             @if($canSubmit)
             <button onclick="document.getElementById('revisionModal').classList.remove('hidden')" 
-                    class="group relative inline-flex items-center gap-3 bg-gradient-to-r from-[#8B0000] to-red-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:shadow-red-900/30 hover:-translate-y-1 transition-all duration-300">
-                <span class="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    class="group relative inline-flex items-center gap-3 bg-[#8B0000] text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-red-900/30 hover:-translate-y-1 transition-all duration-300">
                 <i class="fas {{ $submitIcon }} text-lg group-hover:rotate-12 transition-transform"></i>
                 <span>{{ $submitLabel }}</span>
             </button>
@@ -43,40 +42,85 @@
             
             <div class="fixed inset-0 z-10 overflow-y-auto">
                 <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
                         <form action="{{ route('submit.revisions', $researchTitle->id) }}" method="POST">
                             @csrf
-                            <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                                <div class="sm:flex sm:items-start">
-                                    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                        <i class="fas fa-pencil-alt text-[#8B0000]"></i>
+                            
+                            <!-- Premium Header -->
+                            <div class="px-8 py-6 bg-[#8B0000] relative overflow-hidden">
+                                <!-- Background Pattern/Icon -->
+                                <div class="absolute -right-6 -top-6 text-white/10 pointer-events-none">
+                                    <i class="fas fa-paper-plane text-[150px] rotate-12"></i>
+                                </div>
+                                
+                                <div class="relative z-10 flex justify-between items-start">
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                                            <span class="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                                                <i class="fas fa-paper-plane text-lg text-white"></i>
+                                            </span>
+                                            {{ $submitLabel }}
+                                        </h3>
+                                        <p class="text-red-100 text-sm mt-2 font-medium opacity-90">
+                                            @if($isRevision)
+                                                Upload revised documents & submit.
+                                            @else
+                                                Submit corrected documents for review.
+                                            @endif
+                                        </p>
                                     </div>
-                                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                        <h3 class="text-xl font-semibold leading-6 text-slate-900" id="modal-title">{{ $submitLabel }}</h3>
-                                        <div class="mt-2">
-                                            <p class="text-sm text-slate-500 mb-4">
+                                    <button type="button" onclick="document.getElementById('revisionModal').classList.add('hidden')" 
+                                        class="text-white/70 hover:text-white hover:bg-white/20 rounded-lg p-1 transition-all">
+                                        <i class="fas fa-times text-xl"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="px-8 py-8 bg-white">
+                                <div class="space-y-6">
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex gap-4 items-start">
+                                        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 text-blue-600">
+                                            <i class="fas fa-info-circle text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-800 text-sm">Review Process</h4>
+                                            <p class="text-xs text-slate-500 mt-1 leading-relaxed">
                                                 @if($isRevision)
-                                                    You are about to submit your revised documents. Please confirm your changes and include a brief note describing what you have updated.
+                                                    Your submission will be marked as <strong>Waiting for Approval</strong> until reviewed.
                                                 @else
-                                                    You are about to submit your corrected documents. This will alert the admin to review your submission again.
+                                                    Submitting will notify the Research Ethics Office to process your corrections.
                                                 @endif
                                             </p>
-                                            <label for="revision_message" class="block text-sm font-medium text-slate-700 mb-1">Note (Optional)</label>
-                                            <textarea name="revision_message" id="revision_message" rows="4" 
-                                                class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#8B0000] focus:ring-[#8B0000] text-sm"
-                                                placeholder="{{ $isRevision ? 'E.g., Updated the methodology section...' : 'E.g., Uploaded missing certificate...' }}"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <label for="revision_message" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                            Add a Note <span class="text-slate-400 font-normal normal-case">(Optional)</span>
+                                        </label>
+                                        <div class="relative group">
+                                            <textarea name="revision_message" id="revision_message" rows="3" 
+                                                class="w-full rounded-xl border-slate-200 bg-white shadow-sm focus:border-[#8B0000] focus:ring-[#8B0000] text-sm placeholder-slate-400 py-3 px-4 resize-none transition-all group-hover:border-slate-300"
+                                                placeholder="{{ $isRevision ? 'Briefly describe your changes...' : 'E.g., Added missing signature page...' }}"></textarea>
+                                            <div class="absolute bottom-3 right-3 text-slate-300 pointer-events-none group-focus-within:text-[#8B0000] transition-colors">
+                                                <i class="fas fa-pen text-xs"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                                <button type="submit" onclick="return confirm('Are you sure you want to submit?')"
-                                    class="inline-flex w-full justify-center rounded-xl bg-[#8B0000] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 sm:ml-3 sm:w-auto transition-colors">
-                                    Submit
-                                </button>
+
+                            <!-- Footer -->
+                            <div class="bg-slate-50 px-8 py-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 border-t border-slate-100">
                                 <button type="button" onclick="document.getElementById('revisionModal').classList.add('hidden')"
-                                    class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-colors">
+                                    class="inline-flex w-full justify-center items-center rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:text-slate-800 sm:w-auto transition-all">
                                     Cancel
+                                </button>
+                                <button type="submit" onclick="return confirm('Are you sure you want to submit?')"
+                                    class="inline-flex w-full justify-center items-center gap-2 rounded-xl bg-[#8B0000] px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-red-900/40 hover:-translate-y-0.5 sm:w-auto transition-all duration-300">
+                                    <span>Confirm Submission</span>
+                                    <i class="fas fa-arrow-right text-xs opacity-70"></i>
                                 </button>
                             </div>
                         </form>

@@ -24,6 +24,11 @@
                             class="bg-[#fecaca] hover:bg-[#fca5a5] text-[#991b1b] px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm hover:shadow-md active:transform active:scale-95">
                             Re-Check
                         </button>
+                        <button onclick="undoIncomplete('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')"
+                            class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-sm hover:shadow-md active:transform active:scale-95"
+                            title="Undo Incomplete Status">
+                            <i class="fas fa-undo"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -65,3 +70,65 @@
         </div>
     </div>
 </div>
+
+<script>
+    function undoIncomplete(id, title) {
+        Swal.fire({
+            title: 'Undo "Incomplete"?',
+            text: `Revert "${title}" to Pending status?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Undo',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#475569',
+            cancelButtonColor: '#94a3b8',
+            customClass: {
+                popup: 'rounded-2xl shadow-xl',
+                confirmButton: 'rounded-xl px-4 py-2',
+                cancelButton: 'rounded-xl px-4 py-2'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading state
+                Swal.fire({
+                    title: 'Reverting...',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Send AJAX Request
+                fetch(`{{ route('admin.updateStatus', ':id') }}`.replace(':id', id), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        classification: 'Undo'
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Submission reverted to Pending.',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Reload to refresh lists (since we need to move item from Incomplete -> Recent)
+                            window.location.reload();
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'Something went wrong.', 'error');
+                    });
+            }
+        });
+    }
+</script>

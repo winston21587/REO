@@ -550,6 +550,28 @@ class AdminController extends Controller
                         $message .= "\n- " . $doc;
                     }
                 }
+            } elseif ($request->classification === 'Undo') {
+                $newStatus = 'Pending';
+                $submission->Status = $newStatus;
+                $submission->save();
+                $message = "Your submission \"{$submission->Study_Protocol_title}\" status has been reverted to Pending.";
+
+                // Optional: Delete the "Incomplete" notification if you want to be clean
+                // UserNotification::where('research_id', $submission->id)
+                //     ->where('message', 'like', '%marked as Incomplete%')
+                //     ->delete();
+
+            } elseif ($request->classification === 'Undo Complete') {
+                $newStatus = 'Pending';
+                $submission->Status = $newStatus;
+                $submission->save();
+
+                // Delete the appointment
+                Appointment::where('research_title_id', $submission->id)
+                    ->where('stage', 'Hardcopy Submission')
+                    ->delete();
+
+                $message = "Submission reverted to Pending. Appointment cancelled.";
             }
         }
         // ---------------------------------------------------------

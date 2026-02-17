@@ -153,6 +153,16 @@
                                                             <i class="fas fa-file-import w-4"></i> Receive Hardcopy
                                                         </button>
                                                     </form>
+                                                    <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST"
+                                                        id="undoCompleteForm-{{ $data->id }}">
+                                                        @csrf
+                                                        <input type="hidden" name="classification" value="Undo Complete">
+                                                        <button type="button"
+                                                            onclick="confirmUndoComplete('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')"
+                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-red-600 rounded-lg transition-colors text-left">
+                                                            <i class="fas fa-undo w-4"></i> Undo / Revert
+                                                        </button>
+                                                    </form>
                                                 @else
                                                     <button
                                                         @click="open = false; openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }})"
@@ -315,6 +325,38 @@
                     });
 
                     document.getElementById('finalizeForm-' + id).submit();
+                }
+            });
+        }
+
+        function confirmUndoComplete(id, title) {
+            Swal.fire({
+                title: 'Undo "Complete"?',
+                text: "Revert \"" + title + "\" to Pending? This will cancel the hardcopy appointment.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#475569',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Yes, Undo',
+                cancelButtonText: 'Cancel',
+                scrollbarPadding: false,
+                backdrop: `rgba(15, 23, 42, 0.75)`,
+                customClass: {
+                    popup: 'rounded-2xl shadow-xl',
+                    confirmButton: 'rounded-xl px-4 py-2',
+                    cancelButton: 'rounded-xl px-4 py-2'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Reverting...',
+                        text: 'Please wait...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    document.getElementById('undoCompleteForm-' + id).submit();
                 }
             });
         }

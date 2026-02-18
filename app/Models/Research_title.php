@@ -53,9 +53,13 @@ public function appointment()
     return $this->hasMany(Appointment::class, 'research_title_id');
 }
 
-public function revisionLogs()
-{
-    return $this->hasMany(RevisionLog::class, 'research_title_id')->orderBy('created_at', 'desc');
-}
+    public function revisionLogs()
+    {
+        return $this->hasMany(RevisionLog::class, 'research_title_id')->orderBy('created_at', 'desc');
+    }
 
+    public function feedbacks()
+    {
+        return $this->hasMany(SubmissionFeedback::class, 'research_title_id')->orderBy('created_at', 'desc');
+    }
 }

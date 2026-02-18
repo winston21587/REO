@@ -10,12 +10,29 @@
                             {{ $sub->created_at->format('Y-m-d') }}
                         </p>
                     </div>
-                    <span
-                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-yellow-50 text-yellow-700 text-[10px] font-bold border border-yellow-200 uppercase tracking-wider shadow-sm cursor-default flex-shrink-0 ml-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
-                        Pending
-                    </span>
+                    @if($sub->Status === 'Corrections Submitted')
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200 uppercase tracking-wider shadow-sm cursor-default flex-shrink-0 ml-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                            Corrections
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-yellow-50 text-yellow-700 text-[10px] font-bold border border-yellow-200 uppercase tracking-wider shadow-sm cursor-default flex-shrink-0 ml-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                            Pending
+                        </span>
+                    @endif
                 </div>
+
+                @if($sub->Status === 'Corrections Submitted' && $sub->revisionLogs->first())
+                    <div class="mt-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        <p class="text-[11px] uppercase tracking-wider font-bold text-blue-800 mb-1">
+                            <i class="fas fa-comment-alt mr-1"></i> Researcher's Note
+                        </p>
+                        <p class="text-xs text-blue-900 leading-relaxed italic">
+                            "{{ $sub->revisionLogs->first()->message }}"
+                        </p>
+                    </div>
+                @endif
 
                 <div class="flex items-center justify-between mt-4">
                     <a href="{{ route('admin.view_files', $sub->id) }}"

@@ -111,7 +111,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/submit', [Research_title_Controller::class, 'showSubmit'])->name('submit');
         Route::post('/submit', [Research_title_Controller::class, 'submitTitle'])->name('submit.title');
         Route::get('/home/{id}/files', [Research_title_Controller::class, 'manageFiles'])->name('manage.files');
-        Route::post('/home/{id}/files/update', [Research_title_Controller::class, 'updateFile'])->name('update.file');
+    Route::put('/submissions/update-file/{id}', [Research_title_Controller::class, 'updateFile'])->name('update.file');
         Route::post('/home/{id}/files/submit', [Research_title_Controller::class, 'submitRevisions'])->name('submit.revisions');
         Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
         Route::get('/home/{id}/recommendation-letter', [Research_title_Controller::class, 'viewRecommendationLetter'])->name('recommendation.view');
@@ -164,6 +164,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/certifications', [AdminController::class, 'certifications'])->name('admin.certifications');
         Route::get('/admin/view_files/{id}', [AdminController::class, 'viewFiles'])->name('admin.view_files');
         Route::get('/admin/file-serve/{id}', [AdminController::class, 'serveFile'])->name('admin.serve_file');
+        
+        // Document Requirements
+        Route::get('/admin/manage-documents', [\App\Http\Controllers\DocumentRequirementController::class, 'index'])->name('admin.manage_documents');
+        Route::post('/admin/document-requirements', [\App\Http\Controllers\DocumentRequirementController::class, 'store'])->name('admin.document_requirements.store');
+        Route::put('/admin/document-requirements/{id}', [\App\Http\Controllers\DocumentRequirementController::class, 'update'])->name('admin.document_requirements.update');
+        Route::delete('/admin/document-requirements/{id}', [\App\Http\Controllers\DocumentRequirementController::class, 'destroy'])->name('admin.document_requirements.destroy');
 
         Route::post('/admin/assign-reviewers/{id}', [AdminController::class, 'assignReviewers'])->name('admin.assignReviewers');
 

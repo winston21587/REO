@@ -16,7 +16,8 @@ class Researcher_files extends Model
         'filename',
         'filepath',
         'filetype',   
-        'uploaded_by'  
+        'uploaded_by',
+        'category'  
     ];
 
     // ✅ CORRECT RELATIONSHIP: A file belongs to ONE research title

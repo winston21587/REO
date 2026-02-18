@@ -35,6 +35,8 @@
             @endif
         </div>
 
+
+
         <!-- Revision/Correction Modal -->
         @if($canSubmit)
         <div id="revisionModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -117,7 +119,7 @@
                                     class="inline-flex w-full justify-center items-center rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:text-slate-800 sm:w-auto transition-all">
                                     Cancel
                                 </button>
-                                <button type="submit" onclick="return confirm('Are you sure you want to submit?')"
+                                <button type="submit"
                                     class="inline-flex w-full justify-center items-center gap-2 rounded-xl bg-[#8B0000] px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-red-900/40 hover:-translate-y-0.5 sm:w-auto transition-all duration-300">
                                     <span>Confirm Submission</span>
                                     <i class="fas fa-arrow-right text-xs opacity-70"></i>
@@ -206,15 +208,34 @@
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             @foreach($otherFiles as $file)
                 @php 
-                    $isPdf = in_array($file->filetype, ['pdf']);
+                    $ext = strtolower($file->filetype);
+                    $isPdf = $ext === 'pdf';
+                    $isOffice = in_array($ext, ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']);
                     
+                    // Map category to friendly name
+                    $displayName = $file->category;
+
                     $fileTypeLabel = match($file->filetype) {
-                        'certificate' => 'Clearance Certificate', // Should not be here if filtered, but kept for safety
-                        default => $file->filetype
+                        'certificate' => 'Clearance Certificate',
+                        default => strtoupper($ext) . ' Document'
                     };
 
-                    $iconClass = 'fa-file-pdf text-[#8B0000]';
-                    $bgClass = 'bg-red-50';
+                    if ($isPdf) {
+                        $iconClass = 'fa-file-pdf text-[#8B0000]';
+                        $bgClass = 'bg-red-50';
+                    } elseif (in_array($ext, ['doc', 'docx'])) {
+                        $iconClass = 'fa-file-word text-blue-600';
+                        $bgClass = 'bg-blue-50';
+                    } elseif (in_array($ext, ['ppt', 'pptx'])) {
+                         $iconClass = 'fa-file-powerpoint text-orange-600';
+                         $bgClass = 'bg-orange-50';
+                    } elseif (in_array($ext, ['xls', 'xlsx'])) {
+                         $iconClass = 'fa-file-excel text-green-600';
+                         $bgClass = 'bg-green-50';
+                    } else {
+                        $iconClass = 'fa-file text-slate-400';
+                        $bgClass = 'bg-slate-50';
+                    }
                 @endphp
 
                 <div class="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-300 transition-all duration-300 flex flex-col">
@@ -225,7 +246,7 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <h4 class="font-bold text-slate-800 text-sm leading-snug truncate mb-1" title="{{ $file->filename }}">
-                                {{ $file->filename }}
+                                {{ $displayName }}
                             </h4>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider {{ $bgClass }} text-slate-600 border border-slate-100">
                                 {{ $fileTypeLabel }}
@@ -243,6 +264,13 @@
                                 <a href="{{ asset($file->filepath) }}" target="_blank" class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur-sm text-slate-900 px-5 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-[#8B0000] hover:text-white flex items-center gap-2">
                                     <i class="fas fa-external-link-alt"></i> View Fullscreen
                                 </a>
+                            </div>
+                        @elseif($isOffice)
+                            <div class="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+                                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+                                    <i class="fas fa-eye-slash text-2xl text-slate-300"></i>
+                                </div>
+                                <span class="text-xs font-medium text-slate-500">Preview not available</span>
                             </div>
                         @else
                             <div class="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center">
@@ -265,6 +293,7 @@
                         @if($canUpload)
                             <form action="{{ route('update.file', $researchTitle->id) }}" method="POST" enctype="multipart/form-data">
                                 @csrf
+                                @method('PUT')
                                 <input type="hidden" name="file_id" value="{{ $file->id }}">
                                 <label class="block cursor-pointer">
                                     <div class="w-full py-2.5 px-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-[#8B0000] hover:bg-red-50 text-slate-500 hover:text-[#8B0000] text-sm font-bold text-center transition-all duration-200 flex items-center justify-center gap-2 group/upload">

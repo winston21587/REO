@@ -29,6 +29,50 @@
             </div>
         </div>
 
+        @if($researchTitle->revisionLogs->isNotEmpty())
+            <div class="mb-8 space-y-6">
+                <!-- Header -->
+                <div class="flex items-center gap-4">
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Revision History</span>
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                </div>
+
+                <div class="space-y-4">
+                    @foreach($researchTitle->revisionLogs as $log)
+                        <div class="flex gap-4">
+                            <!-- Avatar/Icon -->
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full {{ $log->user->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm">
+                                    <i class="fas {{ $log->user->role === 'admin' ? 'fa-user-shield' : 'fa-user' }} text-sm"></i>
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="flex-1 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">
+                                            {{ $log->user->first_name }} {{ $log->user->last_name }}
+                                            <span class="text-xs font-normal text-slate-500 ml-2">({{ ucfirst($log->user->role) }})</span>
+                                        </p>
+                                        <p class="text-xs text-slate-400">
+                                            {{ $log->created_at->format('M d, Y • h:i A') }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 relative group hover:border-slate-300 transition-colors">
+                                    <div class="absolute top-4 -left-2 w-4 h-4 bg-slate-50 border-l border-t border-slate-200 transform -rotate-45 group-hover:border-slate-300 transition-colors"></div>
+                                    <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         @php
             // Server-side filename cleaning
             $processFiles = function($files, $typeLabel) {
@@ -40,6 +84,18 @@
                     $clean = trim($clean);
                     $clean = preg_replace('/\.[^.]+$/', '', $clean);
                     $clean = ucwords(strtolower($clean));
+                    
+                    // Determine Icon (PHP Side)
+                    $ext = strtolower(pathinfo($file->filename, PATHINFO_EXTENSION));
+                    $file->setAttribute('extension', $ext); // Expose to JS via attributes
+                    
+                    if ($ext === 'pdf') {
+                        $file->icon_class = 'fas fa-file-pdf';
+                    } elseif (in_array($ext, ['doc', 'docx'])) {
+                        $file->icon_class = 'fas fa-file-word';
+                    } else {
+                        $file->icon_class = 'fas fa-file';
+                    }
                     
                     $file->clean_filename = $clean ?: 'Unknown File';
                     $file->group_label = $typeLabel; // Add group label
@@ -77,7 +133,7 @@
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" @click.away="open = false" class="flex items-center gap-3 px-2 py-1.5 hover:bg-slate-50 rounded-xl transition-all text-left min-w-[280px] group">
                             <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-50 to-white border border-red-100 flex items-center justify-center text-[#8B0000] shadow-sm group-hover:scale-105 transition-transform">
-                                <i class="fas fa-file-pdf text-lg"></i>
+                                <i :class="activeFile ? activeFile.icon_class : 'fas fa-file'" class="text-lg"></i>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Currently Viewing</p>
@@ -111,7 +167,7 @@
                                                     :class="activeFile && activeFile.id === file.id ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' : 'hover:bg-slate-50 text-slate-600'">
                                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
                                                      :class="activeFile && activeFile.id === file.id ? 'bg-white text-emerald-600 shadow-sm' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:shadow-sm'">
-                                                    <i class="fas fa-file-contract"></i>
+                                                    <i :class="file.icon_class"></i>
                                                 </div>
                                                 <div class="flex-1 min-w-0 z-10">
                                                     <p class="text-sm font-bold truncate" x-text="file.clean_filename"></p>
@@ -138,7 +194,7 @@
                                                     :class="activeFile && activeFile.id === file.id ? 'bg-red-50 text-[#8B0000] ring-1 ring-red-100' : 'hover:bg-slate-50 text-slate-600'">
                                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
                                                      :class="activeFile && activeFile.id === file.id ? 'bg-white text-[#8B0000] shadow-sm' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:shadow-sm'">
-                                                    <i class="fas fa-file-pdf"></i>
+                                                    <i :class="file.icon_class"></i>
                                                 </div>
                                                 <div class="flex-1 min-w-0 z-10">
                                                     <p class="text-sm font-bold truncate" x-text="file.clean_filename"></p>
@@ -166,13 +222,13 @@
 
                 <!-- PDF/DOCX Viewer Container -->
                 <div class="flex-1 bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative group" x-ref="viewerContainer">
-                    <!-- PDF Viewer -->
-                    <template x-if="activeFile && (activeFile.filename.endsWith('.pdf') || activeFile.filetype === 'pdf')">
-                        <iframe :src="getFileUrl(activeFile)" class="w-full h-full border-0" title="Document Viewer"></iframe>
+                    <!-- Universal Viewer (PDF + Office via Package) -->
+                    <template x-if="activeFile && (activeFile.extension === 'pdf' || activeFile.filename.endsWith('.pdf'))">
+                        <iframe :src="getFileUrl(activeFile)" class="w-full h-full border-0 bg-white" title="Document Viewer"></iframe>
                     </template>
 
                     <!-- DOCX Viewer -->
-                    <div x-show="activeFile && (activeFile.filename.endsWith('.docx') || activeFile.filename.endsWith('.doc'))" class="w-full h-full bg-white overflow-y-auto custom-scrollbar p-8">
+                    <div x-show="activeFile && ['doc', 'docx'].includes(activeFile.extension)" class="w-full h-full bg-white overflow-y-auto custom-scrollbar p-8">
                         <div id="docx-container" class="w-full min-h-full bg-white shadow-sm"></div>
                     </div>
                     
@@ -266,18 +322,18 @@
                         
                         init() {
                             this.$watch('activeFile', (file) => {
-                                if (file && (file.filename.endsWith('.docx') || file.filename.endsWith('.doc'))) {
+                                if (file && ['doc', 'docx'].includes(file.extension)) {
                                     this.renderDocx(file);
                                 }
                             });
-                            // Initial render if first file is docx
-                            if (this.activeFile && (this.activeFile.filename.endsWith('.docx') || this.activeFile.filename.endsWith('.doc'))) {
+                             // Initial render
+                            if (this.activeFile && ['doc', 'docx'].includes(this.activeFile.extension)) {
                                 this.renderDocx(this.activeFile);
                             }
                         },
 
                         getFileUrl(file) {
-                            return file ? '{{ route('admin.serve_file', 'ID_PLACEHOLDER') }}'.replace('ID_PLACEHOLDER', file.id) : '';
+                             return file ? '{{ route('admin.serve_file', 'ID_PLACEHOLDER') }}'.replace('ID_PLACEHOLDER', file.id) : '';
                         },
 
                         renderDocx(file) {
@@ -318,7 +374,14 @@
                                     console.error("Error fetching DOCX:", err);
                                     this.isLoading = false;
                                 });
-                        }
+                        },
+
+                        isOfficeFile(file) {
+                            if (!file) return false;
+                            const ext = file.extension;
+                            return ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext);
+                        },
+
                     }));
                 });
             </script>

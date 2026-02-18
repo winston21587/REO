@@ -163,6 +163,11 @@
                             <i class="fas fa-building w-5 text-center"></i>
                             <span class="flex-1">Departments & Programs</span>
                         </a>
+                        <a href="{{ route('admin.manage_documents') }}"
+                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.manage_documents') ? 'active' : '' }}">
+                            <i class="fas fa-file-contract w-5 text-center"></i>
+                            <span class="flex-1">Manage Documents</span>
+                        </a>
                     </div>
                 </div>
 

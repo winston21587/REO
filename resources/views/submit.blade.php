@@ -113,54 +113,34 @@
 
                         <div class="p-6 space-y-6">
 
-                            <!-- Application Form -->
-                            <x-file-upload-item name="files[application_form]"
-                                label="Application Form for Research Ethics Review - WMSU-REO-FR-001 (PDF)"
-                                accept=".pdf" required="true" />
+                            @foreach($requirements as $requirement)
+                                @php
+                                    // Determine accept attribute based on file_type
+                                    $accept = [];
+                                    $types = explode(',', $requirement->file_type);
+                                    foreach($types as $type) {
+                                        $type = trim($type);
+                                        if ($type === 'PDF') $accept[] = '.pdf';
+                                        if ($type === 'Word') $accept[] = '.doc,.docx';
+                                        // 'Others' might not need a specific accept rule, or could be broad
+                                    }
+                                    $acceptStr = !empty($accept) ? implode(',', $accept) : '';
+                                    
+                                    // Construct label
+                                    $label = $requirement->name;
+                                    if ($requirement->file_type) {
+                                        $label .= ' (' . $requirement->file_type . ')';
+                                    }
+                                @endphp
 
-                            <!-- Research Protocol -->
-                            <x-file-upload-item name="files[research_protocol]"
-                                label="Research Protocol / Proposal (with page and line numbers, PDF)" accept=".pdf"
-                                required="true" />
-
-                            <!-- Technical Clearance -->
-                            <x-file-upload-item name="files[technical_clearance]"
-                                label="Technical Review Clearance (with panel signatures, PDF)" accept=".pdf"
-                                required="true" />
-
-                            <!-- Data Collection -->
-                            <x-file-upload-item name="files[data_collection_instruments]"
-                                label="Data Collection Instrument/s (with page and line numbers, PDF)" accept=".pdf"
-                                required="true" />
-
-                            <!-- Informed Consent -->
-                            <x-file-upload-item name="files[informed_consent]"
-                                label="Informed Consent / Assent (with page and line numbers, PDF)" accept=".pdf"
-                                required="true" />
-
-                            <!-- CV -->
-                            <x-file-upload-item name="files[curriculum_vitae]"
-                                label="Curriculum Vitae of Researcher/s (PDF)" accept=".pdf" required="true" />
-
-                            <!-- Study Protocol Assessment -->
-                            <x-file-upload-item name="files[study_protocol_form]"
-                                label="Completed Study Protocol Assessment Form - WMSU-REO-FR-004 (Word)"
-                                accept=".doc,.docx" required="true" />
-
-                            <!-- Informed Consent Assessment -->
-                            <x-file-upload-item name="files[informed_consent_form]"
-                                label="Completed Informed Consent Assessment Form - WMSU-REO-FR-005 (Word)"
-                                accept=".doc,.docx" required="true" />
-
-                            <!-- Exempt Review Assessment -->
-                            <x-file-upload-item name="files[exempt_review_form]"
-                                label="Completed Exempt Review Assessment Form - WMSU-REO-FR-006 (Word)"
-                                accept=".doc,.docx" required="true" />
-
-                            <!-- Supplementary Docs -->
-                            <x-file-upload-item name="files[supplementary_docs][]"
-                                label="Supplementary Documents (NCIP Clearance, MOA, MOU, etc., PDF, optional)"
-                                accept=".pdf" required="false" multiple="true" />
+                                <x-file-upload-item 
+                                    name="files[{{ $requirement->id }}]{{ $requirement->is_multiple ? '[]' : '' }}"
+                                    label="{{ $label }}"
+                                    accept="{{ $acceptStr }}"
+                                    required="{{ $requirement->is_required ? 'true' : 'false' }}"
+                                    multiple="{{ $requirement->is_multiple ? 'true' : 'false' }}" 
+                                />
+                            @endforeach
 
                         </div>
                     </div>

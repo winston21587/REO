@@ -79,6 +79,15 @@ class AuthController extends Controller
 
         ]);
 
+        // Check for duplicate name
+        $existingUser = User::where('first_name', $data['FirstName'])
+                            ->where('last_name', $data['LastName'])
+                            ->first();
+
+        if ($existingUser) {
+            return back()->withErrors(['FirstName' => 'A user with this name already exists. Please contact support or use a different name variations.'])->withInput();
+        }
+
         $verificationCode = rand(100000, 999999);   
         // $verificationCode = 12345678;   
 
@@ -124,6 +133,15 @@ class AuthController extends Controller
             'contact' => 'nullable|string|max:11',
 
         ]);
+
+        // Check for duplicate name
+        $existingUser = User::where('first_name', $data['FirstName'])
+                            ->where('last_name', $data['LastName'])
+                            ->first();
+
+        if ($existingUser) {
+            return back()->withErrors(['FirstName' => 'A user with this name already exists. Please contact support or use a different name variations.'])->withInput();
+        }
 
         $verificationCode = rand(100000, 999999);   
         // $verificationCode = 12345678;   

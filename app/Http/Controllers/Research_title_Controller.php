@@ -7,12 +7,15 @@ use App\Models\Research_title;
 use App\Models\researcher_files;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\DocumentRequirement;
+use App\Models\SubmissionFeedback;
 
 class Research_title_Controller extends Controller
 {
     public function showSubmit()
     {
-        return view('submit');
+        $requirements = DocumentRequirement::all();
+        return view('submit', compact('requirements'));
     }
 
 
@@ -24,79 +27,53 @@ class Research_title_Controller extends Controller
     {
         $user = Auth::user();
 
-        // ✅ Validation
-        $validated = $request->validate([
+        // 1. Base Validation
+        $rules = [
             'Study_Protocol_title' => 'required|string|max:255',
             'Research_Category' => 'required|string|max:255',
             'other_category' => 'nullable|string|max:255',
             'Adviser' => 'required|string|max:255',
-
-            // PDF uploads
-            'files.application_form' => 'required|file|mimes:pdf|max:25600',
-            'files.research_protocol' => 'required|file|mimes:pdf|max:25600',
-            'files.technical_clearance' => 'required|file|mimes:pdf|max:25600',
-            'files.data_collection_instruments' => 'required|file|mimes:pdf|max:25600',
-            'files.informed_consent' => 'required|file|mimes:pdf|max:25600',
-            'files.curriculum_vitae' => 'required|file|mimes:pdf|max:25600',
-
-            // Word document uploads
-            'files.study_protocol_form' => 'required|file|mimes:doc,docx|max:25600',
-            'files.informed_consent_form' => 'required|file|mimes:doc,docx|max:25600',
-            'files.exempt_review_form' => 'required|file|mimes:doc,docx|max:25600',
-
-            // Optional supplementary files
-            'files.supplementary_docs.*' => 'nullable|file|mimes:pdf|max:25600',
-        ]);
-
-        // ✅ Define document types for looping
-        $fileFields = [
-            'application_form',
-            'research_protocol',
-            'technical_clearance',
-            'data_collection_instruments',
-            'informed_consent',
-            'curriculum_vitae',
-            'study_protocol_form',
-            'informed_consent_form',
-            'exempt_review_form',
         ];
 
-        $uploadedFileIds = [];
+        // 2. Dynamic Validation for Files
+        $requirements = DocumentRequirement::all();
+        foreach ($requirements as $req) {
+            $field = 'files.' . $req->id;
+            
+            // Build Validation Rules
+            $fileRules = ['file', 'max:25600']; // Max 25MB
 
-        // ✅ Store main documents
-        foreach ($fileFields as $field) {
-            if ($request->hasFile("files.$field")) {
-                $file = $request->file("files.$field");
-                $filename = time() . '_' . $field . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('uploads/research_files', $filename, 'public_uploads');
+            // Mime Types
+            $mimes = [];
+            $types = explode(',', $req->file_type);
+            foreach ($types as $type) {
+                $type = trim($type);
+                if ($type === 'PDF') $mimes[] = 'pdf';
+                if ($type === 'Word') array_push($mimes, 'doc', 'docx');
+            }
+            if (!empty($mimes)) {
+                $fileRules[] = 'mimes:' . implode(',', $mimes);
+            }
 
-                $fileRecord = researcher_files::create([
-                    'filename' => $filename,
-                    'filepath' => $path, // No storage/ prefix needing removal later if we stick to this
-                    'filetype' => $file->getClientOriginalExtension(),
-                    'category' => $field,
-                ]);
-
-                $uploadedFileIds[] = $fileRecord->id;
+            // Required / Array checks
+            if ($req->is_multiple) {
+                if ($req->is_required) {
+                    $rules[$field] = 'required|array';
+                } else {
+                    $rules[$field] = 'nullable|array';
+                }
+                $rules[$field . '.*'] = $fileRules;
+            } else {
+                if ($req->is_required) {
+                    $rules[$field] = array_merge(['required'], $fileRules);
+                } else {
+                    $rules[$field] = array_merge(['nullable'], $fileRules);
+                }
             }
         }
 
-        // ✅ Handle supplementary files
-        if ($request->hasFile('files.supplementary_docs')) {
-            foreach ($request->file('files.supplementary_docs') as $file) {
-                $filename = time() . '_supplementary_' . $file->getClientOriginalName();
-                $path = $file->storeAs('uploads/research_files', $filename, 'public_uploads');
+        $validated = $request->validate($rules);
 
-                $fileRecord = researcher_files::create([
-                    'filename' => $filename,
-                    'filepath' => $path,
-                    'filetype' => $file->getClientOriginalExtension(),
-                    'category' => 'supplementary_docs',
-                ]);
-
-                $uploadedFileIds[] = $fileRecord->id;
-            }
-        }
 
         // Handle "Other" category
         $finalCategory = $validated['Research_Category'];
@@ -113,6 +90,38 @@ class Research_title_Controller extends Controller
             'Official_Receipt_Number' => '011',
             'Adviser' => $validated['Adviser'],
         ]);
+
+        $uploadedFileIds = [];
+
+        // ✅ Store documents
+        foreach ($requirements as $req) {
+            $fieldKey = 'files.' . $req->id;
+            
+            if ($request->hasFile($fieldKey)) {
+                $files = $request->file($fieldKey);
+                
+                // Unify to array for processing
+                if (!is_array($files)) {
+                    $files = [$files];
+                }
+
+                foreach ($files as $file) {
+                    // Generate category specific filename
+                    // Category = Requirement Name
+                    $filename = time() . '_' . \Illuminate\Support\Str::slug($req->name) . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('uploads/research_files', $filename, 'public_uploads');
+
+                    $fileRecord = researcher_files::create([
+                        'filename' => $filename,
+                        'filepath' => $path,
+                        'filetype' => $file->getClientOriginalExtension(),
+                        'category' => $req->name, // Storing human-readable requirement name
+                    ]);
+
+                    $uploadedFileIds[] = $fileRecord->id;
+                }
+            }
+        }
 
         // ✅ Attach files to pivot table
         $research->files()->attach($uploadedFileIds);
@@ -170,6 +179,7 @@ class Research_title_Controller extends Controller
 
 
         return redirect()->back()->with('success', 'File updated successfully!');
+        return redirect()->back()->with('success', 'File updated successfully!');
     }
 
     public function viewRecommendationLetter($id)
@@ -215,16 +225,27 @@ class Research_title_Controller extends Controller
 
         if (in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete'])) {
 
-            // Determine new status
-            $newStatus = ($researchTitle->Status === 'Incomplete') ? 'Pending' : 'Revision Submitted';
-            $logMessage = ($newStatus === 'Pending') ? "Resubmitted corrections: " . $request->revision_message : $request->revision_message;
+            // Check if any files have been updated since the status was set (i.e., since the title was last updated)
+            // Logic: If user updated a file, file->updated_at should be > title->updated_at
+            // Fix: Specify table name to avoid ambiguity with pivot table columns
+            $hasUpdatedFiles = $researchTitle->files()->where('researcher_files.updated_at', '>', $researchTitle->updated_at)->exists();
 
-            // Create Revision Log (Optional but good for tracking)
+            if (!$hasUpdatedFiles) {
+                return back()->with('error', 'You must update at least one document before submitting corrections.');
+            }
+
+            // Determine new status
+            // Changed from 'Pending'/'Revision Submitted' to 'Corrections Submitted' to distinguish in Admin Dashboard
+            $newStatus = 'Corrections Submitted';
+            $logMessage = "Resubmitted corrections: " . $request->revision_message;
+
+            // Create Submission Feedback (User Correction)
             if ($request->revision_message) {
-                \App\Models\RevisionLog::create([
+                SubmissionFeedback::create([
                     'research_title_id' => $researchTitle->id,
                     'user_id' => $user->id,
-                    'message' => $logMessage,
+                    'type' => 'user_correction',
+                    'message' => $request->revision_message,
                 ]);
             }
 

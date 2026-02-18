@@ -161,9 +161,15 @@
                                 Requirements / Specific Issues</label>
 
                             <div class="flex gap-2 mb-3">
-                                <input type="text" id="reqInput"
+                                <input type="text" id="reqInput" list="requirementsOptions"
                                     class="flex-1 p-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
-                                    placeholder="Type missing document (e.g., Scanned ID)...">
+                                    placeholder="Select or type missing document...">
+                                <datalist id="requirementsOptions">
+                                    @foreach($requirements as $req)
+                                        <option value="{{ $req->name }}">
+                                    @endforeach
+                                </datalist>
+
                                 <button type="button" onclick="addRequirement()"
                                     class="bg-slate-800 text-white px-4 rounded-lg hover:bg-slate-700 transition-colors shadow-sm active:transform active:scale-95">
                                     <i class="fas fa-plus"></i>

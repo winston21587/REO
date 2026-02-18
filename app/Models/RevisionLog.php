@@ -9,19 +9,15 @@ class RevisionLog extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'research_title_id',
-        'user_id',
-        'message',
-    ];
-
-    public function researchTitle()
-    {
-        return $this->belongsTo(Research_title::class, 'research_title_id');
-    }
+    protected $guarded = [];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function research_title()
+    {
+        return $this->belongsTo(Research_title::class, 'research_title_id');
     }
 }

@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 use App\Models\Research_title;
 use App\Models\researcher_files;
 use Illuminate\Support\Facades\Storage;
+
 use Illuminate\Http\Request;
 use App\Models\Appointment;
+use App\Models\DocumentRequirement;
+use App\Models\SubmissionFeedback;
 use App\Models\User;
 use App\Models\Researcher;
 use App\Models\Admin;
@@ -427,8 +430,8 @@ class AdminController extends Controller
         // Adjust 'Pending' to the exact string you use in your DB (e.g., 'For Initial Review' or 'Submitted')
 
 
-        // 2. Fetch Pending Submissions (Recent Submissions)
-        $pendingQuery = Research_title::where('Status', 'Pending');
+        // 2. Fetch Pending Submissions (Recent Submissions: Pending + Corrections Submitted)
+        $pendingQuery = Research_title::with('revisionLogs')->whereIn('Status', ['Pending', 'Corrections Submitted']);
 
         // Search Filter
         if ($request->filled('recent_search')) {
@@ -474,7 +477,10 @@ class AdminController extends Controller
             ]);
         }
 
-        return view('admin.NewSubmissions', compact('pendingSubmissions', 'incompleteSubmissions'));
+        // Fetch Requirements for the Triage Modal
+        $requirements = DocumentRequirement::all();
+
+        return view('admin.NewSubmissions', compact('pendingSubmissions', 'incompleteSubmissions', 'requirements'));
     }
 
     // public function updateStatus(Request $request, $id)
@@ -540,6 +546,16 @@ class AdminController extends Controller
                 $submission->Status = $newStatus;
                 $submission->save();
                 $missingDocs = $request->input('missing_requirements', []);
+                
+                // Store in Feedbacks Table
+                SubmissionFeedback::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => auth()->id(),
+                    'type' => 'admin_deficiency',
+                    'message' => $request->remarks,
+                    'missing_requirements' => $missingDocs,
+                ]);
+
                 $message = "Your submission \"{$submission->Study_Protocol_title}\" has been marked as Incomplete.";
                 if ($request->remarks) {
                     $message .= "\n\nGeneral Remarks: " . $request->remarks;
@@ -883,6 +899,11 @@ class AdminController extends Controller
         return abort(404, 'File not found.');
     }
 
+    public function manageDocuments()
+    {
+        return view('admin.manage_documents');
+    }
+
     // 1. Show the Checklist Form (Replaces RC_letter.php)
     public function showLetterForm($id)
     {
@@ -970,7 +991,7 @@ class AdminController extends Controller
         $pdf = new \setasign\Fpdi\Fpdi();
 
         // Source file
-        $templatePath = resource_path('views/letter/Result-of-Review-Form.pdf');
+        $templatePath = resource_path('views/letter/Result-of-Review-Form(NEW).pdf');
 
         if (!file_exists($templatePath)) {
             return back()->with('error', 'Template file not found.');
@@ -979,8 +1000,17 @@ class AdminController extends Controller
         $pageCount = $pdf->setSourceFile($templatePath);
         $tplIdx = $pdf->importPage(1);
 
-        $pdf->AddPage();
-        $pdf->useTemplate($tplIdx, 0, 0, 210); // A4 width
+        // Get the size of the imported page to ensure nothing is cut off (e.g. if Legal size)
+        $size = $pdf->getTemplateSize($tplIdx);
+
+        // Add page matching the template's orientation and size
+        $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+        
+        // Import template covering the full page
+        $pdf->useTemplate($tplIdx, 0, 0, $size['width'], $size['height']);
+
+        // Prevent automatic page break when writing near the bottom
+        $pdf->SetAutoPageBreak(false);
 
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetTextColor(0, 0, 0);
@@ -996,20 +1026,20 @@ class AdminController extends Controller
         // --- FILL DATA ---
 
         // Title
-        $pdf->SetXY(37, 63);
+        $pdf->SetXY(28, 58);
         // Truncate title if too long or handle multi-line if needed (simple write for now)
         $pdf->Write(0, substr($request->title, 0, 80));
 
         // Review Type
-        $pdf->SetXY(47, 70);
+        $pdf->SetXY(49, 63);
         $pdf->Write(0, $request->review_type);
 
         // Number of Sets
-        $pdf->SetXY(105, 225);
+        $pdf->SetXY(120, 243);
         $pdf->Write(0, $request->num_sets);
 
         // Envelope Type
-        $pdf->SetXY(20, 229);
+        $pdf->SetXY(20, 248);
         $pdf->Write(0, $request->envelope_type);
 
         // Extra Notes
@@ -1020,40 +1050,40 @@ class AdminController extends Controller
 
         // Checkboxes
         $pdf->SetFont('Arial', 'B', 12); // Make X bold and slightly larger
-        $x = 12; // Base X for checkboxes (adjust if needed, user code had $x undefined but used it)
+        $x = 12.7; // Base X for checkboxes (adjust if needed, user code had $x undefined but used it)
         // Looking at user code: checkAndMark($pdf, $x, 96.5, '1', $protocolChecks);
-        // I will assume $x is around 12-15 based on standard forms, let's try 13.
-        $x = 13;
+      
 
         // Protocol/Proposal Checks
         $protocolChecks = $request->input('ethics_review_1', []);
-        $checkAndMark($pdf, $x, 96.5, '1', $protocolChecks);
-        $checkAndMark($pdf, $x, 101, '2', $protocolChecks);
-        $checkAndMark($pdf, $x, 105.49, '3', $protocolChecks);
-        $checkAndMark($pdf, $x, 109.98, '4', $protocolChecks);
-        $checkAndMark($pdf, $x, 114.47, '5', $protocolChecks);
-        $checkAndMark($pdf, $x, 118.96, '6', $protocolChecks);
+        $checkAndMark($pdf, $x, 94.5, '1', $protocolChecks);
+        $checkAndMark($pdf, $x, 99.5, '2', $protocolChecks);
+        $checkAndMark($pdf, $x, 104.5, '3', $protocolChecks);
+        $checkAndMark($pdf, $x, 109.5, '4', $protocolChecks);
+        $checkAndMark($pdf, $x, 114.5, '5', $protocolChecks);
+        $checkAndMark($pdf, $x, 119.5, '6', $protocolChecks);
+
 
         // Informed Consent Checks
         $consentChecks = $request->input('ethics_review_2', []);
-        $checkAndMark($pdf, $x, 154.5, '1', $consentChecks);
-        $checkAndMark($pdf, $x, 158.99, '2', $consentChecks);
-        $checkAndMark($pdf, $x, 163.48, '3', $consentChecks);
-        $checkAndMark($pdf, $x, 167.97, '4', $consentChecks);
-        $checkAndMark($pdf, $x, 172.46, '5', $consentChecks);
-        $checkAndMark($pdf, $x, 176.95, '6', $consentChecks);
-        $checkAndMark($pdf, $x, 181.44, '7', $consentChecks);
-        $checkAndMark($pdf, $x, 185.93, '8', $consentChecks);
-        $checkAndMark($pdf, $x, 190.42, '9', $consentChecks);
-        $checkAndMark($pdf, $x, 194.91, '10', $consentChecks);
-        $checkAndMark($pdf, $x, 199.4, '11', $consentChecks);
-        $checkAndMark($pdf, $x, 207, '12', $consentChecks);
-        $checkAndMark($pdf, $x, 212.87, '13', $consentChecks);
+        $checkAndMark($pdf, $x, 161, '1', $consentChecks);
+        $checkAndMark($pdf, $x, 166, '2', $consentChecks);
+        $checkAndMark($pdf, $x, 171, '3', $consentChecks);
+        $checkAndMark($pdf, $x, 176, '4', $consentChecks);
+        $checkAndMark($pdf, $x, 181, '5', $consentChecks);
+        $checkAndMark($pdf, $x, 186.2, '6', $consentChecks);
+        $checkAndMark($pdf, $x, 191.6, '7', $consentChecks);
+        $checkAndMark($pdf, $x, 196.8, '8', $consentChecks);
+        $checkAndMark($pdf, $x, 202, '9', $consentChecks);
+        $checkAndMark($pdf, $x, 207, '10', $consentChecks);
+        $checkAndMark($pdf, $x, 212, '11', $consentChecks);
+        $checkAndMark($pdf, $x, 222, '12', $consentChecks);
+        $checkAndMark($pdf, $x, 227, '13', $consentChecks);
 
         // Recommended Actions
         $recommendedActions = $request->input('Recommended_Actions', []);
-        $checkAndMark($pdf, 25, 274, '1', $recommendedActions);
-        $checkAndMark($pdf, 108, 274, '2', $recommendedActions);
+        $checkAndMark($pdf, 14, 315, '1', $recommendedActions);
+        $checkAndMark($pdf, 14, 319.6, '2', $recommendedActions);
 
         // Output
         if ($request->action === 'view') {

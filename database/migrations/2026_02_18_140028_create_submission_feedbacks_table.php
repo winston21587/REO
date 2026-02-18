@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('submission_feedbacks');
         Schema::create('submission_feedbacks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('research_title_id')->constrained('research_title_information')->onDelete('cascade');

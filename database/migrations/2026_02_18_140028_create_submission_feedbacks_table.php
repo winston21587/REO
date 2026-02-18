@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('submission_feedbacks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('research_title_id')->constrained('research_titles')->onDelete('cascade');
+            $table->foreignId('research_title_id')->constrained('research_title_information')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('type'); // 'admin_deficiency', 'user_correction'
             $table->text('message')->nullable();

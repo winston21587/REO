@@ -7,27 +7,16 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 
-class RoleMiddleware
+class EnsureSuperAdmin
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $roles): Response
+    public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
-            abort(403, 'Unauthorized access');
-        }
-
-        $userRole = Auth::user()->role;
-
-        // Allow super_admin to access admin routes
-        if ($roles === 'admin' && $userRole === 'super_admin') {
-            return $next($request);
-        }
-
-        if ($userRole !== $roles) {
+        if (!Auth::check() || Auth::user()->role !== 'super_admin') {
             abort(403, 'Unauthorized access');
         }
 

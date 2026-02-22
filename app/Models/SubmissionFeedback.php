@@ -9,6 +9,8 @@ class SubmissionFeedback extends Model
 {
     use HasFactory;
 
+    protected $table = 'submission_feedbacks';
+
     protected $guarded = [];
 
     protected $casts = [

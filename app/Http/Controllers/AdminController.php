@@ -321,6 +321,12 @@ class AdminController extends Controller
         ));
     }
 
+    public function superAdminAnalytics(Request $request)
+    {
+        $view = $this->analytics($request);
+        return view('super_admin.analytics', $view->getData());
+    }
+
     public function index($request)
     {
         return view('admin.Analytics');

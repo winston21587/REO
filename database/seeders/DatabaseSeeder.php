@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             AcademicStructureSeeder::class,
+            SuperAdminSeeder::class,
         ]);
 
         // Seed AI Compliance Data for existing Research Titles

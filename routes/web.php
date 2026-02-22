@@ -125,6 +125,13 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ====================================================
+    // SUPER ADMIN ROUTES
+    // ====================================================
+    Route::middleware(['super_admin'])->group(function () {
+        Route::get('/super-admin', [AdminController::class, 'superAdminAnalytics'])->name('super_admin.analytics');
+    });
+
+    // ====================================================
     // ADMIN ROUTES
     // ====================================================
     Route::middleware(['role:admin'])->group(function () {

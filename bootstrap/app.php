@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
             $middleware->alias([
         'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
     ]);
         
     $middleware->redirectGuestsTo(fn (Illuminate\Http\Request $request) => route('login'));
@@ -20,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $user = Auth::user();
         if ($user && $user->role === 'admin') {
             return route('admin.analytics');
+        }
+        if ($user && $user->role === 'super_admin') {
+            return route('super_admin.analytics');
         }
         return route('home');
     });

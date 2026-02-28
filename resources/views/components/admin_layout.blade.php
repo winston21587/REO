@@ -136,11 +136,6 @@
                             <i class="fas fa-users w-5 text-center"></i>
                             <span class="flex-1">Meetings & Agenda</span>
                         </a>
-                        <a href="{{ route('admin.manage_staff') }}"
-                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.manage_staff') ? 'active' : '' }}">
-                            <i class="fas fa-id-card w-5 text-center"></i>
-                            <span class="flex-1">REO Members</span>
-                        </a>
                         <a href="{{ route('admin.manage_users') }}"
                             class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.manage_users') ? 'active' : '' }}">
                             <i class="fas fa-user-graduate w-5 text-center"></i>

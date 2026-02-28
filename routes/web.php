@@ -176,10 +176,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
         Route::delete('/admin/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
 
-        Route::get('/admin/staff', [AdminController::class, 'manageStaff'])->name('admin.manage_staff');
-        Route::post('/admin/staff', [AdminController::class, 'storeStaff'])->name('admin.staff.store');
-        Route::put('/admin/staff/{id}', [AdminController::class, 'updateStaff'])->name('admin.staff.update');
-        Route::delete('/admin/staff/{id}', [AdminController::class, 'deleteStaff'])->name('admin.staff.delete');
 
         Route::get('/admin/meetings', [AdminController::class, 'meetings'])->name('admin.meetings');
         Route::post('/admin/meetings', [AdminController::class, 'storeMeeting'])->name('admin.meetings.store');

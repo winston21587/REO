@@ -137,7 +137,7 @@ class Research_title_Controller extends Controller
         if (!$user->researcher) {
             return redirect()->back()->with('error', 'You are not registered as a researcher.');
         }
-        $titles = Research_title::with('files')
+        $titles = Research_title::with(['files', 'titleLogs.user'])
             ->where('researcher_id', $user->researcher->id)
             ->orderBy('created_at', 'desc')
             ->paginate(9);
@@ -148,7 +148,7 @@ class Research_title_Controller extends Controller
     // Show all files for a specific research title
     public function manageFiles($id)
     {
-        $researchTitle = Research_title::with(['files', 'adminFiles'])->findOrFail($id);
+        $researchTitle = Research_title::with(['files', 'adminFiles', 'titleLogs.user'])->findOrFail($id);
         return view('researcher_files', compact('researchTitle'));
     }
 

@@ -129,6 +129,39 @@ Route::middleware(['auth'])->group(function () {
     // ====================================================
     Route::middleware(['super_admin'])->group(function () {
         Route::get('/super-admin', [AdminController::class, 'superAdminAnalytics'])->name('super_admin.analytics');
+
+        // Manage Admins
+        Route::get('/super-admin/admins', [\App\Http\Controllers\SuperAdminController::class, 'manageAdmins'])->name('super_admin.manage_admins');
+        Route::post('/super-admin/admins', [\App\Http\Controllers\SuperAdminController::class, 'createAdmin'])->name('super_admin.admins.create');
+        Route::post('/super-admin/admins/{user}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleAdminStatus'])->name('super_admin.admins.toggle_status');
+        Route::delete('/super-admin/admins/{user}', [\App\Http\Controllers\SuperAdminController::class, 'deleteAdmin'])->name('super_admin.admins.delete');
+
+        // Document Requirements (Moved from Admin)
+        Route::get('/admin/manage-documents', [\App\Http\Controllers\DocumentRequirementController::class, 'index'])->name('admin.manage_documents');
+        Route::post('/admin/document-requirements', [\App\Http\Controllers\DocumentRequirementController::class, 'store'])->name('admin.document_requirements.store');
+        Route::put('/admin/document-requirements/{id}', [\App\Http\Controllers\DocumentRequirementController::class, 'update'])->name('admin.document_requirements.update');
+        Route::delete('/admin/document-requirements/{id}', [\App\Http\Controllers\DocumentRequirementController::class, 'destroy'])->name('admin.document_requirements.destroy');
+
+        // CMS Routes (Moved from Admin)
+        Route::controller(CmsController::class)->prefix('admin/cms')->name('admin.cms.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/content', 'content')->name('content');         
+            Route::post('/content', 'updateContent')->name('content.update');
+            Route::get('/categories', 'categories')->name('categories');
+            Route::post('/categories', 'storeCategory')->name('categories.store');
+            Route::put('/categories/{id}', 'updateCategory')->name('categories.update');
+            Route::delete('/categories/{id}', 'destroyCategory')->name('categories.destroy');
+            Route::post('/colleges', 'storeCollege')->name('colleges.store');
+            Route::put('/colleges/{id}', 'updateCollege')->name('colleges.update');
+            Route::delete('/colleges/{id}', 'destroyCollege')->name('colleges.destroy');
+            Route::get('/departments', 'departments')->name('departments');
+            Route::post('/departments', 'storeDepartment')->name('departments.store');
+            Route::put('/departments/{id}', 'updateDepartment')->name('departments.update');
+            Route::delete('/departments/{id}', 'destroyDepartment')->name('departments.destroy');
+            Route::post('/programs', 'storeProgram')->name('programs.store');
+            Route::put('/programs/{id}', 'updateProgram')->name('programs.update');
+            Route::delete('/programs/{id}', 'destroyProgram')->name('programs.destroy');
+        });
     });
 
     // ====================================================
@@ -172,51 +205,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/view_files/{id}', [AdminController::class, 'viewFiles'])->name('admin.view_files');
         Route::get('/admin/file-serve/{id}', [AdminController::class, 'serveFile'])->name('admin.serve_file');
         
-        // Document Requirements
-        Route::get('/admin/manage-documents', [\App\Http\Controllers\DocumentRequirementController::class, 'index'])->name('admin.manage_documents');
-        Route::post('/admin/document-requirements', [\App\Http\Controllers\DocumentRequirementController::class, 'store'])->name('admin.document_requirements.store');
-        Route::put('/admin/document-requirements/{id}', [\App\Http\Controllers\DocumentRequirementController::class, 'update'])->name('admin.document_requirements.update');
-        Route::delete('/admin/document-requirements/{id}', [\App\Http\Controllers\DocumentRequirementController::class, 'destroy'])->name('admin.document_requirements.destroy');
 
-        Route::post('/admin/assign-reviewers/{id}', [AdminController::class, 'assignReviewers'])->name('admin.assignReviewers');
-
-        Route::get('/admin/letter/create/{id}', [AdminController::class, 'showLetterForm'])->name('admin.letter.form');
-        Route::post('/admin/letter/preview', [AdminController::class, 'previewLetter'])->name('admin.letter.preview');
-        Route::get('/admin/check-file-status/{id}', [AdminController::class, 'checkFileStatus']);
-        Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol');
-
-        // Recommendation Letter Routes
-        Route::get('/admin/recommendation-letter/{id}', [AdminController::class, 'showRecommendationLetterForm'])->name('admin.recommendation.form');
-        Route::post('/admin/recommendation-letter/generate', [AdminController::class, 'generateRecommendationLetter'])->name('admin.recommendation.generate');
-        // --- DEPRECATED ROUTES (Logic merged into updateStatus) ---
-
-        Route::post('/admin/certificate/upload/{id}', [AdminController::class, 'uploadCertificate'])->name('admin.certificate.upload');
-        Route::post('/admin/recommendation-letter/finalize/{id}', [AdminController::class, 'finalizeReview'])->name('admin.recommendation.finalize');
-        Route::get('/admin/recommendation-letter/view-saved/{id}', [AdminController::class, 'viewSavedRecommendationLetter'])->name('admin.recommendation.view_saved');
-
-        // CMS Routes
-
-       // groups all the routes
-       //makes it so that every route is this class      then makes it so that all names are this class
-        Route::controller(CmsController::class)->prefix('admin/cms')->name('admin.cms.')->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::get('/content', 'content')->name('content');         // though still need to add the class function
-            Route::post('/content', 'updateContent')->name('content.update');
-            Route::get('/categories', 'categories')->name('categories');
-            Route::post('/categories', 'storeCategory')->name('categories.store');
-            Route::put('/categories/{id}', 'updateCategory')->name('categories.update');
-            Route::delete('/categories/{id}', 'destroyCategory')->name('categories.destroy');
-            Route::post('/colleges', 'storeCollege')->name('colleges.store');
-            Route::put('/colleges/{id}', 'updateCollege')->name('colleges.update');
-            Route::delete('/colleges/{id}', 'destroyCollege')->name('colleges.destroy');
-
-            Route::get('/departments', 'departments')->name('departments');
-            Route::post('/departments', 'storeDepartment')->name('departments.store');
-            Route::put('/departments/{id}', 'updateDepartment')->name('departments.update');
-            Route::delete('/departments/{id}', 'destroyDepartment')->name('departments.destroy');
-            Route::post('/programs', 'storeProgram')->name('programs.store');
-            Route::put('/programs/{id}', 'updateProgram')->name('programs.update');
-            Route::delete('/programs/{id}', 'destroyProgram')->name('programs.destroy');
-        });
     });
 });

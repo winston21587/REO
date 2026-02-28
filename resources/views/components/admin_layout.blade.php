@@ -1,3 +1,8 @@
+@if(Auth::check() && Auth::user()->role === 'super_admin')
+<x-super_admin_layout>
+    {{ $slot }}
+</x-super_admin_layout>
+@else
 <!DOCTYPE html>
 <html lang="en">
 
@@ -144,32 +149,7 @@
                     </div>
                 </div>
 
-                <div>
-                    <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">System
-                        Management</p>
-                    <div class="space-y-1">
-                        <a href="{{ route('admin.cms.content') }}"
-                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.cms.content') ? 'active' : '' }}">
-                            <i class="fas fa-desktop w-5 text-center"></i>
-                            <span class="flex-1">Website Content</span>
-                        </a>
-                        <a href="{{ route('admin.cms.index') }}"
-                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.cms.index') || request()->routeIs('admin.cms.pages') ? 'active' : '' }}">
-                            <i class="fas fa-file-alt w-5 text-center"></i>
-                            <span class="flex-1">Page Content</span>
-                        </a> </a>
-                        <a href="{{ route('admin.cms.departments') }}"
-                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.cms.departments') ? 'active' : '' }}">
-                            <i class="fas fa-building w-5 text-center"></i>
-                            <span class="flex-1">Departments & Programs</span>
-                        </a>
-                        <a href="{{ route('admin.manage_documents') }}"
-                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.manage_documents') ? 'active' : '' }}">
-                            <i class="fas fa-file-contract w-5 text-center"></i>
-                            <span class="flex-1">Manage Documents</span>
-                        </a>
-                    </div>
-                </div>
+
 
             </nav>
 
@@ -256,3 +236,4 @@
 </body>
 
 </html>
+@endif

@@ -62,4 +62,49 @@ public function appointment()
     {
         return $this->hasMany(SubmissionFeedback::class, 'research_title_id')->orderBy('created_at', 'desc');
     }
+
+    public function titleLogs()
+    {
+        return $this->hasMany(TitleLog::class, 'research_title_id')->orderBy('created_at', 'desc');
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($researchTitle) {
+            TitleLog::create([
+                'research_title_id' => $researchTitle->id,
+                'user_id' => auth()->id(), // Works if a user is logged in
+                'action' => 'Submission Created',
+                'description' => 'A new research title submission was created.'
+            ]);
+        });
+
+        static::updated(function ($researchTitle) {
+            $changes = $researchTitle->getChanges();
+            
+            // Ignore if only 'updated_at' changed
+            if (count($changes) === 1 && isset($changes['updated_at'])) {
+                return;
+            }
+
+            foreach ($changes as $key => $newValue) {
+                if ($key === 'updated_at') continue;
+
+                $oldValue = $researchTitle->getOriginal($key);
+
+                // Create readable action name based on the column that changed
+                $action = 'Updated ' . str_replace('_', ' ', $key);
+                if (strtolower($key) === 'status') {
+                    $action = 'Status Changed';
+                }
+
+                TitleLog::create([
+                    'research_title_id' => $researchTitle->id,
+                    'user_id' => auth()->id(),
+                    'action' => $action,
+                    'description' => "Changed from '{$oldValue}' to '{$newValue}'."
+                ]);
+            }
+        });
+    }
 }

@@ -340,6 +340,26 @@
                                             <p class="text-slate-600 font-mono bg-slate-50 p-3 rounded-lg border border-slate-100">
                                                 #{{ str_pad($title->id, 6, '0', STR_PAD_LEFT) }}</p>
                                         </div>
+                                        <div>
+                                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Assigned Reviewers</label>
+                                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 flex flex-col gap-2">
+                                                @if($title->assigned_reviewers && count($title->assigned_reviewers) > 0)
+                                                    @foreach($title->assigned_reviewers as $reviewerId)
+                                                        @php
+                                                            $reviewerUser = \App\Models\User::find($reviewerId);
+                                                        @endphp
+                                                        @if($reviewerUser)
+                                                            <span class="text-slate-800 font-medium text-sm flex items-center gap-2">
+                                                                <i class="fas fa-user-check text-green-600 opacity-70"></i>
+                                                                {{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}
+                                                            </span>
+                                                        @endif
+                                                    @endforeach
+                                                @else
+                                                    <span class="text-slate-500 text-sm italic">None Assigned</span>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </dialog>

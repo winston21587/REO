@@ -20,6 +20,11 @@ class Research_title extends Model
         'Official_Receipt_Number',
         'researcher_id',  // since researher belongs to user (one to one) just store it onto the user side
         'Adviser',
+        'assigned_reviewers',
+    ];
+
+    protected $casts = [
+        'assigned_reviewers' => 'array',
     ];
     // Relationship: each research title belongs to a researcher
     public function researcher()

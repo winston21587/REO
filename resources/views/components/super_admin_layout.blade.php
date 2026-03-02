@@ -136,6 +136,16 @@
                             <i class="fas fa-user-graduate w-5 text-center"></i>
                             <span class="flex-1">Researchers</span>
                         </a>
+                        <a href="{{ route('super_admin.manage_admins') }}"
+                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('super_admin.manage_admins') ? 'active' : '' }}">
+                            <i class="fas fa-users-cog w-5 text-center"></i>
+                            <span class="flex-1">Manage Admins</span>
+                        </a>
+                        <a href="{{ route('super_admin.manage_reviewers') }}"
+                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('super_admin.manage_reviewers') ? 'active' : '' }}">
+                            <i class="fas fa-user-check w-5 text-center"></i>
+                            <span class="flex-1">Manage Reviewers</span>
+                        </a>
                     </div>
                 </div>
 
@@ -162,11 +172,6 @@
                             class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.manage_documents') ? 'active' : '' }}">
                             <i class="fas fa-file-contract w-5 text-center"></i>
                             <span class="flex-1">Manage Documents</span>
-                        </a>
-                        <a href="{{ route('super_admin.manage_admins') }}"
-                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('super_admin.manage_admins') ? 'active' : '' }}">
-                            <i class="fas fa-users-cog w-5 text-center"></i>
-                            <span class="flex-1">Manage Admins</span>
                         </a>
                     </div>
                 </div>

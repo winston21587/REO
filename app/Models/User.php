@@ -71,4 +71,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(SuperAdmin::class);
     }
+    public function reviewer()
+    {
+        return $this->hasOne(Reviewer::class);
+    }
 }

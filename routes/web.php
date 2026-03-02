@@ -136,6 +136,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/super-admin/admins/{user}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleAdminStatus'])->name('super_admin.admins.toggle_status');
         Route::delete('/super-admin/admins/{user}', [\App\Http\Controllers\SuperAdminController::class, 'deleteAdmin'])->name('super_admin.admins.delete');
 
+        // Manage Reviewers
+        Route::get('/super-admin/reviewers', [\App\Http\Controllers\SuperAdminController::class, 'manageReviewers'])->name('super_admin.manage_reviewers');
+        Route::post('/super-admin/reviewers', [\App\Http\Controllers\SuperAdminController::class, 'createReviewer'])->name('super_admin.reviewers.create');
+        Route::post('/super-admin/reviewers/{user}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleReviewerStatus'])->name('super_admin.reviewers.toggle_status');
+        Route::delete('/super-admin/reviewers/{user}', [\App\Http\Controllers\SuperAdminController::class, 'deleteReviewer'])->name('super_admin.reviewers.delete');
+
         // Document Requirements (Moved from Admin)
         Route::get('/admin/manage-documents', [\App\Http\Controllers\DocumentRequirementController::class, 'index'])->name('admin.manage_documents');
         Route::post('/admin/document-requirements', [\App\Http\Controllers\DocumentRequirementController::class, 'store'])->name('admin.document_requirements.store');
@@ -192,6 +198,7 @@ Route::middleware(['auth'])->group(function () {
             return view('admin.view_asessment'); })->name('admin.file');
 
         Route::get('/admin/applications', [AdminController::class, 'applications'])->name('admin.applications');
+        Route::post('/admin/applications/{id}/assign-reviewers', [AdminController::class, 'assignReviewers'])->name('admin.assign_reviewers');
 
         // The Main Update Logic (Covers Triage Modal)
         Route::post('/admin/update-status/{id}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
@@ -200,6 +207,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/certifications', [AdminController::class, 'certifications'])->name('admin.certifications');
         Route::get('/admin/view_files/{id}', [AdminController::class, 'viewFiles'])->name('admin.view_files');
         Route::get('/admin/file-serve/{id}', [AdminController::class, 'serveFile'])->name('admin.serve_file');
+
+        // Recommendation Letter Routes
+        Route::get('/admin/recommendation-letter/{id}', [AdminController::class, 'showRecommendationLetterForm'])->name('admin.recommendation.form');
+        Route::post('/admin/recommendation-letter/generate', [AdminController::class, 'generateRecommendationLetter'])->name('admin.recommendation.generate');
+        Route::post('/admin/recommendation-letter/finalize/{id}', [AdminController::class, 'finalizeReview'])->name('admin.recommendation.finalize');
+        Route::get('/admin/recommendation-letter/view-saved/{id}', [AdminController::class, 'viewSavedRecommendationLetter'])->name('admin.recommendation.view_saved');
         
 
     });

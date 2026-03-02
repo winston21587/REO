@@ -61,6 +61,7 @@
                             <th class="p-6">Protocol ID</th>
                             <th class="p-6">Research Title</th>
                             <th class="p-6">Researcher</th>
+                            <th class="p-6">Reviewers</th>
                             <th class="p-6">Submission Date</th>
                             <th class="p-6">Status / Review Type</th>
                             <th class="p-6 text-right">Actions</th>
@@ -95,6 +96,25 @@
                                             </p>
                                         </div>
                                     </div>
+                                </td>
+                                <td class="p-6">
+                                    @if($data->assigned_reviewers && count($data->assigned_reviewers) > 0)
+                                        <div class="flex flex-col gap-1">
+                                            @foreach($data->assigned_reviewers as $reviewerId)
+                                                @php
+                                                    $reviewerUser = \App\Models\User::find($reviewerId);
+                                                @endphp
+                                                @if($reviewerUser)
+                                                    <span class="text-sm font-medium text-slate-700">
+                                                        <i class="fas fa-user-check text-green-600 mr-1 opacity-70"></i>
+                                                        {{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}
+                                                    </span>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-slate-400 italic">None Assigned</span>
+                                    @endif
                                 </td>
                                 <td class="p-6">
                                     <div class="flex items-center gap-2 text-sm text-slate-600">
@@ -206,7 +226,7 @@
                                                     </a>
                                                 @endif
 
-                                                <button @click="open = false; $dispatch('open-feature-modal')"
+                                                <button @click="open = false; $dispatch('open-assign-modal', { id: '{{ $data->id }}', title: {{ json_encode($data->Study_Protocol_title) }}, assigned: {{ json_encode($data->assigned_reviewers ?? []) }} })"
                                                     class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
                                                     <i class="fas fa-users-cog w-4"></i> Assign Reviewers
                                                 </button>
@@ -217,7 +237,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="p-12 text-center text-slate-400">
+                                <td colspan="7" class="p-12 text-center text-slate-400">
                                     <i class="fas fa-folder-open text-4xl mb-4 text-slate-300"></i>
                                     <p>No active review or revision protocols found.</p>
                                 </td>
@@ -234,9 +254,11 @@
     <!-- Include Status Update Modal -->
     @include('admin.partials.status_modal')
 
-    <!-- Feature Not Available Modal -->
-    <div x-data="{ open: false }" @open-feature-modal.window="open = true" class="relative z-[9999]"
-        aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;" x-show="open">
+    <!-- Assign Reviewer Modal -->
+    <div x-data="{ open: false, protocolId: '', protocolTitle: '', assigned: [] }" 
+         @open-assign-modal.window="open = true; protocolId = $event.detail.id; protocolTitle = $event.detail.title; assigned = Array.isArray($event.detail.assigned) ? $event.detail.assigned : [];" 
+         class="relative z-[9999]"
+         aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;" x-show="open">
 
         <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" x-show="open"
             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
@@ -245,7 +267,7 @@
 
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm"
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md"
                     x-show="open" @click.away="open = false" x-transition:enter="ease-out duration-300"
                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
@@ -253,25 +275,46 @@
                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
 
-                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div
-                                class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                                <i class="fas fa-info-circle text-blue-600"></i>
-                            </div>
-                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                                <h3 class="text-lg font-bold leading-6 text-slate-900" id="modal-title">Feature Coming
-                                    Soon</h3>
-                                <div class="mt-2">
-                                    <p class="text-sm text-slate-500">This feature is yet to be added.</p>
+                    <form :action="'{{ url('admin/applications') }}/' + protocolId + '/assign-reviewers'" method="POST">
+                        @csrf
+                        <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <i class="fas fa-users-cog text-blue-600"></i>
+                                </div>
+                                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                    <h3 class="text-lg font-bold leading-6 text-slate-900" id="modal-title">Assign Reviewers</h3>
+                                    <div class="mt-2">
+                                        <p class="text-sm text-slate-500 mb-4" x-text="'Select reviewers for: ' + protocolTitle"></p>
+                                        
+                                        <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                                            @foreach($reviewers as $reviewer)
+                                                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                                                    <input type="checkbox" name="reviewers[]" value="{{ $reviewer->id }}" 
+                                                           ::checked="assigned.map(String).includes('{{ $reviewer->id }}')"
+                                                           class="rounded border-slate-300 text-[#8B0000] focus:ring-[#8B0000] w-5 h-5">
+                                                    <div>
+                                                        <p class="text-sm font-bold text-slate-800">{{ $reviewer->first_name }} {{ $reviewer->last_name }}</p>
+                                                        <p class="text-xs text-slate-500">{{ $reviewer->college ?? ucfirst($reviewer->role) }}</p>
+                                                    </div>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" @click="open = false"
-                            class="inline-flex w-full justify-center rounded-xl bg-[#8B0000] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-900 sm:ml-3 sm:w-auto transition-colors">Close</button>
-                    </div>
+                        <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                            <button type="submit"
+                                class="inline-flex w-full justify-center rounded-xl bg-[#8B0000] px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-red-900 sm:ml-3 sm:w-auto transition-colors">
+                                Save Assignments
+                            </button>
+                            <button type="button" @click="open = false"
+                                class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

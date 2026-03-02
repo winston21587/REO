@@ -274,7 +274,7 @@ class AdminController extends Controller
         $datas = $query->orderBy('created_at', 'desc')->get();
 
         // Fetch Reviewers for the modal
-        $reviewers = User::whereIn('role', ['admin', 'researcher', 'reviewer'])->get();
+        $reviewers = User::where('role', 'reviewer')->get();
 
         return view('admin.applications', compact('datas', 'reviewers'));
     }
@@ -456,6 +456,7 @@ class AdminController extends Controller
 
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
                 $message = "Your submission \"{$submission->Study_Protocol_title}\" document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
+
             } elseif ($request->classification === 'Incomplete') {
                 $request->validate(['remarks' => 'nullable|string']);
                 $newStatus = 'Incomplete';
@@ -482,6 +483,7 @@ class AdminController extends Controller
                         $message .= "\n- " . $doc;
                     }
                 }
+
             } elseif ($request->classification === 'Undo') {
                 $newStatus = 'Pending';
                 $submission->Status = $newStatus;
@@ -540,6 +542,7 @@ class AdminController extends Controller
                 'stage' => $request->review_type, // e.g., 'Expedited Review'
             ]);
 
+            $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
             // Notify the user about the Review Type assignment
             UserNotification::create([
                 'user_id' => $user->user_id,
@@ -606,6 +609,7 @@ class AdminController extends Controller
             // Save the final status
             $submission->Status = $newStatus;
             $submission->save();
+
         }
         // ---------------------------------------------------------
         // CASE C: Generic Status Update (Fallback)
@@ -641,23 +645,30 @@ class AdminController extends Controller
     public function assignReviewers(Request $request, $id)
     {
         $request->validate([
-            'primary_reviewer' => 'required|exists:users,id',
-            'secondary_reviewer' => 'required|exists:users,id|different:primary_reviewer',
+            'reviewers' => 'required|array',
+            'reviewers.*' => 'exists:users,id', // or users table depending on reviewers setup
         ]);
 
         $submission = Research_title::findOrFail($id);
 
-        // Assuming you have these columns in your 'research_titles' table.
-        // If not, you need to create a migration to add them.
-        $submission->primary_reviewer_id = $request->primary_reviewer;
-        $submission->secondary_reviewer_id = $request->secondary_reviewer;
-        $submission->Status = 'Under Review'; // Optional: Auto-update status
+        $submission->assigned_reviewers = $request->reviewers;
+        $submission->Status = 'Under Review'; // Auto-update status when reviewers assigned
         $submission->save();
 
-        // Optional: Send Notification to Reviewers
-        // Notification::send(User::find($request->primary_reviewer), new ReviewerAssigned($submission));
+        $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function($user) {
+            return $user->first_name . ' ' . $user->last_name;
+        })->implode(', ');
 
-        return response()->json(['success' => true, 'message' => 'Reviewers assigned successfully.']);
+        // Optional: Send Notification to Reviewers
+        // foreach($request->reviewers as $reviewer_id) {
+        //     Notification::send(User::find($reviewer_id), new ReviewerAssigned($submission));
+        // }
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Reviewers assigned successfully.']);
+        }
+
+        return redirect()->back()->with('success', 'Reviewers assigned successfully.');
     }
     public function setInitialReview(Request $request, $id)
     {
@@ -1152,6 +1163,7 @@ class AdminController extends Controller
             'type' => 'status_update',
             'is_read' => false
         ]);
+
         return back()->with('success', 'Certification documents uploaded and user notified.');
     }
 

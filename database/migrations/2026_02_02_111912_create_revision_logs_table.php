@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('revision_logs', function (Blueprint $table) {
+        if (!Schema::hasTable('revision_logs')) {
+            Schema::create('revision_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('research_title_id'); // Using BigInt as per standard, ensure matches parent
             $table->unsignedBigInteger('user_id');
@@ -25,6 +26,7 @@ return new class extends Migration
             $table->foreign('research_title_id')->references('id')->on('research_title_information')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
+        }
     }
 
     /**

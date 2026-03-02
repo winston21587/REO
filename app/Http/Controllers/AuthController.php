@@ -31,9 +31,16 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-
             $user = Auth::user();
+
+            if($user->role === 'reviewer'){
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Reviewer accounts are not permitted to log in to the system directly.',
+                ]);
+            }
+
+            $request->session()->regenerate();
 
             if($user->role === 'super_admin'){
                 return redirect()->route('super_admin.analytics');

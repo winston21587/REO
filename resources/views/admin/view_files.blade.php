@@ -87,6 +87,7 @@
                     'icon' => $attrs['icon'],
                     'color' => $attrs['color'],
                     'bg' => $attrs['bg'],
+                    'public_url' => asset($file->filepath),
                 ];
             };
 
@@ -118,6 +119,10 @@
                     if (!file) return '';
                     return this.serveRoute.replace('FILE_ID', file.id);
                 },
+                getOfficeUrl(file) {
+                    if (!file || !file.public_url) return '';
+                    return 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(file.public_url);
+                },
                 isPdf(file) { return file && file.ext === 'pdf'; },
                 isOffice(file) { return file && ['doc','docx','ppt','pptx','xls','xlsx'].includes(file.ext); },
                 selectFile(file) { this.activeFile = file; }
@@ -144,7 +149,7 @@
                         </template>
                     </div>
                     <div class="flex gap-1" x-show="activeFile">
-                        <a :href="getUrl(activeFile)" target="_blank" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-all" title="Open in new tab">
+                        <a :href="isOffice(activeFile) ? getOfficeUrl(activeFile) : getUrl(activeFile)" target="_blank" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-all" title="Open in new tab">
                             <i class="fas fa-external-link-alt"></i>
                         </a>
                         <a :href="getUrl(activeFile)" download class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-all" title="Download">
@@ -159,7 +164,7 @@
                         <iframe :src="getUrl(activeFile)" class="w-full h-full border-0 bg-white" title="PDF Viewer"></iframe>
                     </template>
                     <template x-if="activeFile && isOffice(activeFile)">
-                        <iframe :src="'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(getUrl(activeFile))" class="w-full h-full border-0 bg-white" title="Office Viewer"></iframe>
+                        <iframe :src="getOfficeUrl(activeFile)" class="w-full h-full border-0 bg-white" title="Office Viewer"></iframe>
                     </template>
                     <template x-if="!activeFile">
                         <div class="absolute inset-0 flex items-center justify-center">

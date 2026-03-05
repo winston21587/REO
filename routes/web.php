@@ -207,9 +207,11 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/admin/revisions', [AdminController::class, 'revisions'])->name('admin.revisions');
         Route::get('/admin/certifications', [AdminController::class, 'certifications'])->name('admin.certifications');
+        Route::get('/admin/certifications/{id}/generate', [AdminController::class, 'showGenerateCertificates'])->name('admin.certificate.generate_page');
         Route::get('/admin/view_files/{id}', [AdminController::class, 'viewFiles'])->name('admin.view_files');
         Route::get('/admin/file-serve/{id}', [AdminController::class, 'serveFile'])->name('admin.serve_file');
         Route::post('/admin/certificate/generate/{id}', [AdminController::class, 'generateCertificate'])->name('admin.certificate.generate');
+
 
 
         // Recommendation Letter Routes

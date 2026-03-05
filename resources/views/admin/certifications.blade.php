@@ -100,9 +100,9 @@
                                             @php
                                                 $resName = trim(($data->researcher->user->first_name ?? $data->user->first_name ?? '') . ' ' . ($data->researcher->user->last_name ?? $data->user->last_name ?? ''));
                                             @endphp
-                                            <button onclick="openGenerateCertificateModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}', '{{ addslashes($resName) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-emerald-600 rounded-lg transition-colors text-left">
+                                            <a href="{{ route('admin.certificate.generate_page', $data->id) }}" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-emerald-600 rounded-lg transition-colors text-left">
                                                 <i class="fas fa-stamp w-4"></i> Generate Documents
-                                            </button>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>

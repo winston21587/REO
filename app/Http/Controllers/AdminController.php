@@ -1099,17 +1099,48 @@ class AdminController extends Controller
 
     // generateCertificate method removed as per request
 
+    public function showGenerateCertificates($id)
+    {
+        $submission = Research_title::with(['researcher.user'])->findOrFail($id);
+        $researcherName = trim(
+            ($submission->researcher->user->first_name ?? '') . ' ' .
+            ($submission->researcher->user->last_name ?? '')
+        );
+        return view('admin.generate_certificates', compact('submission', 'researcherName'));
+    }
+
 
     public function generateCertificate(Request $request, $id)
     {
-        $request->validate([
-            'researcher_name'  => 'required|string|max:255',
-            'protocol_title'   => 'required|string|max:500',
-            'protocol_code'    => 'nullable|string|max:100',
-            'approval_date'    => 'required|date',
-            'expiry_date'      => 'required|date|after_or_equal:approval_date',
-            'pickup_date'      => 'required|date|after_or_equal:today',
-        ]);
+        $action = $request->input('action', 'generate');
+
+        $rules = [];
+
+        if ($action === 'preview_cert' || $action === 'generate') {
+            $rules = array_merge($rules, [
+                'cert_names'         => $action === 'generate' ? 'required|string|max:255' : 'nullable|string|max:255',
+                'cert_title'         => $action === 'generate' ? 'required|string|max:500' : 'nullable|string|max:500',
+                'cert_reo_code'      => 'nullable|string|max:100',
+                'cert_reo_summary'   => 'nullable|string|max:2000',
+            ]);
+        }
+
+        if ($action === 'preview_cover' || $action === 'generate') {
+            $rules = array_merge($rules, [
+                'cover_reo_code'        => 'nullable|string|max:100',
+                'cover_title'           => $action === 'generate' ? 'required|string|max:500' : 'nullable|string|max:500',
+                'cover_approved_period' => $action === 'generate' ? 'required|date' : 'nullable|date',
+                'cover_expiry_date'     => $action === 'generate' ? 'required|date|after_or_equal:cover_approved_period' : 'nullable|date',
+                'cover_researcher'      => $action === 'generate' ? 'required|string|max:255' : 'nullable|string|max:255',
+            ]);
+        }
+
+        if ($action === 'generate') {
+            $rules['pickup_date'] = 'required|date|after_or_equal:today';
+        }
+
+        $request->validate($rules);
+
 
         $submission = Research_title::with('researcher.user')->findOrFail($id);
 
@@ -1119,14 +1150,14 @@ class AdminController extends Controller
             mkdir($outputDir, 0775, true);
         }
 
-        $approvalDateFormatted = Carbon::parse($request->approval_date)->format('F j, Y');
-        $expiryDateFormatted   = Carbon::parse($request->expiry_date)->format('F j, Y');
-        $pickupDate            = Carbon::parse($request->pickup_date);
-        $formattedPickupDate   = $pickupDate->format('F j, Y');
+        $approvedFormatted = $request->has('cover_approved_period') ? Carbon::parse($request->cover_approved_period)->format('F j, Y') : '';
+        $expiryFormatted   = $request->has('cover_expiry_date') ? Carbon::parse($request->cover_expiry_date)->format('F j, Y') : '';
+        $formattedPickup   = $request->has('pickup_date') ? Carbon::parse($request->pickup_date)->format('F j, Y') : '';
 
         // ----------------------------------------------------------------
         // 1. Generate Cover Letter
         // ----------------------------------------------------------------
+        if ($action === 'preview_cover' || $action === 'generate') {
         $coverTemplatePath = storage_path('app/public/certificates/Cover Letter.pdf');
         if (!file_exists($coverTemplatePath)) {
             return back()->with('error', 'Cover Letter template not found.');
@@ -1142,26 +1173,36 @@ class AdminController extends Controller
         $coverPdf->SetFont('Arial', '', 11);
         $coverPdf->SetTextColor(0, 0, 0);
 
-        // Stamp dynamic fields onto Cover Letter
-        // Researcher name
-        $coverPdf->SetXY(28, 94);
-        $coverPdf->Write(0, $request->researcher_name);
-
-        // Protocol title
-        $coverPdf->SetXY(28, 102);
-        $coverPdf->MultiCell(155, 5, $request->protocol_title);
-
-        // Protocol code (REOC code)
-        if ($request->protocol_code) {
-            $coverPdf->SetXY(28, 115);
-            $coverPdf->Write(0, $request->protocol_code);
+        // REO Code
+        if ($request->cover_reo_code) {
+            $coverPdf->SetXY(28, 85);
+            $coverPdf->Write(0, $request->cover_reo_code);
         }
 
-        // Approval date
-        $coverPdf->SetXY(28, 123);
-        $coverPdf->Write(0, $approvalDateFormatted);
+        // Title
+        $coverPdf->SetXY(28, 94);
+        $coverPdf->MultiCell(155, 5, $request->cover_title);
 
-        $coverFilename = 'Cover_Letter_' . $submission->id . '_' . time() . '.pdf';
+        // Approved period
+        $coverPdf->SetXY(28, 112);
+        $coverPdf->Write(0, $approvedFormatted);
+
+        // Expiry date
+        $coverPdf->SetXY(28, 120);
+        $coverPdf->Write(0, $expiryFormatted);
+
+        // Researcher
+        $coverPdf->SetXY(28, 130);
+        $coverPdf->Write(0, $request->cover_researcher);
+
+        if ($action === 'preview_cover') {
+            return response($coverPdf->Output('S'), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="Preview_Cover_Letter.pdf"'
+            ]);
+        }
+
+        $coverFilename   = 'Cover_Letter_' . $submission->id . '_' . time() . '.pdf';
         $coverOutputPath = $outputDir . '/' . $coverFilename;
         $coverPdf->Output('F', $coverOutputPath);
 
@@ -1171,10 +1212,12 @@ class AdminController extends Controller
             'filetype'          => 'Approval Letter',
             'filepath'          => 'storage/certificates/generated/' . $coverFilename,
         ]);
+        }
 
         // ----------------------------------------------------------------
         // 2. Generate Certificate of Exemption
         // ----------------------------------------------------------------
+        if ($action === 'preview_cert' || $action === 'generate') {
         $certTemplatePath = storage_path('app/public/certificates/2026-Certificate of Exemption template.pdf');
         if (!file_exists($certTemplatePath)) {
             return back()->with('error', 'Certificate of Exemption template not found.');
@@ -1182,34 +1225,44 @@ class AdminController extends Controller
 
         $certPdf = new \setasign\Fpdi\Fpdi();
         $certPdf->setSourceFile($certTemplatePath);
-        $certTpl = $certPdf->importPage(1);
-        $certSize = $certPdf->getTemplateSize($certTpl);
+        $certTpl   = $certPdf->importPage(1);
+        $certSize  = $certPdf->getTemplateSize($certTpl);
         $certPdf->AddPage($certSize['orientation'], [$certSize['width'], $certSize['height']]);
         $certPdf->useTemplate($certTpl, 0, 0, $certSize['width'], $certSize['height']);
         $certPdf->SetAutoPageBreak(false);
         $certPdf->SetFont('Arial', '', 11);
         $certPdf->SetTextColor(0, 0, 0);
 
-        // Stamp dynamic fields onto the Certificate of Exemption
-        // Researcher name (centered)
+        $w = $certSize['width'];
+
+        // Names (researcher/s) — centered
         $certPdf->SetXY(30, 138);
-        $certPdf->Cell($certSize['width'] - 60, 6, $request->researcher_name, 0, 0, 'C');
+        $certPdf->Cell($w - 60, 6, $request->cert_names, 0, 0, 'C');
 
-        // Protocol title (centered, multi-line)
+        // Title — centered, multi-line
         $certPdf->SetXY(30, 150);
-        $certPdf->MultiCell($certSize['width'] - 60, 6, '"' . $request->protocol_title . '"', 0, 'C');
+        $certPdf->MultiCell($w - 60, 6, '"' . $request->cert_title . '"', 0, 'C');
 
-        // Protocol code
-        if ($request->protocol_code) {
+        // REO Code
+        if ($request->cert_reo_code) {
             $certPdf->SetXY(30, 170);
-            $certPdf->Cell($certSize['width'] - 60, 6, 'Protocol Code: ' . $request->protocol_code, 0, 0, 'C');
+            $certPdf->Cell($w - 60, 6, $request->cert_reo_code, 0, 0, 'C');
         }
 
-        // Date range
-        $certPdf->SetXY(30, 180);
-        $certPdf->Cell($certSize['width'] - 60, 6, $approvalDateFormatted . ' to ' . $expiryDateFormatted, 0, 0, 'C');
+        // REO Summary / scope of exemption
+        if ($request->cert_reo_summary) {
+            $certPdf->SetXY(30, 180);
+            $certPdf->MultiCell($w - 60, 5, $request->cert_reo_summary, 0, 'C');
+        }
 
-        $certFilename = 'Certificate_' . $submission->id . '_' . time() . '.pdf';
+        if ($action === 'preview_cert') {
+            return response($certPdf->Output('S'), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="Preview_Certificate_of_Exemption.pdf"'
+            ]);
+        }
+
+        $certFilename   = 'Certificate_' . $submission->id . '_' . time() . '.pdf';
         $certOutputPath = $outputDir . '/' . $certFilename;
         $certPdf->Output('F', $certOutputPath);
 
@@ -1219,29 +1272,33 @@ class AdminController extends Controller
             'filetype'          => 'certificate',
             'filepath'          => 'storage/certificates/generated/' . $certFilename,
         ]);
+        }
 
-        // ----------------------------------------------------------------
-        // 3. Appointment & Notification
-        // ----------------------------------------------------------------
-        Appointment::create([
-            'research_title_id' => $submission->id,
-            'user_id'           => $submission->researcher->user_id,
-            'appointment_date'  => $pickupDate->setTime(9, 0),
-            'stage'             => 'Certificate Pickup',
-            'status'            => 'Scheduled',
-            'remarks'           => 'Please bring valid ID.',
-        ]);
+        if ($action === 'generate') {
+            // ----------------------------------------------------------------
+            // 3. Appointment & Notification
+            // ----------------------------------------------------------------
+            $pickupDate = Carbon::parse($request->pickup_date);
+            Appointment::create([
+                'research_title_id' => $submission->id,
+                'user_id'           => $submission->researcher->user_id,
+                'appointment_date'  => $pickupDate->setTime(9, 0),
+                'stage'             => 'Certificate Pickup',
+            ]);
 
-        UserNotification::create([
-            'user_id'     => $submission->researcher->user_id,
-            'research_id' => $submission->id,
-            'title'       => 'Certification Documents Ready',
-            'message'     => "Your Cover Letter of Approval and Research Ethics Clearance Certificate for \"{$submission->Study_Protocol_title}\" have been generated and are ready for pickup at the REO building on {$formattedPickupDate}.",
-            'type'        => 'status_update',
-            'is_read'     => false,
-        ]);
+            UserNotification::create([
+                'user_id'     => $submission->researcher->user_id,
+                'research_id' => $submission->id,
+                'title'       => 'Certification Documents Ready',
+                'message'     => "Your Cover Letter of Approval and Research Ethics Clearance Certificate for \"{$submission->Study_Protocol_title}\" have been generated and are ready for pickup at the REO building on {$formattedPickup}.",
+                'type'        => 'status_update',
+                'is_read'     => false,
+            ]);
 
-        return back()->with('success', 'Certification documents generated and researcher notified successfully.');
+            return redirect()
+                ->route('admin.certifications')
+                ->with('success', 'Certification documents generated and researcher notified successfully.');
+        }
     }
 
     public function revisions(Request $request)

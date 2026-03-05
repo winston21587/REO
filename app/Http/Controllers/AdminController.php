@@ -796,7 +796,8 @@ class AdminController extends Controller
         // }
 
         $researchTitle = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
-        return view('admin.view_files', compact('researchTitle'));
+        $backUrl = url()->previous(route('admin.analytics'));
+        return view('admin.view_files', compact('researchTitle', 'backUrl'));
     }
 
     public function serveFile($id)
@@ -1170,7 +1171,7 @@ class AdminController extends Controller
     public function revisions(Request $request)
     {
         $query = Research_title::with(['researcher.user', 'revisionLogs.user', 'user'])
-            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions', 'Panel Deliberation']);
+            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation']);
 
         if ($request->has('search')) {
             $search = $request->search;

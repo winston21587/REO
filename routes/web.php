@@ -111,7 +111,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/submit', [Research_title_Controller::class, 'showSubmit'])->name('submit');
         Route::post('/submit', [Research_title_Controller::class, 'submitTitle'])->name('submit.title');
         Route::get('/home/{id}/files', [Research_title_Controller::class, 'manageFiles'])->name('manage.files');
-    Route::put('/submissions/update-file/{id}', [Research_title_Controller::class, 'updateFile'])->name('update.file');
+        Route::put('/submissions/update-file/{id}', [Research_title_Controller::class, 'updateFile'])->name('update.file');
+        Route::post('/submissions/upload-revision-document/{id}', [Research_title_Controller::class, 'uploadRevisionDocument'])->name('upload.revision.document');
+        Route::delete('/submissions/delete-revision-document/{file_id}', [Research_title_Controller::class, 'deleteRevisionDocument'])->name('delete.revision.document');
         Route::post('/home/{id}/files/submit', [Research_title_Controller::class, 'submitRevisions'])->name('submit.revisions');
         Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
         Route::get('/home/{id}/recommendation-letter', [Research_title_Controller::class, 'viewRecommendationLetter'])->name('recommendation.view');

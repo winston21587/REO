@@ -155,31 +155,91 @@ class Research_title_Controller extends Controller
     public function updateFile(Request $request, $id)
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf,doc,docx|max:5120', // 5MB limit
+            'file' => 'required|file|mimes:pdf,doc,docx|max:5120',
             'file_id' => 'required|integer',
         ]);
 
-        $researchFile = Researcher_files::findOrFail($request->file_id);
-
-        // Delete old file from storage
-        if (Storage::exists($researchFile->filepath)) {
-            Storage::delete($researchFile->filepath);
-        }
+        $oldResearchFile = Researcher_files::findOrFail($request->file_id);
 
         // Store new file
         $path = $request->file('file')->store('uploads/research_files', 'public_uploads');
 
-        // Update record
-        $researchFile->update([
+        // Original behavior: Delete the old active file completely when updating directly
+        if ($oldResearchFile->revision_number === null) {
+            Storage::disk('public_uploads')->delete(str_replace('storage/', '', $oldResearchFile->filepath));
+            $oldResearchFile->delete();
+        }
+
+        // Create new replacement active file record
+        $newFileRecord = Researcher_files::create([
+            'research_title_id' => $oldResearchFile->research_title_id,
             'filename' => $request->file('file')->getClientOriginalName(),
             'filepath' => $path,
             'filetype' => $request->file('file')->getClientOriginalExtension(),
+            'category' => $oldResearchFile->category,
+            'revision_number' => null,
         ]);
 
-
+        $research = Research_title::findOrFail($id);
+        $research->files()->attach($newFileRecord->id);
 
         return redirect()->back()->with('success', 'File updated successfully!');
-        return redirect()->back()->with('success', 'File updated successfully!');
+    }
+
+    public function uploadRevisionDocument(Request $request, $id)
+    {
+        $request->validate([
+            'file' => 'required|file|max:5120',
+            'category' => 'required|string',
+        ]);
+
+        $researchTitle = Research_title::findOrFail($id);
+        $user = Auth::user();
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) abort(403);
+
+        // Replace existing draft in this category if it exists
+        $existingDraft = Researcher_files::where('research_title_id', $id)
+                            ->where('revision_number', -1)
+                            ->where('category', $request->category)
+                            ->first();
+
+        if ($existingDraft) {
+            Storage::disk('public_uploads')->delete(str_replace('storage/', '', $existingDraft->filepath));
+            $existingDraft->delete();
+        }
+
+        $path = $request->file('file')->store('uploads/research_files', 'public_uploads');
+
+        $newFileRecord = Researcher_files::create([
+            'research_title_id' => $id,
+            'filename' => $request->file('file')->getClientOriginalName(),
+            'filepath' => $path,
+            'filetype' => $request->file('file')->getClientOriginalExtension(),
+            'category' => $request->category,
+            'revision_number' => -1, // -1 means In-Progress Workspace
+        ]);
+
+        $researchTitle->files()->attach($newFileRecord->id);
+
+        return back()->with('success', 'Document added to draft workspace.');
+    }
+
+    public function deleteRevisionDocument($file_id)
+    {
+        $file = Researcher_files::findOrFail($file_id);
+        $user = Auth::user();
+        
+        $researchTitle = Research_title::findOrFail($file->research_title_id);
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) abort(403);
+
+        if ($file->revision_number != -1) {
+            abort(403, 'Can only delete files from the active draft workspace.');
+        }
+
+        Storage::disk('public_uploads')->delete(str_replace('storage/', '', $file->filepath));
+        $file->delete();
+
+        return back()->with('success', 'Document removed from draft workspace.');
     }
 
     public function viewRecommendationLetter($id)
@@ -225,14 +285,24 @@ class Research_title_Controller extends Controller
 
         if (in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete'])) {
 
-            // Check if any files have been updated since the status was set (i.e., since the title was last updated)
-            // Logic: If user updated a file, file->updated_at should be > title->updated_at
-            // Fix: Specify table name to avoid ambiguity with pivot table columns
-            $hasUpdatedFiles = $researchTitle->files()->where('researcher_files.updated_at', '>', $researchTitle->updated_at)->exists();
+            // Check if any files have been uploaded into the draft workspace
+            $hasUpdatedFiles = Researcher_files::where('research_title_id', $id)
+                                ->where('revision_number', -1)
+                                ->exists();
 
             if (!$hasUpdatedFiles) {
-                return back()->with('error', 'You must update at least one document before submitting corrections.');
+                return back()->with('error', 'You must upload at least one document to your Revision Workspace before submitting corrections.');
             }
+
+            // Group all draft workspace files into a formal new Revision Folder
+            $currentMax = Researcher_files::where('research_title_id', $id)
+                            ->where('revision_number', '>', 0)
+                            ->max('revision_number') ?? 0;
+            $newRevisionNumber = $currentMax + 1;
+
+            Researcher_files::where('research_title_id', $id)
+                ->where('revision_number', -1)
+                ->update(['revision_number' => $newRevisionNumber]);
 
             // Determine new status
             // Changed from 'Pending'/'Revision Submitted' to 'Corrections Submitted' to distinguish in Admin Dashboard
@@ -252,7 +322,7 @@ class Research_title_Controller extends Controller
             $researchTitle->Status = $newStatus;
             $researchTitle->save();
 
-            $successMsg = ($newStatus === 'Pending') ? 'Corrections submitted successfully! Application is now Pending review.' : 'Revisions submitted successfully! Status updated.';
+            $successMsg = ($newStatus === 'Pending') ? 'Corrections submitted successfully! Application is now Pending review.' : 'Revisions submitted successfully! Document history synced.';
 
             return redirect()->route('home')->with('success', $successMsg);
         }

@@ -75,7 +75,7 @@
                                     </span>
                                 @else
                                     <span class="text-xs text-orange-500 font-bold bg-orange-50 px-2 py-1 rounded border border-orange-100">
-                                        <i class="fas fa-clock mr-1"></i> Pending Upload
+                                        <i class="fas fa-clock mr-1"></i> Pending Generation
                                     </span>
                                 @endif
                             </td>
@@ -93,12 +93,15 @@
                                                 <i class="fas fa-eye w-4"></i> View Files
                                             </a>
                                             @if($certificate && $approvalLetter)
-                                                <button onclick="openViewCertificatesModal('{{ asset($approvalLetter->filepath) }}', '{{ asset($certificate->filepath) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
+                                                <button onclick="openViewCertificatesModal('{{ asset($certificate->filepath) }}', '{{ asset($approvalLetter->filepath) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
                                                     <i class="fas fa-certificate w-4"></i> View Certificates
                                                 </button>
                                             @endif
-                                            <button onclick="openUploadCertificateModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors text-left">
-                                                <i class="fas fa-upload w-4"></i> Upload Documents
+                                            @php
+                                                $resName = trim(($data->researcher->user->first_name ?? $data->user->first_name ?? '') . ' ' . ($data->researcher->user->last_name ?? $data->user->last_name ?? ''));
+                                            @endphp
+                                            <button onclick="openGenerateCertificateModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}', '{{ addslashes($resName) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-emerald-600 rounded-lg transition-colors text-left">
+                                                <i class="fas fa-stamp w-4"></i> Generate Documents
                                             </button>
                                         </div>
                                     </div>
@@ -124,5 +127,21 @@
     
     @include('admin.partials.upload_certificate_modal')
     @include('admin.partials.view_certificates_modal')
+
+    @if(session('success'))
+    <div id="certToast" class="fixed bottom-6 right-6 z-[200] flex items-center gap-3 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium animate-[fadeInUp_0.4s_ease-out]">
+        <i class="fas fa-check-circle text-emerald-200"></i>
+        {{ session('success') }}
+        <button onclick="document.getElementById('certToast').remove()" class="ml-2 text-emerald-200 hover:text-white">&times;</button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div id="certErrorToast" class="fixed bottom-6 right-6 z-[200] flex items-center gap-3 bg-red-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium animate-[fadeInUp_0.4s_ease-out]">
+        <i class="fas fa-exclamation-circle text-red-200"></i>
+        {{ session('error') }}
+        <button onclick="document.getElementById('certErrorToast').remove()" class="ml-2 text-red-200 hover:text-white">&times;</button>
+    </div>
+    @endif
 
 </x-admin_layout>

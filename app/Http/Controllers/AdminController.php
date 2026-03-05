@@ -1100,72 +1100,148 @@ class AdminController extends Controller
     // generateCertificate method removed as per request
 
 
-    public function uploadCertificate(Request $request, $id)
+    public function generateCertificate(Request $request, $id)
     {
         $request->validate([
-            'cover_letter' => 'required|file|mimes:pdf|max:10240',
-            'certificate' => 'required|file|mimes:pdf|max:10240',
-            'pickup_date' => 'required|date|after_or_equal:today',
+            'researcher_name'  => 'required|string|max:255',
+            'protocol_title'   => 'required|string|max:500',
+            'protocol_code'    => 'nullable|string|max:100',
+            'approval_date'    => 'required|date',
+            'expiry_date'      => 'required|date|after_or_equal:approval_date',
+            'pickup_date'      => 'required|date|after_or_equal:today',
         ]);
 
-        $submission = Research_title::findOrFail($id);
-        $user = User::find($submission->user_id);
+        $submission = Research_title::with('researcher.user')->findOrFail($id);
 
-        // Handle Cover Letter
-        if ($request->hasFile('cover_letter')) {
-            $file = $request->file('cover_letter');
-            $filename = 'Approval_Letter_' . $submission->id . '_' . time() . '.pdf';
-            $path = $file->storeAs('certificates', $filename, 'public');
-
-            researcher_files::create([
-                'research_title_id' => $submission->id,
-                'filename' => 'Cover Letter of Approval',
-                'filetype' => 'Approval Letter',
-                'filepath' => 'storage/' . $path,
-                'user_id' => $submission->user_id,
-            ]);
+        // Ensure output directory exists
+        $outputDir = storage_path('app/public/certificates/generated');
+        if (!file_exists($outputDir)) {
+            mkdir($outputDir, 0775, true);
         }
 
-        // Handle Certificate
-        if ($request->hasFile('certificate')) {
-            $file = $request->file('certificate');
-            $filename = 'Clearance_' . $submission->id . '_' . time() . '.pdf';
-            $path = $file->storeAs('certificates', $filename, 'public');
+        $approvalDateFormatted = Carbon::parse($request->approval_date)->format('F j, Y');
+        $expiryDateFormatted   = Carbon::parse($request->expiry_date)->format('F j, Y');
+        $pickupDate            = Carbon::parse($request->pickup_date);
+        $formattedPickupDate   = $pickupDate->format('F j, Y');
 
-            researcher_files::create([
-                'research_title_id' => $submission->id,
-                'filename' => 'Ethics Clearance Certificate',
-                'filetype' => 'certificate',
-                'filepath' => 'storage/' . $path,
-                'user_id' => $submission->user_id,
-            ]);
+        // ----------------------------------------------------------------
+        // 1. Generate Cover Letter
+        // ----------------------------------------------------------------
+        $coverTemplatePath = storage_path('app/public/certificates/Cover Letter.pdf');
+        if (!file_exists($coverTemplatePath)) {
+            return back()->with('error', 'Cover Letter template not found.');
         }
 
-        // Format Date
-        $pickupDate = Carbon::parse($request->pickup_date);
-        $formattedDate = $pickupDate->format('F j, Y');
+        $coverPdf = new \setasign\Fpdi\Fpdi();
+        $coverPdf->setSourceFile($coverTemplatePath);
+        $coverTpl = $coverPdf->importPage(1);
+        $size = $coverPdf->getTemplateSize($coverTpl);
+        $coverPdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+        $coverPdf->useTemplate($coverTpl, 0, 0, $size['width'], $size['height']);
+        $coverPdf->SetAutoPageBreak(false);
+        $coverPdf->SetFont('Arial', '', 11);
+        $coverPdf->SetTextColor(0, 0, 0);
 
-        // Create Appointment for Pickup
+        // Stamp dynamic fields onto Cover Letter
+        // Researcher name
+        $coverPdf->SetXY(28, 94);
+        $coverPdf->Write(0, $request->researcher_name);
+
+        // Protocol title
+        $coverPdf->SetXY(28, 102);
+        $coverPdf->MultiCell(155, 5, $request->protocol_title);
+
+        // Protocol code (REOC code)
+        if ($request->protocol_code) {
+            $coverPdf->SetXY(28, 115);
+            $coverPdf->Write(0, $request->protocol_code);
+        }
+
+        // Approval date
+        $coverPdf->SetXY(28, 123);
+        $coverPdf->Write(0, $approvalDateFormatted);
+
+        $coverFilename = 'Cover_Letter_' . $submission->id . '_' . time() . '.pdf';
+        $coverOutputPath = $outputDir . '/' . $coverFilename;
+        $coverPdf->Output('F', $coverOutputPath);
+
+        researcher_files::create([
+            'research_title_id' => $submission->id,
+            'filename'          => 'Cover Letter of Approval',
+            'filetype'          => 'Approval Letter',
+            'filepath'          => 'storage/certificates/generated/' . $coverFilename,
+        ]);
+
+        // ----------------------------------------------------------------
+        // 2. Generate Certificate of Exemption
+        // ----------------------------------------------------------------
+        $certTemplatePath = storage_path('app/public/certificates/2026-Certificate of Exemption template.pdf');
+        if (!file_exists($certTemplatePath)) {
+            return back()->with('error', 'Certificate of Exemption template not found.');
+        }
+
+        $certPdf = new \setasign\Fpdi\Fpdi();
+        $certPdf->setSourceFile($certTemplatePath);
+        $certTpl = $certPdf->importPage(1);
+        $certSize = $certPdf->getTemplateSize($certTpl);
+        $certPdf->AddPage($certSize['orientation'], [$certSize['width'], $certSize['height']]);
+        $certPdf->useTemplate($certTpl, 0, 0, $certSize['width'], $certSize['height']);
+        $certPdf->SetAutoPageBreak(false);
+        $certPdf->SetFont('Arial', '', 11);
+        $certPdf->SetTextColor(0, 0, 0);
+
+        // Stamp dynamic fields onto the Certificate of Exemption
+        // Researcher name (centered)
+        $certPdf->SetXY(30, 138);
+        $certPdf->Cell($certSize['width'] - 60, 6, $request->researcher_name, 0, 0, 'C');
+
+        // Protocol title (centered, multi-line)
+        $certPdf->SetXY(30, 150);
+        $certPdf->MultiCell($certSize['width'] - 60, 6, '"' . $request->protocol_title . '"', 0, 'C');
+
+        // Protocol code
+        if ($request->protocol_code) {
+            $certPdf->SetXY(30, 170);
+            $certPdf->Cell($certSize['width'] - 60, 6, 'Protocol Code: ' . $request->protocol_code, 0, 0, 'C');
+        }
+
+        // Date range
+        $certPdf->SetXY(30, 180);
+        $certPdf->Cell($certSize['width'] - 60, 6, $approvalDateFormatted . ' to ' . $expiryDateFormatted, 0, 0, 'C');
+
+        $certFilename = 'Certificate_' . $submission->id . '_' . time() . '.pdf';
+        $certOutputPath = $outputDir . '/' . $certFilename;
+        $certPdf->Output('F', $certOutputPath);
+
+        researcher_files::create([
+            'research_title_id' => $submission->id,
+            'filename'          => 'Ethics Clearance Certificate',
+            'filetype'          => 'certificate',
+            'filepath'          => 'storage/certificates/generated/' . $certFilename,
+        ]);
+
+        // ----------------------------------------------------------------
+        // 3. Appointment & Notification
+        // ----------------------------------------------------------------
         Appointment::create([
             'research_title_id' => $submission->id,
-            'user_id' => $submission->user_id,
-            'appointment_date' => $pickupDate->setTime(9, 0), // Default to 9:00 AM
-            'stage' => 'Certificate Pickup',
-            'status' => 'Scheduled',
-            'remarks' => 'Please bring valid ID.'
+            'user_id'           => $submission->researcher->user_id,
+            'appointment_date'  => $pickupDate->setTime(9, 0),
+            'stage'             => 'Certificate Pickup',
+            'status'            => 'Scheduled',
+            'remarks'           => 'Please bring valid ID.',
         ]);
 
-        // Notify User
         UserNotification::create([
-            'user_id' => $submission->user_id,
+            'user_id'     => $submission->researcher->user_id,
             'research_id' => $submission->id,
-            'title' => 'Certification Documents Ready',
-            'message' => "Your Cover Letter of Approval and Research Ethics Clearance Certificate have been generated. They are ready for pickup at the REO building on {$formattedDate}.",
-            'type' => 'status_update',
-            'is_read' => false
+            'title'       => 'Certification Documents Ready',
+            'message'     => "Your Cover Letter of Approval and Research Ethics Clearance Certificate for \"{$submission->Study_Protocol_title}\" have been generated and are ready for pickup at the REO building on {$formattedPickupDate}.",
+            'type'        => 'status_update',
+            'is_read'     => false,
         ]);
 
-        return back()->with('success', 'Certification documents uploaded and user notified.');
+        return back()->with('success', 'Certification documents generated and researcher notified successfully.');
     }
 
     public function revisions(Request $request)

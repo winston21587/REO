@@ -324,6 +324,13 @@
                                         <i class="fas fa-external-link-alt"></i> View Fullscreen
                                     </a>
                                 </div>
+                            @elseif($isOffice)
+                                <iframe src="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(asset($file->filepath)) }}" width="100%" height="100%" class="border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
+                                <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
+                                    <a href="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(asset($file->filepath)) }}" target="_blank" class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur-sm text-slate-900 px-5 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-[#8B0000] hover:text-white flex items-center gap-2">
+                                        <i class="fas fa-external-link-alt"></i> View Fullscreen
+                                    </a>
+                                </div>
                             @else
                                 <div class="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center">
                                     <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-3">

@@ -1175,20 +1175,20 @@ class AdminController extends Controller
 
         // REO Code
         if ($request->cover_reo_code) {
-            $coverPdf->SetXY(28, 85);
+            $coverPdf->SetXY(67, 129);
             $coverPdf->Write(0, $request->cover_reo_code);
         }
 
         // Title
-        $coverPdf->SetXY(28, 94);
-        $coverPdf->MultiCell(155, 5, $request->cover_title);
-
+        $coverPdf->SetXY(67, 139);
+        $coverPdf->MultiCell(90, 4, $request->cover_title);
+ 
         // Approved period
-        $coverPdf->SetXY(28, 112);
+        $coverPdf->SetXY(67, 161);
         $coverPdf->Write(0, $approvedFormatted);
 
         // Expiry date
-        $coverPdf->SetXY(28, 120);
+        $coverPdf->SetXY(67, 165.5);
         $coverPdf->Write(0, $expiryFormatted);
 
         // Researcher

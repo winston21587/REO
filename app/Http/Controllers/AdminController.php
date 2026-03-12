@@ -1128,6 +1128,7 @@ class AdminController extends Controller
         if ($action === 'preview_cover' || $action === 'generate') {
             $rules = array_merge($rules, [
                 'cover_reo_code'        => 'nullable|string|max:100',
+                'cover_version'         => 'nullable|string|max:50',
                 'cover_title'           => $action === 'generate' ? 'required|string|max:500' : 'nullable|string|max:500',
                 'cover_approved_period' => $action === 'generate' ? 'required|date' : 'nullable|date',
                 'cover_expiry_date'     => $action === 'generate' ? 'required|date|after_or_equal:cover_approved_period' : 'nullable|date',
@@ -1163,14 +1164,14 @@ class AdminController extends Controller
             return back()->with('error', 'Cover Letter template not found.');
         }
 
-        $coverPdf = new \setasign\Fpdi\Fpdi();
+        $coverPdf = new \setasign\Fpdi\Tcpdf\Fpdi();
         $coverPdf->setSourceFile($coverTemplatePath);
         $coverTpl = $coverPdf->importPage(1);
         $size = $coverPdf->getTemplateSize($coverTpl);
         $coverPdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
         $coverPdf->useTemplate($coverTpl, 0, 0, $size['width'], $size['height']);
         $coverPdf->SetAutoPageBreak(false);
-        $coverPdf->SetFont('Arial', '', 11);
+        $coverPdf->SetFont('helvetica', '', 11);
         $coverPdf->SetTextColor(0, 0, 0);
 
         // REO Code
@@ -1182,18 +1183,23 @@ class AdminController extends Controller
         // Title
         $coverPdf->SetXY(67, 139);
         $coverPdf->MultiCell(90, 4, $request->cover_title);
- 
         // Approved period
         $coverPdf->SetXY(67, 161);
         $coverPdf->Write(0, $approvedFormatted);
+
+        // Version
+        if ($request->cover_version) {
+            $coverPdf->SetXY(67, 149); // Placing version under title
+            $coverPdf->Write(0, $request->cover_version);
+        }
 
         // Expiry date
         $coverPdf->SetXY(67, 165.5);
         $coverPdf->Write(0, $expiryFormatted);
 
         // Researcher
-        $coverPdf->SetXY(28, 130);
-        $coverPdf->Write(0, $request->cover_researcher);
+        $coverPdf->SetXY(67, 170);
+        $coverPdf->MultiCell(90, 4, $request->cover_researcher);
 
         if ($action === 'preview_cover') {
             return response($coverPdf->Output('S'), 200, [
@@ -1223,36 +1229,49 @@ class AdminController extends Controller
             return back()->with('error', 'Certificate of Exemption template not found.');
         }
 
-        $certPdf = new \setasign\Fpdi\Fpdi();
+        // Map TCPDF font cache to the pre-compiled directory to avoid on-the-fly generation issues
+        if (!defined('K_PATH_FONTS')) {
+            define('K_PATH_FONTS', storage_path('app/tcpdf_fonts/'));
+        }
+
+        $certPdf = new \setasign\Fpdi\Tcpdf\Fpdi();
         $certPdf->setSourceFile($certTemplatePath);
         $certTpl   = $certPdf->importPage(1);
         $certSize  = $certPdf->getTemplateSize($certTpl);
         $certPdf->AddPage($certSize['orientation'], [$certSize['width'], $certSize['height']]);
         $certPdf->useTemplate($certTpl, 0, 0, $certSize['width'], $certSize['height']);
         $certPdf->SetAutoPageBreak(false);
-        $certPdf->SetFont('Arial', '', 11);
         $certPdf->SetTextColor(0, 0, 0);
 
         $w = $certSize['width'];
 
-        // Names (researcher/s) — centered
+        // Names (researcher/s) — Nautilus Pompilius 18, centered, #6d412a
+        $certPdf->SetTextColor(109, 65, 42); // #6d412a
+        // Temporarily using helvetica since Nautilus PostScript OTF mapping fails in TCPDF
+        $certPdf->SetFont('helvetica', '', 18);
         $certPdf->SetXY(30, 138);
         $certPdf->Cell($w - 60, 6, $request->cert_names, 0, 0, 'C');
 
-        // Title — centered, multi-line
-        $certPdf->SetXY(30, 150);
-        $certPdf->MultiCell($w - 60, 6, '"' . $request->cert_title . '"', 0, 'C');
+        // Color for Title, Code, Summary: #2b1511
+        $certPdf->SetTextColor(43, 21, 17);
 
-        // REO Code
+        // Title — Colette 11.4, centered, multi-line
+        $certPdf->SetFont('colette', '', 11.4);
+        $certPdf->SetXY(30, 150);
+        $certPdf->MultiCell($w - 60, 6, '"' . $request->cert_title . '"', 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
+
+        // REO Code — Colette 12, centered
         if ($request->cert_reo_code) {
+            $certPdf->SetFont('colette', '', 12);
             $certPdf->SetXY(30, 170);
             $certPdf->Cell($w - 60, 6, $request->cert_reo_code, 0, 0, 'C');
         }
 
-        // REO Summary / scope of exemption
+        // REO Summary / scope of exemption — Montserrat 11, justified
         if ($request->cert_reo_summary) {
+            $certPdf->SetFont('montserrat', '', 11);
             $certPdf->SetXY(30, 180);
-            $certPdf->MultiCell($w - 60, 5, $request->cert_reo_summary, 0, 'C');
+            $certPdf->MultiCell($w - 60, 5, $request->cert_reo_summary, 0, 'J', false, 1, null, null, true, 0, false, true, 0, 'T', false);
         }
 
         if ($action === 'preview_cert') {

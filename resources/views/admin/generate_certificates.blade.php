@@ -115,15 +115,26 @@
 
                 <div class="p-6 space-y-4 flex-1">
 
-                    {{-- REO Code --}}
-                    <div>
-                        <label for="cover_reo_code" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                            REO Code <span class="font-normal text-slate-400 normal-case">(Optional)</span>
-                        </label>
-                        <input type="text" id="cover_reo_code" name="cover_reo_code"
-                            value="{{ old('cover_reo_code', $submission->reoc_code ?? '') }}"
-                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-shadow"
-                            placeholder="e.g. REOC-2026-001">
+                    {{-- REO Code & Version --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="cover_reo_code" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                REO Code <span class="font-normal text-slate-400 normal-case">(Optional)</span>
+                            </label>
+                            <input type="text" id="cover_reo_code" name="cover_reo_code"
+                                value="{{ old('cover_reo_code', $submission->reoc_code ?? '') }}"
+                                class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-shadow"
+                                placeholder="e.g. REOC-2026-001">
+                        </div>
+                        <div>
+                            <label for="cover_version" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                Version <span class="font-normal text-slate-400 normal-case">(Optional)</span>
+                            </label>
+                            <input type="text" id="cover_version" name="cover_version"
+                                value="{{ old('cover_version', '1.0') }}"
+                                class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-shadow"
+                                placeholder="e.g. 1.0">
+                        </div>
                     </div>
 
                     {{-- Title --}}

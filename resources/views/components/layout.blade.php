@@ -47,7 +47,7 @@
     </style>
 </head>
 
-<body class="bg-surface-50 text-slate-800 antialiased selection:bg-[#8B0000] selection:text-white" x-data="{ 
+<body class="bg-surface-50 text-slate-800 antialiased selection:bg-[#8B0000] selection:text-white overflow-x-hidden" x-data="{ 
         mobileOpen: false, 
         scrolled: false,
         lastScroll: 0,

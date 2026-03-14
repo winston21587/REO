@@ -64,6 +64,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/accept-terms', [AuthController::class, 'acceptTerms'])->name('accept.terms');
+    Route::post('/predict-model', [\App\Http\Controllers\PredictionController::class, 'predict'])->name('predict.model');
+    Route::get('/test-model', function () {
+        return view('test-model');
+    })->name('test.model');
 
     // --- NOTIFICATION ROUTES (Accessible by Admin & Researcher) ---
     Route::get('/notifications', function () {

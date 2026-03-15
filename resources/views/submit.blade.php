@@ -57,16 +57,11 @@
                                         class="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200 appearance-none cursor-pointer"
                                         required>
                                         <option value="" disabled selected>Select research category</option>
-                                        <option value="WMSU Undergraduate Thesis - 300.00">WMSU Undergraduate Thesis -
-                                            300.00</option>
-                                        <option value="WMSU Master's Thesis - 700.00">WMSU Master's Thesis - 700.00
-                                        </option>
-                                        <option value="WMSU Dissertation - 1,500.00">WMSU Dissertation - 1,500.00
-                                        </option>
-                                        <option value="WMSU Institutionally Funded Research - 2,000.00">WMSU
-                                            Institutionally Funded Research - 2,000.00</option>
-                                        <option value="Externally Funded Research / Other Institution - 3,000.00">
-                                            Externally Funded Research / Other Institution - 3,000.00</option>
+                                        @foreach($categories as $category)
+                                            <option value="{{ $category->name }}">
+                                                {{ $category->name }} - ₱ {{ number_format($category->fee, 2) }}
+                                            </option>
+                                        @endforeach
                                         <option value="Other">Other</option>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">

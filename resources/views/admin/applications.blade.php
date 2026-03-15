@@ -7,245 +7,116 @@
                 <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Active Protocols</h1>
                 <p class="text-slate-500 mt-2 text-sm">Monitoring Initial Reviews and Revisions.</p>
             </div>
-            <div class="flex gap-2 mt-4 md:mt-0">
-                <form action="{{ route('admin.applications') }}" method="GET" class="relative">
-                    @if(request('status'))
-                        <input type="hidden" name="status" value="{{ request('status') }}">
-                    @endif
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search protocols..."
-                        class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent w-64 shadow-sm">
-                    <button type="submit"
-                        class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#8B0000]">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
+            <div class="flex gap-4 mt-4 md:mt-0 w-full md:w-auto">
+                <form action="{{ route('admin.applications') }}" method="GET" class="relative flex w-full gap-4" id="activeProtocolsForm">
+                    <!-- Search Input -->
+                    <div class="relative flex-1 md:w-64">
+                        <input type="text" name="search" id="search_input" value="{{ request('search') }}" placeholder="Search protocols..."
+                            class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-white">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </div>
 
-                <div class="relative" x-data="{ openFilter: false }">
-                    <button @click="openFilter = !openFilter" @click.away="openFilter = false"
-                        class="px-4 py-2 bg-[#8B0000] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#6d0000] transition-colors shadow-md flex items-center gap-2">
-                        <i class="fas fa-filter"></i> {{ request('status') ? 'Filtered' : 'Filter' }}
-                    </button>
-                    <div x-show="openFilter" x-transition:enter="transition ease-out duration-100"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden"
-                        style="display: none;">
-                        <div class="p-1">
-                            <a href="{{ route('admin.applications') }}"
-                                class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg">Show
-                                All (In Review)</a>
-                            <div class="h-px bg-slate-100 my-1"></div>
-                            <a href="{{ route('admin.applications', ['status' => 'For Initial Review']) }}"
-                                class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg">For
-                                Initial Review</a>
-                            <a href="{{ route('admin.applications', ['status' => 'Waiting for Revision']) }}"
-                                class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg">Waiting
-                                for Revision</a>
-                            <a href="{{ route('admin.applications', ['status' => 'Submission of Revisions / Resubmission']) }}"
-                                class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg">Resubmitted</a>
-                            <a href="{{ route('admin.applications', ['status' => 'Checking of Revisions']) }}"
-                                class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg">Checking
-                                of Revisions</a>
+                    <!-- Filter Dropdown -->
+                    <div class="relative" x-data="{ expanded: sessionStorage.getItem('activeProtocolsFilterExpanded') === 'true' }" x-init="$watch('expanded', value => sessionStorage.setItem('activeProtocolsFilterExpanded', value))">
+                        <button type="button" @click="expanded = !expanded" @click.outside="expanded = false"
+                            class="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm transition-colors w-[150px] justify-between">
+                            <span><i class="fas fa-filter mr-1 text-slate-400"></i> Filter</span>
+                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-180' : ''"></i>
+                        </button>
+
+                        <!-- Advanced Dropdown Menu -->
+                        <div x-show="expanded" x-cloak x-transition.opacity.duration.200ms @click.stop
+                            class="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-[80vh] overflow-y-auto">
+                            
+                            <!-- Sort Section -->
+                            <div class="p-3 border-b border-slate-100 bg-slate-50/50">
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort By</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" name="sort_by" value="created_at" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('sort_by', 'created_at') == 'created_at' ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Submission Date</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" name="sort_by" value="Title" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('sort_by') == 'Title' ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Review Type Section -->
+                            <div class="p-3 border-b border-slate-100">
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Review Type</label>
+                                <div class="space-y-2">
+                                    @php $selectedTypes = request('review_types', []); @endphp
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="review_types[]" value="Exempt Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Exempt Review', $selectedTypes) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Exempt</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="review_types[]" value="Expedited Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Expedited Review', $selectedTypes) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Expedited</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="review_types[]" value="Full Board Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Full Board Review', $selectedTypes) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Full Board</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Status Section -->
+                            <div class="p-3 border-b border-slate-100">
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Current Status</label>
+                                <div class="space-y-2">
+                                    @php $selectedStatuses = request('statuses', []); @endphp
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="statuses[]" value="For Initial Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('For Initial Review', $selectedStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors text-balance leading-snug">For Initial Review (Includes Hardcopy Receiving)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="statuses[]" value="Under Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Under Review', $selectedStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Under Review</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="statuses[]" value="Waiting for Revision" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Waiting for Revision', $selectedStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Waiting for Revision</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="statuses[]" value="Submission of Revisions / Resubmission" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Submission of Revisions / Resubmission', $selectedStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors text-balance leading-snug">Resubmitted / Submission of Revisions</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="statuses[]" value="Checking of Revisions" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Checking of Revisions', $selectedStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Checking of Revisions</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Assignment Section -->
+                            <div class="p-3 bg-slate-50/50">
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Reviewer Assignment</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" name="assignment" value="All" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('assignment', 'All') == 'All' ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Show All Protocols</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" name="assignment" value="Unassigned" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('assignment') == 'Unassigned' ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Unassigned Only</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" name="assignment" value="Assigned" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('assignment') == 'Assigned' ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Assigned Only</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100">
-            <div class="overflow-x-auto min-h-[400px] overflow-y-visible">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr
-                            class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                            <th class="p-6">Protocol ID</th>
-                            <th class="p-6">Research Title</th>
-                            <th class="p-6">Researcher</th>
-                            <th class="p-6">Reviewers</th>
-                            <th class="p-6">Submission Date</th>
-                            <th class="p-6">Status / Review Type</th>
-                            <th class="p-6 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @forelse($datas as $data)
-                            <tr class="hover:bg-slate-50/80 transition-colors group">
-                                <td class="p-6">
-                                    <span class="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">
-                                        #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
-                                    </span>
-                                </td>
-                                <td class="p-6">
-                                    <p class="font-bold text-slate-800 text-sm line-clamp-1 group-hover:text-[#8B0000] transition-colors"
-                                        title="{{ $data->Study_Protocol_title }}">
-                                        {{ $data->Study_Protocol_title }}
-                                    </p>
-                                </td>
-                                <td class="p-6">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
-                                            {{ substr($data->researcher->user->first_name ?? 'U', 0, 1) }}
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium text-slate-700">
-                                                {{ $data->researcher->user->first_name ?? '' }}
-                                                {{ $data->researcher->user->last_name ?? 'Unknown' }}
-                                            </p>
-                                            <p class="text-[10px] text-slate-400">{{ $data->researcher->user->email ?? '' }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="p-6">
-                                    @if($data->assigned_reviewers && count($data->assigned_reviewers) > 0)
-                                        <div class="flex flex-col gap-1">
-                                            @foreach($data->assigned_reviewers as $reviewerId)
-                                                @php
-                                                    $reviewerUser = \App\Models\User::find($reviewerId);
-                                                @endphp
-                                                @if($reviewerUser)
-                                                    <span class="text-sm font-medium text-slate-700">
-                                                        <i class="fas fa-user-check text-green-600 mr-1 opacity-70"></i>
-                                                        {{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}
-                                                    </span>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <span class="text-xs text-slate-400 italic">None Assigned</span>
-                                    @endif
-                                </td>
-                                <td class="p-6">
-                                    <div class="flex items-center gap-2 text-sm text-slate-600">
-                                        <i class="far fa-calendar text-slate-400"></i>
-                                        {{ $data->created_at->format('M d, Y') }}
-                                    </div>
-                                </td>
-                                <td class="p-6">
-                                    @php
-                                        $statusColors = [
-                                            'For Initial Review' => 'bg-blue-50 text-blue-700 border-blue-100',
-                                            'Complete - Awaiting Hardcopy' => 'bg-yellow-50 text-yellow-700 border-yellow-100',
-                                            'Hardcopy Received - For Initial Review' => 'bg-teal-50 text-teal-700 border-teal-100',
-                                            'Waiting for Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
-                                            'Revision Submitted' => 'bg-purple-50 text-purple-700 border-purple-100',
-                                            'Panel Deliberation' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                                            'Approved' => 'bg-green-50 text-green-700 border-green-100',
-                                            'Submission of Revisions / Resubmission' => 'bg-purple-50 text-purple-700 border-purple-100',
-                                            'Checking of Revisions' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                                        ];
-                                        $colorClass = $statusColors[$data->Status] ?? 'bg-slate-50 text-slate-700 border-slate-100';
-
-                                        // Prioritize Status for specific workflow steps, otherwise use Review Type if available
-                                        $displayStatus = $data->Status;
-                                        if ($data->Review_Type && !in_array($data->Status, ['Complete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review'])) {
-                                            $displayStatus = $data->Review_Type;
-                                        }
-                                    @endphp
-                                    <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }}">
-                                        {{ $displayStatus }}
-                                    </span>
-                                </td>
-                                <td class="p-6 text-right relative">
-                                    <div class="relative" x-data="{ open: false }">
-                                        <button @click="open = !open" @click.away="open = false"
-                                            class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-
-                                        <div x-show="open"
-                                            class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden"
-                                            style="display: none;">
-                                            <div class="p-1">
-                                                <a href="{{ route('admin.view_files', $data->id) }}"
-                                                    class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                    <i class="fas fa-eye w-4"></i> View Details
-                                                </a>
-
-                                                @if($data->Status === 'Complete - Awaiting Hardcopy')
-                                                    <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="status"
-                                                            value="Hardcopy Received - For Initial Review">
-                                                        <button type="submit"
-                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
-                                                            <i class="fas fa-file-import w-4"></i> Receive Hardcopy
-                                                        </button>
-                                                    </form>
-                                                    <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST"
-                                                        id="undoCompleteForm-{{ $data->id }}">
-                                                        @csrf
-                                                        <input type="hidden" name="classification" value="Undo Complete">
-                                                        <button type="button"
-                                                            onclick="confirmUndoComplete('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')"
-                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-red-600 rounded-lg transition-colors text-left">
-                                                            <i class="fas fa-undo w-4"></i> Undo / Revert
-                                                        </button>
-                                                    </form>
-                                                @else
-                                                    <button
-                                                        @click="open = false; openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }})"
-                                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                        <i class="fas fa-sync-alt w-4"></i> Update Status
-                                                    </button>
-                                                @endif
-
-                                                @php
-                                                    // Check for letter in both relationships
-                                                    $recLetter = $data->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first()
-                                                        ?? $data->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first();
-                                                @endphp
-
-                                                @if($recLetter)
-                                                    <!-- View Letter -->
-                                                    <a href="{{ route('admin.recommendation.view_saved', $data->id) }}"
-                                                        target="_blank"
-                                                        class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                        <i class="fas fa-file-pdf w-4"></i> View RC Letter
-                                                    </a>
-
-                                                    <!-- Proceed to Revision (Only if not yet finalized) -->
-                                                    @if(!in_array($data->Status, ['Panel Deliberation', 'Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']))
-                                                        <form id="finalizeForm-{{ $data->id }}"
-                                                            action="{{ route('admin.recommendation.finalize', $data->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <button type="button"
-                                                                onclick="confirmFinalize('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')"
-                                                                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
-                                                                <i class="fas fa-check-circle w-4"></i> Proceed to Revision
-                                                            </button>
-                                                        </form>
-                                                    @endif
-                                                @elseif($data->Review_Type)
-                                                    <!-- Generate Letter -->
-                                                    <a href="{{ route('admin.recommendation.form', $data->id) }}"
-                                                        class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                        <i class="fas fa-file-signature w-4"></i> Result of Review
-                                                    </a>
-                                                @endif
-
-                                                <button @click="open = false; $dispatch('open-assign-modal', { id: '{{ $data->id }}', title: {{ json_encode($data->Study_Protocol_title) }}, assigned: {{ json_encode($data->assigned_reviewers ?? []) }} })"
-                                                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                    <i class="fas fa-users-cog w-4"></i> Assign Reviewers
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="p-12 text-center text-slate-400">
-                                    <i class="fas fa-folder-open text-4xl mb-4 text-slate-300"></i>
-                                    <p>No active review or revision protocols found.</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        <div id="active-protocols-wrapper" class="flex-1 flex flex-col min-h-[400px]">
+            @include('admin.partials.active_protocols_list')
         </div>
     </div>
 
@@ -403,5 +274,71 @@
                 }
             });
         }
+
+        // Auto-Submit Logic for Advanced Filters via AJAX
+        document.addEventListener('DOMContentLoaded', function() {
+            let debounceTimer;
+            const form = document.getElementById('activeProtocolsForm');
+            
+            const fetchProtocols = (params) => {
+                const url = `{{ route('admin.applications') }}?${params.toString()}`;
+                
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('active-protocols-wrapper');
+                    if (container && data.html) {
+                        container.innerHTML = data.html;
+                    }
+                    window.history.pushState({}, '', url);
+                })
+                .catch(error => console.error('Error fetching protocols:', error));
+            };
+
+            const triggerFetch = () => {
+                const params = new URLSearchParams(new FormData(form));
+                fetchProtocols(params);
+            };
+
+            // Text search input with debounce
+            const searchInput = document.getElementById('search_input');
+            if(searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        triggerFetch();
+                    }, 500); 
+                });
+            }
+
+            // Checkboxes and radio buttons trigger immediate fetch
+            const autoSubmitInputs = document.querySelectorAll('.auto-submit-input');
+            autoSubmitInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    triggerFetch();
+                });
+            });
+
+            // Prevent default form submission from reloading the page
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                triggerFetch();
+            });
+
+            // Pagination delegation
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('.filter-pagination a');
+                if (link) {
+                    e.preventDefault();
+                    const url = new URL(link.href);
+                    fetchProtocols(new URLSearchParams(url.search));
+                }
+            });
+        });
     </script>
 </x-admin_layout>

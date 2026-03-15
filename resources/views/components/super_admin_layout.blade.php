@@ -85,7 +85,7 @@
                 </div>
             </div>
 
-            <nav class="flex-1 px-4 py-6 space-y-8 overflow-y-auto">
+            <nav id="super-admin-sidebar-nav" class="flex-1 px-4 py-6 space-y-8 overflow-y-auto custom-scrollbar">
 
                 <div>
                     <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Review Process
@@ -158,6 +158,12 @@
                             <i class="fas fa-desktop w-5 text-center"></i>
                             <span class="flex-1">Website Content</span>
                         </a>
+
+                        <a href="{{ route('super_admin.manage_fees') }}"
+                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('super_admin.manage_fees') ? 'active' : '' }}">
+                            <i class="fas fa-tags w-5 text-center"></i>
+                            <span class="flex-1">Manage Fees</span>
+                        </a>
                         <a href="{{ route('admin.cms.index') }}"
                             class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.cms.index') || request()->routeIs('admin.cms.pages') ? 'active' : '' }}">
                             <i class="fas fa-file-alt w-5 text-center"></i>
@@ -172,6 +178,17 @@
                             class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('admin.manage_documents') ? 'active' : '' }}">
                             <i class="fas fa-file-contract w-5 text-center"></i>
                             <span class="flex-1">Manage Documents</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-3">Logs</p>
+                    <div class="space-y-1">
+                        <a href="{{ route('super_admin.revenue_logs') }}"
+                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('super_admin.revenue_logs') ? 'active' : '' }}">
+                            <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
+                            <span class="flex-1">Revenue Logs</span>
                         </a>
                     </div>
                 </div>
@@ -256,8 +273,23 @@
                 {{ $slot }}
             </div>
         </main>
-    </div>
+        <script>
+            // Sidebar Scroll Memory
+            document.addEventListener("DOMContentLoaded", function () {
+                const sidebar = document.getElementById("super-admin-sidebar-nav");
+                
+                // Restore scroll position
+                if (localStorage.getItem("superAdminSidebarScroll")) {
+                    sidebar.scrollTop = localStorage.getItem("superAdminSidebarScroll");
+                }
 
+                // Save scroll position on scroll
+                sidebar.addEventListener("scroll", function () {
+                    localStorage.setItem("superAdminSidebarScroll", sidebar.scrollTop);
+                });
+            });
+        </script>
+    </div>
 </body>
 
 </html>

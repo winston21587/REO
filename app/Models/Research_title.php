@@ -21,6 +21,7 @@ class Research_title extends Model
         'researcher_id',  // since researher belongs to user (one to one) just store it onto the user side
         'Adviser',
         'assigned_reviewers',
+        'category_fee_at_submission',
     ];
 
     protected $casts = [

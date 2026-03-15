@@ -15,7 +15,8 @@ class Research_title_Controller extends Controller
     public function showSubmit()
     {
         $requirements = DocumentRequirement::all();
-        return view('submit', compact('requirements'));
+        $categories = \App\Models\ResearchCategory::where('active', true)->orderBy('created_at', 'asc')->get();
+        return view('submit', compact('requirements', 'categories'));
     }
 
 
@@ -81,10 +82,20 @@ class Research_title_Controller extends Controller
             $finalCategory = $validated['other_category'];
         }
 
+        // Look up the fee based on the category
+        $fee = 0.00;
+        if ($finalCategory !== 'Other') {
+            $catRecord = \App\Models\ResearchCategory::where('name', $finalCategory)->first();
+            if ($catRecord) {
+                $fee = $catRecord->fee;
+            }
+        }
+
         // ✅ Create research title
         $research = Research_title::create([
             'Study_Protocol_title' => $validated['Study_Protocol_title'],
             'Research_Category' => $finalCategory,
+            'category_fee_at_submission' => $fee,
             'Created_by' => $user->first_name . ' ' . $user->last_name,
             'researcher_id' => $user->researcher->id,
             'Official_Receipt_Number' => '011',

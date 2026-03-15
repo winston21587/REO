@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-            <nav class="flex-1 px-4 py-6 space-y-8 overflow-y-auto">
+            <nav id="admin-sidebar-nav" class="flex-1 px-4 py-6 space-y-8 overflow-y-auto custom-scrollbar">
 
                 <div>
                     <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Review Process
@@ -226,6 +226,22 @@
                 {{ $slot }}
             </div>
         </main>
+        <script>
+            // Sidebar Scroll Memory
+            document.addEventListener("DOMContentLoaded", function () {
+                const sidebar = document.getElementById("admin-sidebar-nav");
+                
+                // Restore scroll position
+                if (localStorage.getItem("adminSidebarScroll")) {
+                    sidebar.scrollTop = localStorage.getItem("adminSidebarScroll");
+                }
+
+                // Save scroll position on scroll
+                sidebar.addEventListener("scroll", function () {
+                    localStorage.setItem("adminSidebarScroll", sidebar.scrollTop);
+                });
+            });
+        </script>
     </div>
 
 </body>

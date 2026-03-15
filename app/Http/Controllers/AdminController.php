@@ -245,14 +245,36 @@ class AdminController extends Controller
     {
         $query = Research_title::with(['researcher.user', 'files', 'adminFiles']);
 
-        // 1. STRICT CONSTRAINT: Only "For Initial Review" and "Revision" statuses
-        // This ensures the page ONLY accepts these titles, regardless of other inputs.
-        $query->where(function ($q) {
-            $q->where('Status', 'For Initial Review')
-                ->orWhere('Status', 'Complete - Awaiting Hardcopy')
-                ->orWhere('Status', 'Hardcopy Received - For Initial Review')
-                ->orWhere('Status', 'Under Review');
-        });
+        // Base Statuses allowed in Active Protocols
+        $allowedStatuses = [
+            'For Initial Review',
+            'Complete - Awaiting Hardcopy',
+            'Hardcopy Received - For Initial Review',
+            'Under Review',
+            'Waiting for Revision',
+            'Revision Submitted', // Ensure this maps correctly if researchers use it
+            'Submission of Revisions / Resubmission',
+            'Checking of Revisions'
+        ];
+
+        // 1. Handle Status Filters (Checkboxes)
+        if ($request->filled('statuses') && is_array($request->statuses)) {
+            // Map generic groups to actual DB statuses if needed
+            $filterStatuses = [];
+            foreach ($request->statuses as $status) {
+                if ($status === 'For Initial Review') {
+                    $filterStatuses = array_merge($filterStatuses, ['For Initial Review', 'Complete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review']);
+                } else {
+                    $filterStatuses[] = $status;
+                }
+            }
+            // Ensure they are only filtering within allowed statuses
+            $validFilters = array_intersect($filterStatuses, $allowedStatuses);
+            $query->whereIn('Status', !empty($validFilters) ? $validFilters : $allowedStatuses);
+        } else {
+            // Default Constraint: Only allowed active statuses
+            $query->whereIn('Status', $allowedStatuses);
+        }
 
         // 2. Handle Search
         if ($request->has('search') && !empty($request->search)) {
@@ -266,15 +288,42 @@ class AdminController extends Controller
             });
         }
 
-        // 3. Handle Specific Filter (e.g., if user selects just "Waiting for Revision")
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('Status', $request->status);
+        // 3. Handle Review Type Filters (Checkboxes)
+        if ($request->filled('review_types') && is_array($request->review_types)) {
+            $query->whereIn('Review_Type', $request->review_types);
         }
 
-        $datas = $query->orderBy('created_at', 'desc')->get();
+        // 4. Handle Reviewer Assignment (Radio)
+        if ($request->filled('assignment')) {
+            if ($request->assignment === 'Unassigned') {
+                $query->where(function($q) {
+                    $q->whereNull('assigned_reviewers')
+                      ->orWhereJsonLength('assigned_reviewers', 0)
+                      ->orWhere('assigned_reviewers', '[]');
+                });
+            } elseif ($request->assignment === 'Assigned') {
+                $query->whereNotNull('assigned_reviewers')
+                      ->where('assigned_reviewers', '!=', '[]'); // Depending on how DB casts it
+            }
+        }
+
+        // 5. Handle Sorting
+        if ($request->sort_by === 'Title') {
+            $query->orderBy('Study_Protocol_title', 'asc');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $datas = $query->paginate(10)->withQueryString();
 
         // Fetch Reviewers for the modal
         $reviewers = User::where('role', 'reviewer')->get();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.partials.active_protocols_list', compact('datas', 'reviewers'))->render()
+            ]);
+        }
 
         return view('admin.applications', compact('datas', 'reviewers'));
     }
@@ -354,6 +403,11 @@ class AdminController extends Controller
             $pendingQuery->where('Study_Protocol_title', 'like', '%' . $request->recent_search . '%');
         }
 
+        // Review Type Filter (Array)
+        if ($request->filled('recent_review_types') && is_array($request->recent_review_types)) {
+            $pendingQuery->whereIn('Review_Type', $request->recent_review_types);
+        }
+
         // Sort Filter
         if ($request->recent_sort == 'Title') {
             $pendingQuery->orderBy('Study_Protocol_title', 'asc');
@@ -370,6 +424,11 @@ class AdminController extends Controller
         // Search Filter
         if ($request->filled('incomplete_search')) {
             $incompleteQuery->where('Study_Protocol_title', 'like', '%' . $request->incomplete_search . '%');
+        }
+
+        // Review Type Filter (Array)
+        if ($request->filled('incomplete_review_types') && is_array($request->incomplete_review_types)) {
+            $incompleteQuery->whereIn('Review_Type', $request->incomplete_review_types);
         }
 
         // Sort Filter
@@ -1322,10 +1381,24 @@ class AdminController extends Controller
 
     public function revisions(Request $request)
     {
-        $query = Research_title::with(['researcher.user', 'revisionLogs.user', 'user'])
-            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation']);
+        $query = Research_title::with(['researcher.user', 'revisionLogs.user', 'user']);
 
-        if ($request->has('search')) {
+        // Default valid statuses for this page
+        $defaultStatuses = ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation'];
+
+        if ($request->filled('statuses') && is_array($request->statuses)) {
+            // Intersect to ensure they only filter within the allowed Revisions statuses
+            $filteredStatuses = array_intersect($request->statuses, $defaultStatuses);
+            $query->whereIn('Status', !empty($filteredStatuses) ? $filteredStatuses : $defaultStatuses);
+        } else {
+            $query->whereIn('Status', $defaultStatuses);
+        }
+
+        if ($request->filled('review_types') && is_array($request->review_types)) {
+            $query->whereIn('Review_Type', $request->review_types);
+        }
+
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('Study_Protocol_title', 'like', "%{$search}%")
@@ -1336,7 +1409,20 @@ class AdminController extends Controller
             });
         }
 
-        $datas = $query->orderBy('updated_at', 'desc')->paginate(10);
+        $sortBy = $request->input('sort_by', 'updated_at');
+        if ($sortBy === 'Title') {
+            $query->orderBy('Study_Protocol_title', 'asc');
+        } else {
+            $query->orderBy('updated_at', 'desc');
+        }
+
+        $datas = $query->paginate(10);
+
+        if ($request->ajax()) {
+            $html = view('admin.partials.active_revisions_list', compact('datas'))->render();
+            return response()->json(['html' => $html]);
+        }
+
         return view('admin.Revisions', compact('datas'));
     }
 
@@ -1345,7 +1431,11 @@ class AdminController extends Controller
         $query = Research_title::with(['researcher.user', 'files', 'adminFiles', 'user'])
             ->where('Status', 'Approved');
 
-        if ($request->has('search')) {
+        if ($request->filled('review_types') && is_array($request->review_types)) {
+            $query->whereIn('Review_Type', $request->review_types);
+        }
+
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('Study_Protocol_title', 'like', "%{$search}%")
@@ -1356,7 +1446,20 @@ class AdminController extends Controller
             });
         }
 
-        $datas = $query->orderBy('updated_at', 'desc')->paginate(10);
+        $sortBy = $request->input('sort_by', 'updated_at');
+        if ($sortBy === 'Title') {
+            $query->orderBy('Study_Protocol_title', 'asc');
+        } else {
+            $query->orderBy('updated_at', 'desc');
+        }
+
+        $datas = $query->paginate(10);
+
+        if ($request->ajax()) {
+            $html = view('admin.partials.active_certifications_list', compact('datas'))->render();
+            return response()->json(['html' => $html]);
+        }
+
         return view('admin.certifications', compact('datas'));
     }
     public function meetings()

@@ -9,9 +9,7 @@
                 <h2 class="text-2xl font-extrabold text-slate-800 font-heading">Recent Submissions</h2>
 
                 <!-- Controls -->
-                <!-- Controls -->
-                <!-- Controls -->
-                <div class="flex gap-4">
+                <div class="flex gap-4" x-data="{ expanded: false }">
                     <div class="relative flex-1">
                         <input type="text" name="recent_search" id="recent_search_input" value="{{ request('recent_search') }}"
                             placeholder="Search submissions..."
@@ -19,14 +17,33 @@
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
                     <div class="relative">
-                        <select name="recent_sort" id="recent_sort_input"
-                            class="appearance-none pl-4 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-white font-medium text-slate-600 cursor-pointer shadow-sm">
-                            <option value="created_at" {{ request('recent_sort') == 'created_at' ? 'selected' : '' }}>
-                                Submission Date</option>
-                            <option value="Title" {{ request('recent_sort') == 'Title' ? 'selected' : '' }}>Title</option>
-                        </select>
-                        <i
-                            class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                        <button type="button" @click="expanded = !expanded" @click.outside="expanded = false"
+                            class="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm transition-colors w-[150px] justify-between">
+                            <span><i class="fas fa-filter mr-1 text-slate-400"></i> Filter</span>
+                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-180' : ''"></i>
+                        </button>
+
+                        <!-- Advanced Dropdown -->
+                        <div x-show="expanded" x-cloak x-transition.opacity.duration.200ms @click.stop
+                            class="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                            
+                            <!-- Sort Section -->
+                            <div class="p-3 border-b border-slate-100 bg-slate-50/50">
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort By</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" name="recent_sort" value="created_at" class="recent-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('recent_sort', 'created_at') == 'created_at' ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Submission Date</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" name="recent_sort" value="Title" class="recent-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('recent_sort') == 'Title' ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Filter Section Removed (Not applicable for Initial Intake) -->
+                        </div>
                     </div>
                 </div>
 
@@ -41,7 +58,7 @@
             <div class="space-y-6 flex flex-col h-full">
                 <h2 class="text-2xl font-extrabold text-slate-800 font-heading">Incomplete Submissions</h2>
 
-                <div class="flex gap-4">
+                <div class="flex gap-4" x-data="{ expanded: false }">
                     <div class="relative flex-1">
                         <input type="text" name="incomplete_search" id="incomplete_search_input" value="{{ request('incomplete_search') }}"
                             placeholder="Search submissions..."
@@ -49,15 +66,33 @@
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
                     <div class="relative">
-                        <select name="incomplete_sort" id="incomplete_sort_input"
-                            class="appearance-none pl-4 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] bg-white font-medium text-slate-600 cursor-pointer shadow-sm">
-                            <option value="created_at" {{ request('incomplete_sort') == 'created_at' ? 'selected' : '' }}>
-                                Submission Date</option>
-                            <option value="Title" {{ request('incomplete_sort') == 'Title' ? 'selected' : '' }}>Title
-                            </option>
-                        </select>
-                        <i
-                            class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                        <button type="button" @click="expanded = !expanded" @click.outside="expanded = false"
+                            class="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm transition-colors w-[150px] justify-between">
+                            <span><i class="fas fa-filter mr-1 text-slate-400"></i> Filter</span>
+                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-180' : ''"></i>
+                        </button>
+
+                        <!-- Advanced Dropdown -->
+                        <div x-show="expanded" x-cloak x-transition.opacity.duration.200ms @click.stop
+                            class="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-[60] overflow-hidden">
+                            
+                            <!-- Sort Section -->
+                            <div class="p-3 border-b border-slate-100 bg-slate-50/50">
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort By</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" name="incomplete_sort" value="created_at" class="incomplete-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('incomplete_sort', 'created_at') == 'created_at' ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Submission Date</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" name="incomplete_sort" value="Title" class="incomplete-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('incomplete_sort') == 'Title' ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Filter Section Removed (Not applicable for Initial Intake) -->
+                        </div>
                     </div>
                 </div>
 
@@ -485,32 +520,64 @@
                 .catch(error => console.error('Error:', error));
             };
 
-            // Event Listeners for Inputs
-            inputs.forEach(id => {
+            // Event Listeners for Search Inputs
+            ['recent_search_input', 'incomplete_search_input'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
 
-                el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', (e) => {
+                el.addEventListener('input', (e) => {
                     clearTimeout(debounceTimer);
-                    const delay = el.tagName === 'INPUT' ? 500 : 0;
-
                     debounceTimer = setTimeout(() => {
                         const params = new URLSearchParams(window.location.search);
                         
-                        // Update specific param
-                        if (id.includes('recent_search')) params.set('recent_search', e.target.value);
-                        if (id.includes('recent_sort')) params.set('recent_sort', e.target.value);
-                        if (id.includes('incomplete_search')) params.set('incomplete_search', e.target.value);
-                        if (id.includes('incomplete_sort')) params.set('incomplete_sort', e.target.value);
-
-                        // Reset pagination checks
-                        if (id.includes('search')) {
-                            if (id.includes('recent')) params.delete('pending_page');
-                            if (id.includes('incomplete')) params.delete('incomplete_page');
+                        if (id === 'recent_search_input') {
+                            params.set('recent_search', e.target.value);
+                            params.delete('pending_page'); // Reset pagination
+                        } else {
+                            params.set('incomplete_search', e.target.value);
+                            params.delete('incomplete_page');
                         }
 
                         fetchSubmissions(params);
-                    }, delay);
+                    }, 500);
+                });
+            });
+
+            // Event Listeners for Advanced Filter Inputs (Sort Radios & Review Checkboxes)
+            document.querySelectorAll('.recent-filter-input, .incomplete-filter-input').forEach(input => {
+                input.addEventListener('change', () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        const params = new URLSearchParams(window.location.search);
+
+                        // Capture Recent Sort
+                        const recentSortNode = document.querySelector('input[name="recent_sort"]:checked');
+                        if (recentSortNode) params.set('recent_sort', recentSortNode.value);
+
+                        // Capture Recent Review Types (Multiple Checkboxes)
+                        params.delete('recent_review_types[]'); // Clear existing
+                        document.querySelectorAll('input[name="recent_review_types[]"]:checked').forEach(cb => {
+                            params.append('recent_review_types[]', cb.value);
+                        });
+
+                        // Capture Incomplete Sort
+                        const incompleteSortNode = document.querySelector('input[name="incomplete_sort"]:checked');
+                        if (incompleteSortNode) params.set('incomplete_sort', incompleteSortNode.value);
+
+                        // Capture Incomplete Review Types (Multiple Checkboxes)
+                        params.delete('incomplete_review_types[]'); // Clear existing
+                        document.querySelectorAll('input[name="incomplete_review_types[]"]:checked').forEach(cb => {
+                            params.append('incomplete_review_types[]', cb.value);
+                        });
+
+                        // Important: Don't reset pagination here unless specifically requested, 
+                        // as users might be changing filters while deep in pagination.
+                        // Actually, it's conventional to reset to page 1 when filters change.
+                        if (input.classList.contains('recent-filter-input')) params.delete('pending_page');
+                        if (input.classList.contains('incomplete-filter-input')) params.delete('incomplete_page');
+
+                        fetchSubmissions(params);
+                    }, 100); // Shorter delay for checkboxes/radios
                 });
             });
 

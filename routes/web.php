@@ -20,6 +20,13 @@ Route::get('/', function () {
     return view('index', compact('contents'));
 })->name('index');
 
+Route::get('/test-model', function () {
+    return view('test_model');
+})->name('test.model');
+Route::get('/test_model', function () { // Added this to match your typo!
+    return view('test_model');
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login');
@@ -65,9 +72,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/accept-terms', [AuthController::class, 'acceptTerms'])->name('accept.terms');
     Route::post('/predict-model', [\App\Http\Controllers\PredictionController::class, 'predict'])->name('predict.model');
-    Route::get('/test-model', function () {
-        return view('test-model');
-    })->name('test.model');
 
     // --- NOTIFICATION ROUTES (Accessible by Admin & Researcher) ---
     Route::get('/notifications', function () {

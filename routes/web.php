@@ -148,6 +148,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/super-admin/reviewers/{user}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleReviewerStatus'])->name('super_admin.reviewers.toggle_status');
         Route::delete('/super-admin/reviewers/{user}', [\App\Http\Controllers\SuperAdminController::class, 'deleteReviewer'])->name('super_admin.reviewers.delete');
 
+        // Manage Fees & Revenue Logs
+        Route::get('/super-admin/manage-fees', [\App\Http\Controllers\SuperAdminFeeController::class, 'manageFees'])->name('super_admin.manage_fees');
+        Route::post('/super-admin/manage-fees', [\App\Http\Controllers\SuperAdminFeeController::class, 'storeFee'])->name('super_admin.fees.store');
+        Route::put('/super-admin/manage-fees/{id}', [\App\Http\Controllers\SuperAdminFeeController::class, 'updateFee'])->name('super_admin.fees.update');
+        Route::delete('/super-admin/manage-fees/{id}', [\App\Http\Controllers\SuperAdminFeeController::class, 'destroyFee'])->name('super_admin.fees.destroy');
+        Route::get('/super-admin/revenue-logs', [\App\Http\Controllers\SuperAdminFeeController::class, 'revenueLogs'])->name('super_admin.revenue_logs');
+
         // Document Requirements (Moved from Admin)
         Route::get('/admin/manage-documents', [\App\Http\Controllers\DocumentRequirementController::class, 'index'])->name('admin.manage_documents');
         Route::post('/admin/document-requirements', [\App\Http\Controllers\DocumentRequirementController::class, 'store'])->name('admin.document_requirements.store');

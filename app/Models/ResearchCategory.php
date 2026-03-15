@@ -10,5 +10,6 @@ class ResearchCategory extends Model
         'name',
         'description',
         'active',
+        'fee',
     ];
 }

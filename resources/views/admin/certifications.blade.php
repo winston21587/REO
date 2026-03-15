@@ -64,8 +64,8 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100">
-            <div id="certifications-wrapper" class="overflow-x-auto min-h-[400px] overflow-y-visible">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 flex flex-col min-h-[400px]">
+            <div id="certifications-wrapper" class="overflow-x-auto flex-grow flex flex-col">
                 @include('admin.partials.active_certifications_list')
             </div>
         </div>

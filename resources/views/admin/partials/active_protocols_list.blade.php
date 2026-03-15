@@ -1,5 +1,5 @@
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100">
-            <div class="overflow-x-auto min-h-[400px] overflow-y-visible">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 flex flex-col h-full min-h-[400px]">
+            <div class="overflow-x-auto flex-grow overflow-y-visible">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr

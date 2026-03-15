@@ -1,3 +1,5 @@
+<div class="flex flex-col h-full min-h-[400px]">
+<div class="flex-grow">
 <table class="w-full text-left border-collapse">
     <thead>
         <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
@@ -100,6 +102,7 @@
         @endforelse
     </tbody>
 </table>
+</div>
 
 @if($datas->total() > 0)
 <div class="p-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">

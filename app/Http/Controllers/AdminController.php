@@ -314,7 +314,7 @@ class AdminController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $datas = $query->paginate(10)->withQueryString();
+        $datas = $query->paginate(5)->withQueryString();
 
         // Fetch Reviewers for the modal
         $reviewers = User::where('role', 'reviewer')->get();
@@ -1416,7 +1416,7 @@ class AdminController extends Controller
             $query->orderBy('updated_at', 'desc');
         }
 
-        $datas = $query->paginate(10);
+        $datas = $query->paginate(5);
 
         if ($request->ajax()) {
             $html = view('admin.partials.active_revisions_list', compact('datas'))->render();
@@ -1453,7 +1453,7 @@ class AdminController extends Controller
             $query->orderBy('updated_at', 'desc');
         }
 
-        $datas = $query->paginate(10);
+        $datas = $query->paginate(5);
 
         if ($request->ajax()) {
             $html = view('admin.partials.active_certifications_list', compact('datas'))->render();

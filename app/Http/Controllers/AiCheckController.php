@@ -236,8 +236,8 @@ PROMPT;
 
         $fileRecord = $research->files()
                         ->where(function ($query) {
-                            $query->where('category', 'like', '%Informed Consent%')
-                                  ->orWhere('filename', 'like', '%Informed Consent%');
+                            $query->where('category', 'like', '%Study Protocol%')
+                                  ->orWhere('filename', 'like', '%Study Protocol%');
                         })
                         ->latest()
                         ->first();
@@ -245,7 +245,7 @@ PROMPT;
         if (!$fileRecord) {
             return response()->json([
                 'found' => false, 
-                'message' => 'No Informed Consent document found for this submission.'
+                'message' => 'No Study Protocol document found for this submission.'
             ]);
         }
 

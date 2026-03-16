@@ -343,6 +343,23 @@
 
                         <!-- Actions -->
                         <div class="p-4 bg-white space-y-3">
+                            @php
+                                $canUpload = $researchTitle->Status === 'Incomplete';
+                            @endphp
+                            @if($canUpload)
+                                <form action="{{ route('update.file', $researchTitle->id) }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="file_id" value="{{ $file->id }}">
+                                    <label class="block cursor-pointer">
+                                        <div class="w-full py-2.5 px-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-[#8B0000] hover:bg-red-50 text-slate-500 hover:text-[#8B0000] text-sm font-bold text-center transition-all duration-200 flex items-center justify-center gap-2 group/upload">
+                                            <i class="fas fa-cloud-upload-alt group-hover/upload:animate-bounce"></i>
+                                            <span>Upload New Version</span>
+                                        </div>
+                                        <input type="file" name="file" class="hidden" onchange="this.form.submit()" accept=".{{ $file->filetype }}">
+                                    </label>
+                                </form>
+                            @endif
                             <a href="{{ asset($file->filepath) }}" download class="block w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-sm font-bold text-center transition-colors flex items-center justify-center gap-2">
                                 <i class="fas fa-download"></i> Download File
                             </a>

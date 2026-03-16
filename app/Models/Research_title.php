@@ -18,6 +18,8 @@ class Research_title extends Model
         'Review_Type',
         'Created_by',
         'Official_Receipt_Number',
+        'or_file_path',
+        'is_or_verified',
         'researcher_id',  // since researher belongs to user (one to one) just store it onto the user side
         'Adviser',
         'assigned_reviewers',

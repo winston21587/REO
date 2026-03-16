@@ -227,6 +227,7 @@ public function showVerifyForm(Request $request)
         }
 
         $user->is_verified = true;
+        $user->email_verified_at = now(); // Update system timestamp to set user as Active
         $user->verification_code = null;
         $user->save();
 

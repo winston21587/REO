@@ -15,22 +15,33 @@
         </div>
 
         <!-- Search & Filter -->
-        <form method="GET" action="{{ route('super_admin.manage_admins') }}" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+        <form x-data="{ filterAffiliation: '{{ request('status') }}' }" method="GET" action="{{ route('super_admin.manage_admins') }}" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
             <div class="relative flex-grow w-full md:w-auto">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                 <input name="search" value="{{ request('search') }}" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none" placeholder="Search by name, email..." type="text" />
             </div>
 
-            <!-- Status Filter -->
+            <!-- Affiliation Filter -->
             <div class="relative w-full md:w-40">
-                <select name="status" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
-                    <option value="">All Status</option>
-                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                <select x-model="filterAffiliation" name="status" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
+                    <option value="">All Affiliations</option>
+                    <option value="internal" {{ request('status') == 'internal' ? 'selected' : '' }}>Internal</option>
+                    <option value="external" {{ request('status') == 'external' ? 'selected' : '' }}>External</option>
                 </select>
                 <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
             </div>
 
+            <!-- College Filter -->
+            <div class="relative w-full md:w-48">
+                <select :disabled="filterAffiliation === 'external'" :class="{ 'opacity-60 cursor-not-allowed bg-slate-100': filterAffiliation === 'external' }" name="college" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
+                    <option value="">All Colleges</option>
+                    @foreach($colleges as $college)
+                        <option value="{{ $college->name }}" {{ request('college') == $college->name ? 'selected' : '' }}>{{ $college->name }}</option>
+                    @endforeach
+                </select>
+                <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+            </div>
+            
             <div class="flex gap-2 w-full md:w-auto">
                 <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#7A0000] transition-colors flex items-center gap-2 shadow-lg shadow-red-900/20">
                     <i class="fas fa-filter"></i> Apply
@@ -46,6 +57,7 @@
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
                             <th class="p-6">Name / Role</th>
                             <th class="p-6">Contact Info</th>
+                            <th class="p-6">Affiliation</th>
                             <th class="p-6">Status</th>
                             <th class="p-6 text-right">Actions</th>
                         </tr>
@@ -70,19 +82,26 @@
                                 </div>
                             </td>
                             <td class="p-6">
-                                @if($user->email_verified_at)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
-                                    <span class="relative flex h-2 w-2">
-                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                      <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                                    </span>
-                                    Active
+                                @if(!$user->admin?->external_user)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Internal
                                 </span>
                                 @else
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Pending
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-100">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span> External
                                 </span>
                                 @endif
+                            </td>
+                            <td class="p-6">
+                                <div class="flex items-center gap-1.5 pl-1">
+                                    @if($user->email_verified_at || $user->is_verified)
+                                        <div class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]"></div>
+                                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Active</span>
+                                    @else
+                                        <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Pending</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="p-6 text-right relative">
                                 <div x-data="{ open: false }" class="relative inline-block text-left">

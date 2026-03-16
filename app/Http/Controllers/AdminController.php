@@ -37,6 +37,7 @@ class AdminController extends Controller
             'email' => 'required|email|unique:users',
             'affiliation' => 'required|in:internal,external',
             'college' => 'required_if:affiliation,internal',
+            'password' => 'required|string|min:6|confirmed',
         ]);
 
         $user = User::create([
@@ -44,7 +45,7 @@ class AdminController extends Controller
             'last_name' => $request->last_name,
             'email' => $request->email,
             'role' => 'researcher',
-            'password' => Hash::make('password'), // Default password
+            'password' => Hash::make($request->password), // User-defined password
             'email_verified_at' => now(), // Auto-verify since admin created it
         ]);
 

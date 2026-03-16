@@ -15,29 +15,29 @@
         </div>
 
         <!-- Search & Filter -->
-        <form method="GET" action="{{ route('admin.manage_users') }}" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+        <form x-data="{ filterAffiliation: '{{ request('status') }}' }" method="GET" action="{{ route('admin.manage_users') }}" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
             <div class="relative flex-grow w-full md:w-auto">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                 <input name="search" value="{{ request('search') }}" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none" placeholder="Search by name, email..." type="text" />
             </div>
             
-            <!-- College Filter -->
-            <div class="relative w-full md:w-48">
-                <select name="college" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
-                    <option value="">All Colleges</option>
-                    @foreach($colleges as $college)
-                        <option value="{{ $college->name }}" {{ request('college') == $college->name ? 'selected' : '' }}>{{ $college->name }}</option>
-                    @endforeach
+            <!-- Affiliation Filter -->
+            <div class="relative w-full md:w-40">
+                <select x-model="filterAffiliation" name="status" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
+                    <option value="">All Affiliations</option>
+                    <option value="internal" {{ request('status') == 'internal' ? 'selected' : '' }}>Internal</option>
+                    <option value="external" {{ request('status') == 'external' ? 'selected' : '' }}>External</option>
                 </select>
                 <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
             </div>
 
-            <!-- Affiliation Filter -->
-            <div class="relative w-full md:w-40">
-                <select name="status" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
-                    <option value="">All Affiliations</option>
-                    <option value="internal" {{ request('status') == 'internal' ? 'selected' : '' }}>Internal</option>
-                    <option value="external" {{ request('status') == 'external' ? 'selected' : '' }}>External</option>
+            <!-- College Filter -->
+            <div class="relative w-full md:w-48">
+                <select :disabled="filterAffiliation === 'external'" :class="{ 'opacity-60 cursor-not-allowed bg-slate-100': filterAffiliation === 'external' }" name="college" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
+                    <option value="">All Colleges</option>
+                    @foreach($colleges as $college)
+                        <option value="{{ $college->name }}" {{ request('college') == $college->name ? 'selected' : '' }}>{{ $college->name }}</option>
+                    @endforeach
                 </select>
                 <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
             </div>
@@ -58,6 +58,7 @@
                             <th class="p-6">Name / Role</th>
                             <th class="p-6">Contact Info</th>
                             <th class="p-6">Affiliation</th>
+                            <th class="p-6">Status</th>
                             <th class="p-6 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -90,6 +91,17 @@
                                     <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span> External
                                 </span>
                                 @endif
+                            </td>
+                            <td class="p-6">
+                                <div class="flex items-center gap-1.5 pl-1">
+                                    @if($user->email_verified_at || $user->is_verified)
+                                        <div class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]"></div>
+                                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Active</span>
+                                    @else
+                                        <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Pending</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="p-6 text-right relative">
                                 <div x-data="{ open: false }" class="relative inline-block text-left">
@@ -243,6 +255,23 @@
                                         @endforeach
                                     </select>
                                     <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs" :class="affiliation === 'external' ? 'opacity-50' : ''"></i>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
+                                    <div class="relative">
+                                        <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input type="password" name="password" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Confirm Password</label>
+                                    <div class="relative">
+                                        <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input type="password" name="password_confirmation" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                    </div>
                                 </div>
                             </div>
 

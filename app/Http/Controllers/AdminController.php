@@ -1245,7 +1245,7 @@ class AdminController extends Controller
 
         // Title
         $coverPdf->SetXY(67, 139);
-        $coverPdf->MultiCell(90, 4, $request->shared_title);
+        $coverPdf->MultiCell(103, 4, $request->shared_title, 0, 'L');
         // Approved period
         $coverPdf->SetXY(67, 158);
         $coverPdf->Write(0, $approvedFormatted);
@@ -1261,8 +1261,9 @@ class AdminController extends Controller
 
 
         // Researcher
-        $coverPdf->SetXY(67, 170);
-        $coverPdf->MultiCell(90, 4, $request->shared_researchers);
+        $coverPdf->SetXY(67, 172);
+        // Explicitly set alignment to 'L' (Left) so names don't spread out to fill the 90mm width
+        $coverPdf->MultiCell(90, 4, $request->shared_researchers, 0, 'L');
 
         if ($action === 'preview_cover') {
             return response($coverPdf->Output('S'), 200, [
@@ -1320,8 +1321,8 @@ class AdminController extends Controller
 
         // Title — matching names font, 11.4, centered, multi-line
         $certPdf->SetFont('helvetica', '', 11.4);
-        $certPdf->SetXY(30, 157.5);
-        $certPdf->MultiCell($w - 60, 6,$request->shared_title, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
+        $certPdf->SetXY(70, 157.5);
+        $certPdf->MultiCell(115, 6, $request->shared_title, 0, 'C');
 
         // REO Code — matching names font, 12, centered
         if ($request->shared_reo_code) {

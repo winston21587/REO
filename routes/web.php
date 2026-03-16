@@ -26,6 +26,7 @@ Route::get('/test-model', function () {
 Route::get('/test_model', function () { // Added this to match your typo!
     return view('test_model');
 });
+Route::post('/predict-model', [\App\Http\Controllers\PredictionController::class, 'predict'])->name('predict.model');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
@@ -71,7 +72,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/accept-terms', [AuthController::class, 'acceptTerms'])->name('accept.terms');
-    Route::post('/predict-model', [\App\Http\Controllers\PredictionController::class, 'predict'])->name('predict.model');
 
     // --- NOTIFICATION ROUTES (Accessible by Admin & Researcher) ---
     Route::get('/notifications', function () {
@@ -219,6 +219,9 @@ Route::middleware(['auth'])->group(function () {
 
         // The Main Update Logic (Covers Triage Modal)
         Route::post('/admin/update-status/{id}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
+        
+        // AI Analysis Route for Modals
+        Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol_type');
 
         Route::get('/admin/revisions', [AdminController::class, 'revisions'])->name('admin.revisions');
         Route::get('/admin/certifications', [AdminController::class, 'certifications'])->name('admin.certifications');

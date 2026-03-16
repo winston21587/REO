@@ -227,12 +227,17 @@ PROMPT;
     {
         set_time_limit(120); // Increase max execution time for long AI processing
 
-        // 1. Find the relevant file to analyze (Research Protocol or Assessment Form)
-        $fileRecord = \App\Models\researcher_files::where('research_title_id', $id)
+        // 1. Find the relevant research title and its "Informed Consent" file
+        $research = \App\Models\Research_title::with('files')->find($id);
+
+        if (!$research) {
+            return response()->json(['found' => false, 'message' => 'Research title not found.']);
+        }
+
+        $fileRecord = $research->files()
                         ->where(function ($query) {
-                            $query->where('category', 'like', '%Protocol%')
-                                  ->orWhere('filename', 'like', '%Protocol%')
-                                  ->orWhere('category', 'like', '%Application Form%');
+                            $query->where('category', 'like', '%Informed Consent%')
+                                  ->orWhere('filename', 'like', '%Informed Consent%');
                         })
                         ->latest()
                         ->first();
@@ -240,13 +245,16 @@ PROMPT;
         if (!$fileRecord) {
             return response()->json([
                 'found' => false, 
-                'message' => 'No Protocol or Application Form found to analyze.'
+                'message' => 'No Informed Consent document found for this submission.'
             ]);
         }
 
         try {
             // Find absolute path
-            $path = storage_path('app/public/' . $fileRecord->filepath);
+            $path = public_path($fileRecord->filepath);
+            if (!file_exists($path)) {
+                $path = storage_path('app/public/' . $fileRecord->filepath);
+            }
             if (!file_exists($path)) {
                  $path = public_path('storage/' . $fileRecord->filepath);
             }

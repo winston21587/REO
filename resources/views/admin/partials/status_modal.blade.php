@@ -43,12 +43,19 @@
                                 <span class="text-xs font-bold text-blue-800 uppercase tracking-wider">AI
                                     Analysis</span>
                             </div>
-                            <span id="aiStatusBadge"
-                                class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-600">Analyzing...</span>
+                            <span id="aiStatusBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-600">Analyzing...</span>
                         </div>
 
-                        <div id="aiLoading" class="flex items-center gap-2 text-sm text-blue-700 py-2">
-                            <i class="fas fa-circle-notch fa-spin"></i> Analyzing protocol content...
+                        <!-- Manual Trigger Button -->
+                        <div id="aiTriggerSection" class="py-2">
+                            <button type="button" id="triggerAiBtn" class="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
+                                <i class="fas fa-bolt"></i> Analyze Informed Consent
+                            </button>
+                            <p class="text-xs text-blue-600 mt-2"><i class="fas fa-info-circle mr-1"></i>Click to have AI recommend a review type based on the uploaded Informed Consent document.</p>
+                        </div>
+
+                        <div id="aiLoading" class="hidden flex items-center gap-2 text-sm text-blue-700 py-2">
+                            <i class="fas fa-circle-notch fa-spin"></i> Analyzing Informed Consent...
                         </div>
 
                         <div id="aiResult" class="hidden space-y-2">
@@ -63,7 +70,7 @@
                         </div>
 
                         <div id="aiError" class="hidden text-xs text-red-600 mt-2">
-                            <i class="fas fa-exclamation-triangle mr-1"></i> Analysis failed. Please review manually.
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Analysis failed. Please review manually or ensure an Informed Consent document was uploaded.
                         </div>
                     </div>
 
@@ -327,9 +334,12 @@
 
         document.getElementById('aiResult').classList.add('hidden');
         document.getElementById('aiError').classList.add('hidden');
-        document.getElementById('aiLoading').classList.remove('hidden');
-        document.getElementById('aiStatusBadge').textContent = "Analyzing...";
-        document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-600 animate-pulse";
+        document.getElementById('aiLoading').classList.add('hidden');
+        document.getElementById('aiStatusBadge').classList.add('hidden');
+        document.getElementById('aiTriggerSection').classList.remove('hidden');
+
+        // Store current ID for manual trigger
+        window.currentStatusModalId = id;
 
         // Show Modal
         const modal = document.getElementById('statusModal');
@@ -340,6 +350,22 @@
             content.classList.remove('scale-95');
             content.classList.add('scale-100');
         }, 10);
+    }
+
+    // Handle Manual AI Trigger
+    document.getElementById('triggerAiBtn').addEventListener('click', async function() {
+        const id = window.currentStatusModalId;
+        if (!id) return;
+
+        // UI Updates for loading state
+        document.getElementById('aiTriggerSection').classList.add('hidden');
+        document.getElementById('aiError').classList.add('hidden');
+        document.getElementById('aiResult').classList.add('hidden');
+        
+        document.getElementById('aiLoading').classList.remove('hidden');
+        document.getElementById('aiStatusBadge').classList.remove('hidden');
+        document.getElementById('aiStatusBadge').textContent = "Analyzing...";
+        document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-600 animate-pulse";
 
         // Trigger AI Analysis
         try {
@@ -354,7 +380,7 @@
 
             document.getElementById('aiLoading').classList.add('hidden');
 
-            if (data.found && data.suggestion) {
+            if (data.found && data.suggestion && !data.error) {
                 document.getElementById('aiResult').classList.remove('hidden');
                 document.getElementById('aiSuggestionText').textContent = data.suggestion.recommended_type;
                 document.getElementById('aiReasoning').textContent = data.suggestion.reasoning;
@@ -372,17 +398,25 @@
                 document.getElementById('aiStatusBadge').textContent = "Complete";
                 document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-600";
             } else {
-                throw new Error(data.message || "Analysis failed");
+                throw new Error(data.error || data.message || "Analysis failed");
             }
 
         } catch (error) {
             console.error(error);
             document.getElementById('aiLoading').classList.add('hidden');
             document.getElementById('aiError').classList.remove('hidden');
+            
+            // Show specific error message if available
+            if (error.message && error.message !== "Analysis failed") {
+                const errorDiv = document.getElementById('aiError');
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle mr-1"></i> ${error.message}`;
+            }
+            
             document.getElementById('aiStatusBadge').textContent = "Failed";
             document.getElementById('aiStatusBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-600";
+            document.getElementById('aiTriggerSection').classList.remove('hidden'); // Allow retry
         }
-    }
+    });
 
     function closeStatusModal() {
         const modal = document.getElementById('statusModal');

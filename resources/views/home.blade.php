@@ -25,6 +25,23 @@
             </a>
         </div>
 
+        <!-- Global Validation Errors (e.g., OR Upload failures) -->
+        @if($errors->any())
+            <div class="mb-8 p-4 bg-red-50 border-l-4 border-[#8B0000] rounded-r-xl shadow-sm animate-[fadeIn_0.3s_ease-out]">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-circle text-[#8B0000] mt-0.5 mr-3 text-lg"></i>
+                    <div>
+                        <h3 class="text-[#8B0000] font-bold">Action Failed</h3>
+                        <ul class="text-red-700 text-sm list-disc list-inside mt-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @if($titles->isEmpty())
             <!-- Empty State -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
@@ -153,6 +170,21 @@
                                         {{ $checkStatus === 'Incomplete' ? 'Update Files' : 'Manage Files' }}
                                     </a>
 
+                                    @if(!$title->Official_Receipt_Number || !$title->or_file_path)
+                                        <button onclick="document.getElementById('or-modal-{{ $title->id }}').showModal()" 
+                                                class="col-span-2 w-full py-2.5 px-6 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl font-bold hover:from-orange-500 hover:to-orange-600 transition-all flex items-center justify-center gap-2 text-sm shadow-[0_4px_12px_rgba(249,115,22,0.25)] hover:shadow-[0_6px_16px_rgba(249,115,22,0.4)] group">
+                                            <i class="fas fa-receipt group-hover:rotate-12 transition-transform duration-300"></i> Submit OR
+                                        </button>
+                                    @elseif($title->Official_Receipt_Number && !$title->is_or_verified)
+                                        <div class="col-span-2 w-full py-2.5 px-6 bg-slate-50 text-slate-500 rounded-xl font-bold flex items-center justify-center gap-2 text-sm border border-slate-200 cursor-not-allowed shadow-inner">
+                                            <i class="fas fa-hourglass-half text-indigo-400 animate-pulse"></i> OR Pending Verification
+                                        </div>
+                                    @else
+                                        <div class="col-span-2 w-full py-2.5 px-6 bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 rounded-xl font-bold flex items-center justify-center gap-2 text-sm border border-emerald-200 shadow-sm cursor-default">
+                                            <i class="fas fa-check-circle text-emerald-500"></i> OR Verified
+                                        </div>
+                                    @endif
+
                                     @if($title->status === 'Approved')
                                         <div class="col-span-2 w-full py-2.5 px-6 bg-green-50 border border-green-200 text-green-700 rounded-xl font-bold flex items-center justify-center gap-2 text-sm">
                                             <i class="fas fa-check-circle"></i> Approved
@@ -254,6 +286,21 @@
                                         <i class="fas {{ $checkStatus === 'Incomplete' ? 'fa-file-upload' : 'fa-folder-open' }}"></i> 
                                         {{ $checkStatus === 'Incomplete' ? 'Update Files' : 'Manage Files' }}
                                     </a>
+
+                                    @if(!$title->Official_Receipt_Number || !$title->or_file_path)
+                                        <button onclick="document.getElementById('or-modal-{{ $title->id }}').showModal()" 
+                                                class="w-full py-3 px-6 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl font-bold hover:from-orange-500 hover:to-orange-600 transition-all flex items-center justify-center gap-2 shadow-[0_8px_16px_rgba(249,115,22,0.2)] hover:shadow-[0_12px_24px_rgba(249,115,22,0.35)] hover:-translate-y-0.5 group">
+                                            <i class="fas fa-receipt group-hover:rotate-12 transition-transform duration-300"></i> Submit OR
+                                        </button>
+                                    @elseif($title->Official_Receipt_Number && !$title->is_or_verified)
+                                        <div class="w-full py-3 px-6 bg-slate-50 text-slate-500 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-200 cursor-not-allowed shadow-inner">
+                                            <i class="fas fa-hourglass-half text-indigo-400 animate-pulse"></i> OR Pending Verification
+                                        </div>
+                                    @else
+                                        <div class="w-full py-3 px-6 bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 rounded-xl font-bold flex items-center justify-center gap-2 border border-emerald-200 shadow-sm cursor-default">
+                                            <i class="fas fa-check-circle text-emerald-500"></i> OR Verified
+                                        </div>
+                                    @endif
                                     @if($title->status === 'Approved')
                                         <div class="w-full py-3 px-6 bg-green-50 border-2 border-green-500 text-green-700 rounded-xl font-bold flex items-center justify-center gap-2">
                                             <i class="fas fa-check-circle"></i> Approved
@@ -360,6 +407,67 @@
                                                 @endif
                                             </div>
                                         </div>
+                                        
+                                        @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
+                                            <!-- Admin Actions Section -->
+                                            <div class="mt-8 pt-6 border-t border-slate-100">
+                                                <h4 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                                    <i class="fas fa-money-check-alt text-emerald-600"></i> Revenue Tracking
+                                                </h4>
+                                                
+                                                <div class="rounded-xl p-4 border 
+                                                    {{ $title->is_or_verified ? 'bg-emerald-50/50 border-emerald-200' : 
+                                                      ($title->Official_Receipt_Number ? 'bg-indigo-50/50 border-indigo-200' : 'bg-orange-50/50 border-orange-200') }}">
+                                                    
+                                                    @if(!$title->Official_Receipt_Number)
+                                                        <!-- State 1: Awaiting Researcher -->
+                                                        <div class="flex items-center justify-between">
+                                                            <div class="flex items-center gap-3">
+                                                                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                                                                    <i class="fas fa-hourglass-half"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h5 class="text-sm font-bold text-orange-800">Awaiting Upload</h5>
+                                                                    <p class="text-xs text-orange-600 mt-0.5">Researcher has not submitted a receipt yet.</p>
+                                                                </div>
+                                                            </div>
+                                                            <span class="px-2.5 py-1 bg-orange-100 text-orange-700 rounded-md text-[10px] font-bold uppercase shrink-0">Pending</span>
+                                                        </div>
+                                                    
+                                                    @elseif($title->Official_Receipt_Number && !$title->is_or_verified)
+                                                        <div class="flex items-center justify-between">
+                                                            <div class="flex flex-col">
+                                                                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1">Receipt Submitted</span>
+                                                                <p class="text-lg font-mono font-bold text-indigo-900 bg-white px-3 py-1.5 rounded border border-indigo-100 inline-block w-max">#{{ $title->Official_Receipt_Number }}</p>
+                                                            </div>
+                                                            <span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-md text-[10px] font-bold uppercase shrink-0 flex items-center gap-1">
+                                                                <i class="fas fa-eye"></i> Pending Verification
+                                                            </span>
+                                                        </div>
+                                                        <div class="mt-3 pt-3 border-t border-indigo-100/50">
+                                                            <p class="text-xs text-indigo-600 font-medium"><i class="fas fa-info-circle mr-1"></i> Receipt is awaiting review in the Revenue Logs.</p>
+                                                        </div>
+
+                                                    @else
+                                                        <!-- State 3: Verified -->
+                                                        <div class="flex items-center justify-between mb-2">
+                                                            <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Official Receipt Number</span>
+                                                            <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md text-[10px] font-bold uppercase flex items-center gap-1">
+                                                                <i class="fas fa-shield-check"></i> Verified
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex items-center justify-between">
+                                                            <p class="text-lg font-mono font-bold text-emerald-800 bg-white px-3 py-2 rounded border border-emerald-100">#{{ $title->Official_Receipt_Number }}</p>
+                                                            @if($title->or_file_path)
+                                                                <a href="{{ asset($title->or_file_path) }}" target="_blank" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 hover:underline flex items-center gap-1">
+                                                                    <i class="fas fa-image"></i> View File
+                                                                </a>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </dialog>
@@ -470,7 +578,52 @@
                                     @endif
                                 </div>
                             </dialog>
-                @endforeach
+
+                            <!-- OR Upload Modal -->
+                            <dialog id="or-modal-{{ $title->id }}" class="m-auto rounded-3xl p-0 backdrop:bg-slate-900/60 w-full max-w-md open:animate-[zoomIn_0.3s_ease-out] border border-white/20 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] overflow-hidden bg-white">
+                                <div class="relative overflow-hidden bg-gradient-to-r from-orange-400 to-orange-500 px-6 py-5 flex items-center justify-between shadow-sm">
+                                    <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-12 translate-x-12"></div>
+                                    <h3 class="text-xl font-extrabold text-white flex items-center gap-3 relative z-10 font-heading tracking-wide">
+                                        <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+                                            <i class="fas fa-file-invoice-dollar text-white text-sm"></i>
+                                        </div>
+                                        Submit Document
+                                    </h3>
+                                    <button type="button" onclick="document.getElementById('or-modal-{{ $title->id }}').close()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all relative z-10 backdrop-blur-sm">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <div class="p-6 relative">
+                                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-100 to-transparent opacity-50"></div>
+                                    <form action="{{ route('researcher.submit_or', $title->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                                        @csrf
+                                        <div class="group">
+                                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-focus-within:text-orange-500 transition-colors">Official Receipt #</label>
+                                            <div class="relative">
+                                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                    <i class="fas fa-hashtag text-slate-400 group-focus-within:text-orange-500 transition-colors"></i>
+                                                </div>
+                                                <input type="text" name="or_number" required class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono focus:outline-none focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-500/10 transition-all duration-200" placeholder="e.g. OR-123456789">
+                                            </div>
+                                        </div>
+                                        <div class="group">
+                                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-focus-within:text-orange-500 transition-colors">Upload Picture / PDF</label>
+                                            <div class="relative w-full">
+                                                <input type="file" name="or_file" required accept=".jpeg,.jpg,.png,.pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 hover:file:text-orange-700 file:transition-colors bg-slate-50 border border-slate-200 rounded-xl cursor-pointer focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-500/10 transition-all duration-200">
+                                            </div>
+                                            <p class="mt-2 text-[11px] text-slate-400 font-medium flex items-center gap-1.5"><i class="fas fa-info-circle"></i> Max 20MB. Accepted: JPG, PNG, PDF</p>
+                                        </div>
+                                        <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
+                                            <button type="button" onclick="document.getElementById('or-modal-{{ $title->id }}').close()" class="flex-1 px-4 py-3 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-center">Cancel</button>
+                                            <button type="submit" class="flex-1 px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 rounded-xl shadow-[0_6px_15px_rgba(249,115,22,0.25)] hover:shadow-[0_8px_20px_rgba(249,115,22,0.35)] hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2 group">
+                                                Submit <i class="fas fa-paper-plane group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </dialog>
+                 @endforeach
 
                     <!-- Resources & Assistance Section (Moved to Bottom) -->
                     <div class="pt-12 border-t border-slate-200">

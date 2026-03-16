@@ -126,6 +126,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
         Route::get('/home/{id}/recommendation-letter', [Research_title_Controller::class, 'viewRecommendationLetter'])->name('recommendation.view');
 
+        // Official Receipt Upload Route for Researchers
+        Route::post('/researcher/submit-or/{id}', [\App\Http\Controllers\ORNumberController::class, 'researcherSubmitOR'])->name('researcher.submit_or');
+
         // Settings Routes
         Route::post('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.update_profile');
         Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.update_password');
@@ -219,6 +222,10 @@ Route::middleware(['auth'])->group(function () {
 
         // The Main Update Logic (Covers Triage Modal)
         Route::post('/admin/update-status/{id}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
+
+        // Official Receipt Number Logging (Admin Access)
+        Route::post('/admin/or-number/verify/{id}', [\App\Http\Controllers\ORNumberController::class, 'verifyOR'])->name('admin.or_number.verify');
+        Route::post('/admin/or-number/reject/{id}', [\App\Http\Controllers\ORNumberController::class, 'rejectOR'])->name('admin.or_number.reject');
         
         // AI Analysis Route for Modals
         Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol_type');

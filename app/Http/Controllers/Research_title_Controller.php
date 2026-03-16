@@ -98,7 +98,7 @@ class Research_title_Controller extends Controller
             'category_fee_at_submission' => $fee,
             'Created_by' => $user->first_name . ' ' . $user->last_name,
             'researcher_id' => $user->researcher->id,
-            'Official_Receipt_Number' => '011',
+            'Official_Receipt_Number' => null, // Default to null, requires Admin input
             'Adviser' => $validated['Adviser'],
         ]);
 

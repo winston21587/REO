@@ -288,7 +288,7 @@
                         $ext = strtolower($file->filetype);
                         $isPdf = $ext === 'pdf';
                         $isOffice = in_array($ext, ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']);
-                        $displayName = $file->category;
+                        $displayName = $file->category ?? 'General Document';
 
                         if ($isPdf) {
                             $iconClass = 'fa-file-pdf text-[#8B0000]';
@@ -379,7 +379,7 @@
                     $isPdf = $ext === 'pdf';
                     $isOffice = in_array($ext, ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']);
                     
-                    $displayName = $file->category;
+                    $displayName = $file->category ?? 'General Document';
 
                     $fileTypeLabel = match($file->filetype) {
                         'certificate' => 'Clearance Certificate',
@@ -495,7 +495,7 @@
                         $ext = strtolower($file->filetype);
                         $isPdf = $ext === 'pdf';
                         $isOffice = in_array($ext, ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']);
-                        $displayName = $file->category;
+                        $displayName = $file->category ?? 'General Document';
 
                         if ($isPdf) {
                             $iconClass = 'fa-file-pdf text-[#8B0000]';
@@ -630,31 +630,31 @@
         @endif
 
         <!-- Title Activity Logs Section -->
-        <div class="mt-12 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden mb-10">
-            <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        <div class="mt-8 md:mt-12 bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm overflow-hidden mb-10">
+            <div class="px-5 py-5 md:px-8 md:py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <h3 class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
                         <i class="fas fa-history text-indigo-600"></i>
                         Activity Log
                     </h3>
-                    <p class="text-sm text-slate-500 mt-1">A complete history of status changes and updates for this submission.</p>
+                    <p class="text-xs md:text-sm text-slate-500 mt-1">A complete history of status changes and updates for this submission.</p>
                 </div>
-                <div class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-bold border border-indigo-100 flex items-center gap-2">
+                <div class="self-start sm:self-auto px-3 py-1.5 md:px-4 md:py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs md:text-sm font-bold border border-indigo-100 flex items-center gap-2">
                     <i class="fas fa-list-ul"></i> {{ $researchTitle->titleLogs->count() }} Records
                 </div>
             </div>
 
-            <div class="p-8">
+            <div class="p-5 md:p-8">
                 @if($researchTitle->titleLogs->isEmpty())
                     <div class="text-center py-10">
-                        <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                            <i class="fas fa-clipboard-list text-slate-300 text-2xl"></i>
+                        <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                            <i class="fas fa-clipboard-list text-slate-300 text-xl md:text-2xl"></i>
                         </div>
-                        <h4 class="text-slate-700 font-bold mb-1">No Activity Yet</h4>
-                        <p class="text-slate-500 text-sm">Action logs will appear here once the submission is processed.</p>
+                        <h4 class="text-sm md:text-base text-slate-700 font-bold mb-1">No Activity Yet</h4>
+                        <p class="text-slate-500 text-xs md:text-sm">Action logs will appear here once the submission is processed.</p>
                     </div>
                 @else
-                    <div class="relative before:absolute before:inset-y-0 before:left-6 before:w-[2px] before:bg-slate-100 space-y-8 pl-1">
+                    <div class="relative before:absolute before:inset-y-0 before:left-3 md:before:left-6 before:w-[2px] before:bg-slate-100 space-y-6 md:space-y-8 pl-1">
                         @foreach($researchTitle->titleLogs as $log)
                             @php
                                 $actionLower = strtolower($log->action);
@@ -681,33 +681,35 @@
 
                             <div class="relative flex items-start group">
                                 <!-- Timeline Node -->
-                                <div class="absolute left-0 w-10 h-10 -ml-4 rounded-full border-4 border-white flex items-center justify-center {{ $bg }} {{ $color }} z-10 shadow-sm transition-transform group-hover:scale-110">
-                                    <i class="fas {{ $icon }} text-sm"></i>
+                                <div class="absolute left-0 w-6 h-6 -ml-3 md:w-10 md:h-10 md:-ml-4 rounded-full border-2 md:border-4 border-white flex items-center justify-center {{ $bg }} {{ $color }} z-10 shadow-sm transition-transform group-hover:scale-110">
+                                    <i class="fas {{ $icon }} text-[10px] md:text-sm"></i>
                                 </div>
                                 
                                 <!-- Content Box -->
-                                <div class="ml-12 focus:outline-none w-full mb-6">
-                                    <div class="bg-white border hover:border-slate-300 {{ str_contains($log->action, 'Created') ? 'border-l-4 border-l-emerald-500' : 'border-slate-100' }} rounded-2xl p-5 shadow-sm transition-all hover:shadow-md">
-                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                                            <div class="flex items-center gap-3">
-                                                <h4 class="text-slate-800 font-bold text-base m-0">{{ $log->action }}</h4>
+                                <div class="ml-6 md:ml-12 focus:outline-none w-full mb-4 md:mb-6">
+                                    <div class="bg-white border hover:border-slate-300 {{ str_contains($log->action, 'Created') ? 'border-l-4 border-l-emerald-500' : 'border-slate-100' }} rounded-xl md:rounded-2xl p-4 md:p-5 shadow-sm transition-all hover:shadow-md">
+                                        <div class="flex flex-col gap-2 mb-3">
+                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                <h4 class="text-slate-800 font-bold text-sm md:text-base m-0">{{ $log->action }}</h4>
+                                                <span class="text-[10px] md:text-xs font-bold text-slate-400 flex items-center gap-1.5 bg-slate-50 px-2 py-1 md:px-3 md:py-1.5 rounded-lg border border-slate-100 self-start sm:self-auto whitespace-nowrap">
+                                                    <i class="far fa-clock"></i>
+                                                    {{ $log->created_at->format('M d, Y • h:i A') }}
+                                                </span>
+                                            </div>
+                                            <div>
                                                 @if($log->user)
-                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
+                                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
                                                         <i class="fas fa-user-circle"></i>
                                                         {{ $log->user->first_name }} {{ $log->user->last_name }}
                                                     </span>
                                                 @else
-                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">
+                                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">
                                                         <i class="fas fa-robot text-slate-400"></i> System
                                                     </span>
                                                 @endif
                                             </div>
-                                            <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 whitespace-nowrap">
-                                                <i class="far fa-clock"></i>
-                                                {{ $log->created_at->format('M d, Y • h:i A') }}
-                                            </span>
                                         </div>
-                                        <p class="text-slate-600 text-sm leading-relaxed m-0 font-medium">
+                                        <p class="text-slate-600 text-xs md:text-sm leading-relaxed m-0 mt-2 font-medium">
                                             {{ $log->description }}
                                         </p>
                                     </div>

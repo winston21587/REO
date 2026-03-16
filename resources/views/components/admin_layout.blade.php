@@ -177,55 +177,6 @@
             <header
                 class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
                 <h2 class="text-xl font-bold text-slate-800 font-heading">{{ $title ?? 'Dashboard' }}</h2>
-                <div class="flex items-center gap-4 relative">
-                    <button id="notification-btn"
-                        class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-[#8B0000] transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2">
-                        <i class="fas fa-bell text-xl"></i>
-                        <span
-                            class="absolute top-2 right-2 w-2.5 h-2.5 bg-[#8B0000] border-2 border-white rounded-full animate-pulse"></span>
-                    </button>
-
-                    <!-- Notification Component -->
-                    <x-notification-tab />
-                </div>
-
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const btn = document.getElementById('notification-btn');
-                        const panel = document.getElementById('notifications-panel');
-                        let isOpen = false;
-
-                        // Toggle function
-                        function toggleNotifications(e) {
-                            e.stopPropagation();
-                            isOpen = !isOpen;
-
-                            if (isOpen) {
-                                panel.style.display = 'block';
-                                // Small delay to allow display:block to apply before transition
-                                setTimeout(() => {
-                                    panel.classList.remove('opacity-0', 'scale-95');
-                                    panel.classList.add('opacity-100', 'scale-100');
-                                }, 10);
-                            } else {
-                                panel.classList.remove('opacity-100', 'scale-100');
-                                panel.classList.add('opacity-0', 'scale-95');
-                                setTimeout(() => {
-                                    panel.style.display = 'none';
-                                }, 200);
-                            }
-                        }
-
-                        // Click outside to close
-                        document.addEventListener('click', function (e) {
-                            if (isOpen && !panel.contains(e.target) && !btn.contains(e.target)) {
-                                toggleNotifications(e);
-                            }
-                        });
-
-                        btn.addEventListener('click', toggleNotifications);
-                    });
-                </script>
             </header>
 
             <div class="flex-1 overflow-y-auto p-8">

@@ -24,12 +24,20 @@ class SuperAdminController extends Controller
             });
         }
 
+        if ($request->filled('college')) {
+            $query->whereHas('admin', function($q) use ($request) {
+                $q->where('college', $request->college);
+            });
+        }
+
         if ($request->filled('status')) {
-            if ($request->status === 'active') {
-                $query->whereNotNull('email_verified_at');
-            } elseif ($request->status === 'pending') {
-                $query->whereNull('email_verified_at');
-            }
+            $query->whereHas('admin', function($q) use ($request) {
+                if ($request->status === 'internal') {
+                    $q->where('external_user', false);
+                } elseif ($request->status === 'external') {
+                    $q->where('external_user', true);
+                }
+            });
         }
 
         $users = $query->latest()->paginate(10)->withQueryString();
@@ -127,12 +135,20 @@ class SuperAdminController extends Controller
             });
         }
 
+        if ($request->filled('college')) {
+            $query->whereHas('reviewer', function($q) use ($request) {
+                $q->where('college', $request->college);
+            });
+        }
+
         if ($request->filled('status')) {
-            if ($request->status === 'active') {
-                $query->whereNotNull('email_verified_at');
-            } elseif ($request->status === 'pending') {
-                $query->whereNull('email_verified_at');
-            }
+            $query->whereHas('reviewer', function($q) use ($request) {
+                if ($request->status === 'internal') {
+                    $q->where('external_user', false);
+                } elseif ($request->status === 'external') {
+                    $q->where('external_user', true);
+                }
+            });
         }
 
         $users = $query->latest()->paginate(10)->withQueryString();

@@ -35,7 +35,8 @@ class AdminController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
-            'college' => 'required|string',
+            'affiliation' => 'required|in:internal,external',
+            'college' => 'required_if:affiliation,internal',
         ]);
 
         $user = User::create([
@@ -45,12 +46,12 @@ class AdminController extends Controller
             'role' => 'researcher',
             'password' => Hash::make('password'), // Default password
             'email_verified_at' => now(), // Auto-verify since admin created it
-            'external_user' => false,
         ]);
 
         Researcher::create([
             'user_id' => $user->id,
-            'college' => $request->college,  //make more in the future
+            'college' => $request->affiliation === 'external' ? null : $request->college,
+            'external_user' => $request->affiliation === 'external',
         ]);
 
 
@@ -103,16 +104,20 @@ class AdminController extends Controller
 
         // Filter by College
         if ($request->has('college') && $request->college != '') {
-            $query->where('college', $request->college);
+            $query->whereHas('researcher', function($q) use ($request) {
+                $q->where('college', $request->college);
+            });
         }
 
-        // Filter by Status
+        // Filter by Status (Affiliation)
         if ($request->has('status') && $request->status != '') {
-            if ($request->status == 'active') {
-                $query->whereNotNull('email_verified_at');
-            } elseif ($request->status == 'pending') {
-                $query->whereNull('email_verified_at');
-            }
+            $query->whereHas('researcher', function($q) use ($request) {
+                if ($request->status == 'internal') {
+                    $q->where('external_user', false);
+                } elseif ($request->status == 'external') {
+                    $q->where('external_user', true);
+                }
+            });
         }
 
         $users = $query->paginate(10);

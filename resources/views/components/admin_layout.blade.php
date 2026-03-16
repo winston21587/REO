@@ -141,6 +141,12 @@
                             <i class="fas fa-user-graduate w-5 text-center"></i>
                             <span class="flex-1">Researchers</span>
                         </a>
+                        <!-- Temporary Sidebar link requested by user -->
+                        <a href="{{ route('test.model') }}"
+                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+                            <i class="fas fa-robot text-purple-400 w-5 text-center"></i>
+                            <span class="flex-1">AI Test UI</span>
+                        </a>
                     </div>
                 </div>
 

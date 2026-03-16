@@ -225,92 +225,105 @@ PROMPT;
     }
     public function analyzeProtocolType(Request $request, $id)
     {
-        // 1. Find the relevant file
-        // We look for "Study Protocol Assessment Form" in the researcher_files table for this research_id
+        set_time_limit(120); // Increase max execution time for long AI processing
+
+        // 1. Find the relevant file to analyze (Research Protocol or Assessment Form)
         $fileRecord = \App\Models\researcher_files::where('research_title_id', $id)
-                        ->where('filename', 'like', '%Study Protocol Assessment Form%') // Adjust keyword as needed
+                        ->where(function ($query) {
+                            $query->where('category', 'like', '%Protocol%')
+                                  ->orWhere('filename', 'like', '%Protocol%')
+                                  ->orWhere('category', 'like', '%Application Form%');
+                        })
                         ->latest()
                         ->first();
 
         if (!$fileRecord) {
             return response()->json([
                 'found' => false, 
-                'message' => 'Study Protocol Assessment Form not found.'
+                'message' => 'No Protocol or Application Form found to analyze.'
             ]);
         }
 
-        // 2. Extract Text
-        $text = '';
         try {
-            $path = storage_path('app/public/' . $fileRecord->filepath); // Adjust based on your storage config
-            // If using local disk, might be: storage_path('app/' . $fileRecord->filepath) or public_path(...)
-            // Assuming 'public' disk:
+            // Find absolute path
+            $path = storage_path('app/public/' . $fileRecord->filepath);
             if (!file_exists($path)) {
-                 // Try relative to public path if storage link is set up
                  $path = public_path('storage/' . $fileRecord->filepath);
             }
-            
             if (!file_exists($path)) {
-                 // Fallback: try to find it via the model's path attribute directly if it's absolute or relative
-                 $path = $fileRecord->filepath; 
+                 $path = storage_path('app/' . $fileRecord->filepath);
+            }
+            if (!file_exists($path)) {
+                return response()->json([
+                    'found' => true, 
+                    'error' => 'Physical file could not be located on the server.'
+                ]);
             }
 
+            // --- PYTHON NLP MODEL API CALL ---
+            $apiUrl = env('PYTHON_API_URL', 'http://127.0.0.1:5001') . '/predict';
 
-            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            // Send raw file to Flask server
+            $response = Http::timeout(60)->attach(
+                'file', file_get_contents($path), $fileRecord->filename
+            )->post($apiUrl);
 
-            if ($extension === 'pdf') {
-                $popplerPath = base_path('resources\poppler-25.07.0\Library\bin\pdftotext.exe');
-                $text = (new Pdf($popplerPath))->setPdf($path)->text();
-            } elseif (in_array($extension, ['doc', 'docx'])) {
-                $text = $this->safeExtractWord($path);
+            if ($response->failed()) {
+                Log::error('Python API request failed: ' . $response->body());
+                return response()->json(['found' => true, 'error' => 'AI Classification Service Unavailable. Please ensure Python server is running.']);
             }
+
+            $result = $response->json();
+            
+            if (!$result['success'] ?? false) {
+                 return response()->json(['found' => true, 'error' => 'Python API returned an error: ' . ($result['error'] ?? 'Unknown error')]);
+            }
+
+            // Map prediction to OpenRouter's expected output format for UI compatibility
+            $prediction = $result['prediction'] ?? 'UNKNOWN';
+            
+            // Format match
+            $recommendedType = 'Unknown';
+            if (stripos($prediction, 'EXPEDITED') !== false) {
+                $recommendedType = 'Expedited Review';
+            } elseif (stripos($prediction, 'EXEMPT') !== false) {
+                $recommendedType = 'Exempt Review';
+            } elseif (stripos($prediction, 'FULL') !== false) {
+                $recommendedType = 'Full Board Review';
+            }
+
+            // Calculate confidence loosely based on chunk voting gap (optional fallback to High)
+            // Or just hardcode High since the old UI expects it to Auto-select
+            $confidence = 'High';
+
+            $reasoning = "Analyzed {$result['chunks_analyzed']} text segments. Majority voted for {$prediction}.";
+            if (!empty($result['breakdown'])) {
+                 // Build a quick summary of the breakdown
+                 $stats = [];
+                 foreach ($result['breakdown'] as $cat => $data) {
+                     if ($data['percentage'] > 0) {
+                         $stats[] = "{$cat}: {$data['percentage']}%";
+                     }
+                 }
+                 $reasoning .= " (" . implode(", ", $stats) . ")";
+            }
+
+            return response()->json([
+                'found' => true,
+                'filename' => $fileRecord->filename,
+                'suggestion' => [
+                    'recommended_type' => $recommendedType,
+                    'confidence' => $confidence,
+                    'reasoning' => $reasoning
+                ]
+            ]);
+
         } catch (\Exception $e) {
-            Log::error("AI Analysis Error: " . $e->getMessage());
+            Log::error("Flask AI Analysis Error: " . $e->getMessage());
             return response()->json([
                 'found' => true, 
-                'error' => 'Could not read file content.'
+                'error' => 'An internal error occurred during prediction.'
             ]);
         }
-
-        // 3. Ask AI for Recommendation
-        $prompt = "Analyze the following 'Study Protocol Assessment Form' content and determine the recommended type of review. 
-        The options are: 'Expedited', 'Exempt', or 'Full Review'.
-        
-        Look for checkboxes or text indicating the recommendation.
-        
-        Return ONLY a JSON object with:
-        - recommended_type: (string) One of the 3 options.
-        - confidence: (string) High, Medium, or Low.
-        - reasoning: (string) A short explanation (max 1 sentence).
-        
-        Content:
-        " . substr($text, 0, 5000); // Limit text length
-
-        // --- OPENROUTER CALL (Reusing your existing logic) ---
-        $apiKey = config('services.openrouter.api_key');
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apiKey,
-            'HTTP-Referer' => config('app.url'),
-            'X-Title' => config('app.name'),
-        ])->timeout(30)->post('https://openrouter.ai/api/v1/chat/completions', [
-            'model' => 'google/gemini-2.5-flash-lite',
-            'messages' => [
-                ['role' => 'user', 'content' => $prompt]
-            ]
-        ]);
-
-        if ($response->failed()) {
-            return response()->json(['found' => true, 'error' => 'AI Service Unavailable']);
-        }
-
-        $content = $response->json()['choices'][0]['message']['content'] ?? '';
-        $content = preg_replace('/^```json\s*|\s*```$/', '', trim($content));
-        $result = json_decode($content, true);
-
-        return response()->json([
-            'found' => true,
-            'filename' => $fileRecord->filename,
-            'suggestion' => $result
-        ]);
     }
 }

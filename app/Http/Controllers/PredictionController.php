@@ -13,6 +13,8 @@ class PredictionController extends Controller
      */
     public function predict(Request $request)
     {
+        set_time_limit(120); // Increase max execution time for long AI processing
+
         $request->validate([
             'document' => 'required|file|mimes:pdf,doc,docx,txt,csv|max:10240', // 10MB max
         ]);

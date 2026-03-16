@@ -1296,7 +1296,7 @@ class AdminController extends Controller
 
         // Map TCPDF font cache to the pre-compiled directory to avoid on-the-fly generation issues
         if (!defined('K_PATH_FONTS')) {
-            define('K_PATH_FONTS', storage_path('app/tcpdf_fonts/'));
+            define('K_PATH_FONTS', public_path('fonts/tcpdf/'));
         }
 
         $certPdf = new \setasign\Fpdi\Tcpdf\Fpdi();

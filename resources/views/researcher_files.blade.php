@@ -197,19 +197,13 @@
                         </div>
 
                          <!-- Preview Area -->
-                        <div class="relative bg-slate-50 flex-1 min-h-[150px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden hidden md:block">
+                        <div class="relative bg-slate-50 flex-1 min-h-[150px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
                              <iframe src="{{ asset($file->filepath) }}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
                              <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
                                 <a href="{{ asset($file->filepath) }}" target="_blank" class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur-sm text-slate-900 px-5 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-emerald-600 hover:text-white flex items-center gap-2">
                                     <i class="fas fa-external-link-alt"></i> View Fullscreen
                                 </a>
                             </div>
-                        </div>
-
-                        <!-- Mobile Notification Placeholder (Visible only on mobile) -->
-                        <div class="md:hidden bg-slate-50 p-4 border-b border-slate-100 text-center flex-1">
-                            <i class="fas fa-mobile-alt text-slate-300 text-3xl mb-3 mt-4"></i>
-                            <p class="text-xs text-slate-500 font-medium">Download required to view on mobile</p>
                         </div>
 
                         <!-- Read-Only Actions -->
@@ -322,7 +316,7 @@
                         </div>
 
                         <!-- Preview Area -->
-                        <div class="relative bg-slate-50 flex-1 min-h-[200px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden hidden md:block">
+                        <div class="relative bg-slate-50 flex-1 min-h-[200px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
                             @if($isPdf)
                                 <iframe src="{{ asset($file->filepath) }}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
                                 <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
@@ -345,12 +339,6 @@
                                     <span class="text-xs font-medium text-slate-500">Preview not available</span>
                                 </div>
                             @endif
-                        </div>
-
-                        <!-- Mobile Notification Placeholder (Visible only on mobile) -->
-                        <div class="md:hidden bg-slate-50 p-6 border-b border-slate-100 text-center flex-1">
-                            <i class="fas fa-mobile-alt text-slate-300 text-4xl mb-3 mt-4"></i>
-                            <p class="text-sm text-slate-500 font-medium">Download required to view on mobile</p>
                         </div>
 
                         <!-- Actions -->
@@ -433,7 +421,7 @@
                     </div>
 
                     <!-- Preview Area -->
-                    <div class="relative bg-slate-50 flex-1 min-h-[200px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden hidden md:block">
+                    <div class="relative bg-slate-50 flex-1 min-h-[200px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
                         @if($isPdf)
                             <iframe src="{{ asset($file->filepath) }}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
                             <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
@@ -456,12 +444,6 @@
                                 <span class="text-xs font-medium text-slate-500">Preview not available</span>
                             </div>
                         @endif
-                    </div>
-
-                    <!-- Mobile Notification Placeholder (Visible only on mobile) -->
-                    <div class="md:hidden bg-slate-50 p-6 border-b border-slate-100 text-center flex-1">
-                        <i class="fas fa-mobile-alt text-slate-300 text-4xl mb-3 mt-4"></i>
-                        <p class="text-sm text-slate-500 font-medium">Download required to view on mobile</p>
                     </div>
 
                     <!-- Actions -->
@@ -550,7 +532,7 @@
                         </div>
 
                         <!-- Preview Area -->
-                        <div class="relative bg-slate-50 flex-1 min-h-[200px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden hidden md:block">
+                        <div class="relative bg-slate-50 flex-1 min-h-[200px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
                             @if($isPdf)
                                 <iframe src="{{ asset($file->filepath) }}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
                                 <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
@@ -573,12 +555,6 @@
                                     <span class="text-xs font-medium text-slate-500">Preview not available</span>
                                 </div>
                             @endif
-                        </div>
-
-                        <!-- Mobile Notification Placeholder (Visible only on mobile) -->
-                        <div class="md:hidden bg-slate-50 p-6 border-b border-slate-100 text-center flex-1">
-                            <i class="fas fa-mobile-alt text-slate-300 text-4xl mb-3 mt-4"></i>
-                            <p class="text-sm text-slate-500 font-medium">Download required to view on mobile</p>
                         </div>
 
                         <!-- Actions -->

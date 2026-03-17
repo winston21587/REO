@@ -183,7 +183,16 @@
         function confirmFinalize(id, title) {
             Swal.fire({
                 title: 'Finalize Review?',
-                text: "Are you sure you want to proceed with revision for \"" + title + "\"? This will notify the researcher.",
+                html: `
+                    <div class="text-left mt-2">
+                        <p class="text-slate-600 text-sm mb-4">Are you sure you want to proceed with revision for "<b>${title}</b>"? This will notify the researcher.</p>
+                        <div class="mb-2">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Revision Deadline <span class="text-red-500">*</span></label>
+                            <input type="date" id="revision-deadline-input" 
+                                class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent bg-slate-50">
+                        </div>
+                    </div>
+                `,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#8B0000',
@@ -202,12 +211,21 @@
                 customClass: {
                     popup: 'rounded-2xl shadow-2xl border border-slate-200 font-sans p-6',
                     title: 'font-heading text-xl text-slate-800 font-bold pt-4',
-                    htmlContainer: 'text-slate-600 text-sm mt-2',
                     confirmButton: 'bg-[#8B0000] text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-red-900 hover:shadow-xl hover:-translate-y-0.5 transition-all outline-none focus:ring-0 mx-2',
                     cancelButton: 'bg-slate-100 text-slate-600 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-200 transition-all outline-none focus:ring-0 mx-2'
+                },
+                preConfirm: () => {
+                    const dateInput = document.getElementById('revision-deadline-input').value;
+                    if (!dateInput) {
+                        Swal.showValidationMessage('Please select a deadline date');
+                        return false;
+                    }
+                    return dateInput;
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    const selectedDate = result.value;
+                    
                     // Show Loading State
                     Swal.fire({
                         title: 'Processing...',
@@ -226,7 +244,16 @@
                         }
                     });
 
-                    document.getElementById('finalizeForm-' + id).submit();
+                    const form = document.getElementById('finalizeForm-' + id);
+                    
+                    // Append hidden input for deadline
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'deadline';
+                    hiddenInput.value = selectedDate;
+                    form.appendChild(hiddenInput);
+
+                    form.submit();
                 }
             });
         }

@@ -1136,7 +1136,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function finalizeReview($id)
+    public function finalizeReview(Request $request, $id)
     {
         $submission = Research_title::with('researcher')->findOrFail($id);
 
@@ -1149,6 +1149,11 @@ class AdminController extends Controller
 
         // Custom notification message
         $userMessage = "Your research protocol status has been updated to Waiting for Revision. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.";
+
+        if ($request->has('deadline') && !empty($request->deadline)) {
+            $formattedDate = \Carbon\Carbon::parse($request->deadline)->format('F j, Y');
+            $userMessage .= "\n\nDeadline for Revision: " . $formattedDate;
+        }
 
         $submission->save();
 

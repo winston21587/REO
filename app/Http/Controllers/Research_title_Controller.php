@@ -296,37 +296,54 @@ class Research_title_Controller extends Controller
 
         if (in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete'])) {
 
-            // Check if any files have been uploaded into the draft workspace
-            $hasUpdatedFiles = Researcher_files::where('research_title_id', $id)
-                                ->where('revision_number', -1)
-                                ->exists();
+            $isIncomplete = $researchTitle->Status === 'Incomplete';
 
-            if (!$hasUpdatedFiles) {
-                return back()->with('error', 'You must upload at least one document to your Revision Workspace before submitting corrections.');
+            // Only enforce the Draft Workspace check for formal Revisions
+            if (!$isIncomplete) {
+                // Check if any files have been uploaded into the draft workspace
+                $hasUpdatedFiles = Researcher_files::where('research_title_id', $id)
+                                    ->where('revision_number', -1)
+                                    ->exists();
+
+                if (!$hasUpdatedFiles) {
+                    return back()->with('error', 'You must upload at least one document to your Revision Workspace before submitting corrections.');
+                }
+
+                // Group all draft workspace files into a formal new Revision Folder
+                $currentMax = Researcher_files::where('research_title_id', $id)
+                                ->where('revision_number', '>', 0)
+                                ->max('revision_number') ?? 0;
+                $newRevisionNumber = $currentMax + 1;
+
+                Researcher_files::where('research_title_id', $id)
+                    ->where('revision_number', -1)
+                    ->update(['revision_number' => $newRevisionNumber]);
             }
-
-            // Group all draft workspace files into a formal new Revision Folder
-            $currentMax = Researcher_files::where('research_title_id', $id)
-                            ->where('revision_number', '>', 0)
-                            ->max('revision_number') ?? 0;
-            $newRevisionNumber = $currentMax + 1;
-
-            Researcher_files::where('research_title_id', $id)
-                ->where('revision_number', -1)
-                ->update(['revision_number' => $newRevisionNumber]);
 
             // Determine new status
             // Changed from 'Pending'/'Revision Submitted' to 'Corrections Submitted' to distinguish in Admin Dashboard
-            $newStatus = 'Corrections Submitted';
+            $newStatus = $isIncomplete ? 'Pending' : 'Corrections Submitted';
             $logMessage = "Resubmitted corrections: " . $request->revision_message;
 
-            // Create Submission Feedback (User Correction)
+            // Create Submission Feedback (User Correction) & Revision Log for Admin View
             if ($request->revision_message) {
                 SubmissionFeedback::create([
                     'research_title_id' => $researchTitle->id,
                     'user_id' => $user->id,
                     'type' => 'user_correction',
                     'message' => $request->revision_message,
+                ]);
+
+                \App\Models\RevisionLog::create([
+                    'research_title_id' => $researchTitle->id,
+                    'user_id' => $user->id,
+                    'message' => $request->revision_message,
+                ]);
+            } else {
+                 \App\Models\RevisionLog::create([
+                    'research_title_id' => $researchTitle->id,
+                    'user_id' => $user->id,
+                    'message' => 'Resubmitted without additional notes.',
                 ]);
             }
 

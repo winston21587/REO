@@ -64,8 +64,11 @@ class SuperAdminController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password), 
                 'role' => 'admin',
-                'email_verified_at' => now(), // Auto verify for admins manually created by super admin
+                'is_verified' => true,
             ]);
+            
+            $user->email_verified_at = now();
+            $user->save();
 
             Admin::create([
                 'user_id' => $user->id,
@@ -180,8 +183,11 @@ class SuperAdminController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($generatedPassword), 
                 'role' => 'reviewer',
-                'email_verified_at' => now(), // Auto verify for reviewers manually created by super admin
+                'is_verified' => true,
             ]);
+            
+            $user->email_verified_at = now();
+            $user->save();
             
             $expertiseArray = null;
             if ($request->filled('expertise')) {

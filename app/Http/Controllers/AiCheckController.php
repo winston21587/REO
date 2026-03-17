@@ -225,7 +225,7 @@ PROMPT;
     }
     public function analyzeProtocolType(Request $request, $id)
     {
-        set_time_limit(120); // Increase max execution time for long AI processing
+        set_time_limit(300); // Increase max execution time for long AI processing (up to 5 mins)
 
         // 1. Find the relevant research title and its "Informed Consent" file
         $research = \App\Models\Research_title::with('files')->find($id);
@@ -236,8 +236,8 @@ PROMPT;
 
         $fileRecord = $research->files()
                         ->where(function ($query) {
-                            $query->where('category', 'like', '%Study Protocol%')
-                                  ->orWhere('filename', 'like', '%Study Protocol%');
+                            $query->where('category', 'like', '%Informed Consent%')
+                                  ->orWhere('filename', 'like', '%Informed Consent%');
                         })
                         ->latest()
                         ->first();
@@ -245,7 +245,7 @@ PROMPT;
         if (!$fileRecord) {
             return response()->json([
                 'found' => false, 
-                'message' => 'No Study Protocol document found for this submission.'
+                'message' => 'No Informed Consent document found for this submission.'
             ]);
         }
 
@@ -272,7 +272,7 @@ PROMPT;
             $apiUrl = env('PYTHON_API_URL', 'http://127.0.0.1:5001') . '/predict';
 
             // Send raw file to Flask server
-            $response = Http::timeout(60)->attach(
+            $response = Http::timeout(300)->attach(
                 'file', file_get_contents($path), $fileRecord->filename
             )->post($apiUrl);
 

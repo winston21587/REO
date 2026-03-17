@@ -1283,16 +1283,21 @@ class AdminController extends Controller
         }
 
         $coverFilename   = 'Cover_Letter_' . $submission->id . '_' . time() . '.pdf';
-        $coverPath = 'certificates/generated/' . $coverFilename;
+        $coverPath = "uploads/research_{$submission->id}/" . $coverFilename;
+
+        // Ensure directory exists in public_uploads disk
+        if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
+            Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
+        }
         
-        // Write file using Laravel Storage to guarantee proper public permissions instead of TCPDF's raw Output which may inherit strict umasks
-        Storage::disk('public')->put($coverPath, $coverPdf->Output($coverFilename, 'S'));
+        // Write file using public_uploads to guarantee it is served directly from /public/uploads/ bypassing /storage symlinks
+        Storage::disk('public_uploads')->put($coverPath, $coverPdf->Output($coverFilename, 'S'));
 
         researcher_files::create([
             'research_title_id' => $submission->id,
             'filename'          => 'Cover Letter of Approval',
             'filetype'          => 'Approval Letter',
-            'filepath'          => 'storage/certificates/generated/' . $coverFilename,
+            'filepath'          => $coverPath,
         ]);
         }
 
@@ -1358,16 +1363,21 @@ class AdminController extends Controller
         }
 
         $certFilename   = 'Certificate_' . $submission->id . '_' . time() . '.pdf';
-        $certPath = 'certificates/generated/' . $certFilename;
+        $certPath = "uploads/research_{$submission->id}/" . $certFilename;
+
+        // Ensure directory exists in public_uploads disk
+        if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
+            Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
+        }
         
-        // Write file using Laravel Storage to guarantee proper public permissions.
-        Storage::disk('public')->put($certPath, $certPdf->Output($certFilename, 'S'));
+        // Write file using public_uploads disk
+        Storage::disk('public_uploads')->put($certPath, $certPdf->Output($certFilename, 'S'));
 
         researcher_files::create([
             'research_title_id' => $submission->id,
             'filename'          => 'Ethics Clearance Certificate',
             'filetype'          => 'certificate',
-            'filepath'          => 'storage/certificates/generated/' . $certFilename,
+            'filepath'          => $certPath,
         ]);
         }
 

@@ -80,7 +80,7 @@
                                 <i class="fas fa-eye w-4"></i> View Files
                             </a>
                             @if($certificate && $approvalLetter)
-                                <button onclick="openViewCertificatesModal('{{ route('admin.serve_file', $approvalLetter->id) }}', '{{ route('admin.serve_file', $certificate->id) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
+                                <button onclick="openViewCertificatesModal('{{ asset($approvalLetter->filepath) }}', '{{ asset($certificate->filepath) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
                                     <i class="fas fa-certificate w-4"></i> View Certificates
                                 </button>
                             @endif

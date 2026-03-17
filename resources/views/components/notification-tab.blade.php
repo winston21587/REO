@@ -28,7 +28,7 @@
         @if(isset($notifications) && $notifications->count() > 0)
             @foreach($notifications as $notify)
                 <li class="relative {{ $notify->is_read ? 'opacity-75' : '' }}">
-                    <a href="{{ $notify->research_id ? route('manage.files', $notify->research_id) : '#' }}"
+                    <a href="{{ route('notifications.index') }}"
                         class="block p-4 hover:bg-slate-50 transition-colors cursor-pointer group relative">
 
                         <div class="absolute left-0 top-0 bottom-0 w-1 

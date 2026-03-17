@@ -110,16 +110,20 @@
                                     {{ $log->Research_Category }}
                                 </td>
                                 <td class="p-6">
-                                    @if(!$log->Official_Receipt_Number)
+                                    @if(empty($log->Official_Receipt_Number) && empty($log->or_file_path))
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200">
                                             <i class="fas fa-clock"></i> Pending Payment
                                         </span>
-                                    @elseif($log->Official_Receipt_Number && !$log->is_or_verified)
+                                    @elseif(!$log->is_or_verified)
                                         <div class="flex flex-col gap-2 items-start mt-1">
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-200">
                                                 <i class="fas fa-eye"></i> Pending Verification
                                             </span>
-                                            <span class="font-mono text-[10px] text-slate-500 mb-1">Receipt: #{{ $log->Official_Receipt_Number }}</span>
+                                            @if($log->Official_Receipt_Number)
+                                                <span class="font-mono text-[10px] text-slate-500 mb-1">Receipt: #{{ $log->Official_Receipt_Number }}</span>
+                                            @else
+                                                <span class="font-mono text-[10px] text-slate-500 mb-1">Receipt: N/A</span>
+                                            @endif
                                             
                                             <div class="flex items-center gap-1.5 w-full">
                                                 @if($log->or_file_path)
@@ -189,10 +193,21 @@
                                         </div>
                                     @else
                                         <div class="flex flex-col gap-1 items-start">
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200">
-                                                <i class="fas fa-check-circle"></i> Verified
-                                            </span>
-                                            <span class="font-mono text-[10px] font-bold text-slate-800">#{{ $log->Official_Receipt_Number }}</span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                                    <i class="fas fa-check-circle"></i> Verified
+                                                </span>
+                                                @if($log->or_file_path)
+                                                    <a href="{{ asset($log->or_file_path) }}" target="_blank" title="View Picture" class="w-6 h-6 bg-white text-emerald-600 border border-emerald-200 rounded text-[10px] font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center shrink-0">
+                                                        <i class="fas fa-external-link-alt"></i>
+                                                    </a>
+                                                @endif
+                                            </div>
+                                            @if($log->Official_Receipt_Number)
+                                                <span class="font-mono text-[10px] font-bold text-slate-800">#{{ $log->Official_Receipt_Number }}</span>
+                                            @else
+                                                <span class="font-mono text-[10px] font-bold text-slate-800">N/A</span>
+                                            @endif
                                         </div>
                                     @endif
                                 </td>

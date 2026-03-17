@@ -1216,10 +1216,12 @@ class AdminController extends Controller
 
         $submission = Research_title::with('researcher.user')->findOrFail($id);
 
-        // Ensure output directory exists
+        // Ensure output directory exists (Force strict linux-style forward slashes for cross-platform compatibility)
         $outputDir = storage_path('app/public/certificates/generated');
-        if (!file_exists($outputDir)) {
-            mkdir($outputDir, 0775, true);
+        $outputDir = str_replace('\\', '/', $outputDir);
+
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
         }
 
         $approvedFormatted = $request->has('cover_approved_period') ? Carbon::parse($request->cover_approved_period)->format('F j, Y') : '';

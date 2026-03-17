@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\CmsContent;
+use App\Models\DownloadableResource;
 use App\Models\ResearchCategory;
 use App\Models\Department;
 
@@ -15,7 +17,8 @@ class CmsController extends Controller
     public function index()
     {
         $contents = CmsContent::all()->pluck('value', 'key');
-        return view('admin.cms.pages', compact('contents'));
+        $downloadables = DownloadableResource::all();
+        return view('admin.cms.pages', compact('contents', 'downloadables'));
     }
 
     public function content()
@@ -45,6 +48,103 @@ class CmsController extends Controller
         }
 
         return back()->with('success', 'Content updated successfully.');
+    }
+
+    public function storeDownloadable(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'code' => 'nullable|string|max:50',
+            'description' => 'nullable|string',
+            'file' => 'required|file|max:25600', // max 25MB
+            'is_mandatory' => 'nullable|boolean',
+        ]);
+
+        $file = $request->file('file');
+        
+        // Store in storage/app/public/downloads (accessible via symlink)
+        // Alternatively, store in public/uploads/downloads to match other cms uploads
+        $path = $file->store('uploads/downloads', 'public_uploads');
+        
+        // Get file size in KB/MB
+        $bytes = $file->getSize();
+        $size =  $bytes >= 1048576 
+                 ? number_format($bytes / 1048576, 2) . ' MB' 
+                 : number_format($bytes / 1024, 0) . ' KB';
+                 
+        $extension = strtoupper($file->getClientOriginalExtension());
+
+        if ($extension === 'DOC' || $extension === 'DOCX') {
+            $extension = 'DOCX';
+        }
+
+        DownloadableResource::create([
+            'title' => $request->title,
+            'code' => $request->code,
+            'description' => $request->description,
+            'file_path' => $path,
+            'file_size' => $size,
+            'file_extension' => $extension,
+            'is_mandatory' => $request->has('is_mandatory'),
+        ]);
+
+        return back()->with('success', 'Downloadable resource added successfully.');
+    }
+
+    public function updateDownloadable(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'code' => 'nullable|string|max:50',
+            'description' => 'nullable|string',
+            'file' => 'nullable|file|max:25600',
+        ]);
+
+        $resource = DownloadableResource::findOrFail($id);
+        
+        $data = [
+            'title' => $request->title,
+            'code' => $request->code,
+            'description' => $request->description,
+            'is_mandatory' => $request->has('is_mandatory'),
+        ];
+
+        if ($request->hasFile('file')) {
+            // Delete old file if exists
+            if ($resource->file_path && file_exists(public_path($resource->file_path))) {
+                unlink(public_path($resource->file_path));
+            }
+            
+            $file = $request->file('file');
+            $path = $file->store('uploads/downloads', 'public_uploads');
+            
+            $bytes = $file->getSize();
+            $data['file_size'] =  $bytes >= 1048576 
+                     ? number_format($bytes / 1048576, 2) . ' MB' 
+                     : number_format($bytes / 1024, 0) . ' KB';
+                     
+            $extension = strtoupper($file->getClientOriginalExtension());
+            if ($extension === 'DOC' || $extension === 'DOCX') {
+                 $extension = 'DOCX';
+            }
+            
+            $data['file_path'] = $path;
+            $data['file_extension'] = $extension;
+        }
+
+        $resource->update($data);
+
+        return back()->with('success', 'Downloadable resource updated successfully.');
+    }
+
+    public function destroyDownloadable($id)
+    {
+        $resource = DownloadableResource::findOrFail($id);
+        if ($resource->file_path && file_exists(public_path($resource->file_path))) {
+            unlink(public_path($resource->file_path));
+        }
+        $resource->delete();
+        return back()->with('success', 'Downloadable resource deleted successfully.');
     }
 
     public function categories()

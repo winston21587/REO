@@ -107,7 +107,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/home', [Research_title_Controller::class, 'showTitles'])->name('home');
         Route::get('/resources', function () {
             $contents = CmsContent::all()->pluck('value', 'key');
-            return view('resources', compact('contents')); 
+            $downloadables = \App\Models\DownloadableResource::all();
+            return view('resources', compact('contents', 'downloadables')); 
         })->name('resources');
 
         Route::get('/instructions', function () {
@@ -173,6 +174,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/content', 'content')->name('content');         
             Route::post('/content', 'updateContent')->name('content.update');
+            
+            // Downloadable Resources
+            Route::post('/downloadables', 'storeDownloadable')->name('downloadables.store');
+            Route::put('/downloadables/{id}', 'updateDownloadable')->name('downloadables.update');
+            Route::delete('/downloadables/{id}', 'destroyDownloadable')->name('downloadables.destroy');
             Route::get('/categories', 'categories')->name('categories');
             Route::post('/categories', 'storeCategory')->name('categories.store');
             Route::put('/categories/{id}', 'updateCategory')->name('categories.update');

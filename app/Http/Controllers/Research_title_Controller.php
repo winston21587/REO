@@ -321,8 +321,7 @@ class Research_title_Controller extends Controller
             }
 
             // Determine new status
-            // Changed from 'Pending'/'Revision Submitted' to 'Corrections Submitted' to distinguish in Admin Dashboard
-            $newStatus = $isIncomplete ? 'Pending' : 'Corrections Submitted';
+            $newStatus = 'Corrections Submitted';
             $logMessage = "Resubmitted corrections: " . $request->revision_message;
 
             // Create Submission Feedback (User Correction) & Revision Log for Admin View
@@ -350,7 +349,7 @@ class Research_title_Controller extends Controller
             $researchTitle->Status = $newStatus;
             $researchTitle->save();
 
-            $successMsg = ($newStatus === 'Pending') ? 'Corrections submitted successfully! Application is now Pending review.' : 'Revisions submitted successfully! Document history synced.';
+            $successMsg = $isIncomplete ? 'Corrections submitted successfully! Document history synced.' : 'Revisions submitted successfully! Document history synced.';
 
             return redirect()->route('home')->with('success', $successMsg);
         }

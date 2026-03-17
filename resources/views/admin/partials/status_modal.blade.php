@@ -55,7 +55,7 @@
                         </div>
 
                         <div id="aiLoading" class="hidden flex items-center gap-2 text-sm text-blue-700 py-2">
-                            <i class="fas fa-circle-notch fa-spin"></i> Analyzing Informed Consent...
+                            <i class="fas fa-circle-notch fa-spin"></i> Analyzing Protocol ...
                         </div>
 
                         <div id="aiResult" class="hidden space-y-2">
@@ -129,7 +129,7 @@
                         <label class="block text-sm font-bold text-slate-700 mb-3">Status Actions</label>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <!-- Needs Revision -->
-                            <div onclick="selectStatus('Waiting for Revision', this)"
+                            <div onclick="selectStatus('Modifications Required', this)"
                                 class="status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-orange-400 hover:shadow-md transition-all group">
                                 <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
                                     <i class="fas fa-check-circle text-orange-500"></i>
@@ -289,7 +289,7 @@
         let activeClass = '';
         let activeText = '';
 
-        if (status === 'Waiting for Revision') {
+        if (status === 'Modifications Required') {
             activeClass = 'border-orange-400 bg-orange-50';
             activeText = 'text-orange-500';
         } else if (status === 'Panel Deliberation') {
@@ -387,6 +387,17 @@
 
                 // Auto-select if high confidence
                 if (data.suggestion.confidence === 'High') {
+                    // Forcefully clear any currently selected 'Status Actions' before selecting a 'Review Type'
+                    document.getElementById('statusActionInput').value = '';
+                    document.querySelectorAll('.status-option').forEach(el => {
+                        el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
+                        el.classList.add('border-slate-200');
+                        el.querySelector('.check-icon').classList.add('opacity-0');
+                        const iconBox = el.querySelector('.icon-box');
+                        iconBox.classList.remove('text-orange-500', 'text-blue-500', 'text-green-500');
+                        iconBox.classList.add('text-slate-400');
+                    });
+
                     const type = data.suggestion.recommended_type;
                     // Find the box that matches and click it
                     const boxes = document.querySelectorAll('.review-option');

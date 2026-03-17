@@ -165,7 +165,7 @@
                                 </div>
 
                                 <!-- AI Check Section -->
-                                <div class="border-t border-slate-100 pt-6">
+                                <!-- <div class="border-t border-slate-100 pt-6">
                                     <div class="flex items-center justify-between mb-2">
                                         <h4 class="font-bold text-slate-800 flex items-center gap-2">
                                             <i class="fas fa-robot text-[#8B0000]"></i> AI Compliance Check
@@ -181,10 +181,10 @@
                                     <button type="button" onclick="performAiCheck()" id="check-btn"
                                         class="w-full py-3 bg-white border-2 border-[#8B0000] text-[#8B0000] font-bold rounded-xl hover:bg-red-50 transition-all shadow-sm flex items-center justify-center gap-2 group">
                                         <i class="fas fa-magic group-hover:animate-pulse"></i> Check with AI
-                                    </button>
+                                    </button> -->
 
                                     <!-- AI Loader & Results Removed (Moved to Modal) -->
-                                </div>
+                                <!-- </div> -->
 
                                 <!-- Submit Button -->
                                 <div class="mt-6 pt-6 border-t border-slate-100">

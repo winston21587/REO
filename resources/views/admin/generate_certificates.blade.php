@@ -24,6 +24,42 @@
     <form action="{{ route('admin.certificate.generate', $submission->id) }}" method="POST" id="generateForm">
         @csrf
 
+        <div class="mb-6 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100">
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Shared Information</h3>
+            </div>
+            <div class="p-6">
+                <div>
+                    <label for="shared_researchers" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                        Researchers (Applies to both) <span class="text-[#8B0000]">*</span>
+                    </label>
+                    <textarea id="shared_researchers" name="shared_researchers" rows="2"
+                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent resize-y transition-shadow"
+                        placeholder="Lead researcher name&#10;Co-researcher name" required>{{ old('shared_researchers', $researcherName) }}</textarea>
+                    <p class="mt-1 text-xs text-slate-400">Put each name on a new line. This field translates to both the Cover Letter and Certificate of Exemption.</p>
+                </div>
+
+                <div class="mt-4">
+                    <label for="shared_title" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                        Title (Applies to both) <span class="text-[#8B0000]">*</span>
+                    </label>
+                    <textarea id="shared_title" name="shared_title" rows="3"
+                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent resize-y transition-shadow"
+                        placeholder="Full research protocol title" required>{{ old('shared_title', $submission->Study_Protocol_title) }}</textarea>
+                </div>
+
+                <div class="mt-4">
+                    <label for="shared_reo_code" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                        REO Code (Applies to both) <span class="font-normal text-slate-400 normal-case">(Optional)</span>
+                    </label>
+                    <input type="text" id="shared_reo_code" name="shared_reo_code"
+                        value="{{ old('shared_reo_code', $submission->reoc_code ?? '') }}"
+                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-shadow"
+                        placeholder="e.g. REOC-2026-001">
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {{-- ==========================================
@@ -43,47 +79,17 @@
 
                 <div class="p-6 space-y-4 flex-1">
 
-                    {{-- Names --}}
-                    <div>
-                        <label for="cert_names" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                            Names <span class="text-[#8B0000]">*</span>
-                        </label>
-                        <input type="text" id="cert_names" name="cert_names"
-                            value="{{ old('cert_names', $researcherName) }}"
-                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-shadow"
-                            placeholder="Full name(s) of researcher(s)" required>
-                        <p class="mt-1 text-xs text-slate-400">Add all researcher names if multiple.</p>
-                    </div>
-
-                    {{-- Title --}}
-                    <div>
-                        <label for="cert_title" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                            Title <span class="text-[#8B0000]">*</span>
-                        </label>
-                        <textarea id="cert_title" name="cert_title" rows="3"
-                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent resize-none transition-shadow"
-                            placeholder="Full research protocol title" required>{{ old('cert_title', $submission->Study_Protocol_title) }}</textarea>
-                    </div>
-
-                    {{-- REO Code --}}
-                    <div>
-                        <label for="cert_reo_code" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                            REO Code <span class="font-normal text-slate-400 normal-case">(Optional)</span>
-                        </label>
-                        <input type="text" id="cert_reo_code" name="cert_reo_code"
-                            value="{{ old('cert_reo_code', $submission->reoc_code ?? '') }}"
-                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-shadow"
-                            placeholder="e.g. REOC-2026-001">
-                    </div>
-
                     {{-- REO Summary --}}
+                    @php
+                        $defaultSummary = "      This certifies that this protocol does not involve human participants or with no or minimal risk to human participants. Hence, this is an exemption for research ethics review. The study may proceed with implementation.\n\n       Compliance on the standard conditions attached here is required. Any change in the protocol invalidates the certificate and will require a new application for review. \n\n              Issued this " . now()->format('d') . "     day of " . now()->format('F Y') . ", at Research Ethics Office, Western Mindanao State University, Zamboanga City, Philippines.";
+                    @endphp
                     <div>
                         <label for="cert_reo_summary" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                             REO Summary <span class="font-normal text-slate-400 normal-case">(Optional)</span>
                         </label>
-                        <textarea id="cert_reo_summary" name="cert_reo_summary" rows="4"
-                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent resize-none transition-shadow"
-                            placeholder="Brief summary of the exemption scope…">{{ old('cert_reo_summary') }}</textarea>
+                        <textarea id="cert_reo_summary" name="cert_reo_summary" rows="8"
+                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent resize-y transition-shadow"
+                            placeholder="Brief summary of the exemption scope…">{{ old('cert_reo_summary', $defaultSummary) }}</textarea>
                         <p class="mt-1 text-xs text-slate-400">This will appear as the exemption summary on the certificate.</p>
                     </div>
 
@@ -115,36 +121,15 @@
 
                 <div class="p-6 space-y-4 flex-1">
 
-                    {{-- REO Code & Version --}}
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="cover_reo_code" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                REO Code <span class="font-normal text-slate-400 normal-case">(Optional)</span>
-                            </label>
-                            <input type="text" id="cover_reo_code" name="cover_reo_code"
-                                value="{{ old('cover_reo_code', $submission->reoc_code ?? '') }}"
-                                class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-shadow"
-                                placeholder="e.g. REOC-2026-001">
-                        </div>
-                        <div>
-                            <label for="cover_version" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                Version <span class="font-normal text-slate-400 normal-case">(Optional)</span>
-                            </label>
-                            <input type="text" id="cover_version" name="cover_version"
-                                value="{{ old('cover_version', '1.0') }}"
-                                class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-shadow"
-                                placeholder="e.g. 1.0">
-                        </div>
-                    </div>
-
-                    {{-- Title --}}
+                    {{-- Version --}}
                     <div>
-                        <label for="cover_title" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                            Title <span class="text-[#8B0000]">*</span>
+                        <label for="cover_version" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                            Version <span class="font-normal text-slate-400 normal-case">(Optional)</span>
                         </label>
-                        <textarea id="cover_title" name="cover_title" rows="3"
-                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-none transition-shadow"
-                            placeholder="Research protocol title as it appears on the letter" required>{{ old('cover_title', $submission->Study_Protocol_title) }}</textarea>
+                        <input type="text" id="cover_version" name="cover_version"
+                            value="{{ old('cover_version', '1.0') }}"
+                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-shadow"
+                            placeholder="e.g. 1.0">
                     </div>
 
                     {{-- Approved Period & Expiry --}}
@@ -167,17 +152,6 @@
                                 class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-shadow"
                                 required>
                         </div>
-                    </div>
-
-                    {{-- Researcher --}}
-                    <div>
-                        <label for="cover_researcher" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                            Researcher <span class="text-[#8B0000]">*</span>
-                        </label>
-                        <input type="text" id="cover_researcher" name="cover_researcher"
-                            value="{{ old('cover_researcher', $researcherName) }}"
-                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-shadow"
-                            placeholder="Lead researcher name" required>
                     </div>
 
                 </div>

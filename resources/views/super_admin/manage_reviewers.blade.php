@@ -1,5 +1,5 @@
 <x-super_admin_layout>
-    <div x-data="{ showAddModal: false, showViewModal: false, selectedUser: null }" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
+    <div x-data="{ showAddModal: {{ $errors->any() ? 'true' : 'false' }}, showViewModal: false, selectedUser: null }" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
         
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-end pb-6 border-b border-slate-200">
@@ -219,20 +219,30 @@
                     }">
                         <form action="{{ route('super_admin.reviewers.create') }}" method="POST" class="space-y-5">
                             @csrf
+
+                            @if ($errors->any())
+                                <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                             
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
                                     <div class="relative">
                                         <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="first_name" required placeholder="John" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                        <input type="text" name="first_name" required placeholder="John" value="{{ old('first_name') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
                                     <div class="relative">
                                         <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="last_name" required placeholder="Doe" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                        <input type="text" name="last_name" required placeholder="Doe" value="{{ old('last_name') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
                                     </div>
                                 </div>
                             </div>
@@ -242,7 +252,7 @@
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
                                     <div class="relative">
                                         <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="email" name="email" required placeholder="reviewer@example.com" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                        <input type="email" name="email" required placeholder="reviewer@example.com" value="{{ old('email') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
                                     </div>
                                 </div>
                             </div>
@@ -267,7 +277,7 @@
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Expertise (Comma separated)</label>
                                     <div class="relative">
                                         <i class="fas fa-lightbulb absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="expertise" placeholder="e.g. Data Science, Machine Learning" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                        <input type="text" name="expertise" placeholder="e.g. Data Science, Machine Learning" value="{{ old('expertise') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
                                     </div>
                                 </div>
                             </div>

@@ -1183,27 +1183,25 @@ class AdminController extends Controller
 
         if ($action === 'preview_cert' || $action === 'generate') {
             $rules = array_merge($rules, [
-                'cert_names'         => $action === 'generate' ? 'required|string|max:255' : 'nullable|string|max:255',
-                'cert_title'         => $action === 'generate' ? 'required|string|max:500' : 'nullable|string|max:500',
-                'cert_reo_code'      => 'nullable|string|max:100',
                 'cert_reo_summary'   => 'nullable|string|max:2000',
             ]);
         }
 
         if ($action === 'preview_cover' || $action === 'generate') {
             $rules = array_merge($rules, [
-                'cover_reo_code'        => 'nullable|string|max:100',
                 'cover_version'         => 'nullable|string|max:50',
-                'cover_title'           => $action === 'generate' ? 'required|string|max:500' : 'nullable|string|max:500',
                 'cover_approved_period' => $action === 'generate' ? 'required|date' : 'nullable|date',
                 'cover_expiry_date'     => $action === 'generate' ? 'required|date|after_or_equal:cover_approved_period' : 'nullable|date',
-                'cover_researcher'      => $action === 'generate' ? 'required|string|max:255' : 'nullable|string|max:255',
             ]);
         }
 
         if ($action === 'generate') {
             $rules['pickup_date'] = 'required|date|after_or_equal:today';
         }
+
+        $rules['shared_researchers'] = $action === 'generate' ? 'required|string|max:1000' : 'nullable|string|max:1000';
+        $rules['shared_title']       = $action === 'generate' ? 'required|string|max:500' : 'nullable|string|max:500';
+        $rules['shared_reo_code']    = 'nullable|string|max:100';
 
         $request->validate($rules);
 
@@ -1240,31 +1238,32 @@ class AdminController extends Controller
         $coverPdf->SetTextColor(0, 0, 0);
 
         // REO Code
-        if ($request->cover_reo_code) {
-            $coverPdf->SetXY(67, 129);
-            $coverPdf->Write(0, $request->cover_reo_code);
+        if ($request->shared_reo_code) {
+            $coverPdf->SetXY(67, 126.6);
+            $coverPdf->Write(0, $request->shared_reo_code);
         }
 
         // Title
         $coverPdf->SetXY(67, 139);
-        $coverPdf->MultiCell(90, 4, $request->cover_title);
+        $coverPdf->MultiCell(103, 4, $request->shared_title, 0, 'L');
         // Approved period
-        $coverPdf->SetXY(67, 161);
+        $coverPdf->SetXY(67, 158);
         $coverPdf->Write(0, $approvedFormatted);
+        // Expiry date
+        $coverPdf->SetXY(67, 163);
+        $coverPdf->Write(0, $expiryFormatted);
 
         // Version
         if ($request->cover_version) {
-            $coverPdf->SetXY(67, 149); // Placing version under title
+            $coverPdf->SetXY(67, 199); // Placing version under title
             $coverPdf->Write(0, $request->cover_version);
         }
 
-        // Expiry date
-        $coverPdf->SetXY(67, 165.5);
-        $coverPdf->Write(0, $expiryFormatted);
 
         // Researcher
-        $coverPdf->SetXY(67, 170);
-        $coverPdf->MultiCell(90, 4, $request->cover_researcher);
+        $coverPdf->SetXY(67, 172);
+        // Explicitly set alignment to 'L' (Left) so names don't spread out to fill the 90mm width
+        $coverPdf->MultiCell(90, 4, $request->shared_researchers, 0, 'L');
 
         if ($action === 'preview_cover') {
             return response($coverPdf->Output('S'), 200, [
@@ -1296,7 +1295,7 @@ class AdminController extends Controller
 
         // Map TCPDF font cache to the pre-compiled directory to avoid on-the-fly generation issues
         if (!defined('K_PATH_FONTS')) {
-            define('K_PATH_FONTS', storage_path('app/tcpdf_fonts/'));
+            define('K_PATH_FONTS', public_path('fonts/tcpdf/'));
         }
 
         $certPdf = new \setasign\Fpdi\Tcpdf\Fpdi();
@@ -1314,28 +1313,28 @@ class AdminController extends Controller
         $certPdf->SetTextColor(109, 65, 42); // #6d412a
         // Temporarily using helvetica since Nautilus PostScript OTF mapping fails in TCPDF
         $certPdf->SetFont('helvetica', '', 18);
-        $certPdf->SetXY(30, 138);
-        $certPdf->Cell($w - 60, 6, $request->cert_names, 0, 0, 'C');
+        $certPdf->SetXY(30, 90);
+        $certPdf->MultiCell($w - 60, 6, $request->shared_researchers, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
 
-        // Color for Title, Code, Summary: #2b1511
-        $certPdf->SetTextColor(43, 21, 17);
+        // Color for Title, Code, Summary: matches Names (#6d412a)
+        $certPdf->SetTextColor(109, 65, 42);
 
-        // Title — Colette 11.4, centered, multi-line
-        $certPdf->SetFont('colette', '', 11.4);
-        $certPdf->SetXY(30, 150);
-        $certPdf->MultiCell($w - 60, 6, '"' . $request->cert_title . '"', 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
+        // Title — matching names font, 11.4, centered, multi-line
+        $certPdf->SetFont('helvetica', '', 11.4);
+        $certPdf->SetXY(70, 157.5);
+        $certPdf->MultiCell(115, 6, $request->shared_title, 0, 'C');
 
-        // REO Code — Colette 12, centered
-        if ($request->cert_reo_code) {
-            $certPdf->SetFont('colette', '', 12);
-            $certPdf->SetXY(30, 170);
-            $certPdf->Cell($w - 60, 6, $request->cert_reo_code, 0, 0, 'C');
+        // REO Code — matching names font, 12, centered
+        if ($request->shared_reo_code) {
+            $certPdf->SetFont('helvetica', '', 12);
+            $certPdf->SetXY(20, 176);
+            $certPdf->Cell($w - 60, 6, $request->shared_reo_code, 0, 0, 'C');
         }
 
-        // REO Summary / scope of exemption — Montserrat 11, justified
+        // REO Summary / scope of exemption — matching names font, 11, justified
         if ($request->cert_reo_summary) {
-            $certPdf->SetFont('montserrat', '', 11);
-            $certPdf->SetXY(30, 180);
+            $certPdf->SetFont('helvetica', '', 11);
+            $certPdf->SetXY(30, 185);
             $certPdf->MultiCell($w - 60, 5, $request->cert_reo_summary, 0, 'J', false, 1, null, null, true, 0, false, true, 0, 'T', false);
         }
 

@@ -17,7 +17,7 @@
                 <p class="text-slate-400 text-sm leading-relaxed mb-6">
                     {{ $cms['footer_description'] ?? 'Empty' }}
                 </p>
-                <div class="flex gap-4 justify-center md:justify-start">
+                <div class="flex gap-4 justify-center md:justify-start mb-6">
                     <a href="{{ $cms['footer_facebook'] ?? 'Empty' }}" target="_blank"
                         class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#1877F2] transition-colors text-white/70 hover:text-white">
                         <i class="fab fa-facebook-f"></i>
@@ -25,6 +25,13 @@
                     <a href="mailto:{{ $cms['footer_email'] ?? 'reo@wmsu.edu.ph' }}"
                         class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-primary transition-colors text-white/70 hover:text-white">
                         <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+                <div class="flex justify-center md:justify-start">
+                    <a href="https://github.com/charlottedbszx/ReoMobile/releases/download/Apk/Reo.apk"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/90 hover:text-white text-sm">
+                        <i class="fab fa-android text-emerald-400 text-lg"></i>
+                        <span>Download Mobile APK</span>
                     </a>
                 </div>
             </div>

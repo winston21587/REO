@@ -84,10 +84,17 @@ class DocumentRequirementsSeeder extends Seeder
                 'is_required' => false,
                 'is_multiple' => true,
             ],
+            [
+                'name' => 'Official Receipt (OR)',
+                'description' => 'Scanned photo or PDF of Official Receipt',
+                'file_type' => 'PDF,Others',
+                'is_required' => false,
+                'is_multiple' => false,
+            ],
         ];
 
         foreach ($requirements as $requirement) {
-            DocumentRequirement::firstOrCreate(
+            DocumentRequirement::updateOrCreate(
                 ['name' => $requirement['name']], // Check by name to avoid duplicates
                 $requirement
             );

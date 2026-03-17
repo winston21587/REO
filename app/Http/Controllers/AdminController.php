@@ -1283,8 +1283,10 @@ class AdminController extends Controller
         }
 
         $coverFilename   = 'Cover_Letter_' . $submission->id . '_' . time() . '.pdf';
-        $coverOutputPath = $outputDir . '/' . $coverFilename;
-        $coverPdf->Output($coverOutputPath, 'F');
+        $coverPath = 'certificates/generated/' . $coverFilename;
+        
+        // Write file using Laravel Storage to guarantee proper public permissions instead of TCPDF's raw Output which may inherit strict umasks
+        Storage::disk('public')->put($coverPath, $coverPdf->Output($coverFilename, 'S'));
 
         researcher_files::create([
             'research_title_id' => $submission->id,
@@ -1356,8 +1358,10 @@ class AdminController extends Controller
         }
 
         $certFilename   = 'Certificate_' . $submission->id . '_' . time() . '.pdf';
-        $certOutputPath = $outputDir . '/' . $certFilename;
-        $certPdf->Output($certOutputPath, 'F');
+        $certPath = 'certificates/generated/' . $certFilename;
+        
+        // Write file using Laravel Storage to guarantee proper public permissions.
+        Storage::disk('public')->put($certPath, $certPdf->Output($certFilename, 'S'));
 
         researcher_files::create([
             'research_title_id' => $submission->id,

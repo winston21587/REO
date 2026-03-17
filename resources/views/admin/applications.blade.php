@@ -76,18 +76,6 @@
                                         <input type="checkbox" name="statuses[]" value="Under Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Under Review', $selectedStatuses) ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Under Review</span>
                                     </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="statuses[]" value="Waiting for Revision" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Waiting for Revision', $selectedStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Waiting for Revision</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="statuses[]" value="Submission of Revisions / Resubmission" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Submission of Revisions / Resubmission', $selectedStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors text-balance leading-snug">Resubmitted / Submission of Revisions</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="statuses[]" value="Checking of Revisions" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Checking of Revisions', $selectedStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Checking of Revisions</span>
-                                    </label>
                                 </div>
                             </div>
 

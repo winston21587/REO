@@ -256,11 +256,7 @@ class AdminController extends Controller
             'For Initial Review',
             'Complete - Awaiting Hardcopy',
             'Hardcopy Received - For Initial Review',
-            'Under Review',
-            'Waiting for Revision',
-            'Revision Submitted', // Ensure this maps correctly if researchers use it
-            'Submission of Revisions / Resubmission',
-            'Checking of Revisions'
+            'Under Review'
         ];
 
         // 1. Handle Status Filters (Checkboxes)

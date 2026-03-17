@@ -61,12 +61,12 @@
 
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Number of Sets to Submit</label>
-                            <input type="text" name="num_sets" class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm" placeholder="e.g. 3">
+                            <input type="text" name="num_sets" class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm" placeholder="e.g. 3" required>
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Envelope Type</label>
-                            <input type="text" name="envelope_type" class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm" placeholder="e.g. Brown Envelope">
+                            <input type="text" name="envelope_type" class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm" placeholder="e.g. Brown Envelope" required>
                         </div>
                     </div>
                 </div>
@@ -177,7 +177,7 @@
 
                 <!-- Actions -->
                 <div class="flex gap-4 pt-4">
-                    <button type="submit" name="action" value="view" class="flex-1 px-6 py-3 bg-white border-2 border-[#8B0000] text-[#8B0000] rounded-xl text-sm font-bold hover:bg-red-50 transition-colors flex justify-center items-center gap-2">
+                    <button type="submit" name="action" value="view" formnovalidate class="flex-1 px-6 py-3 bg-white border-2 border-[#8B0000] text-[#8B0000] rounded-xl text-sm font-bold hover:bg-red-50 transition-colors flex justify-center items-center gap-2">
                         <i class="fas fa-eye"></i> View PDF
                     </button>
                     <button type="submit" name="action" value="save" class="flex-1 px-6 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] transition-colors shadow-lg shadow-red-900/20 flex justify-center items-center gap-2">

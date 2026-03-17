@@ -970,13 +970,21 @@ class AdminController extends Controller
 
     public function generateRecommendationLetter(Request $request)
     {
-        $request->validate([
+        $rules = [
             'id' => 'required|exists:research_title_information,id',
             'title' => 'required|string',
             'review_type' => 'required|string',
-            'num_sets' => 'nullable|string',
-            'envelope_type' => 'nullable|string',
-        ]);
+        ];
+
+        if ($request->action === 'save') {
+            $rules['num_sets'] = 'required|string';
+            $rules['envelope_type'] = 'required|string';
+        } else {
+            $rules['num_sets'] = 'nullable|string';
+            $rules['envelope_type'] = 'nullable|string';
+        }
+
+        $request->validate($rules);
 
         $submission = Research_title::findOrFail($request->id);
 

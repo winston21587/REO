@@ -101,3 +101,4 @@ class DocumentRequirementsSeeder extends Seeder
         }
     }
 }
+

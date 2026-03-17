@@ -1276,7 +1276,7 @@ class AdminController extends Controller
         $coverPdf->MultiCell(90, 4, $request->shared_researchers, 0, 'L');
 
         if ($action === 'preview_cover') {
-            return response($coverPdf->Output('S'), 200, [
+            return response($coverPdf->Output('Preview_Cover_Letter.pdf', 'S'), 200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="Preview_Cover_Letter.pdf"'
             ]);
@@ -1284,7 +1284,7 @@ class AdminController extends Controller
 
         $coverFilename   = 'Cover_Letter_' . $submission->id . '_' . time() . '.pdf';
         $coverOutputPath = $outputDir . '/' . $coverFilename;
-        $coverPdf->Output('F', $coverOutputPath);
+        $coverPdf->Output($coverOutputPath, 'F');
 
         researcher_files::create([
             'research_title_id' => $submission->id,
@@ -1349,7 +1349,7 @@ class AdminController extends Controller
         }
 
         if ($action === 'preview_cert') {
-            return response($certPdf->Output('S'), 200, [
+            return response($certPdf->Output('Preview_Certificate_of_Exemption.pdf', 'S'), 200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="Preview_Certificate_of_Exemption.pdf"'
             ]);
@@ -1357,7 +1357,7 @@ class AdminController extends Controller
 
         $certFilename   = 'Certificate_' . $submission->id . '_' . time() . '.pdf';
         $certOutputPath = $outputDir . '/' . $certFilename;
-        $certPdf->Output('F', $certOutputPath);
+        $certPdf->Output($certOutputPath, 'F');
 
         researcher_files::create([
             'research_title_id' => $submission->id,

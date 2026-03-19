@@ -73,6 +73,7 @@
                                         $statusColors = [
                                             'For Initial Review' => 'bg-blue-50 text-blue-700 border-blue-100',
                                             'Complete - Awaiting Hardcopy' => 'bg-yellow-50 text-yellow-700 border-yellow-100',
+                                            'Incomplete - Awaiting Hardcopy' => 'bg-red-50 text-red-700 border-red-100',
                                             'Hardcopy Received - For Initial Review' => 'bg-teal-50 text-teal-700 border-teal-100',
                                             'Waiting for Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
                                             'Revision Submitted' => 'bg-purple-50 text-purple-700 border-purple-100',
@@ -85,13 +86,28 @@
 
                                         // Prioritize Status for specific workflow steps, otherwise use Review Type if available
                                         $displayStatus = $data->Status;
-                                        if ($data->Review_Type && !in_array($data->Status, ['Complete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review'])) {
+                                        if ($data->Review_Type && !in_array($data->Status, ['Complete - Awaiting Hardcopy', 'Incomplete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review'])) {
                                             $displayStatus = $data->Review_Type;
                                         }
                                     @endphp
-                                    <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }}">
-                                        {{ $displayStatus }}
-                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }}">
+                                            {{ $displayStatus }}
+                                        </span>
+                                        @if($data->Status === 'Incomplete - Awaiting Hardcopy')
+                                            @php
+                                                $latestDeficiency = \App\Models\SubmissionFeedback::where('research_title_id', $data->id)
+                                                    ->where('type', 'hardcopy_deficiency')
+                                                    ->latest()
+                                                    ->first();
+                                            @endphp
+                                            @if($latestDeficiency)
+                                                <span class="text-red-500 cursor-help transition-all hover:scale-110" title="Reason: {{ $latestDeficiency->message }}">
+                                                    <i class="fas fa-exclamation-circle text-sm drop-shadow-sm"></i>
+                                                </span>
+                                            @endif
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="p-6 text-right relative">
                                     <div class="relative" x-data="{ open: false }">
@@ -109,16 +125,18 @@
                                                     <i class="fas fa-eye w-4"></i> View Details
                                                 </a>
 
-                                                @if($data->Status === 'Complete - Awaiting Hardcopy')
-                                                    <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="status"
-                                                            value="Hardcopy Received - For Initial Review">
-                                                        <button type="submit"
-                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
-                                                            <i class="fas fa-file-import w-4"></i> Receive Hardcopy
-                                                        </button>
-                                                    </form>
+                                                @if(in_array($data->Status, ['Complete - Awaiting Hardcopy', 'Incomplete - Awaiting Hardcopy']))
+                                                    @php
+                                                        $defMessage = '';
+                                                        if($data->Status === 'Incomplete - Awaiting Hardcopy') {
+                                                            $def = \App\Models\SubmissionFeedback::where('research_title_id', $data->id)->where('type', 'hardcopy_deficiency')->latest()->first();
+                                                            $defMessage = $def ? $def->message : '';
+                                                        }
+                                                    @endphp
+                                                    <button type="button" @click="open = false; confirmHardcopyReceived('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}', '{{ addslashes($defMessage) }}')"
+                                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
+                                                        <i class="fas fa-file-import w-4"></i> Receive Hardcopy
+                                                    </button>
                                                     <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST"
                                                         id="undoCompleteForm-{{ $data->id }}">
                                                         @csrf

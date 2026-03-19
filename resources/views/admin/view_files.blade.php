@@ -387,6 +387,32 @@
                     </div>
                 </div>
 
+                <!-- Activity Log -->
+                @if($researchTitle->titleLogs && $researchTitle->titleLogs->isNotEmpty())
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0 mt-4">
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fas fa-history text-blue-400"></i> Activity Log
+                    </p>
+                    <div class="relative pl-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                        <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100"></div>
+                        <div class="space-y-4">
+                            @foreach($researchTitle->titleLogs as $log)
+                            <div class="flex gap-3 relative z-10">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center flex-shrink-0 -ml-3 mt-0.5">
+                                    <i class="fas fa-circle text-slate-400" style="font-size: 6px;"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-700 leading-tight">{{ $log->action }}</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">{{ $log->description }}</p>
+                                    <p class="text-[9px] text-slate-400 mt-1">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                @endif
+
             </div>{{-- end sidebar --}}
         </div>{{-- end grid --}}
     </div>

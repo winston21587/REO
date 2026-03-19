@@ -258,6 +258,146 @@
             });
         }
 
+        function confirmHardcopyReceived(id, title, previousRemarks = '') {
+            const date = new Date();
+            date.setDate(date.getDate() + 2);
+            const minDate = date.toISOString().split('T')[0];
+
+            const prevRemarksHtml = previousRemarks ? `
+                <div class="mb-4 p-4 bg-red-50 border border-red-100 rounded-xl relative overflow-hidden">
+                    <h4 class="text-xs font-extrabold text-red-800 uppercase tracking-widest mb-1 relative z-10 flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle"></i> Previous Missing Requirements
+                    </h4>
+                    <p class="text-sm text-red-900 leading-relaxed font-medium relative z-10">${previousRemarks}</p>
+                </div>
+            ` : '';
+
+            const html = `
+                <div class="text-left space-y-4">
+                    ${prevRemarksHtml}
+                    <p class="text-sm text-slate-600">Please confirm if the submitted hardcopy is complete and valid.</p>
+                    
+                    <div class="flex gap-4 mb-4">
+                        <label class="flex-1 border p-3 rounded-lg cursor-pointer hover:bg-slate-50 border-slate-200" onclick="window.toggleHardcopyIncomplete(false)">
+                            <input type="radio" name="hardcopy_status" value="Hardcopy Complete" class="mr-2" checked> Complete
+                        </label>
+                        <label class="flex-1 border p-3 rounded-lg cursor-pointer hover:bg-slate-50 border-slate-200" onclick="window.toggleHardcopyIncomplete(true)">
+                            <input type="radio" name="hardcopy_status" value="Hardcopy Incomplete" class="mr-2"> Incomplete
+                        </label>
+                    </div>
+
+                    <div id="incompleteFields" class="hidden space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100 mt-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Re-assign Deadline <span class="text-red-500">*</span></label>
+                            <input type="date" id="hc_appointment_date" value="${minDate}" min="${minDate}" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Missing Requirements / Remarks <span class="text-red-500">*</span></label>
+                            <textarea id="hc_remarks" rows="3" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none resize-none" placeholder="List missing requirements..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                title: 'Confirm Hardcopy',
+                html: html,
+                showCancelButton: true,
+                confirmButtonColor: '#8B0000',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Submit Assessment',
+                cancelButtonText: 'Cancel',
+                scrollbarPadding: false,
+                backdrop: `rgba(15, 23, 42, 0.75)`,
+                buttonsStyling: false,
+                customClass: {
+                    popup: 'rounded-2xl shadow-2xl border border-slate-200 font-sans p-6',
+                    title: 'font-heading text-xl text-slate-800 font-bold',
+                    confirmButton: 'bg-[#8B0000] text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-red-900 flex-1 mx-2',
+                    cancelButton: 'bg-slate-100 text-slate-600 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-200 flex-1 mx-2'
+                },
+                didOpen: () => {
+                    const toggleHardcopyIncomplete = function(show) {
+                        const div = document.getElementById('incompleteFields');
+                        if(show) { div.classList.remove('hidden'); }
+                        else { div.classList.add('hidden'); }
+                    };
+                    window.toggleHardcopyIncomplete = toggleHardcopyIncomplete;
+                    
+                    // Attach event listeners to radio inputs just in case clicking label misses
+                    document.querySelectorAll('input[name="hardcopy_status"]').forEach(el => {
+                        el.addEventListener('change', (e) => {
+                            toggleHardcopyIncomplete(e.target.value === 'Hardcopy Incomplete');
+                        });
+                    });
+                },
+                preConfirm: () => {
+                    const status = document.querySelector('input[name="hardcopy_status"]:checked').value;
+                    const data = new FormData();
+                    data.append('classification', status);
+                    data.append('_token', '{{ csrf_token() }}');
+
+                    if (status === 'Hardcopy Incomplete') {
+                        const date = document.getElementById('hc_appointment_date').value;
+                        const remarks = document.getElementById('hc_remarks').value;
+                        if (!remarks.trim()) {
+                            Swal.showValidationMessage('Please provide remarks/missing requirements.');
+                            return false;
+                        }
+                        if (!date) {
+                            Swal.showValidationMessage('Please set a re-assignment deadline.');
+                            return false;
+                        }
+                        data.append('appointment_date', date);
+                        data.append('remarks', remarks);
+                    }
+                    return data;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Please wait...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('/admin/update-status/' + id, {
+                        method: 'POST',
+                        body: result.value,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success',
+                                text: 'Hardcopy assessment submitted.',
+                                icon: 'success',
+                                confirmButtonColor: '#8B0000',
+                                customClass: {
+                                    popup: 'rounded-2xl',
+                                    confirmButton: 'rounded-xl px-4 py-2 bg-[#8B0000] text-white font-bold'
+                                }
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', data.message || 'Something went wrong', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                    });
+                }
+            });
+        }
+
         function confirmUndoComplete(id, title) {
             Swal.fire({
                 title: 'Undo "Complete"?',

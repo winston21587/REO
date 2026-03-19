@@ -255,6 +255,7 @@ class AdminController extends Controller
         $allowedStatuses = [
             'For Initial Review',
             'Complete - Awaiting Hardcopy',
+            'Incomplete - Awaiting Hardcopy',
             'Hardcopy Received - For Initial Review',
             'Under Review'
         ];
@@ -265,7 +266,7 @@ class AdminController extends Controller
             $filterStatuses = [];
             foreach ($request->statuses as $status) {
                 if ($status === 'For Initial Review') {
-                    $filterStatuses = array_merge($filterStatuses, ['For Initial Review', 'Complete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review']);
+                    $filterStatuses = array_merge($filterStatuses, ['For Initial Review', 'Complete - Awaiting Hardcopy', 'Incomplete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review']);
                 } else {
                     $filterStatuses[] = $status;
                 }
@@ -567,6 +568,51 @@ class AdminController extends Controller
                     ->delete();
 
                 $message = "Submission reverted to Pending. Appointment cancelled.";
+                
+            } elseif ($request->classification === 'Hardcopy Complete') {
+                $newStatus = 'Hardcopy Received - For Initial Review';
+                $submission->Status = $newStatus;
+                $submission->save();
+                
+                $message = "Your hardcopy for \"{$submission->Study_Protocol_title}\" has been received and verified.";
+
+            } elseif ($request->classification === 'Hardcopy Incomplete') {
+                $request->validate([
+                    'appointment_date' => 'required|date',
+                    'remarks'          => 'required|string',
+                ]);
+
+                $newStatus = 'Incomplete - Awaiting Hardcopy';
+                $submission->Status = $newStatus;
+                $submission->save();
+                
+                SubmissionFeedback::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => auth()->id(),
+                    'type' => 'hardcopy_deficiency',
+                    'message' => $request->remarks,
+                    'missing_requirements' => [],
+                ]);
+                
+                $appointment = Appointment::where('research_title_id', $submission->id)
+                    ->where('stage', 'Hardcopy Submission')
+                    ->first();
+
+                if ($appointment) {
+                    $appointment->appointment_date = $request->appointment_date;
+                    $appointment->save();
+                } else {
+                    Appointment::create([
+                        'research_title_id' => $submission->id,
+                        'user_id'           => $user->user_id,
+                        'appointment_date'  => $request->appointment_date,
+                        'stage'             => 'Hardcopy Submission',
+                    ]);
+                }
+
+                $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
+                $message = "Your hardcopy submission for \"{$submission->Study_Protocol_title}\" is incomplete. Please submit the missing requirements by: {$dateFormatted}.";
+                $message .= "\n\nMissing Requirements / Remarks: " . $request->remarks;
             }
         }
         // ---------------------------------------------------------

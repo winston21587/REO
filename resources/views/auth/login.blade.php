@@ -111,7 +111,7 @@
                             </span>
                             <input id="email" type="email" name="email" required autofocus
                                 class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] transition-all outline-none text-slate-800 placeholder-slate-400 font-medium"
-                                placeholder="name@wmsu.edu.ph">
+                                placeholder="id@wmsu.edu.ph">
                         </div>
                         @error('email') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
                     </div>

@@ -97,14 +97,19 @@
                 <p class="text-slate-500 text-sm mb-6">Please fill in your details to get started.</p>
 
                 <!-- NEW TOGGLE -->
-                <div class="flex items-center gap-3 mb-8 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <div class="flex items-center justify-between gap-3 mb-8 bg-slate-50 p-4 rounded-lg border border-slate-100">
                     <label class="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="external_user" id="isNotWmsu" class="sr-only peer">
-                        <div
-                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]">
+                        <input type="checkbox" name="external_user" id="isNotWmsu" class="sr-only peer" checked>
+                        <div id="toggleSwitch"
+                            class="relative w-11 h-6 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all transition-colors ring-4 ring-offset-0" style="background-color: #8B0000; box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.2);">
                         </div>
-                        <span class="ms-3 text-sm font-bold text-slate-700 select-none">Are you NOT from WMSU?</span>
+                        <span class="ms-3 text-sm font-bold text-slate-700 select-none">Are you from WMSU?</span>
                     </label>
+                    <!-- Status Badge -->
+                    <div id="statusBadge" class="px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-[#8B0000]" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-check-circle"></i>
+                        <span>You are from WMSU</span>
+                    </div>
                 </div>
 
                 <form id="signupForm" method="POST" action="{{ route('register.internal') }}" class="space-y-5">
@@ -116,22 +121,22 @@
                             <label class="text-xs font-bold text-slate-700 uppercase">First Name</label>
                             <input type="text" name="FirstName" value="{{ old('FirstName') }}" required
                                 class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm"
-                                placeholder="Juan">
+                                placeholder="Enter your first name">
                             @error('FirstName') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Middle Name <span
-                                    class="text-slate-400 font-normal">(Opt)</span></label>
+                                    class="text-slate-400 font-normal">(Optional)</span></label>
                             <input type="text" name="MiddleName" value="{{ old('MiddleName') }}"
                                 class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm"
-                                placeholder="D.">
+                                placeholder="Enter your middle name">
                             @error('MiddleName') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-slate-700 uppercase">Last Name</label>
                             <input type="text" name="LastName" value="{{ old('LastName') }}" required
                                 class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm"
-                                placeholder="Dela Cruz">
+                                placeholder="Enter your last name">
                             @error('LastName') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -141,7 +146,7 @@
                             <label class="text-xs font-bold text-slate-700 uppercase">Email Address</label>
                             <input type="email" name="email" id="emailField" value="{{ old('email') }}" required
                                 class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm"
-                                placeholder="juan@wmsu.edu.ph">
+                                placeholder="id@wmsu.edu.ph">
                             <p id="emailHint" class="text-[10px] text-[#8B0000] hidden mt-1">* Must be a valid WMSU
                                 email (@wmsu.edu.ph)</p>
                             @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
@@ -151,7 +156,7 @@
                             <input type="text" name="contact" value="{{ old('contact') }}" required maxlength="11"
                                 oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)"
                                 class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm"
-                                placeholder="09123456789">
+                                placeholder="+63 912 345 6789">
                             @error('contact') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -270,7 +275,7 @@
                             <div class="relative" x-data="{ show: false }">
                                 <input :type="show ? 'text' : 'password'" name="password" required
                                     class="w-full px-4 py-2.5 pr-10 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm"
-                                    placeholder="••••••••">
+                                    placeholder="Enter your password">
                                 <button type="button" @click="show = !show"
                                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
                                     <i class="fas" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
@@ -283,7 +288,7 @@
                             <div class="relative" x-data="{ show: false }">
                                 <input :type="show ? 'text' : 'password'" name="password_confirmation" required
                                     class="w-full px-4 py-2.5 pr-10 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm"
-                                    placeholder="••••••••">
+                                    placeholder="Confirm your password">
                                 <button type="button" @click="show = !show"
                                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
                                     <i class="fas" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
@@ -293,7 +298,7 @@
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit"
+                        <button type="submit" id="submitBtn"
                             class="w-full bg-[#8B0000] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-900/20 hover:bg-red-900 hover:-translate-y-0.5 transition-all duration-200 text-sm tracking-wide">
                             Complete Registration
                         </button>
@@ -327,7 +332,44 @@
             const collegeSelect = wmsuFields.querySelector('select[name="college"]');
 
             function updateFormState() {
+                const statusBadge = document.getElementById('statusBadge');
+                const submitBtn = document.getElementById('submitBtn');
+                const toggleSwitch = document.getElementById('toggleSwitch');
+                
                 if (toggle.checked) {
+                    // Internal (WMSU) Mode
+                    externalFields.classList.add('hidden');
+                    wmsuFields.classList.remove('hidden');
+
+                    if (emailField) {
+                        emailField.placeholder = "id@wmsu.edu.ph";
+                    }
+                    if (emailHint) {
+                        emailHint.classList.add('hidden');
+                    }
+
+                    hiddenExternalInput.value = "0";
+                    form.action = "{{ route('register.internal') }}";
+
+                    // Disable External inputs
+                    externalInputs.forEach(input => input.disabled = true);
+                    wmsuInputs.forEach(input => input.disabled = false);
+
+                    // Re-enable college select if it was disabled
+                    if (collegeSelect) collegeSelect.disabled = false;
+                    
+                    // Update badge
+                    statusBadge.className = 'px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-[#8B0000]';
+                    statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> <span>You are from WMSU</span>';
+                    
+                    // Update button to red
+                    submitBtn.className = 'w-full bg-[#8B0000] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-900/20 hover:bg-red-900 hover:-translate-y-0.5 transition-all duration-200 text-sm tracking-wide';
+                    
+                    // Update toggle color to red
+                    toggleSwitch.style.backgroundColor = '#8B0000';
+                    toggleSwitch.style.boxShadow = '0 0 0 4px rgba(139, 0, 0, 0.2)';
+
+                } else {
                     // External Mode
                     wmsuFields.classList.add('hidden');
                     externalFields.classList.remove('hidden');
@@ -345,33 +387,17 @@
                     // Disable WMSU inputs so they don't block validation
                     wmsuInputs.forEach(input => input.disabled = true);
                     externalInputs.forEach(input => input.disabled = false);
-
-                } else {
-                    // Internal (WMSU) Mode
-                    externalFields.classList.add('hidden');
-                    wmsuFields.classList.remove('hidden');
-
-                    if (emailField) {
-                        emailField.placeholder = "juan@wmsu.edu.ph";
-                    }
-                    if (emailHint) {
-                        // Show hint only if there was an error or just keep it hidden until interaction?
-                        // Original code implies it's for error showing, but the text says "* Must be..."
-                        // Let's keep it visible or hidden based on original intention. 
-                        // The original code had it class="... hidden mt-1", so we keep it hidden unless validation fails?
-                        // Actually, let's reset it to default state if needed.
-                        emailHint.classList.add('hidden');
-                    }
-
-                    hiddenExternalInput.value = "0";
-                    form.action = "{{ route('register.internal') }}";
-
-                    // Disable External inputs
-                    externalInputs.forEach(input => input.disabled = true);
-                    wmsuInputs.forEach(input => input.disabled = false);
-
-                    // Re-enable college select if it was disabled
-                    if (collegeSelect) collegeSelect.disabled = false;
+                    
+                    // Update badge
+                    statusBadge.className = 'px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-blue-600';
+                    statusBadge.innerHTML = '<i class="fas fa-building"></i> <span>You are an External</span>';
+                    
+                    // Update button to blue
+                    submitBtn.className = 'w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-900/20 hover:bg-blue-700 hover:-translate-y-0.5 transition-all duration-200 text-sm tracking-wide';
+                    
+                    // Update toggle color to blue
+                    toggleSwitch.style.backgroundColor = '#2563eb';
+                    toggleSwitch.style.boxShadow = '0 0 0 4px rgba(37, 99, 235, 0.2)';
                 }
             }
 

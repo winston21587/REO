@@ -60,6 +60,10 @@ Route::get('/legal/accessibility', function () {
     return view('legal.accessibility', compact('contents')); 
 })->name('policy.accessibility');
 
+Route::get('/download-mobile-app', function () {
+    return view('components.mobile_download');
+})->name('mobile.download');
+
 Route::get('logout', [AuthController::class, 'logout']); // Fallback if needed
 
 

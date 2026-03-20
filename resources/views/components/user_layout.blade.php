@@ -72,16 +72,17 @@
 
             <!-- Logo Area -->
             <div
-                class="h-20 shrink-0 flex items-center justify-center border-b border-white/5 bg-gradient-to-r from-[#8B0000]/20 to-transparent relative">
-                <div class="flex items-center gap-3" :class="{'px-6': sidebarOpen, 'px-0': !sidebarOpen}">
+                class="h-20 shrink-0 flex items-center justify-start border-b border-white/5 bg-gradient-to-r from-[#8B0000]/20 to-transparent relative">
+                <div class="flex items-center gap-3 px-8">
                     <div
-                        class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg overflow-hidden transition-all duration-300">
-                        <img src="{{ asset('images/reoc-nobg.png') }}" alt="REO Logo" class="h-6 w-auto">
+                        class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg overflow-hidden transition-all duration-300 flex-shrink-0">
+                        <img src="{{ asset('images/reoc-nobg.png') }}" alt="REO Logo" class="h-7 w-auto">
                     </div>
                     <span
-                        class="font-heading font-extrabold text-xl text-white tracking-tight whitespace-nowrap transition-opacity duration-300"
-                        x-show="sidebarOpen" x-transition>
-                        REO <span class="text-brand-primary">Portal</span>
+                        class="font-heading font-extrabold text-lg text-white tracking-tight transition-opacity duration-300 truncate min-w-0"
+                        x-show="sidebarOpen" x-transition
+                        title="{{ Auth::user()->first_name ?? 'User' }} {{ Auth::user()->last_name ?? '' }}">
+                        {{ Auth::user()->first_name ?? 'User' }} {{ Auth::user()->last_name ?? '' }}
                     </span>
                 </div>
             </div>

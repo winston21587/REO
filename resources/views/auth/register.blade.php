@@ -97,16 +97,16 @@
                 <p class="text-slate-500 text-sm mb-6">Please fill in your details to get started.</p>
 
                 <!-- NEW TOGGLE -->
-                <div class="flex items-center justify-between gap-3 mb-8 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                    <label class="inline-flex items-center cursor-pointer">
+                <div class="flex items-center justify-between gap-4 mb-8 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                    <label class="inline-flex items-center cursor-pointer flex-shrink-0">
                         <input type="checkbox" name="external_user" id="isNotWmsu" class="sr-only peer" checked>
                         <div id="toggleSwitch"
                             class="relative w-11 h-6 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all transition-colors ring-4 ring-offset-0" style="background-color: #8B0000; box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.2);">
                         </div>
-                        <span class="ms-3 text-sm font-bold text-slate-700 select-none">Are you from WMSU?</span>
+                        <span class="ms-3 text-sm font-bold text-slate-700 select-none">Are you<br class="md:hidden"> from WMSU?</span>
                     </label>
                     <!-- Status Badge -->
-                    <div id="statusBadge" class="px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-[#8B0000]" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div id="statusBadge" class="px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-[#8B0000] whitespace-nowrap flex-shrink-0" style="display: flex; align-items: center; gap: 0.5rem;">
                         <i class="fas fa-check-circle"></i>
                         <span>You are from WMSU</span>
                     </div>

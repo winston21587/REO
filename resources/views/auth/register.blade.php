@@ -410,7 +410,7 @@
             // Frontend Validation for WMSU Email
             if (form) {
                 form.addEventListener('submit', function (e) {
-                    if (!toggle.checked) {
+                    if (toggle.checked) {
                         const email = emailField.value;
                         if (!email.endsWith('@wmsu.edu.ph')) {
                             e.preventDefault();

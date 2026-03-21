@@ -56,9 +56,15 @@
             $originalFiles = $protocolDocs->whereNull('revision_number')->sortByDesc('created_at');
             $archivedFiles = $protocolDocs->where('revision_number', '>', 0)->sortByDesc('created_at');
             $revisionFolders = $archivedFiles->groupBy('revision_number')->sortKeys();
-            $activeFiles = $protocolDocs->where('revision_number', '!=', -1)->sortByDesc(function ($file) {
-                return $file->revision_number ?? 0;
-            })->unique('category')->sortByDesc('created_at');
+            // Get all active files from the highest revision per category
+            $activeFiles = $protocolDocs->where('revision_number', '!=', -1)
+                ->groupBy('category')
+                ->map(function ($categoryFiles) {
+                    $maxRev = $categoryFiles->max('revision_number');
+                    return $categoryFiles->where('revision_number', $maxRev);
+                })
+                ->flatten()
+                ->sortByDesc('created_at');
 
             $hasRevisions = $revisionFolders->isNotEmpty();
 
@@ -79,7 +85,7 @@
                 return [
                     'id' => $file->id,
                     'filename' => $file->filename,
-                    'label' => $file->category ?? $file->filename,
+                    'label' => $file->category ?? 'Uncategorized',
                     'group' => $label,
                     'ext' => $ext,
                     'revision_number' => $file->revision_number,
@@ -91,16 +97,35 @@
                 ];
             };
 
-            $jsOriginal = $originalFiles->map(fn($f) => $enrichFile($f, 'Original'))->values();
-            $jsActive   = $activeFiles->map(fn($f) => $enrichFile($f, 'Current'))->values();
-            $jsLetters  = $letters->map(fn($f) => $enrichFile($f, 'Letters'))->values();
+            $groupFiles = function($collection, $groupLabel) use ($enrichFile) {
+                $grouped = [];
+                foreach ($collection as $f) {
+                    $cat = $f->category ?? 'Uncategorized';
+                    if (!isset($grouped[$cat])) {
+                        $grouped[$cat] = [];
+                    }
+                    $grouped[$cat][] = $enrichFile($f, $groupLabel);
+                }
+                $result = [];
+                foreach ($grouped as $cat => $files) {
+                    $result[] = [
+                        'category' => $cat,
+                        'files' => $files
+                    ];
+                }
+                return $result;
+            };
+
+            $jsOriginal = $groupFiles($originalFiles, 'Original');
+            $jsActive   = $groupFiles($activeFiles, 'Current');
+            $jsLetters  = $groupFiles($letters, 'Letters');
 
             $jsRevisions = [];
             foreach ($revisionFolders as $revNum => $files) {
-                $jsRevisions[$revNum] = $files->map(fn($f) => $enrichFile($f, "Revision $revNum"))->values()->toArray();
+                $jsRevisions[$revNum] = $groupFiles($files, "Revision $revNum");
             }
 
-            $firstFile = $jsOriginal->first() ?? $jsActive->first() ?? null;
+            $firstFile = $originalFiles->first() ? $enrichFile($originalFiles->first(), 'Original') : ($activeFiles->first() ? $enrichFile($activeFiles->first(), 'Current') : null);
             $serveRoute = route('admin.serve_file', 'FILE_ID');
         @endphp
 
@@ -272,19 +297,32 @@
 
                         <!-- Letters tab -->
                         <div x-show="activeTab === 'letters'" style="display:none;">
-                            <template x-for="file in letters" :key="file.id">
-                                <button @click="selectFile(file)"
-                                    :class="activeFile && activeFile.id === file.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : 'hover:bg-slate-50 border-l-4 border-transparent'"
-                                    class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all">
-                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="file.bg">
-                                        <i :class="[file.icon, file.color]"></i>
+                            <template x-for="group in letters" :key="group.category">
+                                <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2" x-data="{ expanded: false }">
+                                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                        <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest" x-text="group.category"></h4>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200" x-text="group.files.length + ' file(s)'"></span>
+                                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                                        </div>
+                                    </button>
+                                    <div x-show="expanded" style="display: none;" x-transition>
+                                        <template x-for="file in group.files" :key="file.id">
+                                            <button @click="selectFile(file)"
+                                                :class="activeFile && activeFile.id === file.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : 'hover:bg-slate-50 border-l-4 border-transparent'"
+                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="file.bg">
+                                                    <i :class="[file.icon, file.color]"></i>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-bold text-slate-800 truncate" x-text="file.filename"></p>
+                                                    <p class="text-[10px] text-slate-400" x-text="file.uploaded_at"></p>
+                                                </div>
+                                                <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></div>
+                                            </button>
+                                        </template>
                                     </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-sm font-bold text-slate-800 truncate" x-text="file.label"></p>
-                                        <p class="text-[10px] text-slate-400" x-text="file.uploaded_at"></p>
-                                    </div>
-                                    <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></div>
-                                </button>
+                                </div>
                             </template>
                         </div>
 
@@ -296,44 +334,67 @@
                                     <p class="text-sm">No original documents found.</p>
                                 </div>
                             </template>
-                            <template x-for="file in originalFiles" :key="file.id">
-                                <button @click="selectFile(file)"
-                                    :class="activeFile && activeFile.id === file.id ? 'bg-red-50 border-l-4 border-[#8B0000]' : 'hover:bg-slate-50 border-l-4 border-transparent'"
-                                    class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all">
-                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="file.bg">
-                                        <i :class="[file.icon, file.color]"></i>
+                            <template x-for="group in originalFiles" :key="group.category">
+                                <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2" x-data="{ expanded: false }">
+                                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                        <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest" x-text="group.category"></h4>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200" x-text="group.files.length + ' file(s)'"></span>
+                                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                                        </div>
+                                    </button>
+                                    <div x-show="expanded" style="display: none;" x-transition>
+                                        <template x-for="file in group.files" :key="file.id">
+                                            <button @click="selectFile(file)"
+                                                :class="activeFile && activeFile.id === file.id ? 'bg-red-50 border-l-4 border-[#8B0000]' : 'hover:bg-slate-50 border-l-4 border-transparent'"
+                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="file.bg">
+                                                    <i :class="[file.icon, file.color]"></i>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-bold text-slate-800 truncate" x-text="file.filename"></p>
+                                                    <p class="text-[10px] text-slate-400" x-text="file.uploaded_at"></p>
+                                                </div>
+                                                <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-[#8B0000] flex-shrink-0"></div>
+                                            </button>
+                                        </template>
                                     </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-sm font-bold text-slate-800 truncate" x-text="file.label"></p>
-                                        <p class="text-[10px] text-slate-400" x-text="file.uploaded_at"></p>
-                                    </div>
-                                    <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-[#8B0000] flex-shrink-0"></div>
-                                </button>
+                                </div>
                             </template>
                         </div>
 
                         <!-- Revision tabs (one per revision number) -->
                         @foreach($revisionFolders->sortKeys() as $revNum => $_)
                         <div x-show="activeTab === 'rev_{{ $revNum }}'" style="display:none;">
-                            <div class="px-4 py-2.5 bg-indigo-50/60 border-b border-indigo-100 flex items-center justify-between">
+                            <div class="px-4 py-2.5 bg-indigo-50/60 border-b border-indigo-100 flex items-center justify-between mb-2">
                                 <p class="text-xs font-extrabold text-indigo-600 uppercase tracking-wider">Revision {{ $revNum }}</p>
-                                <span class="text-[10px] font-bold text-indigo-500 bg-indigo-100 px-2 py-0.5 rounded-full">
-                                    {{ count($jsRevisions[$revNum] ?? []) }} docs
-                                </span>
                             </div>
-                            <template x-for="file in (revisions['{{ $revNum }}'] || [])" :key="file.id">
-                                <button @click="selectFile(file)"
-                                    :class="activeFile && activeFile.id === file.id ? 'bg-indigo-50 border-l-4 border-indigo-500' : 'hover:bg-slate-50 border-l-4 border-transparent'"
-                                    class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all">
-                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="file.bg">
-                                        <i :class="[file.icon, file.color]"></i>
+                            <template x-for="group in revisions['{{ $revNum }}']" :key="group.category">
+                                <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2" x-data="{ expanded: false }">
+                                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                        <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest" x-text="group.category"></h4>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200" x-text="group.files.length + ' file(s)'"></span>
+                                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                                        </div>
+                                    </button>
+                                    <div x-show="expanded" style="display: none;" x-transition>
+                                        <template x-for="file in group.files" :key="file.id">
+                                            <button @click="selectFile(file)"
+                                                :class="activeFile && activeFile.id === file.id ? 'bg-indigo-50 border-l-4 border-indigo-500' : 'hover:bg-slate-50 border-l-4 border-transparent'"
+                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="file.bg">
+                                                    <i :class="[file.icon, file.color]"></i>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-bold text-slate-800 truncate" x-text="file.filename"></p>
+                                                    <p class="text-[10px] text-slate-400" x-text="file.uploaded_at"></p>
+                                                </div>
+                                                <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
+                                            </button>
+                                        </template>
                                     </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-sm font-bold text-slate-800 truncate" x-text="file.label"></p>
-                                        <p class="text-[10px] text-slate-400" x-text="file.uploaded_at"></p>
-                                    </div>
-                                    <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
-                                </button>
+                                </div>
                             </template>
                         </div>
                         @endforeach
@@ -341,24 +402,37 @@
                         <!-- Current Documents tab -->
                         @if($hasRevisions && $activeFiles->isNotEmpty())
                         <div x-show="activeTab === 'current'" style="display:none;">
-                            <div class="px-4 py-2.5 bg-red-50/60 border-b border-red-100">
+                            <div class="px-4 py-2.5 bg-red-50/60 border-b border-red-100 mb-2">
                                 <p class="text-xs font-extrabold text-[#8B0000] uppercase tracking-wider">Latest Version of Each Document</p>
                             </div>
-                            <template x-for="file in activeFiles" :key="file.id">
-                                <button @click="selectFile(file)"
-                                    :class="activeFile && activeFile.id === file.id ? 'bg-red-50 border-l-4 border-[#8B0000]' : 'hover:bg-slate-50 border-l-4 border-transparent'"
-                                    class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all">
-                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="file.bg">
-                                        <i :class="[file.icon, file.color]"></i>
+                            <template x-for="group in activeFiles" :key="group.category">
+                                <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2" x-data="{ expanded: false }">
+                                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                        <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest" x-text="group.category"></h4>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200" x-text="group.files.length + ' file(s)'"></span>
+                                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                                        </div>
+                                    </button>
+                                    <div x-show="expanded" style="display: none;" x-transition>
+                                        <template x-for="file in group.files" :key="file.id">
+                                            <button @click="selectFile(file)"
+                                                :class="activeFile && activeFile.id === file.id ? 'bg-red-50 border-l-4 border-[#8B0000]' : 'hover:bg-slate-50 border-l-4 border-transparent'"
+                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="file.bg">
+                                                    <i :class="[file.icon, file.color]"></i>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-bold text-slate-800 truncate" x-text="file.filename"></p>
+                                                    <p class="text-[10px] font-bold" 
+                                                       :class="file.revision_number ? 'text-indigo-500' : 'text-slate-400'"
+                                                       x-text="file.revision_number ? 'Revision ' + file.revision_number : 'Original'"></p>
+                                                </div>
+                                                <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-[#8B0000] flex-shrink-0"></div>
+                                            </button>
+                                        </template>
                                     </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-sm font-bold text-slate-800 truncate" x-text="file.label"></p>
-                                        <p class="text-[10px] font-bold" 
-                                           :class="file.revision_number ? 'text-indigo-500' : 'text-slate-400'"
-                                           x-text="file.revision_number ? 'Revision ' + file.revision_number : 'Original'"></p>
-                                    </div>
-                                    <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-[#8B0000] flex-shrink-0"></div>
-                                </button>
+                                </div>
                             </template>
                         </div>
                         @endif

@@ -34,10 +34,7 @@ class AuthController extends Controller
             $user = Auth::user();
 
             if($user->role === 'reviewer'){
-                Auth::logout();
-                return back()->withErrors([
-                    'email' => 'Reviewer accounts are not permitted to log in to the system directly.',
-                ]);
+                return redirect()->route('reviewer.dashboard');
             }
 
             $request->session()->regenerate();

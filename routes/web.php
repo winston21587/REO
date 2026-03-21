@@ -298,4 +298,12 @@ Route::middleware(['auth'])->group(function () {
         
 
     });
+
+    // ====================================================
+    // REVIEWER ROUTES
+    // ====================================================
+    Route::middleware(['role:reviewer'])->group(function () {
+        Route::get('/reviewer', [\App\Http\Controllers\ReviewerController::class, 'index'])->name('reviewer.dashboard');
+    });
+
 });

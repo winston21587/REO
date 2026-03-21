@@ -161,7 +161,7 @@
             element.querySelector('.icon-box').classList.add(activeText);
         }
 
-        function openRevisionStatusModal(id, title) {
+        function openRevisionStatusModal(id, title, currentStatus = null) {
             document.getElementById('revisionStatusModalTitle').textContent = title;
             const form = document.getElementById('revisionStatusForm');
             form.action = `/admin/update-status/${id}`;
@@ -179,6 +179,22 @@
                 el.querySelector('.icon-box').classList.remove('text-orange-500', 'text-red-500', 'text-blue-500', 'text-green-500');
                 el.querySelector('.icon-box').classList.add('text-slate-400');
             });
+
+            // Auto-select current status
+            if (currentStatus) {
+                const statusMap = {
+                    'Modifications Required': 0,
+                    'Disapproved': 1,
+                    'Panel Deliberation': 2,
+                    'Approved': 3
+                };
+
+                const statusBoxes = document.querySelectorAll('.revision-status-option');
+
+                if (currentStatus in statusMap && statusBoxes[statusMap[currentStatus]]) {
+                    selectRevisionStatus(currentStatus, statusBoxes[statusMap[currentStatus]]);
+                }
+            }
 
             // Show Modal
             const modal = document.getElementById('revisionStatusModal');

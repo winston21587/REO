@@ -149,7 +149,7 @@
                                                     </form>
                                                 @else
                                                     <button
-                                                        @click="open = false; openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }})"
+                                                        @click="open = false; openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($displayStatus) }})"
                                                         class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
                                                         <i class="fas fa-sync-alt w-4"></i> Update Status
                                                     </button>

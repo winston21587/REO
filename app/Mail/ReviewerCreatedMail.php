@@ -15,13 +15,15 @@ class ReviewerCreatedMail extends Mailable
     use Queueable, SerializesModels;
 
     public $user;
+    public $password;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user)
+    public function __construct(User $user, $password)
     {
         $this->user = $user;
+        $this->password = $password;
     }
 
     /**

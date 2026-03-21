@@ -166,6 +166,7 @@ class SuperAdminController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
             'college' => 'nullable|string|max:255',
             'expertise' => 'nullable|string|max:1000',
             'training_completed' => 'nullable|boolean',
@@ -175,13 +176,11 @@ class SuperAdminController extends Controller
         try {
             DB::beginTransaction();
 
-            $generatedPassword = \Illuminate\Support\Str::random(12);
-
             $user = User::create([
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'email' => $request->email,
-                'password' => Hash::make($generatedPassword), 
+                'password' => Hash::make($request->password), 
                 'role' => 'reviewer',
                 'is_verified' => true,
             ]);
@@ -206,8 +205,8 @@ class SuperAdminController extends Controller
 
             // Send Email
             try {
-                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ReviewerCreatedMail($user)); 
-                $emailStatus = ' An email has been sent to the reviewer.';
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ReviewerCreatedMail($user, $request->password)); 
+                $emailStatus = ' An email with their credentials has been sent.';
             } catch (\Exception $e) {
                 // Ignore email failure for the main transaction, but notify user
                 $emailStatus = ' However, the credential email failed to send to ' . $user->email . '.';

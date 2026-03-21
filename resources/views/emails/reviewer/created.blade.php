@@ -3,11 +3,15 @@
 
 You have been assigned as a Reviewer for the REO System. 
 
-Below are your account details.
+Below are your login credentials for the Reviewer portal.
 
 **Email:** {{ $user->email }}
+<br>
+**Password:** {{ $password }}
 
-*Note: Reviewer accounts do not have direct login access to the REO system.*
+<x-mail::button :url="'https://reoph.site'">
+Login to REO
+</x-mail::button>
 
 Best regards,<br>
 REO System Management

@@ -211,7 +211,7 @@
             @endif
 
             <!-- Notification Toast Card (Appears on First Login Only) -->
-            <div id="notification-toast" class="fixed top-24 right-6 hidden bg-white border border-slate-200 rounded-xl shadow-lg p-4 z-40 opacity-0 scale-95 transition-all duration-300 max-w-xs">
+            <div id="notification-toast" class="fixed top-24 right-6 hidden bg-white border border-slate-200 rounded-xl shadow-lg p-4 z-40 opacity-0 scale-95 transition-all duration-300 max-w-xs cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all group">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-[#8B0000] rounded-lg flex items-center justify-center text-white flex-shrink-0">
                         <i class="fas fa-bell text-lg"></i>
@@ -220,7 +220,7 @@
                         <h4 class="font-bold text-sm text-slate-800">New Notifications</h4>
                         <p class="text-xs text-slate-600">You have unread notifications</p>
                     </div>
-                    <button onclick="document.getElementById('notification-toast').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 ml-2 flex-shrink-0">
+                    <button id="close-notification-toast" class="text-slate-400 hover:text-slate-600 ml-2 flex-shrink-0">
                         <i class="fas fa-times text-base"></i>
                     </button>
                 </div>
@@ -391,10 +391,9 @@
         }
     </style>
     <script>
-        // Notification Toggle Script
+        
         document.addEventListener('DOMContentLoaded', function () {
-            // --- Smart Mobile Bottom Nav Scroll Logic ---
-            // --- Smart Mobile Bottom Nav Scroll Logic ---
+           
             const bottomNav = document.getElementById('bottom-nav');
 
             if (bottomNav) {
@@ -440,52 +439,248 @@
                 let isOpen = false;
 
                 function toggleNotifications(e) {
-                    e.stopPropagation();
-                    isOpen = !isOpen;
+    e.stopPropagation();
+    isOpen = !isOpen;
 
-                    if (isOpen) {
-                        // Opening panel - hide red dots
-                        btns.forEach(btn => {
-                            const dot = btn.querySelector('span.animate-pulse');
-                            if (dot) {
-                                dot.classList.add('hidden');
-                            }
+    if (isOpen) {
+        // Refresh notification list from API
+        fetch('{{ route("notifications.api.unread") }}')
+            .then(response => response.json())
+            .then(data => {
+                const panel = document.getElementById('notifications-panel');
+                if (!panel) return;
+                
+                // Update the count in header
+                let countSpan = panel.querySelector('span.rounded-full');
+                if (countSpan && data.unread_count > 0) {
+                    countSpan.textContent = data.unreadCount || data.unread_count;
+                    countSpan.classList.remove('hidden');
+                } else if (countSpan) {
+                    countSpan.classList.add('hidden');
+                }
+                
+                // Rebuild the notification list
+                const list = panel.querySelector('ul');
+                if (list) {
+                    list.innerHTML = '';
+                    
+                    if (data.notifications && data.notifications.length > 0) {
+                        data.notifications.forEach(notify => {
+                            // Skip if already marked as read in this session, on the server, or removed from view
+                            if (markedAsReadIds.has(notify.id) || notify.is_read || removedNotificationIds.has(notify.id)) return;
+                            
+                            const isRead = notify.is_read;
+                            const readDot = !isRead ? '<span class="w-2 h-2 rounded-full bg-[#8B0000] flex-shrink-0 mt-1.5"></span>' : '';
+                            const readClass = isRead ? 'opacity-70' : '';
+                            const typeClass = notify.type === 'warning' ? 'bg-red-100 text-red-600' : (notify.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600');
+                            const typeIcon = notify.type === 'warning' ? '!' : (notify.type === 'success' ? '✓' : 'i');
+                            
+                            // Calculate relative time
+                            const createdTime = new Date(notify.created_at);
+                            const now = new Date();
+                            const diffMs = now - createdTime;
+                            const diffMins = Math.floor(diffMs / 60000);
+                            const diffHours = Math.floor(diffMs / 3600000);
+                            const diffDays = Math.floor(diffMs / 86400000);
+                            
+                            let timeString = '';
+                            if (diffMins < 1) timeString = 'just now';
+                            else if (diffMins < 60) timeString = diffMins + ' minute' + (diffMins > 1 ? 's' : '') + ' ago';
+                            else if (diffHours < 24) timeString = diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
+                            else if (diffDays < 7) timeString = diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
+                            else timeString = createdTime.toLocaleDateString();
+                            
+                            const markReadBtn = !isRead ? `
+                                <form class="flex-shrink-0 ml-2 mark-read-form" data-notification-id="${notify.id}">
+                                    <button type="submit" class="w-6 h-6 rounded border-2 border-slate-300 flex items-center justify-center text-slate-400 hover:bg-[#8B0000] hover:border-[#8B0000] hover:text-white transition-colors" title="Mark as read">
+                                        <i class="fas fa-check text-xs"></i>
+                                    </button>
+                                </form>
+                            ` : '';
+                            
+                            const li = document.createElement('li');
+                            li.className = `relative ${readClass} hover:bg-slate-50 transition-colors group`;
+                            li.innerHTML = `
+                                <div class="p-4 flex gap-3">
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold ${typeClass}">
+                                        ${typeIcon}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <a href="/notifications/${notify.id}" class="block cursor-pointer">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <p class="text-sm font-semibold text-slate-800 line-clamp-1">${notify.title}</p>
+                                                ${readDot}
+                                            </div>
+                                            <p class="text-xs text-slate-600 line-clamp-2 mt-1">${notify.message}</p>
+                                            <p class="text-[11px] text-slate-400 mt-2">${timeString}</p>
+                                        </a>
+                                    </div>
+                                    ${markReadBtn}
+                                </div>
+                            `;
+                            list.appendChild(li);
                         });
                         
-                        panel.style.display = 'block';
-                        setTimeout(() => {
-                            panel.classList.remove('opacity-0', 'scale-95');
-                            panel.classList.add('opacity-100', 'scale-100');
-                        }, 10);
+                        // Attach form submit handlers for mark-as-read
+                        list.querySelectorAll('.mark-read-form').forEach(form => {
+                            form.addEventListener('submit', function(e) {
+                                e.preventDefault();
+                                const notificationId = this.getAttribute('data-notification-id');
+                                const liItem = this.closest('li');
+                                
+                                fetch(`/notifications/${notificationId}/read`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'Content-Type': 'application/json'
+                                    }
+                                }).then(() => {
+                                    // Track this as read and removed
+                                    markedAsReadIds.add(notificationId);
+                                    removedNotificationIds.add(notificationId);
+                                    // Instantly remove the notification item
+                                    if (liItem) {
+                                        liItem.remove();
+                                        // Update count
+                                        const countSpan = panel.querySelector('span.rounded-full');
+                                        if (countSpan) {
+                                            const currentCount = parseInt(countSpan.textContent) - 1;
+                                            countSpan.textContent = currentCount;
+                                            // Hide counter if 0
+                                            if (currentCount <= 0) {
+                                                countSpan.classList.add('hidden');
+                                            }
+                                        }
+                                        // If no unread left, show empty state
+                                        if (list.children.length === 0) {
+                                            list.innerHTML = '<li class="p-8 text-center text-slate-400"><i class="fas fa-bell-slash text-2xl mb-2 block"></i><p class="text-xs">No notifications</p></li>';
+                                        }
+                                    }
+                                }).catch(err => console.error('Error marking notification as read:', err));
+                            });
+                        });
                     } else {
-                        // Closing panel - always hide red dots (they stay hidden)
-                        // They only reappear when NEW notifications actually arrive
-                        btns.forEach(btn => {
-                            const dot = btn.querySelector('span.animate-pulse');
-                            if (dot) {
-                                dot.classList.add('hidden');
-                            }
-                        });
-                        
-                        panel.classList.remove('opacity-100', 'scale-100');
-                        panel.classList.add('opacity-0', 'scale-95');
-                        setTimeout(() => {
-                            panel.style.display = 'none';
-                        }, 200);
+                        list.innerHTML = '<li class="p-8 text-center text-slate-400"><i class="fas fa-bell-slash text-2xl mb-2 block"></i><p class="text-xs">No notifications</p></li>';
                     }
                 }
+                
+                // Handle Clear All button
+                const markAllReadForm = panel.querySelector('form[action*="markAllRead"]');
+                if (markAllReadForm) {
+                    markAllReadForm.removeEventListener('submit', handleMarkAllRead);
+                    markAllReadForm.addEventListener('submit', handleMarkAllRead);
+                }
+            })
+            .catch(err => console.error('Error updating notifications:', err));
+        
+        // Opening panel
+        btns.forEach(btn => {
+            const dot = btn.querySelector('span.animate-pulse');
+            if (dot) {
+                dot.classList.add('hidden');
+            }
+        });
+        
+        panel.style.display = 'block';
+        setTimeout(() => {
+            panel.classList.remove('opacity-0', 'scale-95');
+            panel.classList.add('opacity-100', 'scale-100');
+        }, 10);
+    } else {
+        // Closing panel – hide it AND remove focus from the bell
+        panel.classList.remove('opacity-100', 'scale-100');
+        panel.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => {
+            panel.style.display = 'none';
+        }, 200);
+        
+        // 👇 ADD THIS LINE – removes the red focus ring
+        btns.forEach(btn => btn.blur());
+    }
+}
 
+// Handle Clear All button submission
+function handleMarkAllRead(e) {
+    e.preventDefault();
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const panel = document.getElementById('notifications-panel');
+    const list = panel.querySelector('ul');
+    
+    // Fade out all unread notifications smoothly
+    const unreadItems = list.querySelectorAll('li:not(.opacity-70)');
+    unreadItems.forEach((item, index) => {
+        setTimeout(() => {
+            item.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(20px)';
+        }, index * 50); // Stagger the animation
+    });
+    
+    fetch('{{ route("notifications.markAllRead") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Content-Type': 'application/json'
+        }
+    }).then(() => {
+        // Remove the faded items after animation
+        setTimeout(() => {
+            unreadItems.forEach(item => item.remove());
+            
+            // Update count
+            let countSpan = panel.querySelector('span.rounded-full');
+            if (countSpan) {
+                countSpan.textContent = '0';
+            }
+            
+            // Show empty state if all cleared
+            if (list.children.length === 0) {
+                list.innerHTML = '<li class="p-8 text-center text-slate-400"><i class="fas fa-bell-slash text-2xl mb-2 block"></i><p class="text-xs">No notifications</p></li>';
+            }
+        }, unreadItems.length * 50 + 300);
+    }).catch(err => console.error('Error marking all as read:', err));
+}
                 // Attach event to all buttons
                 btns.forEach(btn => btn.addEventListener('click', toggleNotifications));
 
+                // Notification Toast Card - Make it clickable to open panel
+                const toastCard = document.getElementById('notification-toast');
+                if (toastCard) {
+                    toastCard.addEventListener('click', function(e) {
+                        // Prevent closing if clicking the card itself
+                        if (!e.target.closest('#close-notification-toast')) {
+                            const event = new Event('click');
+                            if (btns.length > 0) {
+                                btns[0].dispatchEvent(event);
+                            }
+                        }
+                    });
+                }
+
+                // Close button for notification toast
+                const closeBtn = document.getElementById('close-notification-toast');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (toastCard) {
+                            toastCard.classList.add('opacity-0', 'scale-95');
+                            setTimeout(() => {
+                                toastCard.classList.add('hidden');
+                            }, 300);
+                        }
+                    });
+                }
+
                 document.addEventListener('click', function (e) {
-                    // Check if click is outside panel AND outside ANY trigger button
+                    // Check if click is outside panel AND outside ANY trigger button AND outside toast
                     let clickedInsideButton = false;
                     btns.forEach(btn => {
                         if (btn.contains(e.target)) clickedInsideButton = true;
                     });
+                    
+                    const clickedInsideToast = toastCard && toastCard.contains(e.target);
 
-                    if (isOpen && !panel.contains(e.target) && !clickedInsideButton) {
+                    if (isOpen && !panel.contains(e.target) && !clickedInsideButton && !clickedInsideToast) {
                         // Close it
                         isOpen = true; // wait, logic was: toggle(e) toggles layout. 
                         // If we are open, we want to close.
@@ -497,6 +692,9 @@
                 let lastNotificationCount = 0;
                 let initialNotificationCount = null; // Track initial count
                 let hasShownLoginToast = sessionStorage.getItem('notificationLoginToastShown') === 'true';
+                let lastNotificationIds = new Set(); // Track notification IDs we've already shown
+                let markedAsReadIds = new Set(); // Track notifications marked as read in this session
+                let removedNotificationIds = new Set(); // Track notifications removed from view (don't re-render)
                 
                 // Show toast only on first login (appears once)
                 function showLoginNotificationToast(initialCount) {
@@ -527,6 +725,8 @@
                         .then(response => response.json())
                         .then(data => {
                             const currentCount = data.unread_count;
+                            const panelOpen = isOpen;
+                            const notifPanel = document.getElementById('notifications-panel');
                             
                             // Update red dot visibility - hide if panel is open or if no unread
                             const notificationTriggers = document.querySelectorAll('.notification-trigger');
@@ -545,16 +745,137 @@
                             });
                             
                             // Update notification panel count if it exists
-                            const notifPanel = document.getElementById('notifications-panel');
                             if (notifPanel) {
                                 const unreadSpans = notifPanel.querySelectorAll('span');
                                 unreadSpans.forEach(span => {
                                     if (span.textContent.includes('unread')) {
                                         if (currentCount > 0) {
                                             span.textContent = currentCount + ' unread';
+                                            span.classList.remove('hidden');
+                                        } else {
+                                            span.classList.add('hidden');
                                         }
                                     }
                                 });
+                                
+                                // If panel is open, add new notifications seamlessly
+                                if (panelOpen && data.notifications && data.notifications.length > 0) {
+                                    const list = notifPanel.querySelector('ul');
+                                    if (list) {
+                                        data.notifications.forEach(notify => {
+                                            // Check if this notification is already in the DOM or was marked as read
+                                            if (!lastNotificationIds.has(notify.id) && !markedAsReadIds.has(notify.id) && !list.querySelector(`[data-notification-id="${notify.id}"]`)) {
+                                                const isRead = notify.is_read;
+                                                const readDot = !isRead ? '<span class="w-2 h-2 rounded-full bg-[#8B0000] flex-shrink-0 mt-1.5"></span>' : '';
+                                                const readClass = isRead ? 'opacity-70' : '';
+                                                const typeClass = notify.type === 'warning' ? 'bg-red-100 text-red-600' : (notify.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600');
+                                                const typeIcon = notify.type === 'warning' ? '!' : (notify.type === 'success' ? '✓' : 'i');
+                                                
+                                                const createdTime = new Date(notify.created_at);
+                                                const now = new Date();
+                                                const diffMs = now - createdTime;
+                                                const diffMins = Math.floor(diffMs / 60000);
+                                                const diffHours = Math.floor(diffMs / 3600000);
+                                                const diffDays = Math.floor(diffMs / 86400000);
+                                                
+                                                let timeString = '';
+                                                if (diffMins < 1) timeString = 'just now';
+                                                else if (diffMins < 60) timeString = diffMins + ' minute' + (diffMins > 1 ? 's' : '') + ' ago';
+                                                else if (diffHours < 24) timeString = diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
+                                                else if (diffDays < 7) timeString = diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
+                                                else timeString = createdTime.toLocaleDateString();
+                                                
+                                                const markReadBtn = !isRead ? `
+                                                    <form class="flex-shrink-0 ml-2 mark-read-form" data-notification-id="${notify.id}">
+                                                        <button type="submit" class="w-6 h-6 rounded border-2 border-slate-300 flex items-center justify-center text-slate-400 hover:bg-[#8B0000] hover:border-[#8B0000] hover:text-white transition-colors" title="Mark as read">
+                                                            <i class="fas fa-check text-xs"></i>
+                                                        </button>
+                                                    </form>
+                                                ` : '';
+                                                
+                                                const li = document.createElement('li');
+                                                li.className = `relative ${readClass} hover:bg-slate-50 transition-colors group opacity-0 scale-95`;
+                                                li.setAttribute('data-notification-id', notify.id);
+                                                li.innerHTML = `
+                                                    <div class="p-4 flex gap-3">
+                                                        <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold ${typeClass}">
+                                                            ${typeIcon}
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <a href="/notifications/${notify.id}" class="block cursor-pointer">
+                                                                <div class="flex items-start justify-between gap-2">
+                                                                    <p class="text-sm font-semibold text-slate-800 line-clamp-1">${notify.title}</p>
+                                                                    ${readDot}
+                                                                </div>
+                                                                <p class="text-xs text-slate-600 line-clamp-2 mt-1">${notify.message}</p>
+                                                                <p class="text-[11px] text-slate-400 mt-2">${timeString}</p>
+                                                            </a>
+                                                        </div>
+                                                        ${markReadBtn}
+                                                    </div>
+                                                `;
+                                                
+                                                // Remove empty state if it exists
+                                                const emptyState = list.querySelector('li:has(i.fa-bell-slash)');
+                                                if (emptyState) {
+                                                    emptyState.remove();
+                                                }
+                                                
+                                                // Add to top of list
+                                                list.insertBefore(li, list.firstChild);
+                                                
+                                                // Trigger animation
+                                                setTimeout(() => {
+                                                    li.style.transition = 'all 0.3s ease-out';
+                                                    li.classList.remove('opacity-0', 'scale-95');
+                                                    li.classList.add('opacity-100', 'scale-100');
+                                                }, 10);
+                                                
+                                                // Attach form handler
+                                                const form = li.querySelector('.mark-read-form');
+                                                if (form) {
+                                                    form.addEventListener('submit', function(e) {
+                                                        e.preventDefault();
+                                                        const notificationId = this.getAttribute('data-notification-id');
+                                                        const liItem = this.closest('li');
+                                                        
+                                                        fetch(`/notifications/${notificationId}/read`, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                                                'Content-Type': 'application/json'
+                                                            }
+                                                        }).then(() => {
+                                                            // Track this as read and removed
+                                                            markedAsReadIds.add(notificationId);
+                                                            removedNotificationIds.add(notificationId);
+                                                            // Instantly remove the notification item
+                                                            if (liItem) {
+                                                                liItem.remove();
+                                                                // Update count
+                                                                const countSpan = notifPanel.querySelector('span.rounded-full');
+                                                                if (countSpan) {
+                                                                    const currentCount = parseInt(countSpan.textContent) - 1;
+                                                                    countSpan.textContent = currentCount;
+                                                                    // Hide counter if 0
+                                                                    if (currentCount <= 0) {
+                                                                        countSpan.classList.add('hidden');
+                                                                    }
+                                                                }
+                                                                // If no unread left, show empty state
+                                                                if (list.children.length === 0) {
+                                                                    list.innerHTML = '<li class="p-8 text-center text-slate-400"><i class="fas fa-bell-slash text-2xl mb-2 block"></i><p class="text-xs">No notifications</p></li>';
+                                                                }
+                                                            }
+                                                        }).catch(err => console.error('Error marking notification as read:', err));
+                                                    });
+                                                }
+                                                
+                                                lastNotificationIds.add(notify.id);
+                                            }
+                                        });
+                                    }
+                                }
                             }
                             
                             // Show toast only if new notifications arrived (currentCount > lastNotificationCount)
@@ -585,6 +906,13 @@
                         .then(data => {
                             initialNotificationCount = data.unread_count;
                             lastNotificationCount = data.unread_count;
+                            
+                            // Store initial notification IDs
+                            if (data.notifications) {
+                                data.notifications.forEach(notify => {
+                                    lastNotificationIds.add(notify.id);
+                                });
+                            }
                             
                             // Show login toast if there are unread on first load
                             showLoginNotificationToast(initialNotificationCount);

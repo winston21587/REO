@@ -160,7 +160,8 @@ class Research_title_Controller extends Controller
     public function manageFiles($id)
     {
         $researchTitle = Research_title::with(['files', 'adminFiles', 'titleLogs.user'])->findOrFail($id);
-        return view('researcher_files', compact('researchTitle'));
+        $requirements = DocumentRequirement::all();
+        return view('researcher_files', compact('researchTitle', 'requirements'));
     }
 
     public function updateFile(Request $request, $id)
@@ -195,6 +196,35 @@ class Research_title_Controller extends Controller
         $research->files()->attach($newFileRecord->id);
 
         return redirect()->back()->with('success', 'File updated successfully!');
+    }
+
+    public function addMissingFile(Request $request, $id)
+    {
+        $request->validate([
+            'file' => 'required|file|max:25600',
+            'category' => 'required|string',
+        ]);
+
+        $researchTitle = Research_title::findOrFail($id);
+        $user = Auth::user();
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
+            abort(403);
+        }
+
+        $path = $request->file('file')->store('uploads/research_files', 'public_uploads');
+
+        $newFileRecord = researcher_files::create([
+            'research_title_id' => $id,
+            'filename' => $request->file('file')->getClientOriginalName(),
+            'filepath' => $path,
+            'filetype' => $request->file('file')->getClientOriginalExtension(),
+            'category' => $request->category,
+            'revision_number' => null, // Directly attaching to original files
+        ]);
+
+        $researchTitle->files()->attach($newFileRecord->id);
+
+        return back()->with('success', 'Document added successfully!');
     }
 
     public function uploadRevisionDocument(Request $request, $id)

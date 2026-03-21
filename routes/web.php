@@ -166,6 +166,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/submit', [Research_title_Controller::class, 'submitTitle'])->name('submit.title');
         Route::get('/home/{id}/files', [Research_title_Controller::class, 'manageFiles'])->name('manage.files');
         Route::put('/submissions/update-file/{id}', [Research_title_Controller::class, 'updateFile'])->name('update.file');
+        Route::post('/submissions/add-missing-file/{id}', [Research_title_Controller::class, 'addMissingFile'])->name('add.missing.file');
         Route::post('/submissions/upload-revision-document/{id}', [Research_title_Controller::class, 'uploadRevisionDocument'])->name('upload.revision.document');
         Route::delete('/submissions/delete-revision-document/{file_id}', [Research_title_Controller::class, 'deleteRevisionDocument'])->name('delete.revision.document');
         Route::post('/home/{id}/files/submit', [Research_title_Controller::class, 'submitRevisions'])->name('submit.revisions');

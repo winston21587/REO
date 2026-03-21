@@ -103,6 +103,47 @@ Route::middleware(['auth'])->group(function () {
         return back();
     })->name('notifications.markAllRead');
 
+    // API endpoint to check for unread notifications (AJAX)
+    Route::get('/api/notifications/unread', function () {
+        $unreadCount = UserNotification::where('user_id', Auth::id())
+            ->where('is_read', false)
+            ->count();
+        
+        $notifications = UserNotification::where('user_id', Auth::id())
+            ->where('is_read', false)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return response()->json([
+            'unread_count' => $unreadCount,
+            'notifications' => $notifications
+        ]);
+    })->name('notifications.api.unread');
+
+    // Route to view a specific notification and its related content
+    Route::get('/notifications/{id}', function ($id) {
+        $notification = UserNotification::findOrFail($id);
+        
+        // Security check: ensure user owns the notification
+        if ($notification->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Mark as read
+        if (!$notification->is_read) {
+            $notification->update(['is_read' => true]);
+        }
+
+        // Redirect to the related research submission files if it exists
+        if ($notification->research_id) {
+            return redirect()->route('manage.files', $notification->research_id);
+        }
+
+        // Otherwise, go to notifications index
+        return redirect()->route('notifications.index');
+    })->name('notifications.show');
+
 
     // ====================================================
     // RESEARCHER ROUTES

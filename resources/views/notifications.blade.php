@@ -21,9 +21,9 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
-            <ul class="divide-y divide-slate-100">
+            <div class="divide-y divide-slate-100">
                 @forelse($notifications as $notify)
-                    <li class="p-6 hover:bg-slate-50 transition-colors group relative {{ $notify->is_read ? 'opacity-75' : '' }}">
+                    <a href="{{ route('notifications.show', $notify->id) }}" class="block p-6 hover:bg-slate-50 transition-colors group relative {{ $notify->is_read ? 'opacity-75' : '' }} no-underline">
                         <div class="absolute left-0 top-0 bottom-0 w-1 
                             {{ $notify->type == 'warning' ? 'bg-red-500' : ($notify->type == 'success' ? 'bg-green-500' : 'bg-blue-500') }}
                             opacity-100 group-hover:opacity-80 transition-opacity">
@@ -43,27 +43,27 @@
 
                             <div class="flex-1 min-w-0">
                                 <div class="flex justify-between items-start mb-1">
-                                    <h4 class="text-base font-bold text-slate-800">{{ $notify->title }}</h4>
+                                    <h4 class="text-base font-bold text-slate-800 group-hover:text-[#8B0000] transition-colors">{{ $notify->title }}</h4>
                                     <span class="text-xs text-slate-400 font-medium whitespace-nowrap ml-4">
                                         {{ $notify->created_at->format('M d, Y h:i A') }}
                                         ({{ $notify->created_at->diffForHumans() }})
                                     </span>
                                 </div>
 
-                                <div class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $notify->message }}</div>
+                                <div class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap group-hover:text-slate-700 transition-colors">{{ $notify->message }}</div>
                             </div>
                         </div>
-                    </li>
+                    </a>
                 @empty
-                    <li class="p-12 text-center text-slate-400">
+                    <div class="p-6 sm:p-12 text-center text-slate-400">
                         <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-bell-slash text-2xl text-slate-300"></i>
                         </div>
                         <h3 class="text-lg font-bold text-slate-700 mb-1">No notifications yet</h3>
                         <p class="text-sm">We'll notify you when there are updates to your research.</p>
-                    </li>
+                    </div>
                 @endforelse
-            </ul>
+            </div>
         </div>
     </main>
 </x-user_layout>

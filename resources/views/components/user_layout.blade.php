@@ -72,16 +72,17 @@
 
             <!-- Logo Area -->
             <div
-                class="h-20 shrink-0 flex items-center justify-center border-b border-white/5 bg-gradient-to-r from-[#8B0000]/20 to-transparent relative">
-                <div class="flex items-center gap-3" :class="{'px-6': sidebarOpen, 'px-0': !sidebarOpen}">
+                class="h-20 shrink-0 flex items-center justify-start border-b border-white/5 bg-gradient-to-r from-[#8B0000]/20 to-transparent relative">
+                <div class="flex items-center gap-3 px-8">
                     <div
-                        class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg overflow-hidden transition-all duration-300">
-                        <img src="{{ asset('images/reoc-nobg.png') }}" alt="REO Logo" class="h-6 w-auto">
+                        class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg overflow-hidden transition-all duration-300 flex-shrink-0">
+                        <img src="{{ asset('images/reoc-nobg.png') }}" alt="REO Logo" class="h-7 w-auto">
                     </div>
                     <span
-                        class="font-heading font-extrabold text-xl text-white tracking-tight whitespace-nowrap transition-opacity duration-300"
-                        x-show="sidebarOpen" x-transition>
-                        REO <span class="text-brand-primary">Portal</span>
+                        class="font-heading font-extrabold text-lg text-white tracking-tight transition-opacity duration-300 truncate min-w-0"
+                        x-show="sidebarOpen" x-transition
+                        title="{{ Auth::user()->first_name ?? 'User' }} {{ Auth::user()->last_name ?? '' }}">
+                        {{ Auth::user()->first_name ?? 'User' }} {{ Auth::user()->last_name ?? '' }}
                     </span>
                 </div>
             </div>
@@ -180,10 +181,10 @@
 
                 <!-- Notification Trigger Only (No Hamburger) -->
                 <button
-                    class="notification-trigger w-10 h-10 flex items-center justify-center text-slate-500 hover:text-[#8B0000] rounded-full hover:bg-slate-50 transition-all relative focus:outline-none active:scale-95">
-                    <i class="fas fa-bell text-xl"></i>
+                    class="notification-trigger w-12 h-12 flex items-center justify-center text-slate-500 hover:text-[#8B0000] rounded-full hover:bg-slate-50 transition-all relative focus:outline-none active:scale-95 group">
+                    <i class="fas fa-bell text-2xl group-hover:scale-110 transition-transform"></i>
                     <span
-                        class="absolute top-2 right-2 w-2 h-2 bg-[#8B0000] border border-white rounded-full animate-pulse"></span>
+                        class="absolute top-1 right-1 w-3 h-3 bg-[#8B0000] border-2 border-white rounded-full animate-pulse shadow-lg hidden"></span>
                 </button>
             </div>
         </header>
@@ -199,14 +200,30 @@
                     <div class="flex items-center gap-4 relative">
                         <!-- Desktop Notification Trigger -->
                         <button
-                            class="notification-trigger w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-[#8B0000] transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2">
-                            <i class="fas fa-bell text-xl"></i>
+                            class="notification-trigger w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-[#8B0000] transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 group">
+                            <i class="fas fa-bell text-2xl group-hover:scale-110 transition-transform"></i>
                             <span
-                                class="absolute top-2 right-2 w-2.5 h-2.5 bg-[#8B0000] border-2 border-white rounded-full animate-pulse"></span>
+                                class="absolute top-1 right-1 w-3 h-3 bg-[#8B0000] border-2 border-white rounded-full animate-pulse shadow-lg hidden"></span>
                         </button>
                     </div>
                 </header>
             @endif
+
+            <!-- Notification Toast Card (Appears on First Login Only) -->
+            <div id="notification-toast" class="fixed top-24 right-6 hidden bg-white border border-slate-200 rounded-xl shadow-lg p-4 z-40 opacity-0 scale-95 transition-all duration-300 max-w-xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-[#8B0000] rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                        <i class="fas fa-bell text-lg"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-sm text-slate-800">New Notifications</h4>
+                        <p class="text-xs text-slate-600">You have unread notifications</p>
+                    </div>
+                    <button onclick="document.getElementById('notification-toast').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 ml-2 flex-shrink-0">
+                        <i class="fas fa-times text-base"></i>
+                    </button>
+                </div>
+            </div>
 
             <!-- Global Notification Tab (Available for both Mobile & Desktop) -->
             <x-notification-tab />
@@ -426,12 +443,29 @@
                     isOpen = !isOpen;
 
                     if (isOpen) {
+                        // Opening panel - hide red dots
+                        btns.forEach(btn => {
+                            const dot = btn.querySelector('span.animate-pulse');
+                            if (dot) {
+                                dot.classList.add('hidden');
+                            }
+                        });
+                        
                         panel.style.display = 'block';
                         setTimeout(() => {
                             panel.classList.remove('opacity-0', 'scale-95');
                             panel.classList.add('opacity-100', 'scale-100');
                         }, 10);
                     } else {
+                        // Closing panel - always hide red dots (they stay hidden)
+                        // They only reappear when NEW notifications actually arrive
+                        btns.forEach(btn => {
+                            const dot = btn.querySelector('span.animate-pulse');
+                            if (dot) {
+                                dot.classList.add('hidden');
+                            }
+                        });
+                        
                         panel.classList.remove('opacity-100', 'scale-100');
                         panel.classList.add('opacity-0', 'scale-95');
                         setTimeout(() => {
@@ -457,6 +491,120 @@
                         toggleNotifications(e);
                     }
                 });
+
+                // --- Notification Management System ---
+                let lastNotificationCount = 0;
+                let initialNotificationCount = null; // Track initial count
+                let hasShownLoginToast = sessionStorage.getItem('notificationLoginToastShown') === 'true';
+                
+                // Show toast only on first login (appears once)
+                function showLoginNotificationToast(initialCount) {
+                    if (!hasShownLoginToast && initialCount > 0) {
+                        const toast = document.getElementById('notification-toast');
+                        if (toast) {
+                            toast.classList.remove('hidden', 'opacity-0', 'scale-95');
+                            toast.classList.add('opacity-100', 'scale-100');
+                            
+                            // Auto-hide toast after 6 seconds
+                            setTimeout(() => {
+                                toast.classList.add('opacity-0', 'scale-95');
+                                setTimeout(() => {
+                                    toast.classList.add('hidden');
+                                }, 300);
+                            }, 6000);
+                            
+                            // Mark that we've shown the login toast (only once per session)
+                            sessionStorage.setItem('notificationLoginToastShown', 'true');
+                            hasShownLoginToast = true;
+                        }
+                    }
+                }
+
+                // Check for new notifications via AJAX
+                function checkForNewNotifications() {
+                    fetch('{{ route("notifications.api.unread") }}')
+                        .then(response => response.json())
+                        .then(data => {
+                            const currentCount = data.unread_count;
+                            
+                            // Update red dot visibility - hide if panel is open or if no unread
+                            const notificationTriggers = document.querySelectorAll('.notification-trigger');
+                            notificationTriggers.forEach(trigger => {
+                                const dot = trigger.querySelector('span.animate-pulse');
+                                if (dot) {
+                                    // Hide dot if no unread OR if panel is open
+                                    if (currentCount > 0 && !isOpen) {
+                                        // Show dot if there are unread and panel is closed
+                                        dot.classList.remove('hidden');
+                                    } else {
+                                        // Hide dot otherwise
+                                        dot.classList.add('hidden');
+                                    }
+                                }
+                            });
+                            
+                            // Update notification panel count if it exists
+                            const notifPanel = document.getElementById('notifications-panel');
+                            if (notifPanel) {
+                                const unreadSpans = notifPanel.querySelectorAll('span');
+                                unreadSpans.forEach(span => {
+                                    if (span.textContent.includes('unread')) {
+                                        if (currentCount > 0) {
+                                            span.textContent = currentCount + ' unread';
+                                        }
+                                    }
+                                });
+                            }
+                            
+                            // Show toast only if new notifications arrived (currentCount > lastNotificationCount)
+                            if (currentCount > lastNotificationCount && hasShownLoginToast) {
+                                const toast = document.getElementById('notification-toast');
+                                if (toast) {
+                                    toast.classList.remove('hidden', 'opacity-0', 'scale-95');
+                                    toast.classList.add('opacity-100', 'scale-100');
+                                    
+                                    setTimeout(() => {
+                                        toast.classList.add('opacity-0', 'scale-95');
+                                        setTimeout(() => {
+                                            toast.classList.add('hidden');
+                                        }, 300);
+                                    }, 5000);
+                                }
+                            }
+                            
+                            lastNotificationCount = currentCount;
+                        })
+                        .catch(error => console.error('Error checking notifications:', error));
+                }
+
+                // Initialize notifications on page load
+                function initializeNotifications() {
+                    fetch('{{ route("notifications.api.unread") }}')
+                        .then(response => response.json())
+                        .then(data => {
+                            initialNotificationCount = data.unread_count;
+                            lastNotificationCount = data.unread_count;
+                            
+                            // Show login toast if there are unread on first load
+                            showLoginNotificationToast(initialNotificationCount);
+                            
+                            // Update red dots
+                            const notificationTriggers = document.querySelectorAll('.notification-trigger');
+                            notificationTriggers.forEach(trigger => {
+                                const dot = trigger.querySelector('span.animate-pulse');
+                                if (dot && initialNotificationCount > 0 && !isOpen) {
+                                    dot.classList.remove('hidden');
+                                }
+                            });
+                        })
+                        .catch(error => console.error('Error initializing notifications:', error));
+                }
+
+                // Initialize on page load
+                initializeNotifications();
+                
+                // Check for notifications every 3 seconds (faster updates)
+                setInterval(checkForNewNotifications, 3000);
             }
         });
     </script>

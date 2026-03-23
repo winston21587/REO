@@ -149,12 +149,22 @@
                                         <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
                                             @foreach($reviewers as $reviewer)
                                                 <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                                                    <input type="checkbox" name="reviewers[]" value="{{ $reviewer->id }}" 
-                                                           ::checked="assigned.map(String).includes('{{ $reviewer->id }}')"
-                                                           class="rounded border-slate-300 text-[#8B0000] focus:ring-[#8B0000] w-5 h-5">
+                                                    <!-- Swapping strictly to a Radio array enforcing mutual-exclusivity -->
+                                                    <input type="radio" name="reviewers[]" value="{{ $reviewer->id }}" 
+                                                           :checked="assigned.map(String).includes('{{ $reviewer->id }}')"
+                                                           class="border-slate-300 text-[#8B0000] focus:ring-[#8B0000] w-5 h-5">
                                                     <div>
                                                         <p class="text-sm font-bold text-slate-800">{{ $reviewer->first_name }} {{ $reviewer->last_name }}</p>
                                                         <p class="text-xs text-slate-500">{{ $reviewer->college ?? ucfirst($reviewer->role) }}</p>
+                                                        
+                                                        <!-- Render dynamic expertise metrics if present safely -->
+                                                        @if($reviewer->reviewer && !empty($reviewer->reviewer->expertise))
+                                                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                                                @foreach($reviewer->reviewer->expertise as $exp)
+                                                                    <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-md border border-blue-100">{{ $exp }}</span>
+                                                                @endforeach
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 </label>
                                             @endforeach

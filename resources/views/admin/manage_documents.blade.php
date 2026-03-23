@@ -12,6 +12,8 @@
             description: '',
             is_required: true,
             is_multiple: false,
+            is_viewable_for_reviewer: true,
+            is_downloadable_for_reviewer: true,
             file_type: ''
         },
         selectedFileTypes: [],
@@ -26,6 +28,8 @@
                 description: '',
                 is_required: true,
                 is_multiple: false,
+                is_viewable_for_reviewer: true,
+                is_downloadable_for_reviewer: true,
                 file_type: ''
             };
             this.selectedFileTypes = ['PDF']; // Default to PDF
@@ -40,6 +44,8 @@
                 description: doc.description,
                 is_required: Boolean(doc.is_required),
                 is_multiple: Boolean(doc.is_multiple),
+                is_viewable_for_reviewer: Boolean(doc.is_viewable_for_reviewer),
+                is_downloadable_for_reviewer: Boolean(doc.is_downloadable_for_reviewer),
                 file_type: doc.file_type
             };
             // Split string into array for checkboxes, trimming whitespace
@@ -233,6 +239,33 @@
                                                 <div class="ml-3 text-sm leading-6">
                                                     <label for="is_multiple" class="font-bold text-slate-900 cursor-pointer">Allow Multiple Files</label>
                                                     <p class="text-slate-500 text-xs">Users can upload more than one file for this requirement.</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="h-px bg-slate-100 my-2"></div>
+                                            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pl-1 mb-2">Reviewer Access Configurations</p>
+
+                                            <!-- Reviewer View Checkbox -->
+                                            <div class="relative flex items-start p-3 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer" @click="$refs.is_viewable_for_reviewer.click()">
+                                                <div class="flex h-6 items-center">
+                                                    <input id="is_viewable_for_reviewer" x-ref="is_viewable_for_reviewer" name="is_viewable_for_reviewer" type="checkbox" value="1" x-model="formData.is_viewable_for_reviewer" 
+                                                        class="h-5 w-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 cursor-pointer">
+                                                </div>
+                                                <div class="ml-3 text-sm leading-6">
+                                                    <label for="is_viewable_for_reviewer" class="font-bold text-slate-900 cursor-pointer">Allow Reviewers to Preview</label>
+                                                    <p class="text-slate-500 text-xs">If enabled, reviewers can see the document inside their embedded browser UI.</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Reviewer Download Checkbox -->
+                                            <div class="relative flex items-start p-3 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer" @click="$refs.is_downloadable_for_reviewer.click()">
+                                                <div class="flex h-6 items-center">
+                                                    <input id="is_downloadable_for_reviewer" x-ref="is_downloadable_for_reviewer" name="is_downloadable_for_reviewer" type="checkbox" value="1" x-model="formData.is_downloadable_for_reviewer" 
+                                                        class="h-5 w-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 cursor-pointer">
+                                                </div>
+                                                <div class="ml-3 text-sm leading-6">
+                                                    <label for="is_downloadable_for_reviewer" class="font-bold text-slate-900 cursor-pointer">Allow Reviewers to Download</label>
+                                                    <p class="text-slate-500 text-xs">If enabled, reviewers can officially download a raw copy of this file to their machine.</p>
                                                 </div>
                                             </div>
                                         </div>

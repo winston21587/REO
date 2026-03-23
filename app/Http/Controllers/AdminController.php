@@ -319,8 +319,8 @@ class AdminController extends Controller
 
         $datas = $query->paginate(5)->withQueryString();
 
-        // Fetch Reviewers for the modal
-        $reviewers = User::where('role', 'reviewer')->get();
+        // Fetch Reviewers for the modal including their specific configurations
+        $reviewers = User::with('reviewer')->where('role', 'reviewer')->get();
 
         if ($request->ajax()) {
             return response()->json([
@@ -759,7 +759,7 @@ class AdminController extends Controller
         $submission = Research_title::findOrFail($id);
 
         $submission->assigned_reviewers = $request->reviewers;
-        $submission->Status = 'Under Review'; // Auto-update status when reviewers assigned
+        $submission->Status = 'For Initial Review'; // Auto-update status explicitly upon assignments
         $submission->save();
 
         $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function($user) {

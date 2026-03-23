@@ -21,11 +21,15 @@ class DocumentRequirementController extends Controller
             'file_type' => 'required|string|max:50',
             'is_required' => 'boolean',
             'is_multiple' => 'boolean',
+            'is_viewable_for_reviewer' => 'boolean',
+            'is_downloadable_for_reviewer' => 'boolean',
         ]);
 
         // Checkbox handling: if unchecked, it won't be in request, so default to false
         $validated['is_required'] = $request->has('is_required');
         $validated['is_multiple'] = $request->has('is_multiple');
+        $validated['is_viewable_for_reviewer'] = $request->has('is_viewable_for_reviewer');
+        $validated['is_downloadable_for_reviewer'] = $request->has('is_downloadable_for_reviewer');
 
         DocumentRequirement::create($validated);
 
@@ -42,10 +46,14 @@ class DocumentRequirementController extends Controller
             'file_type' => 'required|string|max:50',
             'is_required' => 'boolean',
             'is_multiple' => 'boolean',
+            'is_viewable_for_reviewer' => 'boolean',
+            'is_downloadable_for_reviewer' => 'boolean',
         ]);
 
         $validated['is_required'] = $request->has('is_required');
         $validated['is_multiple'] = $request->has('is_multiple');
+        $validated['is_viewable_for_reviewer'] = $request->has('is_viewable_for_reviewer');
+        $validated['is_downloadable_for_reviewer'] = $request->has('is_downloadable_for_reviewer');
 
         $document->update($validated);
 

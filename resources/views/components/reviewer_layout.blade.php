@@ -55,10 +55,18 @@
                 <div>
                     <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Activities</p>
                     <div class="space-y-1">
+                        <!-- My Assigned Protocols -->
                         <a href="{{ route('reviewer.dashboard') }}"
-                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all {{ request()->routeIs('reviewer.dashboard') ? 'active' : '' }}">
+                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium transition-all {{ request()->routeIs('reviewer.dashboard') ? 'bg-white/10 text-white border-l-4 border-red-500' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
                             <i class="fas fa-clipboard-list w-5 text-center"></i>
                             <span class="flex-1">Assigned Protocols</span>
+                        </a>
+
+                        <!-- Reviewed Protocols -->
+                        <a href="{{ route('reviewer.reviewed_titles') }}"
+                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium transition-all {{ request()->routeIs('reviewer.reviewed_titles') ? 'bg-white/10 text-white border-l-4 border-red-500' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                            <i class="fas fa-check-circle w-5 text-center"></i>
+                            <span class="flex-1">Reviewed Protocols</span>
                         </a>
                     </div>
                 </div>
@@ -82,15 +90,43 @@
         </aside>
 
         <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50">
-            <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
+            <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-50">
                 <h2 class="text-xl font-bold text-slate-800 font-heading">{{ $title ?? 'Reviewer Dashboard' }}</h2>
+                <div class="flex items-center gap-4 relative">
+                    <!-- Notification Trigger -->
+                    <button class="notification-trigger w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-[#8B0000] transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 group">
+                        <i class="fas fa-bell text-xl group-hover:scale-110 transition-transform"></i>
+                        <span class="absolute top-1 right-1 w-3 h-3 bg-[#8B0000] border-2 border-white rounded-full animate-pulse shadow-lg hidden"></span>
+                    </button>
+                </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-8">
+            <!-- Notification Toast Card -->
+            <div id="notification-toast" class="fixed top-24 right-6 hidden bg-white border border-slate-200 rounded-xl shadow-lg p-4 z-[60] opacity-0 scale-95 transition-all duration-300 max-w-xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-[#8B0000] rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                        <i class="fas fa-bell text-lg"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-sm text-slate-800">New Notifications</h4>
+                        <p class="text-xs text-slate-600">You have unread notifications</p>
+                    </div>
+                    <button onclick="document.getElementById('notification-toast').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 ml-2 flex-shrink-0">
+                        <i class="fas fa-times text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Global Notification Tab -->
+            <x-notification-tab />
+
+            <div class="flex-1 overflow-y-auto p-8 relative z-0">
                 {{ $slot }}
             </div>
         </main>
     </div>
 
+    <!-- Inject generic notification JavaScript -->
+    <x-notification-script />
 </body>
 </html>

@@ -137,6 +137,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Redirect to the related research submission files if it exists
         if ($notification->research_id) {
+            if (Auth::check() && Auth::user()->role === 'reviewer') {
+                return redirect()->route('reviewer.view_files', $notification->research_id);
+            }
             return redirect()->route('manage.files', $notification->research_id);
         }
 
@@ -305,6 +308,10 @@ Route::middleware(['auth'])->group(function () {
     // ====================================================
     Route::middleware(['role:reviewer'])->group(function () {
         Route::get('/reviewer', [\App\Http\Controllers\ReviewerController::class, 'index'])->name('reviewer.dashboard');
+        Route::get('/reviewer/reviewed-titles', [\App\Http\Controllers\ReviewerController::class, 'reviewedTitles'])->name('reviewer.reviewed_titles');
+        Route::get('/reviewer/view-files/{id}', [\App\Http\Controllers\ReviewerController::class, 'viewFiles'])->name('reviewer.view_files');
+        Route::get('/reviewer/file-serve/{id}', [\App\Http\Controllers\ReviewerController::class, 'serveFile'])->name('reviewer.serve_file');
+        Route::post('/reviewer/protocols/{id}/upload', [\App\Http\Controllers\ReviewerController::class, 'uploadFile'])->name('reviewer.upload');
     });
 
 });

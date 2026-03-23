@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Research_title;
+use App\Models\researcher_files;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ReviewerController extends Controller
 {
@@ -20,5 +22,89 @@ class ReviewerController extends Controller
                     ->get();
 
         return view('reviewer.dashboard', compact('titles'));
+    }
+
+    public function viewFiles($id)
+    {
+        $researchTitle = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
+        $requirementsMap = \App\Models\DocumentRequirement::all()->keyBy('name')->toArray();
+        $backUrl = url()->previous(route('reviewer.dashboard'));
+        return view('reviewer.view_files', compact('researchTitle', 'backUrl', 'requirementsMap'));
+    }
+
+    public function serveFile($id)
+    {
+        $file = researcher_files::findOrFail($id);
+
+        // Normalize path: remove 'storage/' prefix if present
+        $path = str_replace('storage/', '', $file->filepath);
+
+        // 1. Check Storage (Public Disk)
+        if (Storage::disk('public')->exists($path)) {
+            return response()->file(storage_path('app/public/' . $path));
+        }
+
+        // 2. Check Public Directory (Direct Access)
+        $publicPath = public_path($file->filepath);
+        if (file_exists($publicPath)) {
+            return response()->file($publicPath);
+        }
+
+        // 3. Check Storage Path directly (Absolute)
+        $storagePath = storage_path('app/public/' . $path);
+        if (file_exists($storagePath)) {
+            return response()->file($storagePath);
+        }
+
+        return abort(404, 'File not found.');
+    }
+
+    public function uploadFile(Request $request, $id)
+    {
+        $request->validate([
+            'category' => 'required|string',
+            'file' => 'required|file|max:20480'
+        ]);
+
+        $file = $request->file('file');
+        
+        // Ensure consistent path usage with Admin logic
+        $path = $file->store('uploads/research_files', 'public_uploads');
+
+        researcher_files::create([
+            'research_title_id' => $id,
+            'filename' => $file->getClientOriginalName(),
+            'filepath' => 'uploads/research_files/' . basename($path),
+            'filetype' => $file->getClientOriginalExtension(),
+            'uploaded_by' => Auth::id(),
+            'category' => 'Reviewer Uploads - ' . $request->input('category'),
+            'revision_number' => 0
+        ]);
+
+        $submission = Research_title::findOrFail($id);
+        $submission->Status = 'Reviewed';
+        $submission->save();
+
+        return back()->with('success', 'Evaluation Document Uploaded Successfully');
+    }
+
+    public function reviewedTitles()
+    {
+        $userId = Auth::id();
+        
+        $titles = Research_title::where(function($q) use ($userId) {
+                // Must be legitimately assigned
+                $q->whereJsonContains('assigned_reviewers', (string)$userId)
+                  ->orWhereJsonContains('assigned_reviewers', $userId);
+            })
+            // Must have successfully deposited an evaluation upload globally
+            ->whereHas('adminFiles', function($query) use ($userId) {
+                $query->where('uploaded_by', $userId)
+                      ->where('category', 'like', 'Reviewer Uploads%');
+            })
+            ->latest()
+            ->get();
+
+        return view('reviewer.reviewed_titles', compact('titles'));
     }
 }

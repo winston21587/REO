@@ -1,5 +1,7 @@
 <x-user_layout>
-    <div class="max-w-5xl mx-auto py-12 px-4 sm:px-6 animate-[fadeInUp_0.5s_ease-out]">
+    <x-skeleton-loader />
+    
+    <div id="page-content" style="display: none;" class="max-w-5xl mx-auto py-12 px-4 sm:px-6 animate-[fadeInUp_0.5s_ease-out]">
 
         <div class="text-center mb-10 md:mb-16">
             @if(isset($contents['instructions_header_image']))
@@ -214,5 +216,6 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </x-user_layout>

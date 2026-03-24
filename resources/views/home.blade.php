@@ -1,5 +1,7 @@
 <x-user_layout>
-    <div class="max-w-5xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
+    <x-skeleton-loader />
+    
+    <div id="page-content" style="display: none;" class="max-w-5xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
 
         <!-- Welcome Section -->
         <!-- Mobile Header (Compact) -->
@@ -670,5 +672,6 @@
                 </div>
 
         @endif
+    </div>
     </div>
 </x-user_layout>

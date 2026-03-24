@@ -1,5 +1,7 @@
 <x-user_layout>
-    <div class="min-h-screen bg-surface-50 py-8 px-4 sm:px-6 lg:px-8" x-data="submissionForm()">
+    <x-skeleton-loader />
+    
+    <div id="page-content" style="display: none;" class="min-h-screen bg-surface-50 py-8 px-4 sm:px-6 lg:px-8" x-data="submissionForm()">
 
         <div class="max-w-7xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
 
@@ -565,4 +567,5 @@
             background: #94a3b8;
         }
     </style>
+    </div>
 </x-user_layout>

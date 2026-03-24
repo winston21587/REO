@@ -1,4 +1,7 @@
 <x-user_layout>
+    <x-skeleton-loader />
+    
+    <div id="page-content" style="display: none;">
     @php $user = Auth::user(); @endphp
     @if(session('success'))
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
@@ -553,4 +556,5 @@
             document.getElementById(id).classList.add('hidden');
         }
     </script>
+</x-user_layout>    </div>
 </x-user_layout>

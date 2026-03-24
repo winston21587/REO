@@ -1,5 +1,7 @@
 <x-user_layout>
-    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <x-skeleton-loader />
+    
+    <main id="page-content" style="display: none;" class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
         <!-- Header Section -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-slate-200 pb-8">
@@ -759,4 +761,5 @@
         </div>
 
     </main>
+    </div>
 </x-user_layout>

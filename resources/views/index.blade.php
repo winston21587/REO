@@ -1,6 +1,8 @@
 <x-layout>
+  @include('loading-screen.loading-screen')
 
-  <div class="slider-container relative w-full h-screen overflow-hidden">
+  <div id="content">
+    <div class="slider-container relative w-full h-screen overflow-hidden">
 
     <div
       class="slide active absolute inset-0 w-full h-screen opacity-0 transition-opacity duration-1000 bg-cover bg-center"
@@ -402,5 +404,7 @@
       initFAQ();
     }
   </script>
+
+  </div>
 
 </x-layout>

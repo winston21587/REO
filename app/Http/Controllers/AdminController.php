@@ -154,8 +154,8 @@ class AdminController extends Controller
         // 1. Total Submissions (All time)
         $totalSubmissions = Research_title::count();
 
-        // 2. Approved (For Initial Review)
-        $approvedCount = Research_title::where('Status', 'For Initial Review')->count();
+        // 2. Approved (Approved Status - matching the chart filter)
+        $approvedCount = Research_title::where('Status', 'Approved')->count();
 
         // Calculate Approval Rate
         $approvalRate = $totalSubmissions > 0 ? round(($approvedCount / $totalSubmissions) * 100) : 0;

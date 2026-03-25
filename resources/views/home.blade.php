@@ -208,30 +208,58 @@
                             </div>
 
                             <!-- Mobile Horizontal Tracker -->
-                            <div class="pt-6 border-t border-slate-100 relative mt-4">
-                                <div class="relative px-2">
+                            <div class="pt-4 border-t border-slate-100 relative mt-4">
+                                <!-- First Row (3 steps: Submission, Review, Revision) -->
+                                <div class="relative px-1 mb-6">
                                     <!-- Background Line -->
-                                    <div class="absolute top-4 left-6 right-6 h-0.5 bg-slate-100 rounded-full z-0"></div>
+                                    <div class="absolute top-3 left-4 right-4 h-0.5 bg-slate-100 rounded-full z-0"></div>
                                     <!-- Progress Line -->
-                                    <div class="absolute top-4 left-6 h-0.5 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
-                                         style="width: calc({{ ($currentStep - 1) / (count($steps) - 1) * 100 }}% - 1.5rem)"></div>
+                                    <div class="absolute top-3 left-4 h-0.5 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
+                                         style="width: calc({{ min($currentStep, 3) === 1 ? 0 : ($currentStep >= 3 ? 100 : (($currentStep - 1) / 2 * 100)) }}%)"></div>
 
                                     <!-- Steps -->
-                                    <div class="flex justify-between relative z-10 w-full">
-                                        @foreach($steps as $step => $data)
-                                            @php $isActive = $step <= $currentStep; $isCurrent = $step === $currentStep; @endphp
-                                            <div class="flex flex-col items-center gap-1 group w-full">
-                                                <div class="w-8 h-8 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 bg-white relative z-10 {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }} {{ $isCurrent ? 'scale-110 shadow-lg shadow-red-900/20 ring-2 ring-red-50' : '' }}">
-                                                    <i class="fas {{ $data['icon'] }} {{ $isActive ? '' : 'text-slate-300' }} text-[10px]"></i>
+                                    <div class="flex justify-between relative z-10 w-full px-2">
+                                        @foreach([1, 2, 3] as $step)
+                                            @php 
+                                                $data = $steps[$step];
+                                                $isActive = $step <= $currentStep; 
+                                                $isCurrent = $step === $currentStep; 
+                                            @endphp
+                                            <div class="flex flex-col items-center gap-0.5 group">
+                                                <div class="w-6 h-6 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 bg-white relative z-10 {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }} {{ $isCurrent ? 'scale-105 shadow-md shadow-red-900/20 ring-1 ring-red-50' : '' }}">
+                                                    <i class="fas {{ $data['icon'] }} {{ $isActive ? '' : 'text-slate-300' }} text-[7px]"></i>
                                                 </div>
-                                                <div class="text-center w-full">
-                                                    <span class="block text-[9px] font-bold uppercase tracking-wider transition-colors duration-300 leading-tight {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }}">
-                                                        {{ $data['label'] }}
-                                                    </span>
-                                                    @if($isCurrent)
-                                                        <span class="inline-block text-[10px] font-bold text-[#8B0000] bg-red-50 px-1.5 py-0.5 rounded-full mt-1 animate-pulse">Current</span>
-                                                    @endif
+                                                <span class="block text-[7px] font-bold uppercase tracking-tight transition-colors duration-300 text-center {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }} leading-tight max-w-[45px] line-clamp-2">
+                                                    {{ $data['label'] }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <!-- Second Row (2 steps: Deliberation, Certificate) -->
+                                <div class="relative px-1">
+                                    <!-- Background Line -->
+                                    <div class="absolute top-3 left-4 right-4 h-0.5 bg-slate-100 rounded-full z-0"></div>
+                                    <!-- Progress Line -->
+                                    <div class="absolute top-3 left-4 h-0.5 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
+                                         style="width: calc({{ $currentStep <= 3 ? 0 : (($currentStep - 3) / 2 * 100) }}%)"></div>
+
+                                    <!-- Steps -->
+                                    <div class="flex justify-center gap-12 relative z-10 w-full px-2">
+                                        @foreach([4, 5] as $step)
+                                            @php 
+                                                $data = $steps[$step];
+                                                $isActive = $step <= $currentStep; 
+                                                $isCurrent = $step === $currentStep; 
+                                            @endphp
+                                            <div class="flex flex-col items-center gap-0.5 group">
+                                                <div class="w-6 h-6 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 bg-white relative z-10 {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }} {{ $isCurrent ? 'scale-105 shadow-md shadow-red-900/20 ring-1 ring-red-50' : '' }}">
+                                                    <i class="fas {{ $data['icon'] }} {{ $isActive ? '' : 'text-slate-300' }} text-[7px]"></i>
                                                 </div>
+                                                <span class="block text-[7px] font-bold uppercase tracking-tight transition-colors duration-300 text-center {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }} leading-tight max-w-[45px] line-clamp-2">
+                                                    {{ $data['label'] }}
+                                                </span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -338,21 +366,19 @@
                                                 </div>
                                                 
                                                 <!-- Label -->
-                                                <div class="absolute top-full mt-4 w-32 left-1/2 -translate-x-1/2 text-center pointer-events-none z-20">
-                                                    <span class="block text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }}">
+                                                <div class="absolute top-full mt-3 text-center pointer-events-none z-20">
+                                                    <span class="block text-[10px] font-bold uppercase tracking-wide transition-colors duration-300 {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }} whitespace-nowrap">
                                                         {{ $data['label'] }}
                                                     </span>
                                                     @if($isCurrent)
-                                                        <div class="mt-1">
-                                                            <span class="inline-block text-[10px] font-bold text-[#8B0000] bg-red-50 px-2 py-0.5 rounded-full inline-block">Current</span>
-                                                        </div>
+                                                        <span class="inline-block text-[8px] font-bold text-[#8B0000] bg-red-50 px-2 py-0.5 rounded-full mt-0.5 whitespace-nowrap">Current</span>
                                                     @endif
                                                 </div>
                                             </div>
                                         @endforeach
                                     </div>
                                     <!-- Bottom Spacer to accommodate labels -->
-                                    <div class="h-14"></div>
+                                    <div class="h-12"></div>
                                 </div>
                             </div>
                         </div>

@@ -16,6 +16,8 @@ class Research_title extends Model
         'Study_Protocol_title',
         'Research_Category',
         'Review_Type',
+        'thesis_type',
+        'funding_type',
         'Created_by',
         'Official_Receipt_Number',
         'or_file_path',

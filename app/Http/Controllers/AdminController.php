@@ -145,17 +145,36 @@ class AdminController extends Controller
         // Date Filter Logic
         $selectedYear = $request->input('year', date('Y'));
         $selectedMonth = $request->input('month', date('m'));
+        
+        // New Filter Logic
+        $selectedReviewType = $request->input('review_type', null);
+        $selectedThesisType = $request->input('thesis_type', null);
+        $selectedFundingType = $request->input('funding_type', null);
 
         $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');
 
+        // Build base query with filters
+        $baseQuery = Research_title::query();
+        
+        // Apply filters
+        if ($selectedReviewType) {
+            $baseQuery->where('Review_Type', $selectedReviewType);
+        }
+        if ($selectedThesisType) {
+            $baseQuery->where('thesis_type', $selectedThesisType);
+        }
+        if ($selectedFundingType) {
+            $baseQuery->where('funding_type', $selectedFundingType);
+        }
+
         // 1. Total Submissions (All time)
-        $totalSubmissions = Research_title::count();
+        $totalSubmissions = (clone $baseQuery)->count();
 
         // 2. Approved (Approved Status - matching the chart filter)
-        $approvedCount = Research_title::where('Status', 'Approved')->count();
+        $approvedCount = (clone $baseQuery)->where('Status', 'Approved')->count();
 
         // Calculate Approval Rate
         $approvalRate = $totalSubmissions > 0 ? round(($approvedCount / $totalSubmissions) * 100) : 0;
@@ -167,7 +186,8 @@ class AdminController extends Controller
         // Use the selected month and year to determine days in that specific month
         $daysInMonth = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->daysInMonth;
 
-        $dailyStats = Research_title::selectRaw('DAY(created_at) as day, COUNT(*) as count')
+        $dailyStats = (clone $baseQuery)
+            ->selectRaw('DAY(created_at) as day, COUNT(*) as count')
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->groupBy('day')
@@ -183,7 +203,8 @@ class AdminController extends Controller
         }
 
         // 5. Pie Chart: Review Type Distribution (Filtered by Selected Year)
-        $reviewTypeStats = Research_title::selectRaw('Review_Type, COUNT(*) as count')
+        $reviewTypeStats = (clone $baseQuery)
+            ->selectRaw('Review_Type, COUNT(*) as count')
             ->whereYear('created_at', $selectedYear)
             ->groupBy('Review_Type')
             ->whereNotNull('Review_Type')
@@ -191,7 +212,8 @@ class AdminController extends Controller
             ->toArray();
 
         // 6. Pie Chart: Approval Status (Filtered by Selected Year)
-        $statusStats = Research_title::selectRaw('Status, COUNT(*) as count')
+        $statusStats = (clone $baseQuery)
+            ->selectRaw('Status, COUNT(*) as count')
             ->whereYear('created_at', $selectedYear)
             ->whereIn('Status', ['Approved', 'Disapproved'])
             ->groupBy('Status')
@@ -199,7 +221,8 @@ class AdminController extends Controller
             ->toArray();
 
         // 7. Completion Status Breakdown (All time / Current snapshots)
-        $statusCounts = Research_title::selectRaw('Status, COUNT(*) as count')
+        $statusCounts = (clone $baseQuery)
+            ->selectRaw('Status, COUNT(*) as count')
             ->groupBy('Status')
             ->pluck('count', 'Status')
             ->toArray();
@@ -212,9 +235,29 @@ class AdminController extends Controller
         $completionRate = $totalSubmissions > 0 ? round(($doneCount / $totalSubmissions) * 100) : 0;
 
         // 6. AI Compliance Metrics
-        $avgAiScore = round(Research_title::avg('ai_score') ?? 0);
-        $humanVerifiedCount = Research_title::where('is_human_verified', true)->count();
+        $avgAiScore = round((clone $baseQuery)->avg('ai_score') ?? 0);
+        $humanVerifiedCount = (clone $baseQuery)->where('is_human_verified', true)->count();
         $humanVerifiedRate = $totalSubmissions > 0 ? round(($humanVerifiedCount / $totalSubmissions) * 100) : 0;
+
+        // Get unique values for filter dropdowns (exclude N/A and null)
+        $reviewTypes = Research_title::where('Review_Type', '!=', null)
+            ->where('Review_Type', '!=', 'N/A')
+            ->distinct()
+            ->pluck('Review_Type')
+            ->sort()
+            ->values();
+            
+        $thesisTypes = Research_title::where('thesis_type', '!=', null)
+            ->distinct()
+            ->pluck('thesis_type')
+            ->sort()
+            ->values();
+            
+        $fundingTypes = Research_title::where('funding_type', '!=', null)
+            ->distinct()
+            ->pluck('funding_type')
+            ->sort()
+            ->values();
 
         return view('admin.Analytics', compact(
             'totalSubmissions',
@@ -233,7 +276,13 @@ class AdminController extends Controller
             'humanVerifiedRate',
             'selectedYear',
             'selectedMonth',
-            'availableYears'
+            'selectedReviewType',
+            'selectedThesisType',
+            'selectedFundingType',
+            'availableYears',
+            'reviewTypes',
+            'thesisTypes',
+            'fundingTypes'
         ));
     }
 

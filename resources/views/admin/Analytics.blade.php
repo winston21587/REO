@@ -6,18 +6,40 @@
                 <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Analytics & Reports</h1>
                 <p class="text-slate-500 mt-2 text-sm">Real-time insights into research submission performance.</p>
             </div>
-            <div class="flex gap-2 mt-4 md:mt-0 items-center">
-                <!-- Date Filter Form -->
-                <form method="GET" action="{{ route('admin.analytics') }}" class="flex gap-2 items-center">
-                    <select name="month" class="px-3 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer">
+            <div class="flex gap-3 mt-4 md:mt-0 items-center flex-wrap justify-end">
+                <button id="toggleFilterBtn" onclick="toggleFilterMode()" class="px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:shadow-lg transition-all flex items-center gap-2 shadow-sm">
+                    <i class="fas fa-sliders-h"></i> Advanced Filter
+                </button>
+
+                <div class="h-8 w-px bg-slate-200"></div>
+
+                <button id="exportPdfBtn" onclick="exportToPdf()" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
+                    <i class="fas fa-download"></i> Export PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Normal Filter Section (Default) -->
+        <form id="normalFilterForm" method="GET" action="{{ route('admin.analytics') }}" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fas fa-calendar-alt text-[#8B0000]"></i> Date Filter
+            </h3>
+            <div class="flex gap-3 flex-wrap">
+                <div class="relative">
+                    <select name="month" class="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
                         @foreach(range(1, 12) as $m)
                             <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
                                 {{ DateTime::createFromFormat('!m', $m)->format('F') }}
                             </option>
                         @endforeach
                     </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
 
-                    <select name="year" class="px-3 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer">
+                <div class="relative">
+                    <select name="year" class="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
                         @foreach($availableYears as $year)
                             <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
                                 {{ $year }}
@@ -27,19 +49,136 @@
                              <option value="{{ date('Y') }}" {{ $selectedYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
                         @endif
                     </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
 
-                    <button type="submit" class="px-4 py-2 bg-[#8B0000] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-800 transition-colors shadow-sm">
-                        Filter
-                    </button>
-                </form>
-
-                <div class="h-8 w-px bg-slate-200 mx-2"></div>
-
-                <button id="exportPdfBtn" onclick="exportToPdf()" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
-                    <i class="fas fa-download"></i> Export PDF
+                <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md">
+                    <i class="fas fa-filter"></i> Filter
                 </button>
             </div>
-        </div>
+        </form>
+
+        <!-- Advanced Filter Section (Hidden by default) -->
+        <form id="advancedFilterForm" method="GET" action="{{ route('admin.analytics') }}" class="hidden bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-2xl p-8 shadow-md">
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-6 flex items-center gap-2">
+                <i class="fas fa-filter text-[#8B0000]"></i> Advanced Filters
+            </h3>
+            
+            <!-- Date Section -->
+            <div class="mb-8 pb-8 border-b border-slate-300">
+                <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Date Range</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-2">Month</label>
+                        <div class="relative">
+                            <select name="month" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                @foreach(range(1, 12) as $m)
+                                    <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
+                                        {{ DateTime::createFromFormat('!m', $m)->format('F') }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-2">Year</label>
+                        <div class="relative">
+                            <select name="year" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                @foreach($availableYears as $year)
+                                    <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
+                                        {{ $year }}
+                                    </option>
+                                @endforeach
+                                @if(!in_array(date('Y'), $availableYears->toArray()))
+                                     <option value="{{ date('Y') }}" {{ $selectedYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
+                                @endif
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Research Details Section -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Review Type Filter -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000] flex items-center gap-2">
+                        <i class="fas fa-clipboard-check"></i> Review Type
+                    </label>
+                    <div class="relative">
+                        <select name="review_type" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                            <option value="">All Review Types</option>
+                            @foreach($reviewTypes as $type)
+                                <option value="{{ $type }}" {{ $selectedReviewType == $type ? 'selected' : '' }}>
+                                    {{ $type }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thesis Type Filter -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000] flex items-center gap-2">
+                        <i class="fas fa-book"></i> Thesis Type
+                    </label>
+                    <div class="relative">
+                        <select name="thesis_type" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                            <option value="">All Thesis Types</option>
+                            @foreach($thesisTypes as $type)
+                                <option value="{{ $type }}" {{ $selectedThesisType == $type ? 'selected' : '' }}>
+                                    {{ $type }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Funding Type Filter -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000] flex items-center gap-2">
+                        <i class="fas fa-dollar-sign"></i> Funding Type
+                    </label>
+                    <div class="relative">
+                        <select name="funding_type" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                            <option value="">All Funding Types</option>
+                            @foreach($fundingTypes as $type)
+                                <option value="{{ $type }}" {{ $selectedFundingType == $type ? 'selected' : '' }}>
+                                    {{ $type }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button Section -->
+            <div class="mt-8 flex gap-3">
+                <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md flex items-center gap-2">
+                    <i class="fas fa-search"></i> Apply Filters
+                </button>
+                <button type="button" onclick="resetFilters()" class="px-6 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+        </form>
 
         <!-- Key Metrics Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -136,6 +275,48 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script>
+            // Toggle between Normal and Advanced Filter
+            let isAdvancedMode = false;
+
+            function toggleFilterMode() {
+                isAdvancedMode = !isAdvancedMode;
+                const normalForm = document.getElementById('normalFilterForm');
+                const advancedForm = document.getElementById('advancedFilterForm');
+                const toggleBtn = document.getElementById('toggleFilterBtn');
+
+                if (isAdvancedMode) {
+                    // Show Advanced Filter
+                    normalForm.classList.add('hidden');
+                    advancedForm.classList.remove('hidden');
+                    toggleBtn.innerHTML = '<i class="fas fa-sliders-h"></i> Normal Filter';
+                    toggleBtn.classList.remove('from-[#8B0000]', 'to-red-700');
+                    toggleBtn.classList.add('from-blue-600', 'to-blue-700');
+                } else {
+                    // Show Normal Filter
+                    normalForm.classList.remove('hidden');
+                    advancedForm.classList.add('hidden');
+                    toggleBtn.innerHTML = '<i class="fas fa-sliders-h"></i> Advanced Filter';
+                    toggleBtn.classList.remove('from-blue-600', 'to-blue-700');
+                    toggleBtn.classList.add('from-[#8B0000]', 'to-red-700');
+                }
+            }
+
+            function resetFilters() {
+                // Reset all filter fields to default
+                document.getElementById('advancedFilterForm').reset();
+                
+                // Get current month and year
+                const currentMonth = new Date().getMonth() + 1;
+                const currentYear = new Date().getFullYear();
+                
+                // Reset to current date
+                document.querySelector('#advancedFilterForm select[name="month"]').value = '{{ $selectedMonth }}';
+                document.querySelector('#advancedFilterForm select[name="year"]').value = '{{ $selectedYear }}';
+                document.querySelector('#advancedFilterForm select[name="review_type"]').value = '';
+                document.querySelector('#advancedFilterForm select[name="thesis_type"]').value = '';
+                document.querySelector('#advancedFilterForm select[name="funding_type"]').value = '';
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
                 // --- 1. Daily Trend Chart ---
                 const ctxDaily = document.getElementById('dailyTrendChart').getContext('2d');

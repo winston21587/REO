@@ -556,5 +556,5 @@
             document.getElementById(id).classList.add('hidden');
         }
     </script>
-</x-user_layout>    </div>
+    </div>
 </x-user_layout>

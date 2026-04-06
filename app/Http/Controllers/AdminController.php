@@ -147,9 +147,12 @@ class AdminController extends Controller
         $selectedMonth = $request->input('month', date('m'));
         
         // New Filter Logic
+        $selectedStatus = $request->input('status', null);
         $selectedReviewType = $request->input('review_type', null);
         $selectedThesisType = $request->input('thesis_type', null);
-        $selectedFundingType = $request->input('funding_type', null);
+        $selectedCategory = $request->input('category', null);
+        $selectedAffiliation = $request->input('affiliation', null);
+        $selectedCollege = $request->input('college', null);
 
         $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
             ->distinct()
@@ -160,14 +163,31 @@ class AdminController extends Controller
         $baseQuery = Research_title::query();
         
         // Apply filters
+        if ($selectedStatus) {
+            $baseQuery->where('Status', $selectedStatus);
+        }
         if ($selectedReviewType) {
             $baseQuery->where('Review_Type', $selectedReviewType);
         }
         if ($selectedThesisType) {
             $baseQuery->where('thesis_type', $selectedThesisType);
         }
-        if ($selectedFundingType) {
-            $baseQuery->where('funding_type', $selectedFundingType);
+        if ($selectedCategory) {
+            $baseQuery->where('Research_Category', $selectedCategory);
+        }
+        if ($selectedAffiliation) {
+            $baseQuery->whereHas('researcher', function($q) use ($selectedAffiliation) {
+                if ($selectedAffiliation == 'Internal') {
+                    $q->where('external_user', false);
+                } elseif ($selectedAffiliation == 'External') {
+                    $q->where('external_user', true);
+                }
+            });
+        }
+        if ($selectedCollege && $selectedAffiliation !== 'External') {
+            $baseQuery->whereHas('researcher', function($q) use ($selectedCollege) {
+                $q->where('college', $selectedCollege);
+            });
         }
 
         // 1. Total Submissions (All time)
@@ -247,17 +267,25 @@ class AdminController extends Controller
             ->sort()
             ->values();
             
-        $thesisTypes = Research_title::where('thesis_type', '!=', null)
+        $thesisTypes = \App\Models\ResearchCategory::pluck('name')
+            ->sort()
+            ->values();
+
+        $availableStatuses = Research_title::whereNotNull('Status')
             ->distinct()
-            ->pluck('thesis_type')
+            ->pluck('Status')
             ->sort()
             ->values();
             
-        $fundingTypes = Research_title::where('funding_type', '!=', null)
-            ->distinct()
-            ->pluck('funding_type')
-            ->sort()
-            ->values();
+        $researchCategories = [
+            "Biomedical Studies", 
+            "Health Operations research", 
+            "Social Research", 
+            "Public Health Research", 
+            "Clinical trials"
+        ];
+        
+        $colleges = \App\Models\College::all();
 
         return view('admin.Analytics', compact(
             'totalSubmissions',
@@ -276,13 +304,18 @@ class AdminController extends Controller
             'humanVerifiedRate',
             'selectedYear',
             'selectedMonth',
+            'selectedStatus',
             'selectedReviewType',
             'selectedThesisType',
-            'selectedFundingType',
+            'selectedCategory',
+            'selectedAffiliation',
+            'selectedCollege',
             'availableYears',
+            'availableStatuses',
             'reviewTypes',
             'thesisTypes',
-            'fundingTypes'
+            'researchCategories',
+            'colleges'
         ));
     }
 

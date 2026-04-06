@@ -7,8 +7,8 @@
                 <p class="text-slate-500 mt-2 text-sm">Real-time insights into research submission performance.</p>
             </div>
             <div class="flex gap-3 mt-4 md:mt-0 items-center flex-wrap justify-end">
-                <button id="toggleFilterBtn" onclick="toggleFilterMode()" class="px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:shadow-lg transition-all flex items-center gap-2 shadow-sm">
-                    <i class="fas fa-sliders-h"></i> Advanced Filter
+                <button onclick="openFilterModal()" class="px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:shadow-lg transition-all flex items-center gap-2 shadow-sm">
+                    <i class="fas fa-filter"></i> Filter Data
                 </button>
 
                 <div class="h-8 w-px bg-slate-200"></div>
@@ -18,167 +18,45 @@
                 </button>
             </div>
         </div>
+        
+        <!-- Active Filters Display -->
+        <div class="flex flex-wrap gap-2 -mt-4 mb-2">
+            <span class="px-2.5 py-1 bg-red-50 text-[#8B0000] border border-red-100 rounded-lg text-xs font-bold flex items-center gap-1">
+                <i class="fas fa-calendar-alt opacity-70"></i> {{ DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} {{ $selectedYear }}
+            </span>
+            @if($selectedStatus) 
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
+                <i class="fas fa-info-circle opacity-50"></i> {{ $selectedStatus }}
+            </span> 
+            @endif
+            @if($selectedReviewType) 
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
+                <i class="fas fa-clipboard-check opacity-50"></i> {{ $selectedReviewType }}
+            </span> 
+            @endif
+            @if($selectedThesisType) 
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
+                <i class="fas fa-book opacity-50"></i> {{ $selectedThesisType }}
+            </span> 
+            @endif
+            @if($selectedCategory) 
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
+                <i class="fas fa-tags opacity-50"></i> {{ $selectedCategory }}
+            </span> 
+            @endif
+            @if($selectedAffiliation) 
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
+                <i class="fas fa-users opacity-50"></i> {{ $selectedAffiliation }}
+            </span> 
+            @endif
+            @if($selectedCollege && $selectedAffiliation !== 'External') 
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
+                <i class="fas fa-university opacity-50"></i> {{ $selectedCollege }}
+            </span> 
+            @endif
+        </div>
 
-        <!-- Normal Filter Section (Default) -->
-        <form id="normalFilterForm" method="GET" action="{{ route('super_admin.analytics') }}" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <i class="fas fa-calendar-alt text-[#8B0000]"></i> Date Filter
-            </h3>
-            <div class="flex gap-3 flex-wrap">
-                <div class="relative">
-                    <select name="month" class="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                        @foreach(range(1, 12) as $m)
-                            <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
-                                {{ DateTime::createFromFormat('!m', $m)->format('F') }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
-                        <i class="fas fa-chevron-down text-xs"></i>
-                    </div>
-                </div>
 
-                <div class="relative">
-                    <select name="year" class="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                        @foreach($availableYears as $year)
-                            <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
-                                {{ $year }}
-                            </option>
-                        @endforeach
-                        @if(!in_array(date('Y'), $availableYears->toArray()))
-                             <option value="{{ date('Y') }}" {{ $selectedYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
-                        @endif
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
-                        <i class="fas fa-chevron-down text-xs"></i>
-                    </div>
-                </div>
-
-                <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md">
-                    <i class="fas fa-filter"></i> Filter
-                </button>
-            </div>
-        </form>
-
-        <!-- Advanced Filter Section (Hidden by default) -->
-        <form id="advancedFilterForm" method="GET" action="{{ route('super_admin.analytics') }}" class="hidden bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-2xl p-8 shadow-md">
-            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-6 flex items-center gap-2">
-                <i class="fas fa-filter text-[#8B0000]"></i> Advanced Filters
-            </h3>
-            
-            <!-- Date Section -->
-            <div class="mb-8 pb-8 border-b border-slate-300">
-                <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Date Range</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-2">Month</label>
-                        <div class="relative">
-                            <select name="month" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                                @foreach(range(1, 12) as $m)
-                                    <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
-                                        {{ DateTime::createFromFormat('!m', $m)->format('F') }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-2">Year</label>
-                        <div class="relative">
-                            <select name="year" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                                @foreach($availableYears as $year)
-                                    <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
-                                        {{ $year }}
-                                    </option>
-                                @endforeach
-                                @if(!in_array(date('Y'), $availableYears->toArray()))
-                                     <option value="{{ date('Y') }}" {{ $selectedYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
-                                @endif
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Research Details Section -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Review Type Filter -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000] flex items-center gap-2">
-                        <i class="fas fa-clipboard-check"></i> Review Type
-                    </label>
-                    <div class="relative">
-                        <select name="review_type" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                            <option value="">All Review Types</option>
-                            @foreach($reviewTypes as $type)
-                                <option value="{{ $type }}" {{ $selectedReviewType == $type ? 'selected' : '' }}>
-                                    {{ $type }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Thesis Type Filter -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000] flex items-center gap-2">
-                        <i class="fas fa-book"></i> Thesis Type
-                    </label>
-                    <div class="relative">
-                        <select name="thesis_type" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                            <option value="">All Thesis Types</option>
-                            @foreach($thesisTypes as $type)
-                                <option value="{{ $type }}" {{ $selectedThesisType == $type ? 'selected' : '' }}>
-                                    {{ $type }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Funding Type Filter -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000] flex items-center gap-2">
-                        <i class="fas fa-dollar-sign"></i> Funding Type
-                    </label>
-                    <div class="relative">
-                        <select name="funding_type" class="w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                            <option value="">All Funding Types</option>
-                            @foreach($fundingTypes as $type)
-                                <option value="{{ $type }}" {{ $selectedFundingType == $type ? 'selected' : '' }}>
-                                    {{ $type }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Button Section -->
-            <div class="mt-8 flex gap-3">
-                <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md flex items-center gap-2">
-                    <i class="fas fa-search"></i> Apply Filters
-                </button>
-                <button type="button" onclick="resetFilters()" class="px-6 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm">
-                    <i class="fas fa-redo"></i> Reset
-                </button>
-            </div>
-        </form>
 
         <!-- Key Metrics Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -275,46 +153,112 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script>
-            // Toggle between Normal and Advanced Filter
-            let isAdvancedMode = false;
+            // --- Modal and Filter Logic ---
+            let currentMode = 'normal';
 
-            function toggleFilterMode() {
-                isAdvancedMode = !isAdvancedMode;
-                const normalForm = document.getElementById('normalFilterForm');
-                const advancedForm = document.getElementById('advancedFilterForm');
-                const toggleBtn = document.getElementById('toggleFilterBtn');
+            // Check URL parameters to see if advanced filters were applied on load
+            document.addEventListener('DOMContentLoaded', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('review_type') || urlParams.get('thesis_type') || urlParams.get('category') || urlParams.get('affiliation') || urlParams.get('college')) {
+                    switchFilterTab('advanced');
+                }
+                toggleCollegeFilter();
+            });
 
-                if (isAdvancedMode) {
-                    // Show Advanced Filter
-                    normalForm.classList.add('hidden');
-                    advancedForm.classList.remove('hidden');
-                    toggleBtn.innerHTML = '<i class="fas fa-sliders-h"></i> Normal Filter';
-                    toggleBtn.classList.remove('from-[#8B0000]', 'to-red-700');
-                    toggleBtn.classList.add('from-blue-600', 'to-blue-700');
+            function toggleCollegeFilter() {
+                const affiliationSelect = document.getElementById('filter_affiliation');
+                const collegeSelect = document.getElementById('filter_college');
+                if (!affiliationSelect || !collegeSelect) return;
+
+                if (affiliationSelect.value === 'External') {
+                    collegeSelect.value = '';
+                    collegeSelect.disabled = true;
+                    collegeSelect.classList.add('opacity-50', 'bg-slate-100');
                 } else {
-                    // Show Normal Filter
-                    normalForm.classList.remove('hidden');
-                    advancedForm.classList.add('hidden');
-                    toggleBtn.innerHTML = '<i class="fas fa-sliders-h"></i> Advanced Filter';
-                    toggleBtn.classList.remove('from-blue-600', 'to-blue-700');
-                    toggleBtn.classList.add('from-[#8B0000]', 'to-red-700');
+                    collegeSelect.disabled = false;
+                    collegeSelect.classList.remove('opacity-50', 'bg-slate-100');
+                }
+            }
+
+            function openFilterModal() {
+                const filterModal = document.getElementById('filterModal');
+                const filterModalPanel = document.getElementById('filterModalPanel');
+                if (!filterModal) return;
+                
+                filterModal.classList.remove('hidden');
+                // Trigger transitions after removing hidden
+                setTimeout(() => {
+                    filterModal.classList.remove('opacity-0');
+                    filterModalPanel.classList.remove('scale-95', 'opacity-0');
+                    filterModalPanel.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            function closeFilterModal() {
+                const filterModal = document.getElementById('filterModal');
+                const filterModalPanel = document.getElementById('filterModalPanel');
+                if (!filterModal) return;
+
+                filterModal.classList.add('opacity-0');
+                filterModalPanel.classList.remove('scale-100', 'opacity-100');
+                filterModalPanel.classList.add('scale-95', 'opacity-0');
+                
+                setTimeout(() => {
+                    filterModal.classList.add('hidden');
+                }, 300); // match standard tailwind transition duration
+            }
+
+            function switchFilterTab(mode) {
+                currentMode = mode;
+                const tabNormal = document.getElementById('tab-normal');
+                const tabAdvanced = document.getElementById('tab-advanced');
+                const advancedSection = document.getElementById('advancedFiltersSection');
+                
+                if (mode === 'normal') {
+                    // Update Tabs
+                    tabNormal.className = "flex-1 py-3 text-sm font-bold border-b-2 border-[#8B0000] text-[#8B0000] bg-white transition-colors focus:outline-none";
+                    tabAdvanced.className = "flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors focus:outline-none";
+                    // Hide Advanced Section
+                    advancedSection.classList.add('hidden');
+                } else {
+                    // Update Tabs
+                    tabAdvanced.className = "flex-1 py-3 text-sm font-bold border-b-2 border-[#8B0000] text-[#8B0000] bg-white transition-colors focus:outline-none";
+                    tabNormal.className = "flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors focus:outline-none";
+                    // Show Advanced Section
+                    advancedSection.classList.remove('hidden');
+                }
+            }
+
+            function prepareFilterSubmit() {
+                // If in normal mode, clear advanced inputs before submitting
+                if (currentMode === 'normal') {
+                    document.getElementById('filter_review_type').value = '';
+                    document.getElementById('filter_thesis_type').value = '';
+                    document.getElementById('filter_category').value = '';
+                    document.getElementById('filter_affiliation').value = '';
+                    document.getElementById('filter_college').value = '';
                 }
             }
 
             function resetFilters() {
-                // Reset all filter fields to default
-                document.getElementById('advancedFilterForm').reset();
+                document.getElementById('filter_month').value = '{{ date("n") }}';
                 
-                // Get current month and year
-                const currentMonth = new Date().getMonth() + 1;
-                const currentYear = new Date().getFullYear();
+                const yearSelect = document.getElementById('filter_year');
+                const currentYear = '{{ date("Y") }}';
+                let hasYear = Array.from(yearSelect.options).some(opt => opt.value === currentYear);
+                if (hasYear) {
+                    yearSelect.value = currentYear;
+                }
                 
-                // Reset to current date
-                document.querySelector('#advancedFilterForm select[name="month"]').value = '{{ $selectedMonth }}';
-                document.querySelector('#advancedFilterForm select[name="year"]').value = '{{ $selectedYear }}';
-                document.querySelector('#advancedFilterForm select[name="review_type"]').value = '';
-                document.querySelector('#advancedFilterForm select[name="thesis_type"]').value = '';
-                document.querySelector('#advancedFilterForm select[name="funding_type"]').value = '';
+                document.getElementById('filter_status').value = '';
+                document.getElementById('filter_review_type').value = '';
+                document.getElementById('filter_thesis_type').value = '';
+                document.getElementById('filter_category').value = '';
+                document.getElementById('filter_affiliation').value = '';
+                document.getElementById('filter_college').value = '';
+                
+                // Clear active filter indicators by submitting
+                document.getElementById('filterModalForm').submit();
             }
 
             document.addEventListener('DOMContentLoaded', function() {
@@ -451,5 +395,186 @@
         <!-- PDF Export Libraries -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+        <!-- Filter Modal -->
+        <div id="filterModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-4 overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="filterModalPanel">
+                <!-- Modal Header -->
+                <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-filter text-[#8B0000]"></i> Filter Analytics Data</h3>
+                    <button type="button" onclick="closeFilterModal()" class="text-slate-400 hover:text-[#8B0000] focus:outline-none transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-slate-200 bg-slate-50/50 px-8 pt-4">
+                    <button type="button" id="tab-normal" onclick="switchFilterTab('normal')" class="pb-3 px-6 text-sm font-bold border-b-2 border-[#8B0000] text-[#8B0000] transition-colors focus:outline-none flex items-center gap-2">
+                        <i class="fas fa-calendar-alt"></i> Date Range
+                    </button>
+                    <button type="button" id="tab-advanced" onclick="switchFilterTab('advanced')" class="pb-3 px-6 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors focus:outline-none flex items-center gap-2">
+                        <i class="fas fa-sliders-h"></i> Advanced Metrics
+                    </button>
+                </div>
+
+                <!-- Complete Filter Form -->
+                <form id="filterModalForm" method="GET" action="{{ route('super_admin.analytics') }}" class="p-8">
+                    <div class="space-y-8">
+                        <!-- Date Range & Basic Status (Always visible but grouped) -->
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Basic Filters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Month</label>
+                                    <div class="relative">
+                                        <select name="month" id="filter_month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            @foreach(range(1, 12) as $m)
+                                                <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
+                                                    {{ DateTime::createFromFormat('!m', $m)->format('F') }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                                            <i class="fas fa-chevron-down text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Year</label>
+                                    <div class="relative">
+                                        <select name="year" id="filter_year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            @foreach($availableYears as $year)
+                                                <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
+                                                    {{ $year }}
+                                                </option>
+                                            @endforeach
+                                            @if(!in_array(date('Y'), $availableYears->toArray()))
+                                                 <option value="{{ date('Y') }}" {{ $selectedYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
+                                            @endif
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                                            <i class="fas fa-chevron-down text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Status</label>
+                                    <div class="relative">
+                                        <select name="status" id="filter_status" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <option value="">All Statuses</option>
+                                            @foreach($availableStatuses as $status)
+                                                <option value="{{ $status }}" {{ $selectedStatus == $status ? 'selected' : '' }}>
+                                                    {{ $status }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                                            <i class="fas fa-chevron-down text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Options (Hidden in Normal Tab) -->
+                        <div id="advancedFiltersSection" class="hidden border-t border-slate-200 pt-6 animate-[fadeIn_0.3s_ease-out]">
+                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Specific Criteria</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-clipboard-check text-slate-400"></i> Review Type
+                                    </label>
+                                    <div class="relative">
+                                        <select name="review_type" id="filter_review_type" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <option value="">All Types</option>
+                                            @foreach($reviewTypes as $type)
+                                                <option value="{{ $type }}" {{ $selectedReviewType == $type ? 'selected' : '' }}>
+                                                    {{ $type }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-book text-slate-400"></i> Thesis Type
+                                    </label>
+                                    <div class="relative">
+                                        <select name="thesis_type" id="filter_thesis_type" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <option value="">All Types</option>
+                                            @foreach($thesisTypes as $type)
+                                                <option value="{{ $type }}" {{ $selectedThesisType == $type ? 'selected' : '' }}>
+                                                    {{ $type }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-tags text-slate-400"></i> Category
+                                    </label>
+                                    <div class="relative">
+                                        <select name="category" id="filter_category" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <option value="">All Categories</option>
+                                            @foreach($researchCategories as $cat)
+                                                <option value="{{ $cat }}" {{ $selectedCategory == $cat ? 'selected' : '' }}>
+                                                    {{ $cat }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-users text-slate-400"></i> Affiliation
+                                    </label>
+                                    <div class="relative">
+                                        <select name="affiliation" id="filter_affiliation" onchange="toggleCollegeFilter()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <option value="">All Affiliations</option>
+                                            <option value="Internal" {{ $selectedAffiliation == 'Internal' ? 'selected' : '' }}>Internal</option>
+                                            <option value="External" {{ $selectedAffiliation == 'External' ? 'selected' : '' }}>External</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-university text-slate-400"></i> College
+                                    </label>
+                                    <div class="relative">
+                                        <select name="college" id="filter_college" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <option value="">All Colleges</option>
+                                            @foreach($colleges as $college)
+                                                <option value="{{ $college->name }}" {{ $selectedCollege == $college->name ? 'selected' : '' }}>
+                                                    {{ $college->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div class="mt-8 flex gap-3 justify-end pt-6 border-t border-slate-200">
+                        <button type="button" onclick="closeFilterModal()" class="px-6 py-2.5 bg-white border border-slate-300 text-slate-600 rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="resetFilters()" class="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-slate-200 transition-colors shadow-sm">
+                            Reset to Default
+                        </button>
+                        <button type="submit" onclick="prepareFilterSubmit()" class="px-8 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md flex items-center gap-2">
+                            <i class="fas fa-check"></i> Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </x-super_admin_layout>

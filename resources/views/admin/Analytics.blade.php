@@ -462,10 +462,14 @@
                                     <div class="relative">
                                         <select name="status" id="filter_status" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
                                             <option value="">All Statuses</option>
-                                            @foreach($availableStatuses as $status)
-                                                <option value="{{ $status }}" {{ $selectedStatus == $status ? 'selected' : '' }}>
-                                                    {{ $status }}
-                                                </option>
+                                            @foreach($availableStatuses as $group => $statuses)
+                                                <optgroup label="{{ $group }}">
+                                                    @foreach($statuses as $status)
+                                                        <option value="{{ $status }}" {{ $selectedStatus == $status ? 'selected' : '' }}>
+                                                            {{ $status }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
                                             @endforeach
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">

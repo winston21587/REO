@@ -271,11 +271,26 @@ class AdminController extends Controller
             ->sort()
             ->values();
 
-        $availableStatuses = Research_title::whereNotNull('Status')
-            ->distinct()
-            ->pluck('Status')
-            ->sort()
-            ->values();
+        // Always show the full list of predefined system statuses in logical groups
+        $availableStatuses = [
+            'Submission & Checks' => [
+                'Pending',
+                'Incomplete',
+                'Incomplete - Awaiting Hardcopy',
+            ],
+            'Active Review Queue' => [
+                'Hardcopy Received - For Initial Review',
+                'For Initial Review',
+                'Under Review',
+                'Waiting for Revision',
+            ],
+            'Final Verdicts' => [
+                'Approved',
+                'Disapproved',
+                'Complete - Awaiting Hardcopy',
+                'Completed' 
+            ]
+        ];
             
         $researchCategories = [
             "Biomedical Studies", 

@@ -268,6 +268,101 @@
             });
         }
 
+        async function notifyReceiptRequired(id, title) {
+            const swalCommon = {
+                scrollbarPadding: false,
+                backdrop: `rgba(15, 23, 42, 0.75)`,
+                buttonsStyling: false,
+                showClass: { popup: 'animate-[fadeInUp_0.3s_ease-out]' },
+                hideClass: { popup: 'animate-[fadeOutDown_0.3s_ease-in]' },
+                customClass: {
+                    popup: 'rounded-2xl shadow-2xl border border-slate-200 font-sans p-6',
+                    title: 'font-heading text-xl text-slate-800 font-bold pt-4',
+                    htmlContainer: 'text-slate-600 text-sm mt-2',
+                    confirmButton: 'bg-orange-500 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg hover:bg-orange-600 hover:-translate-y-0.5 transition-all outline-none focus:ring-0 mx-2',
+                    cancelButton: 'bg-slate-100 text-slate-600 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-200 transition-all outline-none focus:ring-0 mx-2'
+                }
+            };
+
+            const { value: customMsg, isConfirmed } = await Swal.fire({
+                ...swalCommon,
+                title: 'Notify Researcher',
+                html: `
+                    <div class="text-left space-y-3">
+                        <p class="text-slate-600 text-sm">Send a reminder to the researcher for <b>"${title}"</b> to submit their Official Receipt (OR).</p>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Custom Message <span class="text-slate-400 font-normal normal-case">(optional)</span></label>
+                            <textarea id="notifyMsgInput" rows="3"
+                                class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                placeholder="Leave blank to send the default reminder message..."></textarea>
+                        </div>
+                        <p class="text-[11px] text-slate-400 italic">⚠ A notification can only be sent once every 24 hours per protocol.</p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-bell mr-1"></i> Send Notification',
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    return document.getElementById('notifyMsgInput')?.value?.trim() || null;
+                }
+            });
+
+            if (!isConfirmed) return;
+
+            // Send the AJAX request
+            try {
+                const response = await fetch(`/admin/protocols/${id}/notify-receipt`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                            || document.querySelector('input[name="_token"]')?.value,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ message: customMsg })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    Swal.fire({
+                        ...swalCommon,
+                        title: 'Notification Sent!',
+                        text: result.message,
+                        icon: 'success',
+                        confirmButtonText: 'Done',
+                        customClass: {
+                            ...swalCommon.customClass,
+                            confirmButton: 'bg-[#8B0000] text-white px-6 py-2.5 rounded-xl font-bold shadow-lg hover:bg-red-900 transition-all outline-none focus:ring-0 mx-2'
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        ...swalCommon,
+                        title: response.status === 429 ? 'Already Notified' : 'Could Not Send',
+                        text: result.message || 'An error occurred. Please try again.',
+                        icon: response.status === 429 ? 'info' : 'error',
+                        confirmButtonText: 'Okay',
+                        customClass: {
+                            ...swalCommon.customClass,
+                            confirmButton: 'bg-slate-700 text-white px-6 py-2.5 rounded-xl font-bold shadow transition-all outline-none focus:ring-0 mx-2'
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire({
+                    ...swalCommon,
+                    title: 'System Error',
+                    text: 'An unexpected error occurred. Please check your connection.',
+                    icon: 'error',
+                    confirmButtonText: 'Close',
+                });
+            }
+        }
+
         function confirmHardcopyReceived(id, title, previousRemarks = '') {
             const date = new Date();
             date.setDate(date.getDate() + 2);

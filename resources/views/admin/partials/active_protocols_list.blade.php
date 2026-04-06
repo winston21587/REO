@@ -189,6 +189,16 @@
                                                                 No Receipt
                                                             </span>
                                                         </div>
+                                                        <button
+                                                            type="button"
+                                                            onclick="notifyReceiptRequired('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')"
+                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-orange-600 hover:bg-orange-50 rounded-lg transition-colors text-left">
+                                                            <i class="fas fa-bell w-4"></i>
+                                                            <span>Notify Researcher</span>
+                                                            <span class="ml-auto text-[9px] font-bold bg-orange-50 text-orange-500 px-1.5 py-0.5 rounded-full border border-orange-200 leading-none">
+                                                                OR Required
+                                                            </span>
+                                                        </button>
                                                         @endif
                                                     @endif
                                                 @elseif($data->Review_Type)

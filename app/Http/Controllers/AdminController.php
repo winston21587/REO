@@ -1821,4 +1821,60 @@ class AdminController extends Controller
     }
 
 
+    /**
+     * Send a notification to the researcher reminding them to submit
+     * their Official Receipt so the protocol can proceed to Revision.
+     */
+    public function notifyReceiptRequired(Request $request, $id)
+    {
+        $title = Research_title::with('researcher.user')->findOrFail($id);
+
+        // Get the user_id from the researcher relationship
+        $userId = optional(optional($title->researcher)->user)->id;
+
+        if (!$userId) {
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Researcher user not found.'], 404);
+            }
+            return back()->with('error', 'Researcher user not found.');
+        }
+
+        // Prevent spamming — check if a similar unread notification was sent in the last 24 hours
+        $recentlySent = UserNotification::where('user_id', $userId)
+            ->where('research_id', $id)
+            ->where('type', 'receipt_reminder')
+            ->where('is_read', false)
+            ->where('created_at', '>=', Carbon::now()->subHours(24))
+            ->exists();
+
+        if ($recentlySent) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'A receipt reminder was already sent within the last 24 hours.'
+                ], 429);
+            }
+            return back()->with('error', 'A receipt reminder was already sent within the last 24 hours.');
+        }
+
+        $customMessage = $request->input('message');
+        $defaultMessage = "Action Required: Your research protocol \"{$title->Study_Protocol_title}\" cannot proceed to the Revision stage until your Official Receipt (OR) has been submitted and verified. Please submit your Official Receipt at your earliest convenience.";
+
+        UserNotification::create([
+            'user_id'     => $userId,
+            'research_id' => $id,
+            'title'       => 'Official Receipt Required',
+            'message'     => $customMessage ?: $defaultMessage,
+            'type'        => 'receipt_reminder',
+            'is_read'     => false,
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Researcher has been notified about the receipt requirement.']);
+        }
+
+        return back()->with('success', 'Researcher has been notified to submit their Official Receipt.');
+    }
+
+
 }

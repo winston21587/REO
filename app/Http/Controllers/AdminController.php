@@ -162,7 +162,15 @@ class AdminController extends Controller
         // Build base query with filters
         $baseQuery = Research_title::query();
         
-        // Apply filters
+        // Apply date filters to base query
+        if ($selectedYear !== 'all') {
+            $baseQuery->whereYear('created_at', $selectedYear);
+        }
+        if ($selectedMonth !== 'all') {
+            $baseQuery->whereMonth('created_at', $selectedMonth);
+        }
+
+        // Apply specific criteria filters
         if ($selectedStatus) {
             $baseQuery->where('Status', $selectedStatus);
         }
@@ -227,9 +235,6 @@ class AdminController extends Controller
         } elseif ($selectedMonth === 'all') {
             // Group by month
             $query = clone $baseQuery;
-            if ($selectedYear !== 'all') {
-                $query->whereYear('created_at', $selectedYear);
-            }
             $monthlyStats = $query
                 ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
                 ->groupBy('month')
@@ -246,10 +251,6 @@ class AdminController extends Controller
             $daysInMonth = \Carbon\Carbon::createFromDate($safeYear, $selectedMonth, 1)->daysInMonth;
 
             $query = clone $baseQuery;
-            if ($selectedYear !== 'all') {
-                $query->whereYear('created_at', $selectedYear);
-            }
-            $query->whereMonth('created_at', $selectedMonth);
 
             $dailyStats = $query
                 ->selectRaw('DAY(created_at) as day, COUNT(*) as count')
@@ -265,9 +266,6 @@ class AdminController extends Controller
 
         // 5. Pie Chart: Review Type Distribution
         $reviewQuery = clone $baseQuery;
-        if ($selectedYear !== 'all') {
-            $reviewQuery->whereYear('created_at', $selectedYear);
-        }
         $reviewTypeStats = $reviewQuery
             ->selectRaw('Review_Type, COUNT(*) as count')
             ->groupBy('Review_Type')
@@ -277,9 +275,6 @@ class AdminController extends Controller
 
         // 6. Pie Chart: Approval Status
         $statusQuery = clone $baseQuery;
-        if ($selectedYear !== 'all') {
-            $statusQuery->whereYear('created_at', $selectedYear);
-        }
         $statusStats = $statusQuery
             ->selectRaw('Status, COUNT(*) as count')
             ->whereIn('Status', ['Approved', 'Disapproved'])

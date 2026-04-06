@@ -22,7 +22,7 @@
         <!-- Active Filters Display -->
         <div class="flex flex-wrap gap-2 -mt-4 mb-2">
             <span class="px-2.5 py-1 bg-red-50 text-[#8B0000] border border-red-100 rounded-lg text-xs font-bold flex items-center gap-1">
-                <i class="fas fa-calendar-alt opacity-70"></i> {{ DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} {{ $selectedYear }}
+                <i class="fas fa-calendar-alt opacity-70"></i> {{ $selectedMonth === 'all' ? 'All Months' : DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} {{ $selectedYear === 'all' ? 'All Years' : $selectedYear }}
             </span>
             @if($selectedStatus) 
             <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
@@ -120,7 +120,7 @@
                     <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1">Submission Trends</h2>
                     <div class="flex items-end gap-4 mb-8">
                         <p class="text-5xl font-extrabold text-slate-900">Daily Overview</p>
-                        <p class="text-sm text-slate-500 font-medium mb-1.5">{{ DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} {{ $selectedYear }}</p>
+                        <p class="text-sm text-slate-500 font-medium mb-1.5">{{ $selectedMonth === 'all' ? 'All Months' : DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} {{ $selectedYear === 'all' ? 'All Years' : $selectedYear }}</p>
                     </div>
 
                     <div class="h-80 w-full">
@@ -422,12 +422,13 @@
                     <div class="space-y-8">
                         <!-- Date Range & Basic Status (Always visible but grouped) -->
                         <div>
-                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Basic Filters</h4>
+                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Basic Filter</h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-2">Month</label>
                                     <div class="relative">
                                         <select name="month" id="filter_month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <option value="all" {{ $selectedMonth === 'all' ? 'selected' : '' }}>All Months</option>
                                             @foreach(range(1, 12) as $m)
                                                 <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
                                                     {{ DateTime::createFromFormat('!m', $m)->format('F') }}
@@ -443,6 +444,7 @@
                                     <label class="block text-xs font-semibold text-slate-600 mb-2">Year</label>
                                     <div class="relative">
                                         <select name="year" id="filter_year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <option value="all" {{ $selectedYear === 'all' ? 'selected' : '' }}>All Years</option>
                                             @foreach($availableYears as $year)
                                                 <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
                                                     {{ $year }}
@@ -482,7 +484,7 @@
 
                         <!-- Advanced Options (Hidden in Normal Tab) -->
                         <div id="advancedFiltersSection" class="hidden border-t border-slate-200 pt-6 animate-[fadeIn_0.3s_ease-out]">
-                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Specific Criteria</h4>
+                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Advance Filter</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -581,4 +583,14 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // Move modal to body to avoid stacking context issues with header
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('filterModal');
+            if (modal) {
+                document.body.appendChild(modal);
+            }
+        });
+    </script>
 </x-admin_layout>

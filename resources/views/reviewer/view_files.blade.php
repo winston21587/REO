@@ -147,17 +147,17 @@
                 },
                 getOfficeUrl(file) {
                     if (!file || !file.public_url) return '';
-                    return 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(file.public_url);
+                    return 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(file.public_url) + '&wdHideHeaders=True&wdHideGridlines=True';
                 },
                 isViewable(file) {
                     if (!file) return false;
                     const req = this.requirementsMap[file.label];
-                    return req ? Boolean(req.is_viewable_for_reviewer) : true;
+                    return req ? (req.is_viewable_for_reviewer == 1 || req.is_viewable_for_reviewer === true) : true;
                 },
                 isDownloadable(file) {
                     if (!file) return false;
                     const req = this.requirementsMap[file.label];
-                    return req ? Boolean(req.is_downloadable_for_reviewer) : true;
+                    return req ? (req.is_downloadable_for_reviewer == 1 || req.is_downloadable_for_reviewer === true) : true;
                 },
                 isPdf(file) { return file && file.ext === 'pdf'; },
                 isOffice(file) { return file && ['doc','docx','ppt','pptx','xls','xlsx'].includes(file.ext); },

@@ -178,16 +178,22 @@
                                                 </div>
                                                 <!-- Body -->
                                                 <div class="p-6">
-                                                    <p class="text-slate-600 mb-6 text-sm text-center">Are you sure you want to reject this receipt? The current receipt file will be discarded, and the researcher will be required to upload a new one.</p>
-                                                    <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
-                                                        <button type="button" onclick="document.getElementById('reject-modal-{{ $log->id }}').close()" class="flex-1 px-4 py-3 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-center">Cancel</button>
-                                                        <form action="{{ route('admin.or_number.reject', $log->id) }}" method="POST" class="flex-1">
-                                                            @csrf
-                                                            <button type="submit" class="w-full px-4 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
+                                                    <form action="{{ route('admin.or_number.reject', $log->id) }}" method="POST">
+                                                        @csrf
+                                                        <p class="text-slate-600 mb-4 text-sm text-center">Are you sure you want to reject this receipt? The current receipt file will be discarded, and the researcher will be required to upload a new one.</p>
+                                                        
+                                                        <div class="mb-6 text-left">
+                                                            <label for="remarks-{{ $log->id }}" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Reason for Rejection <span class="text-red-500">*</span></label>
+                                                            <textarea id="remarks-{{ $log->id }}" name="remarks" required rows="3" placeholder="Please specify why this receipt is being rejected..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:border-red-400 focus:ring-4 focus:ring-red-500/10 transition-all"></textarea>
+                                                        </div>
+
+                                                        <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
+                                                            <button type="button" onclick="document.getElementById('reject-modal-{{ $log->id }}').close()" class="flex-1 px-4 py-3 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-center">Cancel</button>
+                                                            <button type="submit" class="flex-1 w-full px-4 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
                                                                 <i class="fas fa-times-circle"></i> Confirm Reject
                                                             </button>
-                                                        </form>
-                                                    </div>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </dialog>
                                         </div>

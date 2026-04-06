@@ -32,6 +32,7 @@ class ORNumberController extends Controller
         // Save the OR Number and reset verification just in case it's a re-upload
         $title->Official_Receipt_Number = $request->or_number;
         $title->is_or_verified = false;
+        $title->or_rejection_remarks = null; // Clear any previous rejection remarks
         $title->save();
 
         // Create Activity Log
@@ -64,6 +65,10 @@ class ORNumberController extends Controller
 
     public function rejectOR(Request $request, $id)
     {
+        $request->validate([
+            'remarks' => 'required|string',
+        ]);
+
         $title = Research_title::findOrFail($id);
         
         $oldOr = $title->Official_Receipt_Number;
@@ -80,13 +85,14 @@ class ORNumberController extends Controller
         $title->Official_Receipt_Number = null;
         $title->or_file_path = null;
         $title->is_or_verified = false;
+        $title->or_rejection_remarks = $request->remarks;
         $title->save();
 
         TitleLog::create([
             'research_title_id' => $title->id,
             'user_id' => Auth::id(),
             'action' => 'Official Receipt Rejected',
-            'description' => "Admin rejected the submitted receipt #{$oldOr}. A new receipt must be uploaded.",
+            'description' => "Admin rejected the submitted receipt #{$oldOr}. Reason: {$request->remarks}",
         ]);
 
         return redirect()->back()->with('error', 'Official Receipt was rejected.');

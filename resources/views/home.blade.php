@@ -76,7 +76,7 @@
                         $status = $title->Status ?? $title->status ?? '';
                         $checkStatus = trim($status);
 
-                        if (in_array($checkStatus, ['Incomplete', 'Pending', 'Submitted'])) {
+                        if (in_array($checkStatus, ['Incomplete', 'Pending', 'Submitted', 'Rejected'])) {
                             $currentStep = 1;
                         } elseif (str_contains($checkStatus, 'Complete - Awaiting Hardcopy') || str_contains($checkStatus, 'Hardcopy Received') || str_contains($checkStatus, 'For Initial Review') || str_contains($checkStatus, 'Under Review')) {
                             $currentStep = 2; // Review Tracker
@@ -105,19 +105,19 @@
                             $currentStep = 2;
                         }
 
-                        $statusColor = match ($title->status) {
+                        $statusColor = match ($title->Status ?? $title->status) {
                             'Approved' => 'green',
                             'Returned', 'Waiting for Revision', 'Modifications Required', 'Incomplete' => 'orange',
                             'Panel Deliberation' => 'blue',
-                            'Disapproved' => 'red',
+                            'Disapproved', 'Rejected' => 'red',
                             default => 'orange',
                         };
-                        $statusIcon = match ($title->status) {
+                        $statusIcon = match ($title->Status ?? $title->status) {
                             'Approved' => 'fa-check-circle',
                             'Returned', 'Waiting for Revision', 'Modifications Required' => 'fa-edit',
                             'Incomplete' => 'fa-exclamation-circle',
                             'Panel Deliberation' => 'fa-users',
-                            'Disapproved' => 'fa-times-circle',
+                            'Disapproved', 'Rejected' => 'fa-times-circle',
                             default => 'fa-clock',
                         };
                         $hasLetter = $title->files->where('filetype', 'Result of Review (Admin Generated)')->isNotEmpty();
@@ -173,6 +173,17 @@
                                     </a>
 
                                     @if(!$title->Official_Receipt_Number || !$title->or_file_path)
+                                        @if($title->or_rejection_remarks)
+                                            <div class="col-span-2 p-3 bg-red-50 border border-red-200 rounded-xl mb-1 mt-1 animate-[fadeIn_0.3s_ease-out]">
+                                                <div class="flex items-start gap-2">
+                                                    <i class="fas fa-exclamation-circle text-red-600 mt-0.5 text-sm"></i>
+                                                    <div>
+                                                        <p class="text-[11px] font-bold text-red-800 uppercase tracking-wider mb-0.5">Receipt Rejected</p>
+                                                        <p class="text-xs text-red-600 leading-snug">{{ $title->or_rejection_remarks }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
                                         <button onclick="document.getElementById('or-modal-{{ $title->id }}').showModal()" 
                                                 class="col-span-2 w-full py-2.5 px-6 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl font-bold hover:from-orange-500 hover:to-orange-600 transition-all flex items-center justify-center gap-2 text-sm shadow-[0_4px_12px_rgba(249,115,22,0.25)] hover:shadow-[0_6px_16px_rgba(249,115,22,0.4)] group">
                                             <i class="fas fa-receipt group-hover:rotate-12 transition-transform duration-300"></i> Submit OR
@@ -318,6 +329,17 @@
                                     </a>
 
                                     @if(!$title->Official_Receipt_Number || !$title->or_file_path)
+                                        @if($title->or_rejection_remarks)
+                                            <div class="w-full p-3 bg-red-50 border border-red-200 rounded-xl mb-1 animate-[fadeIn_0.3s_ease-out]">
+                                                <div class="flex items-start gap-2">
+                                                    <i class="fas fa-exclamation-circle text-red-600 mt-0.5"></i>
+                                                    <div>
+                                                        <p class="text-[11px] font-bold text-red-800 uppercase tracking-wider mb-0.5">Receipt Rejected</p>
+                                                        <p class="text-xs text-red-600 leading-snug">{{ $title->or_rejection_remarks }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
                                         <button onclick="document.getElementById('or-modal-{{ $title->id }}').showModal()" 
                                                 class="w-full py-3 px-6 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl font-bold hover:from-orange-500 hover:to-orange-600 transition-all flex items-center justify-center gap-2 shadow-[0_8px_16px_rgba(249,115,22,0.2)] hover:shadow-[0_12px_24px_rgba(249,115,22,0.35)] hover:-translate-y-0.5 group">
                                             <i class="fas fa-receipt group-hover:rotate-12 transition-transform duration-300"></i> Submit OR
@@ -624,6 +646,17 @@
 
                                 <div class="p-6 relative">
                                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-100 to-transparent opacity-50"></div>
+                                    @if($title->or_rejection_remarks)
+                                        <div class="mb-5 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-sm animate-[fadeIn_0.3s_ease-out]">
+                                            <div class="flex items-start">
+                                                <i class="fas fa-exclamation-circle text-red-600 mt-0.5 mr-3 text-lg"></i>
+                                                <div>
+                                                    <h3 class="text-red-800 font-bold text-sm">Previous Receipt Rejected</h3>
+                                                    <p class="text-red-600 text-xs mt-1">{{ $title->or_rejection_remarks }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                     <form action="{{ route('researcher.submit_or', $title->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                                         @csrf
                                         <div class="group">

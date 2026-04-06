@@ -147,17 +147,17 @@
                 },
                 getOfficeUrl(file) {
                     if (!file || !file.public_url) return '';
-                    return 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(file.public_url);
+                    return 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(file.public_url) + '&wdHideHeaders=True&wdHideGridlines=True';
                 },
                 isViewable(file) {
                     if (!file) return false;
                     const req = this.requirementsMap[file.label];
-                    return req ? Boolean(req.is_viewable_for_reviewer) : true;
+                    return req ? (req.is_viewable_for_reviewer == 1 || req.is_viewable_for_reviewer === true) : true;
                 },
                 isDownloadable(file) {
                     if (!file) return false;
                     const req = this.requirementsMap[file.label];
-                    return req ? Boolean(req.is_downloadable_for_reviewer) : true;
+                    return req ? (req.is_downloadable_for_reviewer == 1 || req.is_downloadable_for_reviewer === true) : true;
                 },
                 isPdf(file) { return file && file.ext === 'pdf'; },
                 isOffice(file) { return file && ['doc','docx','ppt','pptx','xls','xlsx'].includes(file.ext); },
@@ -194,8 +194,8 @@
                     </div>
                 </div>
 
-                <!-- Viewer pane: sticky so it stays visible while sidebar scrolls -->
-                <div class="sticky top-4 bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative" style="height: 70vh; min-height: 480px;">
+                <!-- Viewer pane -->
+                <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative" style="height: 70vh; min-height: 480px;">
                     <template x-if="activeFile && isViewable(activeFile) && isPdf(activeFile)">
                         <iframe :src="getUrl(activeFile)" class="w-full h-full border-0 bg-white" title="PDF Viewer"></iframe>
                     </template>

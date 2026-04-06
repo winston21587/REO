@@ -903,7 +903,7 @@ class AdminController extends Controller
         $submission = Research_title::findOrFail($id);
 
         $submission->assigned_reviewers = $request->reviewers;
-        $submission->Status = 'For Initial Review'; // Auto-update status explicitly upon assignments
+        $submission->Status = 'Reviewer Assigned'; // Auto-update status explicitly upon assignments
         $submission->save();
 
         $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function($user) {

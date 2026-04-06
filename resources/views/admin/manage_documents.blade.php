@@ -88,6 +88,8 @@
                             <th class="px-6 py-4">Type</th>
                             <th class="px-6 py-4 text-center">Multiple</th>
                             <th class="px-6 py-4 text-center">Required</th>
+                            <th class="px-6 py-4 text-center">Preview</th>
+                            <th class="px-6 py-4 text-center">Download</th>
                             <th class="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -111,6 +113,28 @@
                                         {{ $doc->is_required ? 'Required' : 'Optional' }}
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 text-center">
+                                    @if($doc->is_viewable_for_reviewer)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                            Yes
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+                                            No
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    @if($doc->is_downloadable_for_reviewer)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                            Yes
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+                                            No
+                                        </span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 text-right space-x-2 flex justify-end">
                                     <button @click="openEditModal({{ $doc }})" class="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors inline-block" title="Edit">
                                         <i class="fas fa-edit"></i>
@@ -123,7 +147,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                                <td colspan="8" class="px-6 py-12 text-center text-slate-400">
                                     <i class="fas fa-folder-open text-4xl mb-3 opacity-50"></i>
                                     <p>No requirements found.</p>
                                 </td>

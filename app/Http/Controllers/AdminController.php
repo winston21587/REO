@@ -143,8 +143,8 @@ class AdminController extends Controller
     public function analytics(Request $request)
     {
         // Date Filter Logic
-        $selectedYear = $request->input('year', date('Y'));
-        $selectedMonth = $request->input('month', date('m'));
+        $selectedYear = $request->filled('year') ? $request->input('year') : date('Y');
+        $selectedMonth = $request->filled('month') ? $request->input('month') : date('m');
         
         // New Filter Logic
         $selectedStatus = $request->input('status', null);
@@ -202,39 +202,86 @@ class AdminController extends Controller
         // 3. Active Researchers
         $activeResearchers = User::where('role', 'researcher')->count();
 
-        // 4. Submission Trends (Daily for selected month/year)
-        // Use the selected month and year to determine days in that specific month
-        $daysInMonth = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->daysInMonth;
-
-        $dailyStats = (clone $baseQuery)
-            ->selectRaw('DAY(created_at) as day, COUNT(*) as count')
-            ->whereYear('created_at', $selectedYear)
-            ->whereMonth('created_at', $selectedMonth)
-            ->groupBy('day')
-            ->pluck('count', 'day')
-            ->toArray();
-
-        // Fill missing days with 0
+        // 4. Submission Trends (Daily/Monthly/Yearly)
         $dailyData = [];
         $dayLabels = [];
-        for ($i = 1; $i <= $daysInMonth; $i++) {
-            $dailyData[] = $dailyStats[$i] ?? 0;
-            $dayLabels[] = (string) $i;
+        
+        if ($selectedYear === 'all' && $selectedMonth === 'all') {
+            // Group by year
+            $yearlyStats = (clone $baseQuery)
+                ->selectRaw('YEAR(created_at) as year, COUNT(*) as count')
+                ->groupBy('year')
+                ->pluck('count', 'year')
+                ->toArray();
+                
+            ksort($yearlyStats);
+            foreach ($yearlyStats as $year => $count) {
+                if (!$year) continue;
+                $dailyData[] = $count;
+                $dayLabels[] = (string) $year;
+            }
+            if (empty($dailyData)) {
+                $dailyData = [0];
+                $dayLabels = [date('Y')];
+            }
+        } elseif ($selectedMonth === 'all') {
+            // Group by month
+            $query = clone $baseQuery;
+            if ($selectedYear !== 'all') {
+                $query->whereYear('created_at', $selectedYear);
+            }
+            $monthlyStats = $query
+                ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+                ->groupBy('month')
+                ->pluck('count', 'month')
+                ->toArray();
+                
+            for ($i = 1; $i <= 12; $i++) {
+                $dailyData[] = $monthlyStats[$i] ?? 0;
+                $dayLabels[] = date('M', mktime(0, 0, 0, $i, 10)); // Jan, Feb...
+            }
+        } else {
+            // Group by day for specific month and year
+            $safeYear = $selectedYear === 'all' ? date('Y') : $selectedYear;
+            $daysInMonth = \Carbon\Carbon::createFromDate($safeYear, $selectedMonth, 1)->daysInMonth;
+
+            $query = clone $baseQuery;
+            if ($selectedYear !== 'all') {
+                $query->whereYear('created_at', $selectedYear);
+            }
+            $query->whereMonth('created_at', $selectedMonth);
+
+            $dailyStats = $query
+                ->selectRaw('DAY(created_at) as day, COUNT(*) as count')
+                ->groupBy('day')
+                ->pluck('count', 'day')
+                ->toArray();
+
+            for ($i = 1; $i <= $daysInMonth; $i++) {
+                $dailyData[] = $dailyStats[$i] ?? 0;
+                $dayLabels[] = (string) $i;
+            }
         }
 
-        // 5. Pie Chart: Review Type Distribution (Filtered by Selected Year)
-        $reviewTypeStats = (clone $baseQuery)
+        // 5. Pie Chart: Review Type Distribution
+        $reviewQuery = clone $baseQuery;
+        if ($selectedYear !== 'all') {
+            $reviewQuery->whereYear('created_at', $selectedYear);
+        }
+        $reviewTypeStats = $reviewQuery
             ->selectRaw('Review_Type, COUNT(*) as count')
-            ->whereYear('created_at', $selectedYear)
             ->groupBy('Review_Type')
             ->whereNotNull('Review_Type')
             ->pluck('count', 'Review_Type')
             ->toArray();
 
-        // 6. Pie Chart: Approval Status (Filtered by Selected Year)
-        $statusStats = (clone $baseQuery)
+        // 6. Pie Chart: Approval Status
+        $statusQuery = clone $baseQuery;
+        if ($selectedYear !== 'all') {
+            $statusQuery->whereYear('created_at', $selectedYear);
+        }
+        $statusStats = $statusQuery
             ->selectRaw('Status, COUNT(*) as count')
-            ->whereYear('created_at', $selectedYear)
             ->whereIn('Status', ['Approved', 'Disapproved'])
             ->groupBy('Status')
             ->pluck('count', 'Status')

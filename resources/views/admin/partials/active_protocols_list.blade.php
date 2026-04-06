@@ -71,10 +71,13 @@
                                 <td class="p-6">
                                     @php
                                         $statusColors = [
-                                            'For Initial Review' => 'bg-blue-50 text-blue-700 border-blue-100',
-                                            'Complete - Awaiting Hardcopy' => 'bg-yellow-50 text-yellow-700 border-yellow-100',
+                                            'For Initial Review' => 'bg-blue-50 text-blue-700 border-blue-100', // legacy
                                             'Incomplete - Awaiting Hardcopy' => 'bg-red-50 text-red-700 border-red-100',
-                                            'Hardcopy Received - For Initial Review' => 'bg-teal-50 text-teal-700 border-teal-100',
+                                            'Incomplete Hardcopy' => 'bg-red-50 text-red-700 border-red-100',
+                                            'Hardcopy Received' => 'bg-teal-50 text-teal-700 border-teal-100',
+                                            'Reviewer Assigned' => 'bg-blue-50 text-blue-700 border-blue-100',
+                                            'Under Review' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                                            'Reviewed' => 'bg-green-50 text-green-700 border-green-100',
                                             'Waiting for Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
                                             'Revision Submitted' => 'bg-purple-50 text-purple-700 border-purple-100',
                                             'Panel Deliberation' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
@@ -84,11 +87,8 @@
                                         ];
                                         $colorClass = $statusColors[$data->Status] ?? 'bg-slate-50 text-slate-700 border-slate-100';
 
-                                        // Prioritize Status for specific workflow steps, otherwise use Review Type if available
+                                        // Ensure the UI directly displays the new phase statuses without overriding them
                                         $displayStatus = $data->Status;
-                                        if ($data->Review_Type && !in_array($data->Status, ['Complete - Awaiting Hardcopy', 'Incomplete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review'])) {
-                                            $displayStatus = $data->Review_Type;
-                                        }
                                     @endphp
                                     <div class="flex items-center gap-2">
                                         <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }}">
@@ -125,13 +125,11 @@
                                                     <i class="fas fa-eye w-4"></i> View Details
                                                 </a>
 
-                                                @if(in_array($data->Status, ['Complete - Awaiting Hardcopy', 'Incomplete - Awaiting Hardcopy']))
+                                                @if(in_array($data->Status, ['Incomplete - Awaiting Hardcopy', 'Incomplete Hardcopy']))
                                                     @php
                                                         $defMessage = '';
-                                                        if($data->Status === 'Incomplete - Awaiting Hardcopy') {
-                                                            $def = \App\Models\SubmissionFeedback::where('research_title_id', $data->id)->where('type', 'hardcopy_deficiency')->latest()->first();
-                                                            $defMessage = $def ? $def->message : '';
-                                                        }
+                                                        $def = \App\Models\SubmissionFeedback::where('research_title_id', $data->id)->where('type', 'hardcopy_deficiency')->latest()->first();
+                                                        $defMessage = $def ? $def->message : '';
                                                     @endphp
                                                     <button type="button" @click="open = false; confirmHardcopyReceived('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($defMessage) }})"
                                                         class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">

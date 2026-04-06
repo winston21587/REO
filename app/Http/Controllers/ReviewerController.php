@@ -14,12 +14,13 @@ class ReviewerController extends Controller
     {
         $userId = Auth::id();
         
-        // Find titles where the user ID is in the assigned_reviewers JSON array
-        // We handle both integer and string storage in JSON arrays just in case
-        $titles = Research_title::whereJsonContains('assigned_reviewers', (string)$userId)
-                    ->orWhereJsonContains('assigned_reviewers', $userId)
-                    ->latest()
-                    ->get();
+        $titles = Research_title::where(function($q) use ($userId) {
+                $q->whereJsonContains('assigned_reviewers', (string)$userId)
+                  ->orWhereJsonContains('assigned_reviewers', $userId);
+            })
+            ->where('Status', '!=', 'Reviewed')
+            ->latest()
+            ->get();
 
         return view('reviewer.dashboard', compact('titles'));
     }
@@ -68,24 +69,44 @@ class ReviewerController extends Controller
 
         $file = $request->file('file');
         
+        $originalExt = $file->getClientOriginalExtension();
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $modifiedName = $originalName . '_reviewer.' . $originalExt;
+
         // Ensure consistent path usage with Admin logic
-        $path = $file->store('uploads/research_files', 'public_uploads');
+        $path = $file->storeAs('uploads/research_files', time() . '_' . $modifiedName, 'public_uploads');
 
         researcher_files::create([
             'research_title_id' => $id,
-            'filename' => $file->getClientOriginalName(),
+            'filename' => $modifiedName,
             'filepath' => 'uploads/research_files/' . basename($path),
-            'filetype' => $file->getClientOriginalExtension(),
+            'filetype' => $originalExt,
             'uploaded_by' => Auth::id(),
             'category' => 'Reviewer Uploads - ' . $request->input('category'),
             'revision_number' => 0
         ]);
 
+        return back()->with('success', 'Evaluation Document Uploaded Successfully');
+    }
+
+    public function completeReview(Request $request, $id)
+    {
         $submission = Research_title::findOrFail($id);
+        
+        // Prevent completing if no reviewer uploads exist
+        $hasUploads = $submission->adminFiles()
+            ->where('uploaded_by', Auth::id())
+            ->where('category', 'like', 'Reviewer Uploads%')
+            ->exists();
+
+        if (!$hasUploads) {
+            return back()->withErrors(['error' => 'You must upload at least one evaluation document before completing the review.']);
+        }
+
         $submission->Status = 'Reviewed';
         $submission->save();
 
-        return back()->with('success', 'Evaluation Document Uploaded Successfully');
+        return redirect()->route('reviewer.dashboard')->with('success', 'Protocol review marked as complete!');
     }
 
     public function reviewedTitles()
@@ -97,11 +118,7 @@ class ReviewerController extends Controller
                 $q->whereJsonContains('assigned_reviewers', (string)$userId)
                   ->orWhereJsonContains('assigned_reviewers', $userId);
             })
-            // Must have successfully deposited an evaluation upload globally
-            ->whereHas('adminFiles', function($query) use ($userId) {
-                $query->where('uploaded_by', $userId)
-                      ->where('category', 'like', 'Reviewer Uploads%');
-            })
+            ->where('Status', 'Reviewed')
             ->latest()
             ->get();
 

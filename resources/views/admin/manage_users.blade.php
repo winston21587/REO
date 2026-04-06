@@ -72,7 +72,7 @@
                                     </div>
                                     <div>
                                         <p class="font-bold text-slate-800 text-base">{{ $user->first_name }} {{ $user->last_name }}</p>
-                                        <p class="text-xs text-slate-400">{{ $user->college ?? 'Researcher' }}</p>
+                                        <p class="text-xs text-slate-400">{{ $user->researcher?->college ?? 'Researcher' }}</p>
                                     </div>
                                 </div>
                             </td>
@@ -353,13 +353,43 @@
 
                         <!-- Details Grid -->
                         <div class="grid grid-cols-1 gap-4">
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">College</label>
-                                <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
-                                    <i class="fas fa-graduation-cap text-slate-400"></i>
-                                    <span x-text="selectedUser.college || 'Not Assigned'"></span>
+                            <!-- External: show institution -->
+                            <template x-if="selectedUser.researcher && selectedUser.researcher.external_user">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Institution / Agency</label>
+                                    <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                                        <i class="fas fa-building text-slate-400"></i>
+                                        <span x-text="(selectedUser.researcher && selectedUser.researcher.institute) ? selectedUser.researcher.institute : 'Not Provided'"></span>
+                                    </div>
                                 </div>
-                            </div>
+                            </template>
+
+                            <!-- Internal: show college, department, program -->
+                            <template x-if="!selectedUser.researcher || !selectedUser.researcher.external_user">
+                                <div class="grid grid-cols-1 gap-3">
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">College</label>
+                                        <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                                            <i class="fas fa-graduation-cap text-slate-400"></i>
+                                            <span x-text="(selectedUser.researcher && selectedUser.researcher.college) ? selectedUser.researcher.college : 'Not Assigned'"></span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Department</label>
+                                        <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                                            <i class="fas fa-sitemap text-slate-400"></i>
+                                            <span x-text="(selectedUser.researcher && selectedUser.researcher.department) ? selectedUser.researcher.department : 'Not Assigned'"></span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Program</label>
+                                        <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                                            <i class="fas fa-book-open text-slate-400"></i>
+                                            <span x-text="(selectedUser.researcher && selectedUser.researcher.program) ? selectedUser.researcher.program : 'Not Assigned'"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                             
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-1">

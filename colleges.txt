@@ -1,0 +1,18 @@
+[
+    "College of Agriculture",
+    "College of Architecture",
+    "College of Asian and Islamic Studies",
+    "College of Computing Studies",
+    "College of Criminal Justice Education",
+    "College of Engineering",
+    "College of Forestry and Environmental Studies",
+    "College of Home Economics",
+    "College of Law",
+    "College of Liberal Arts",
+    "College of Nursing",
+    "College of Public Administration and Development Studies",
+    "College of Science and Mathematics",
+    "College of Social Work and Community Development",
+    "College of Sports Science and Physical Education",
+    "College of Teacher Education"
+]

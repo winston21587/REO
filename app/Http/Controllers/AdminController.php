@@ -91,7 +91,7 @@ class AdminController extends Controller
 
     public function manageUsers(Request $request)
     {
-        $query = User::where('role', 'researcher');
+        $query = User::with('researcher')->where('role', 'researcher');
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {

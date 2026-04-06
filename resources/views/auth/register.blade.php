@@ -168,17 +168,40 @@
                             selectedCollege: '{{ old('college') }}',
                             selectedDept: '{{ old('department') }}',
                             selectedProgram: '{{ old('program') }}',
+
+                            initNormalization() {
+                                let cMatch = this.colleges.find(c => String(c.name).trim().toLowerCase() === String(this.selectedCollege).trim().toLowerCase());
+                                if(cMatch && this.selectedCollege !== cMatch.name) this.selectedCollege = cMatch.name;
+                                
+                                setTimeout(() => {
+                                    let depts = this.currentDepartments;
+                                    let dMatch = depts.find(d => String(d.name).trim().toLowerCase() === String(this.selectedDept).trim().toLowerCase());
+                                    if(dMatch && this.selectedDept !== dMatch.name) this.selectedDept = dMatch.name;
+                                    
+                                    setTimeout(() => {
+                                        let progs = this.currentPrograms;
+                                        let pMatch = progs.find(p => String(p.name).trim().toLowerCase() === String(this.selectedProgram).trim().toLowerCase());
+                                        if(pMatch && this.selectedProgram !== pMatch.name) this.selectedProgram = pMatch.name;
+                                    }, 50);
+                                }, 50);
+                            },
                             
                             get currentDepartments() {
-                                const college = this.colleges.find(c => c.name === this.selectedCollege);
-                                return college ? college.departments : [];
+                                if (!this.selectedCollege) return [];
+                                const college = this.colleges.find(c => String(c.name).trim().toLowerCase() === String(this.selectedCollege).trim().toLowerCase());
+                                if(!college || !college.departments) return [];
+                                return Array.isArray(college.departments) ? college.departments : Object.values(college.departments);
                             },
                             
                             get currentPrograms() {
-                                const dept = this.currentDepartments.find(d => d.name === this.selectedDept);
-                                return dept ? dept.programs : [];
+                                if (!this.selectedDept) return [];
+                                const depts = this.currentDepartments;
+                                if(!depts || depts.length === 0) return [];
+                                const dept = depts.find(d => String(d.name).trim().toLowerCase() === String(this.selectedDept).trim().toLowerCase());
+                                if(!dept || !dept.programs) return [];
+                                return Array.isArray(dept.programs) ? dept.programs : Object.values(dept.programs);
                             }
-                        }">
+                        }" x-init="initNormalization()">
                         <h3
                             class="text-xs font-bold text-[#8B0000] uppercase tracking-wider border-b border-slate-200 pb-2 mb-3">
                             Academic Details</h3>
@@ -192,9 +215,9 @@
                                         @change="selectedDept = ''; selectedProgram = ''" required
                                         class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] outline-none text-sm appearance-none cursor-pointer transition-shadow hover:shadow-sm">
                                         <option value="" disabled selected>Select College</option>
-                                        <template x-for="college in colleges" :key="college.id">
-                                            <option :value="college.name" x-text="college.name"></option>
-                                        </template>
+                                        @foreach($colleges as $college)
+                                            <option value="{{ $college->name }}">{{ $college->name }}</option>
+                                        @endforeach
                                     </select>
                                     <div
                                         class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">

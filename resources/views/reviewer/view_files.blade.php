@@ -194,8 +194,8 @@
                     </div>
                 </div>
 
-                <!-- Viewer pane: sticky so it stays visible while sidebar scrolls -->
-                <div class="sticky top-4 bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative" style="height: 70vh; min-height: 480px;">
+                <!-- Viewer pane -->
+                <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative" style="height: 70vh; min-height: 480px;">
                     <template x-if="activeFile && isViewable(activeFile) && isPdf(activeFile)">
                         <iframe :src="getUrl(activeFile)" class="w-full h-full border-0 bg-white" title="PDF Viewer"></iframe>
                     </template>

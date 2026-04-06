@@ -33,12 +33,19 @@ class ORNumberController extends Controller
         $title->Official_Receipt_Number = $request->or_number;
         $title->is_or_verified = false;
         $title->or_rejection_remarks = null; // Clear any previous rejection remarks
+        
+        // If status was Rejected, revert it back to pending or submitted
+        if ($title->Status === 'Rejected') {
+            $title->Status = 'Pending';
+        }
+
         $title->save();
 
         // Create Activity Log
         TitleLog::create([
             'research_title_id' => $title->id,
             'user_id' => Auth::id(),
+            
             'action' => 'Official Receipt Uploaded',
             'description' => "Uploaded Official Receipt #{$request->or_number} pending Admin verification.",
         ]);
@@ -86,6 +93,7 @@ class ORNumberController extends Controller
         $title->or_file_path = null;
         $title->is_or_verified = false;
         $title->or_rejection_remarks = $request->remarks;
+        $title->Status = 'Rejected';
         $title->save();
 
         TitleLog::create([

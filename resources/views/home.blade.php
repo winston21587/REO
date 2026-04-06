@@ -76,7 +76,7 @@
                         $status = $title->Status ?? $title->status ?? '';
                         $checkStatus = trim($status);
 
-                        if (in_array($checkStatus, ['Incomplete', 'Pending', 'Submitted'])) {
+                        if (in_array($checkStatus, ['Incomplete', 'Pending', 'Submitted', 'Rejected'])) {
                             $currentStep = 1;
                         } elseif (str_contains($checkStatus, 'Complete - Awaiting Hardcopy') || str_contains($checkStatus, 'Hardcopy Received') || str_contains($checkStatus, 'For Initial Review') || str_contains($checkStatus, 'Under Review')) {
                             $currentStep = 2; // Review Tracker
@@ -105,19 +105,19 @@
                             $currentStep = 2;
                         }
 
-                        $statusColor = match ($title->status) {
+                        $statusColor = match ($title->Status ?? $title->status) {
                             'Approved' => 'green',
                             'Returned', 'Waiting for Revision', 'Modifications Required', 'Incomplete' => 'orange',
                             'Panel Deliberation' => 'blue',
-                            'Disapproved' => 'red',
+                            'Disapproved', 'Rejected' => 'red',
                             default => 'orange',
                         };
-                        $statusIcon = match ($title->status) {
+                        $statusIcon = match ($title->Status ?? $title->status) {
                             'Approved' => 'fa-check-circle',
                             'Returned', 'Waiting for Revision', 'Modifications Required' => 'fa-edit',
                             'Incomplete' => 'fa-exclamation-circle',
                             'Panel Deliberation' => 'fa-users',
-                            'Disapproved' => 'fa-times-circle',
+                            'Disapproved', 'Rejected' => 'fa-times-circle',
                             default => 'fa-clock',
                         };
                         $hasLetter = $title->files->where('filetype', 'Result of Review (Admin Generated)')->isNotEmpty();

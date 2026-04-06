@@ -66,7 +66,9 @@
                 ->flatten()
                 ->sortByDesc('created_at');
 
-            $reviewerDocs = $allFiles->where('category', 'like', 'Reviewer Uploads%')->sortByDesc('created_at');
+            $reviewerDocs = $allFiles->filter(function ($f) {
+                return str_starts_with($f->category ?? '', 'Reviewer Uploads');
+            })->sortByDesc('created_at');
 
             $hasRevisions = $revisionFolders->isNotEmpty();
 

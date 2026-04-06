@@ -310,12 +310,45 @@
                         <div class="flex flex-col gap-3 mb-4">
                             <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest m-0">My Uploaded Evaluations</p>
                             @if($researchTitle->Status !== 'Reviewed')
-                            <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="w-full m-0" onsubmit="return confirm('Are you sure you want to formally complete your review and submit all documents?');">
-                                @csrf
-                                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
+                            <div x-data="{ showModal: false }" class="w-full">
+                                <button type="button" @click="showModal = true" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
                                     <i class="fas fa-check-circle"></i> Complete Review
                                 </button>
-                            </form>
+                                
+                                <!-- Modal -->
+                                <div x-show="showModal" style="display: none;" class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                        <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity" @click="showModal = false" aria-hidden="true"></div>
+                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                        <div x-show="showModal" x-transition.scale.origin.bottom class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
+                                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                                <div class="sm:flex sm:items-start">
+                                                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10 text-green-600">
+                                                        <i class="fas fa-exclamation-triangle"></i>
+                                                    </div>
+                                                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                                        <h3 class="text-lg leading-6 font-bold text-slate-900" id="modal-title">Complete Review</h3>
+                                                        <div class="mt-2">
+                                                            <p class="text-sm text-slate-500">Are you sure you want to formally complete your review and submit all documents? You <span class="font-bold">might not be able to modify your uploads</span> once marked as Reviewed.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                                                <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0 sm:ml-3">
+                                                    @csrf
+                                                    <button type="submit" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-bold text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto sm:text-sm">
+                                                        Confirm Completion
+                                                    </button>
+                                                </form>
+                                                <button type="button" @click="showModal = false" class="mt-3 w-full inline-flex justify-center rounded-xl border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 sm:mt-0 sm:w-auto sm:text-sm">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             @else
                             <div class="w-full text-center px-3 py-2 bg-green-50 text-green-600 rounded-xl text-xs font-bold border border-green-100"><i class="fas fa-check"></i> Review Completed</div>
                             @endif

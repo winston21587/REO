@@ -66,6 +66,8 @@
                 ->flatten()
                 ->sortByDesc('created_at');
 
+            $reviewerDocs = $allFiles->where('category', 'like', 'Reviewer Uploads%')->sortByDesc('created_at');
+
             $hasRevisions = $revisionFolders->isNotEmpty();
 
             // Build enriched file sets for Alpine (all JSON encoded via x-data)
@@ -119,6 +121,7 @@
             $jsOriginal = $groupFiles($originalFiles, 'Original');
             $jsActive   = $groupFiles($activeFiles, 'Current');
             $jsLetters  = $groupFiles($letters, 'Letters');
+            $jsReviewerDocs = $groupFiles($reviewerDocs, 'Reviewer Docs');
 
             $jsRevisions = [];
             foreach ($revisionFolders as $revNum => $files) {
@@ -136,6 +139,7 @@
                 originalFiles: {{ json_encode($jsOriginal) }},
                 activeFiles: {{ json_encode($jsActive) }},
                 letters: {{ json_encode($jsLetters) }},
+                reviewerDocs: {{ json_encode($jsReviewerDocs) }},
                 revisions: {{ json_encode($jsRevisions) }},
                 hasRevisions: {{ $hasRevisions ? 'true' : 'false' }},
                 revisionNums: {{ json_encode(array_keys($jsRevisions)) }},
@@ -275,6 +279,14 @@
                             <i class="fas fa-box-archive text-slate-400"></i> Original
                         </button>
 
+                        <template x-if="reviewerDocs.length > 0">
+                            <button @click="activeTab = 'reviewer_docs'"
+                                :class="activeTab === 'reviewer_docs' ? 'bg-white border-b-2 border-slate-700 text-slate-900' : 'text-slate-500 hover:text-slate-700'"
+                                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg">
+                                <i class="fas fa-user-edit text-slate-500"></i> Reports
+                            </button>
+                        </template>
+
                         @foreach($revisionFolders->sortKeys() as $revNum => $_)
                         <button @click="activeTab = 'rev_{{ $revNum }}'"
                             :class="activeTab === 'rev_{{ $revNum }}' ? 'bg-white border-b-2 border-indigo-500 text-indigo-700' : 'text-slate-500 hover:text-slate-700'"
@@ -398,6 +410,40 @@
                             </template>
                         </div>
                         @endforeach
+
+                        <!-- Reviewer Uploads tab -->
+                        <div x-show="activeTab === 'reviewer_docs'" style="display:none;">
+                            <div class="px-4 py-2.5 bg-slate-100/60 border-b border-slate-200 mb-2">
+                                <p class="text-xs font-extrabold text-slate-600 uppercase tracking-wider">Reviewer Uploads</p>
+                            </div>
+                            <template x-for="group in reviewerDocs" :key="group.category">
+                                <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2" x-data="{ expanded: false }">
+                                    <button @click="expanded = !expanded" class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                        <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest" x-text="group.category"></h4>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200" x-text="group.files.length + ' file(s)'"></span>
+                                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                                        </div>
+                                    </button>
+                                    <div x-show="expanded" style="display: none;" x-transition>
+                                        <template x-for="file in group.files" :key="file.id">
+                                            <button @click="selectFile(file)"
+                                                :class="activeFile && activeFile.id === file.id ? 'bg-[#8B0000] border-l-4 border-[#8B0000] text-white' : 'hover:bg-slate-50 border-l-4 border-transparent'"
+                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="file.bg">
+                                                    <i :class="[file.icon, file.color]"></i>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-bold truncate" :class="activeFile && activeFile.id === file.id ? 'text-slate-800' : 'text-slate-800'" x-text="file.filename"></p>
+                                                    <p class="text-[10px] text-slate-400" x-text="'Uploaded: ' + file.uploaded_at"></p>
+                                                </div>
+                                                <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-[#8B0000] flex-shrink-0"></div>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
 
                         <!-- Current Documents tab -->
                         @if($hasRevisions && $activeFiles->isNotEmpty())

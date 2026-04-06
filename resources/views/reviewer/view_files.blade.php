@@ -224,63 +224,7 @@
                     </template>
                 </div>
 
-                <!-- Reviewer Upload Section -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mt-4">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-cloud-upload-alt text-[#8B0000]"></i> Upload Evaluation Documents
-                    </h3>
-                    <form action="{{ route('reviewer.upload', $researchTitle->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4 relative">
-                        @csrf
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Category</label>
-                                <select name="category" required class="w-full text-sm font-semibold rounded-xl border-slate-200 focus:border-[#8B0000] focus:ring focus:ring-[#8B0000]/20 bg-slate-50/80 text-slate-700 h-11 transition-all">
-                                    <option value="">-- Select Document Category --</option>
-                                    @foreach($requirementsMap as $req)
-                                        <option value="{{ $req['name'] }}">{{ $req['name'] }}</option>
-                                    @endforeach
-                                    <option value="Other">Other Evaluation Material</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">File</label>
-                                <input type="file" name="file" required class="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition-colors bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
-                            </div>
-                        </div>
-                        <div class="flex justify-end pt-2">
-                            <button type="submit" class="bg-[#8B0000] hover:bg-red-900 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md shadow-red-900/20 flex items-center gap-2 text-sm focus:ring-4 focus:ring-red-100">
-                                <i class="fas fa-upload"></i> Upload Document
-                            </button>
-                        </div>
-                    </form>
 
-                    @php
-                        $reviewerUploads = $researchTitle->adminFiles()->where('uploaded_by', Auth::id())->where('category', 'like', 'Reviewer Uploads%')->latest()->get();
-                    @endphp
-                    @if($reviewerUploads->isNotEmpty())
-                    <div class="mt-8 pt-6 border-t border-slate-100">
-                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4">My Uploaded Evaluations</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            @foreach($reviewerUploads as $upload)
-                            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 border border-slate-100 hover:border-slate-300 transition-all group">
-                                <div class="flex items-center gap-3 overflow-hidden">
-                                    <div class="w-10 h-10 rounded-lg bg-white shadow-sm border border-slate-100 flex flex-shrink-0 items-center justify-center text-[#8B0000]">
-                                        <i class="fas fa-file-alt text-lg"></i>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-bold text-slate-800 truncate">{{ $upload->filename }}</p>
-                                        <p class="text-[10px] text-slate-500 font-medium mt-0.5 truncate">{{ str_replace('Reviewer Uploads - ', '', $upload->category) }} • {{ $upload->created_at->format('M d, Y h:i A') }}</p>
-                                    </div>
-                                </div>
-                                <a href="{{ route('reviewer.serve_file', $upload->id) }}" target="_blank" class="w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 flex flex-shrink-0 items-center justify-center transition-all opacity-0 group-hover:opacity-100">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
-                </div>
 
             </div>
 
@@ -336,6 +280,67 @@
                     </div>
                 </div>
                 @endif
+
+                <!-- Reviewer Upload Section -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 overflow-hidden flex-shrink-0" x-show="activeFile" style="display: none;">
+                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-cloud-upload-alt text-[#8B0000]"></i> <span x-text="'Upload review for ' + (activeFile ? activeFile.label : '')"></span>
+                    </h3>
+                    <form action="{{ route('reviewer.upload', $researchTitle->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4 relative">
+                        @csrf
+                        <input type="hidden" name="category" :value="activeFile ? activeFile.label : 'Other'">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Evaluation Document</label>
+                                <input type="file" name="file" required class="w-full text-[10px] text-slate-500 file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition-colors bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
+                            </div>
+                        </div>
+                        <div class="flex justify-end pt-2">
+                            <button type="submit" class="w-full bg-[#8B0000] hover:bg-red-900 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md shadow-red-900/20 flex items-center justify-center gap-2 text-xs focus:ring-4 focus:ring-red-100">
+                                <i class="fas fa-upload"></i> Upload Evaluation
+                            </button>
+                        </div>
+                    </form>
+
+                    @php
+                        $reviewerUploads = $researchTitle->adminFiles()->where('uploaded_by', Auth::id())->where('category', 'like', 'Reviewer Uploads%')->latest()->get();
+                    @endphp
+                    @if($reviewerUploads->isNotEmpty())
+                    <div class="mt-6 pt-5 border-t border-slate-100">
+                        <div class="flex flex-col gap-3 mb-4">
+                            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest m-0">My Uploaded Evaluations</p>
+                            @if($researchTitle->Status !== 'Reviewed')
+                            <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="w-full m-0" onsubmit="return confirm('Are you sure you want to formally complete your review and submit all documents?');">
+                                @csrf
+                                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
+                                    <i class="fas fa-check-circle"></i> Complete Review
+                                </button>
+                            </form>
+                            @else
+                            <div class="w-full text-center px-3 py-2 bg-green-50 text-green-600 rounded-xl text-xs font-bold border border-green-100"><i class="fas fa-check"></i> Review Completed</div>
+                            @endif
+                        </div>
+                        <div class="grid grid-cols-1 gap-2">
+                            @foreach($reviewerUploads as $upload)
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50/80 border border-slate-100 hover:border-slate-300 transition-all group">
+                                <div class="flex items-center gap-2 overflow-hidden">
+                                    <div class="w-8 h-8 rounded-lg bg-white shadow-sm border border-slate-100 flex flex-shrink-0 items-center justify-center text-[#8B0000]">
+                                        <i class="fas fa-file-alt text-sm"></i>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-[10px] font-bold text-slate-800 truncate" title="{{ $upload->filename }}">{{ $upload->filename }}</p>
+                                        <p class="text-[9px] text-slate-500 font-medium truncate">{{ str_replace('Reviewer Uploads - ', '', $upload->category) }}</p>
+                                    </div>
+                                </div>
+                                <a href="{{ route('reviewer.serve_file', $upload->id) }}" target="_blank" class="w-7 h-7 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 flex flex-shrink-0 items-center justify-center transition-all opacity-0 group-hover:opacity-100">
+                                    <i class="fas fa-external-link-alt text-xs"></i>
+                                </a>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                </div>
 
                 <!-- Tabbed File Picker -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0">

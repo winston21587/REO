@@ -81,11 +81,27 @@ class ReviewerController extends Controller
             'revision_number' => 0
         ]);
 
+        return back()->with('success', 'Evaluation Document Uploaded Successfully');
+    }
+
+    public function completeReview(Request $request, $id)
+    {
         $submission = Research_title::findOrFail($id);
+        
+        // Prevent completing if no reviewer uploads exist
+        $hasUploads = $submission->adminFiles()
+            ->where('uploaded_by', Auth::id())
+            ->where('category', 'like', 'Reviewer Uploads%')
+            ->exists();
+
+        if (!$hasUploads) {
+            return back()->withErrors(['error' => 'You must upload at least one evaluation document before completing the review.']);
+        }
+
         $submission->Status = 'Reviewed';
         $submission->save();
 
-        return back()->with('success', 'Evaluation Document Uploaded Successfully');
+        return redirect()->route('reviewer.dashboard')->with('success', 'Protocol review marked as complete!');
     }
 
     public function reviewedTitles()

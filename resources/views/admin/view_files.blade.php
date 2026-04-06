@@ -501,6 +501,10 @@
                             <span class="text-xs font-bold text-slate-800">{{ $researchTitle->created_at->format('M d, Y') }}</span>
                         </div>
                         <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i class="fas fa-calendar text-purple-400 w-3"></i> Reviewer</span>
+                            <span class="text-xs font-bold text-slate-800">{{ $researchTitle->reviewer_id ?? 'Not Assigned' }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
                             <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i class="fas fa-code-branch text-indigo-400 w-3"></i> Revisions</span>
                             <span class="text-xs font-bold {{ $hasRevisions ? 'text-indigo-600' : 'text-slate-500' }} bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100">
                                 {{ $revisionFolders->count() }} submitted

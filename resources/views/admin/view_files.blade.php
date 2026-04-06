@@ -229,6 +229,61 @@
                     </div>
                 </div>
 
+                <!-- Receipt & Payment Card -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fas fa-receipt text-amber-500"></i> Receipt & Payment
+                    </p>
+                    @if($researchTitle->is_or_verified)
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                <i class="fas fa-check-circle"></i> Verified
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            @if($researchTitle->Official_Receipt_Number)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-bold text-slate-500">OR Number</span>
+                                    <span class="font-mono text-xs font-bold text-slate-800">#{{ $researchTitle->Official_Receipt_Number }}</span>
+                                </div>
+                            @endif
+                            @if($researchTitle->or_file_path)
+                                <a href="{{ asset($researchTitle->or_file_path) }}" target="_blank"
+                                   class="mt-2 flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-colors">
+                                    <i class="fas fa-external-link-alt"></i> View Receipt Image
+                                </a>
+                            @endif
+                        </div>
+                    @elseif($researchTitle->or_file_path || $researchTitle->Official_Receipt_Number)
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-200">
+                                <i class="fas fa-eye"></i> Pending Verification
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            @if($researchTitle->Official_Receipt_Number)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-bold text-slate-500">OR Number</span>
+                                    <span class="font-mono text-xs font-bold text-slate-800">#{{ $researchTitle->Official_Receipt_Number }}</span>
+                                </div>
+                            @endif
+                            @if($researchTitle->or_file_path)
+                                <a href="{{ asset($researchTitle->or_file_path) }}" target="_blank"
+                                   class="mt-2 flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-colors">
+                                    <i class="fas fa-external-link-alt"></i> View Receipt Image
+                                </a>
+                            @endif
+                        </div>
+                    @else
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200">
+                                <i class="fas fa-clock"></i> Pending Payment
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 italic">No receipt has been submitted yet.</p>
+                    @endif
+                </div>
+
                 <!-- Version Timeline -->
                 @if($hasRevisions)
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">

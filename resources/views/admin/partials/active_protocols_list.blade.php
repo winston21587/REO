@@ -169,6 +169,7 @@
 
                                                     <!-- Proceed to Revision (Only if not yet finalized) -->
                                                     @if(!in_array($data->Status, ['Panel Deliberation', 'Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']))
+                                                        @if($data->is_or_verified)
                                                         <form id="finalizeForm-{{ $data->id }}"
                                                             action="{{ route('admin.recommendation.finalize', $data->id) }}"
                                                             method="POST">
@@ -179,6 +180,16 @@
                                                                 <i class="fas fa-check-circle w-4"></i> Proceed to Revision
                                                             </button>
                                                         </form>
+                                                        @else
+                                                        <div title="Official Receipt must be received and verified before proceeding to revision."
+                                                             class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-300 cursor-not-allowed rounded-lg select-none">
+                                                            <i class="fas fa-lock w-4"></i>
+                                                            <span>Proceed to Revision</span>
+                                                            <span class="ml-auto text-[9px] font-bold bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full border border-orange-200 leading-none">
+                                                                No Receipt
+                                                            </span>
+                                                        </div>
+                                                        @endif
                                                     @endif
                                                 @elseif($data->Review_Type)
                                                     <!-- Generate Letter -->

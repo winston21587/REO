@@ -87,6 +87,17 @@ class SettingsController extends Controller
         $user = Auth::user();
         Auth::logout();
         
+        // Append a timestamp to the email to free up the address for re-registration
+        $user->email = $user->email . '.deleted.' . time();
+        $user->save();
+
+        if ($user->researcher) {
+            foreach ($user->researcher->researchTitles as $title) {
+                $title->Status = 'Terminated';
+                $title->save(); // Save individually to fire TitleLog Model events
+            }
+        }
+
         if ($user->delete()) {
              return redirect()->route('login')->with('success', 'Your account has been deleted.');
         }

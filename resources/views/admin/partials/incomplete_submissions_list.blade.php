@@ -1,16 +1,26 @@
 <div id="incomplete-submissions-container" class="space-y-4 flex-1 h-full flex flex-col">
     <div class="space-y-4 flex-1">
         @forelse($incompleteSubmissions as $sub)
+            @php
+                // Check if any researcher file was uploaded AFTER this title was last updated (i.e., after status was set to Incomplete)
+                $latestFileUpload = $sub->files->max('pivot.created_at') ?? $sub->files->max('created_at');
+                $hasNewFilesUploaded = $latestFileUpload && \Carbon\Carbon::parse($latestFileUpload)->gt($sub->updated_at);
+            @endphp
             <div
-                class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group border-l-4 border-l-red-400">
+                class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group border-l-4 {{ $hasNewFilesUploaded ? 'border-l-amber-400' : 'border-l-red-400' }}">
                 <div class="flex justify-between items-start mb-3">
-                    <div>
+                    <div class="flex-1 min-w-0">
                         <h3 class="font-bold text-slate-800 text-lg leading-tight group-hover:text-[#8B0000] transition-colors line-clamp-1"
                             title="{{ $sub->Study_Protocol_title }}">{{ $sub->Study_Protocol_title }}</h3>
                         <p class="text-xs text-slate-500 mt-1 font-medium">Submitted at:
                             {{ $sub->created_at->format('Y-m-d') }}
                         </p>
                     </div>
+                    @if($hasNewFilesUploaded)
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 shadow-sm flex-shrink-0 ml-2 animate-pulse" title="Researcher has uploaded updated files. Please review.">
+                            <i class="fas fa-file-upload"></i> Files Updated
+                        </span>
+                    @endif
                 </div>
 
                 <div class="flex items-center justify-between mt-4">

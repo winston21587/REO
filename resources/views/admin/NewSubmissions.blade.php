@@ -240,11 +240,42 @@
 
             if (!value) return;
 
+            // Prevent duplicate entries
+            const existingValues = [...container.querySelectorAll('input[name="missing_requirements[]"]')]
+                .map(el => el.value.toLowerCase());
+            if (existingValues.includes(value.toLowerCase())) {
+                // Find and flash the existing item
+                [...container.querySelectorAll('div[id^="req-"]')].forEach(el => {
+                    const span = el.querySelector('span');
+                    if (span && span.title.toLowerCase() === value.toLowerCase()) {
+                        el.classList.add('ring-2', 'ring-red-400', 'bg-red-50');
+                        setTimeout(() => el.classList.remove('ring-2', 'ring-red-400', 'bg-red-50'), 1200);
+                    }
+                });
+                // Show inline hint below the datalist input
+                let hint = document.getElementById('reqDuplicateHint');
+                if (!hint) {
+                    hint = document.createElement('p');
+                    hint.id = 'reqDuplicateHint';
+                    hint.className = 'text-xs text-red-500 font-bold mt-1';
+                    input.closest('.flex').insertAdjacentElement('afterend', hint);
+                }
+                hint.textContent = '"' + value + '" is already in the list.';
+                setTimeout(() => { if (hint) hint.textContent = ''; }, 2000);
+                input.value = '';
+                input.focus();
+                return;
+            }
+
+            // Clear any previous hint
+            const hint = document.getElementById('reqDuplicateHint');
+            if (hint) hint.textContent = '';
+
             // Generate unique ID
             const id = Date.now();
 
             const itemHTML = `
-                <div id="req-${id}" class="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm animate-[fadeIn_0.3s_ease-out] group">
+                <div id="req-${id}" class="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm animate-[fadeIn_0.3s_ease-out] group transition-all duration-300">
                     <div class="flex items-center gap-3 overflow-hidden">
                         <div class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></div>
                         <span class="text-sm font-medium text-slate-700 truncate" title="${value}">${value}</span>
@@ -277,6 +308,16 @@
                 addRequirement();
             }
         });
+
+        // Also clear the requirement list when the modal resets (when opening triage modal)
+        const _origOpenTriage = window.openTriageModal;
+        window._triageModalClean = function() {
+            document.getElementById('requirementsList').innerHTML = '';
+            const hint = document.getElementById('reqDuplicateHint');
+            if (hint) hint.textContent = '';
+            const reqInput = document.getElementById('reqInput');
+            if (reqInput) reqInput.value = '';
+        };
 
         // --- Toggle & Modal Logic ---
 
@@ -360,6 +401,8 @@
             dateInput.value = minDate;
             dateInput.min = minDate;
 
+            // Clear requirements list and hints on every open
+            if (window._triageModalClean) window._triageModalClean();
 
             // Default to Complete
             document.querySelector('input[value="Complete"]').checked = true;

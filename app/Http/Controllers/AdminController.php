@@ -348,13 +348,20 @@ class AdminController extends Controller
     {
         $query = Research_title::with(['researcher.user', 'files', 'adminFiles']);
 
-        // Base Statuses allowed in Active Protocols
+        // Comprehensive Active Statuses allowed in Active Protocols (intake, review, and revision loops before final verdict)
         $allowedStatuses = [
-            'For Initial Review',
-            'Complete - Awaiting Hardcopy',
+            'Pending',
+            'Rejected',
+            'Incomplete',
             'Incomplete - Awaiting Hardcopy',
             'Hardcopy Received - For Initial Review',
-            'Under Review'
+            'For Initial Review',
+            'Reviewer Assigned',
+            'Under Review',
+            'Reviewed',
+            'Waiting for Revision',
+            'Revision Submitted',
+            'Complete - Awaiting Hardcopy',
         ];
 
         // 1. Handle Status Filters (Checkboxes)

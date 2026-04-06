@@ -1515,31 +1515,44 @@ class AdminController extends Controller
 
         $w = $certSize['width'];
 
-        // Names (researcher/s) — Nautilus Pompilius 18, centered, #6d412a
+        // ── Names (researcher/s) — Nautilus Pompilius 18pt, centered, #6d412a ──
+        // K_PATH_FONTS is already defined above as public/fonts/tcpdf/
+        // TCPDF_FONTS::addTTFfont() converts the TTF and writes the cache files there.
         $certPdf->SetTextColor(109, 65, 42); // #6d412a
-        // Temporarily using helvetica since Nautilus PostScript OTF mapping fails in TCPDF
-        $certPdf->SetFont('helvetica', '', 18);
+        $nautilusFontName = \TCPDF_FONTS::addTTFfont(
+            public_path('fonts/Nautilus.ttf'), // source TTF
+            'TrueTypeUnicode',                 // font type
+            '',                                // encoding
+            32,                                // flags
+            public_path('fonts/tcpdf/')        // output directory (= K_PATH_FONTS)
+        );
+        if (!$nautilusFontName) {
+            // Fallback to helvetica if Nautilus conversion fails
+            $nautilusFontName = 'helvetica';
+        }
+        $certPdf->SetFont($nautilusFontName, '', 18);
         $certPdf->SetXY(30, 90);
         $certPdf->MultiCell($w - 60, 6, $request->shared_researchers, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
 
-        // Color for Title, Code, Summary: matches Names (#6d412a)
-        $certPdf->SetTextColor(109, 65, 42);
-
-        // Title — matching names font, 11.4, centered, multi-line
-        $certPdf->SetFont('helvetica', '', 11.4);
+        // ── Title — Colette 11pt, centered, #2b1511 ──
+        // Note: only colette.php (Regular) is compiled — no bold variant exists.
+        $certPdf->SetTextColor(43, 21, 17); // #2b1511
+        $certPdf->SetFont('colette', '', 11);
         $certPdf->SetXY(70, 157.5);
         $certPdf->MultiCell(115, 6, $request->shared_title, 0, 'C');
 
-        // REO Code — matching names font, 12, centered
+        // ── REO Code — Colette 11pt, centered, #2b1511 ──
         if ($request->shared_reo_code) {
-            $certPdf->SetFont('helvetica', '', 12);
+            $certPdf->SetFont('colette', '', 11);
             $certPdf->SetXY(20, 176);
             $certPdf->Cell($w - 60, 6, $request->shared_reo_code, 0, 0, 'C');
         }
 
-        // REO Summary / scope of exemption — matching names font, 11, justified
+        // ── Summary / scope of exemption — Montserrat 11pt, justified, #2b1511 ──
+        // montserrat.php is pre-compiled in public/fonts/tcpdf/
         if ($request->cert_reo_summary) {
-            $certPdf->SetFont('helvetica', '', 11);
+            $certPdf->SetTextColor(43, 21, 17); // #2b1511
+            $certPdf->SetFont('montserrat', '', 11);
             $certPdf->SetXY(30, 185);
             $certPdf->MultiCell($w - 60, 5, $request->cert_reo_summary, 0, 'J', false, 1, null, null, true, 0, false, true, 0, 'T', false);
         }

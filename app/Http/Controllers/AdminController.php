@@ -397,18 +397,14 @@ class AdminController extends Controller
 
         // Comprehensive Active Statuses allowed in Active Protocols (intake, review, and revision loops before final verdict)
         $allowedStatuses = [
-            'Pending',
-            'Rejected',
-            'Incomplete',
             'Incomplete - Awaiting Hardcopy',
-            'Hardcopy Received - For Initial Review',
-            'For Initial Review',
+            'Incomplete Hardcopy',
+            'Hardcopy Received',
             'Reviewer Assigned',
             'Under Review',
             'Reviewed',
             'Waiting for Revision',
             'Revision Submitted',
-            'Complete - Awaiting Hardcopy',
         ];
 
         // 1. Handle Status Filters (Checkboxes)
@@ -573,7 +569,7 @@ class AdminController extends Controller
 
 
         // 3. Fetch Incomplete Submissions
-        $incompleteQuery = Research_title::where('Status', 'Incomplete');
+        $incompleteQuery = Research_title::whereIn('Status', ['Incomplete', 'Rejected']);
 
         // Search Filter
         if ($request->filled('incomplete_search')) {
@@ -657,7 +653,7 @@ class AdminController extends Controller
 
             if ($request->classification === 'Complete') {
                 $request->validate(['appointment_date' => 'required|date|after:tomorrow']);
-                $newStatus = 'Complete - Awaiting Hardcopy';
+                $newStatus = 'Incomplete - Awaiting Hardcopy';
                 $submission->Status = $newStatus;
                 $submission->save();
                 $appointment = Appointment::create([
@@ -721,7 +717,7 @@ class AdminController extends Controller
                 $message = "Submission reverted to Pending. Appointment cancelled.";
                 
             } elseif ($request->classification === 'Hardcopy Complete') {
-                $newStatus = 'Hardcopy Received - For Initial Review';
+                $newStatus = 'Hardcopy Received';
                 $submission->Status = $newStatus;
                 $submission->save();
                 
@@ -733,7 +729,7 @@ class AdminController extends Controller
                     'remarks'          => 'required|string',
                 ]);
 
-                $newStatus = 'Incomplete - Awaiting Hardcopy';
+                $newStatus = 'Incomplete Hardcopy';
                 $submission->Status = $newStatus;
                 $submission->save();
                 

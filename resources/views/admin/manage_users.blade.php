@@ -341,13 +341,6 @@
                             <div>
                                 <h4 class="text-lg font-bold text-slate-900" x-text="selectedUser.first_name + ' ' + selectedUser.last_name"></h4>
                                 <p class="text-sm text-slate-500" x-text="selectedUser.email"></p>
-                                <div class="mt-2">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
-                                          :class="selectedUser.email_verified_at ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'">
-                                        <span class="w-1.5 h-1.5 rounded-full" :class="selectedUser.email_verified_at ? 'bg-emerald-500' : 'bg-amber-500'"></span>
-                                        <span x-text="selectedUser.email_verified_at ? 'Active Account' : 'Pending Verification'"></span>
-                                    </span>
-                                </div>
                             </div>
                         </div>
 

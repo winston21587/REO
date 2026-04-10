@@ -87,12 +87,12 @@
             <!-- Metric Card 3 -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
                 <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                    <i class="fas fa-clock text-6xl text-orange-500"></i>
+                    <i class="fas fa-exclamation-triangle text-6xl text-orange-500"></i>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg. Review Time</p>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Revisions</p>
                 <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800">14</h3>
-                    <span class="text-xs font-bold text-slate-400 mb-1">Days</span>
+                    <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($revisionsCount) }}</h3>
+                    <span class="text-xs font-bold text-slate-400 mb-1">{{ $revisionsRate }}% Bounce Rate</span>
                 </div>
             </div>
 

@@ -164,10 +164,10 @@ class AdminController extends Controller
         
         // Apply date filters to base query
         if ($selectedYear !== 'all') {
-            $baseQuery->whereYear('created_at', $selectedYear);
+            $baseQuery->whereYear('research_title_information.created_at', $selectedYear);
         }
         if ($selectedMonth !== 'all') {
-            $baseQuery->whereMonth('created_at', $selectedMonth);
+            $baseQuery->whereMonth('research_title_information.created_at', $selectedMonth);
         }
 
         // Apply specific criteria filters
@@ -324,23 +324,38 @@ class AdminController extends Controller
             }
         }
 
-        // 5. Pie Chart: Review Type Distribution
-        $reviewQuery = clone $baseQuery;
-        $reviewTypeStats = $reviewQuery
-            ->selectRaw('Review_Type, COUNT(*) as count')
-            ->groupBy('Review_Type')
-            ->whereNotNull('Review_Type')
-            ->pluck('count', 'Review_Type')
-            ->toArray();
+        // 5. Top Submitting Colleges or Departments (Smart Drill-Down)
+        if ($selectedCollege && $selectedAffiliation !== 'External') {
+            // Drill into departments within the selected college
+            $topSubmitters = (clone $baseQuery)
+                ->join('researchers', 'research_title_information.researcher_id', '=', 'researchers.id')
+                ->where('researchers.college', $selectedCollege)
+                ->selectRaw('researchers.department as name, COUNT(*) as count')
+                ->groupBy('researchers.department')
+                ->orderByDesc('count')
+                ->limit(5)
+                ->get();
+            $topSubmittersLabel = 'Top Departments';
+        } else {
+            $topSubmitters = (clone $baseQuery)
+                ->join('researchers', 'research_title_information.researcher_id', '=', 'researchers.id')
+                ->selectRaw('researchers.college as name, COUNT(*) as count')
+                ->groupBy('researchers.college')
+                ->orderByDesc('count')
+                ->limit(5)
+                ->get();
+            $topSubmittersLabel = 'Top Submitting Colleges';
+        }
+        $topSubmittersMax = $topSubmitters->max('count') ?: 1;
 
-        // 6. Pie Chart: Approval Status
-        $statusQuery = clone $baseQuery;
-        $statusStats = $statusQuery
-            ->selectRaw('Status, COUNT(*) as count')
-            ->whereIn('Status', ['Approved', 'Disapproved'])
-            ->groupBy('Status')
-            ->pluck('count', 'Status')
-            ->toArray();
+        // 6. Active Pipeline Stages
+        $pipelineStages = [
+            ['label' => 'Pending Intake',        'count' => (clone $baseQuery)->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy'])->count(), 'color' => 'slate'],
+            ['label' => 'Under Review',          'count' => (clone $baseQuery)->whereIn('Status', ['For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review'])->count(), 'color' => 'blue'],
+            ['label' => 'Waiting for Revisions', 'count' => (clone $baseQuery)->whereIn('Status', ['Waiting for Revision'])->count(), 'color' => 'amber'],
+            ['label' => 'Final Verification',    'count' => (clone $baseQuery)->whereIn('Status', ['Complete - Awaiting Hardcopy'])->count(), 'color' => 'emerald'],
+        ];
+        $pipelineMax = max(array_column($pipelineStages, 'count')) ?: 1;
 
         // 7. Completion Status Breakdown (All time / Current snapshots)
         $statusCounts = (clone $baseQuery)
@@ -414,8 +429,11 @@ class AdminController extends Controller
             'activeResearchers',
             'dailyData',
             'dayLabels',
-            'reviewTypeStats',
-            'statusStats',
+            'topSubmitters',
+            'topSubmittersLabel',
+            'topSubmittersMax',
+            'pipelineStages',
+            'pipelineMax',
             'doneCount',
             'activeCount',
             'pendingCount',

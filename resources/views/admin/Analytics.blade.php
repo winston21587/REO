@@ -148,21 +148,47 @@
                 </div>
             </section>
 
-            <!-- Right Column: Pie Charts (Takes up 1/3) -->
+            <!-- Right Column: Diagnostic Widgets (Takes up 1/3) -->
             <div class="space-y-8">
-                <!-- Pie Chart 1: Review Type -->
+                <!-- Widget 1: Top Submitting Colleges / Departments -->
                 <section class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Review Type Distribution ({{ $selectedYear }})</h3>
-                    <div class="h-64">
-                        <canvas id="reviewTypeChart"></canvas>
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">{{ $topSubmittersLabel }}</h3>
+                    <div class="space-y-4">
+                        @forelse($topSubmitters as $index => $item)
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-sm font-semibold text-slate-700 truncate pr-3">{{ $item->name ?? 'Unspecified' }}</span>
+                                <span class="text-sm font-extrabold text-slate-800">{{ $item->count }}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-1.5">
+                                <div class="bg-[#8B0000] h-1.5 rounded-full transition-all duration-500" style="width: {{ round(($item->count / $topSubmittersMax) * 100) }}%"></div>
+                            </div>
+                        </div>
+                        @empty
+                        <p class="text-sm text-slate-400 text-center py-6">No submission data available</p>
+                        @endforelse
                     </div>
                 </section>
 
-                <!-- Pie Chart 2: Status Overview -->
+                <!-- Widget 2: Active Pipeline -->
                 <section class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Approval Status ({{ $selectedYear }})</h3>
-                    <div class="h-64">
-                        <canvas id="statusChart"></canvas>
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">Active Pipeline</h3>
+                    <div class="space-y-4">
+                        @foreach($pipelineStages as $stage)
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs font-semibold text-slate-600">{{ $stage['label'] }}</span>
+                                @php
+                                    $colorMap = ['slate' => 'bg-slate-200 text-slate-700', 'blue' => 'bg-blue-100 text-blue-700', 'amber' => 'bg-amber-100 text-amber-700', 'emerald' => 'bg-emerald-100 text-emerald-700'];
+                                    $barMap = ['slate' => 'bg-slate-400', 'blue' => 'bg-blue-500', 'amber' => 'bg-amber-500', 'emerald' => 'bg-emerald-500'];
+                                @endphp
+                                <span class="text-xs font-extrabold px-2 py-0.5 rounded-full {{ $colorMap[$stage['color']] }}">{{ $stage['count'] }}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="{{ $barMap[$stage['color']] }} h-2 rounded-full transition-all duration-500" style="width: {{ $pipelineMax > 0 ? round(($stage['count'] / $pipelineMax) * 100) : 0 }}%"></div>
+                            </div>
+                        </div>
+                        @endforeach
                     </div>
                 </section>
             </div>
@@ -301,55 +327,6 @@
                     }
                 });
 
-                // --- 2. Review Type Pie Chart ---
-                const ctxReview = document.getElementById('reviewTypeChart').getContext('2d');
-                const reviewStats = @json($reviewTypeStats);
-                
-                new Chart(ctxReview, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(reviewStats),
-                        datasets: [{
-                            data: Object.values(reviewStats),
-                            backgroundColor: ['#8B0000', '#F59E0B', '#10B981', '#3B82F6'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }
-                        },
-                        cutout: '70%'
-                    }
-                });
-
-                // --- 3. Status Pie Chart ---
-                const ctxStatus = document.getElementById('statusChart').getContext('2d');
-                const statusStats = @json($statusStats);
-
-                new Chart(ctxStatus, {
-                    type: 'pie',
-                    data: {
-                        labels: Object.keys(statusStats),
-                        datasets: [{
-                            data: Object.values(statusStats),
-                            backgroundColor: [
-                                '#10B981', // Approved (Green)
-                                '#EF4444'  // Disapproved (Red)
-                            ].concat(['#CBD5E1', '#F59E0B']), // Fallback colors
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }
-                        }
-                    }
-                });
             });
 
             // --- Export to PDF Function ---

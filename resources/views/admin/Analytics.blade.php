@@ -68,7 +68,13 @@
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Submissions</p>
                 <div class="flex items-end gap-2 mt-2">
                     <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($totalSubmissions) }}</h3>
-                    <span class="text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-arrow-up"></i> 12%</span>
+                    @if($submissionsGrowthRate > 0)
+                        <span class="text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-arrow-up"></i> {{ $submissionsGrowthRate }}%</span>
+                    @elseif($submissionsGrowthRate < 0)
+                        <span class="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-arrow-down"></i> {{ abs($submissionsGrowthRate) }}%</span>
+                    @else
+                        <span class="text-xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-minus"></i> 0%</span>
+                    @endif
                 </div>
             </div>
             
@@ -104,7 +110,6 @@
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Researchers</p>
                 <div class="flex items-end gap-2 mt-2">
                     <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($activeResearchers) }}</h3>
-                    <span class="text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-arrow-up"></i> 5%</span>
                 </div>
             </div>
         </div>

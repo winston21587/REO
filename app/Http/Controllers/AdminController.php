@@ -201,6 +201,51 @@ class AdminController extends Controller
         // 1. Total Submissions (All time)
         $totalSubmissions = (clone $baseQuery)->count();
 
+        // Submissions Growth Rate Logic based on selected period
+        $previousPeriodQuery = clone $baseQuery;
+        // remove existing whereYear/whereMonth constraints by creating a fresh query and applying only specific filters manually
+        $previousPeriodQuery = Research_title::query();
+        if ($selectedStatus) $previousPeriodQuery->where('Status', $selectedStatus);
+        if ($selectedReviewType) $previousPeriodQuery->where('Review_Type', $selectedReviewType);
+        if ($selectedThesisType) $previousPeriodQuery->where('thesis_type', $selectedThesisType);
+        if ($selectedCategory) $previousPeriodQuery->where('Research_Category', $selectedCategory);
+        if ($selectedAffiliation) {
+            $previousPeriodQuery->whereHas('researcher', function($q) use ($selectedAffiliation) {
+                if ($selectedAffiliation == 'Internal') $q->where('external_user', false);
+                elseif ($selectedAffiliation == 'External') $q->where('external_user', true);
+            });
+        }
+        if ($selectedCollege && $selectedAffiliation !== 'External') {
+            $previousPeriodQuery->whereHas('researcher', function($q) use ($selectedCollege) {
+                $q->where('college', $selectedCollege);
+            });
+        }
+
+        $currentCountForTrend = $totalSubmissions;
+
+        if ($selectedYear !== 'all' && $selectedMonth !== 'all') {
+            $prevMonth = $selectedMonth - 1;
+            $prevYear = $selectedYear;
+            if ($prevMonth == 0) { $prevMonth = 12; $prevYear--; }
+            $previousPeriodQuery->whereYear('created_at', $prevYear)->whereMonth('created_at', $prevMonth);
+        } elseif ($selectedYear !== 'all') {
+            $previousPeriodQuery->whereYear('created_at', $selectedYear - 1);
+        } else {
+            // Trend defaults to Current vs Previous Month when viewing "All Time"
+            $currentMonthQuery = clone $previousPeriodQuery;
+            $currentCountForTrend = $currentMonthQuery->whereYear('created_at', date('Y'))->whereMonth('created_at', date('m'))->count();
+            
+            $prevMonth = date('m') - 1;
+            $prevYear = date('Y');
+            if ($prevMonth == 0) { $prevMonth = 12; $prevYear--; }
+            $previousPeriodQuery->whereYear('created_at', $prevYear)->whereMonth('created_at', $prevMonth);
+        }
+
+        $previousCount = $previousPeriodQuery->count();
+        $submissionsGrowthRate = $previousCount > 0 
+            ? round((($currentCountForTrend - $previousCount) / $previousCount) * 100) 
+            : ($currentCountForTrend > 0 ? 100 : 0);
+
         // 2. Approved (Approved Status - matching the chart filter)
         $approvedCount = (clone $baseQuery)->where('Status', 'Approved')->count();
 
@@ -361,6 +406,7 @@ class AdminController extends Controller
 
         return view('admin.Analytics', compact(
             'totalSubmissions',
+            'submissionsGrowthRate',
             'approvedCount',
             'approvalRate',
             'revisionsCount',

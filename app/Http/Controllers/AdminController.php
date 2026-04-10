@@ -372,7 +372,7 @@ class AdminController extends Controller
         }
         
         $allSubmitters = $allSubmittersCollection->sortByDesc('count')->values();
-        $topSubmitters = $allSubmitters->where('count', '>', 0)->take(5);
+        $topSubmitters = $allSubmitters->take(5);
         $topSubmittersMax = $topSubmitters->max('count') ?: 1;
         $allSubmittersMax = $allSubmitters->max('count') ?: 1;
 

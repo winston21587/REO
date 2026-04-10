@@ -154,7 +154,7 @@
                 <section class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
                     <div class="flex justify-between items-center mb-5">
                         <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">{{ $topSubmittersLabel }}</h3>
-                        @if($allSubmitters->count() > 5)
+                        @if($allSubmitters->count() > 0)
                         <button type="button" onclick="openSeeAllModal()" class="text-xs font-semibold text-[#8B0000] hover:text-red-700 transition-colors flex items-center gap-1">
                             See All <i class="fas fa-arrow-right text-[10px]"></i>
                         </button>

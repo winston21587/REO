@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
         if (!$researcherUser->researcher) {
             Researcher::create([
                 'user_id' => $researcherUser->id,
-                'college' => 'College of computing studies',
+                'college' => 'College of Computing Studies',
                 'department' => 'Computer Science',
                 'program' => 'BS Computer Science',
                 'external_user' => false,

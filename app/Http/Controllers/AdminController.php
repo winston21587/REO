@@ -207,6 +207,21 @@ class AdminController extends Controller
         // Calculate Approval Rate
         $approvalRate = $totalSubmissions > 0 ? round(($approvedCount / $totalSubmissions) * 100) : 0;
 
+        // Count Revisions / Bounced Back
+        $revisionsCount = (clone $baseQuery)->where(function ($query) {
+            $query->whereIn('Status', [
+                'Incomplete', 
+                'Incomplete - Awaiting Hardcopy', 
+                'Incomplete Hardcopy', 
+                'Waiting for Revision', 
+                'Revision Submitted'
+            ])
+            ->orWhereHas('feedbacks')
+            ->orWhereHas('revisionLogs');
+        })->count();
+        
+        $revisionsRate = $totalSubmissions > 0 ? round(($revisionsCount / $totalSubmissions) * 100) : 0;
+
         // 3. Active Researchers
         $activeResearchers = User::where('role', 'researcher')->count();
 
@@ -348,6 +363,8 @@ class AdminController extends Controller
             'totalSubmissions',
             'approvedCount',
             'approvalRate',
+            'revisionsCount',
+            'revisionsRate',
             'activeResearchers',
             'dailyData',
             'dayLabels',

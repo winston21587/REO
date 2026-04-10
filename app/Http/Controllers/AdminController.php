@@ -327,26 +327,30 @@ class AdminController extends Controller
         // 5. Top Submitting Colleges or Departments (Smart Drill-Down)
         if ($selectedCollege && $selectedAffiliation !== 'External') {
             // Drill into departments within the selected college
-            $topSubmitters = (clone $baseQuery)
+            $allSubmitters = (clone $baseQuery)
                 ->join('researchers', 'research_title_information.researcher_id', '=', 'researchers.id')
                 ->where('researchers.college', $selectedCollege)
+                ->whereNotNull('researchers.department')
+                ->where('researchers.department', '!=', '')
                 ->selectRaw('researchers.department as name, COUNT(*) as count')
                 ->groupBy('researchers.department')
                 ->orderByDesc('count')
-                ->limit(5)
                 ->get();
             $topSubmittersLabel = 'Top Departments';
         } else {
-            $topSubmitters = (clone $baseQuery)
+            $allSubmitters = (clone $baseQuery)
                 ->join('researchers', 'research_title_information.researcher_id', '=', 'researchers.id')
+                ->whereNotNull('researchers.college')
+                ->where('researchers.college', '!=', '')
                 ->selectRaw('researchers.college as name, COUNT(*) as count')
                 ->groupBy('researchers.college')
                 ->orderByDesc('count')
-                ->limit(5)
                 ->get();
             $topSubmittersLabel = 'Top Submitting Colleges';
         }
+        $topSubmitters = $allSubmitters->take(5);
         $topSubmittersMax = $topSubmitters->max('count') ?: 1;
+        $allSubmittersMax = $allSubmitters->max('count') ?: 1;
 
         // 6. Active Pipeline Stages
         $pipelineStages = [
@@ -432,6 +436,8 @@ class AdminController extends Controller
             'topSubmitters',
             'topSubmittersLabel',
             'topSubmittersMax',
+            'allSubmitters',
+            'allSubmittersMax',
             'pipelineStages',
             'pipelineMax',
             'doneCount',

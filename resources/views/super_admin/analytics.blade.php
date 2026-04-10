@@ -152,7 +152,14 @@
             <div class="space-y-8">
                 <!-- Widget 1: Top Submitting Colleges / Departments -->
                 <section class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">{{ $topSubmittersLabel }}</h3>
+                    <div class="flex justify-between items-center mb-5">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">{{ $topSubmittersLabel }}</h3>
+                        @if($allSubmitters->count() > 5)
+                        <button type="button" onclick="openSeeAllModal()" class="text-xs font-semibold text-[#8B0000] hover:text-red-700 transition-colors flex items-center gap-1">
+                            See All <i class="fas fa-arrow-right text-[10px]"></i>
+                        </button>
+                        @endif
+                    </div>
                     <div class="space-y-4">
                         @forelse($topSubmitters as $index => $item)
                         <div>
@@ -551,13 +558,63 @@
         </div>
     </div>
     
+    <!-- See All Submitters Modal -->
+    <div id="seeAllModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex justify-end backdrop-blur-sm transition-opacity opacity-0 duration-300" onclick="if(event.target===this) closeSeeAllModal()">
+        <div class="bg-white shadow-2xl w-full max-w-md h-full overflow-y-auto transform transition-transform translate-x-full duration-300 flex flex-col" id="seeAllModalPanel">
+            <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-university text-[#8B0000]"></i> {{ $topSubmittersLabel }}
+                </h3>
+                <button type="button" onclick="closeSeeAllModal()" class="text-slate-400 hover:text-[#8B0000] focus:outline-none transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-3 flex-1">
+                @foreach($allSubmitters as $index => $item)
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-bold text-slate-400 w-5 text-right">{{ $index + 1 }}</span>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-semibold text-slate-700 truncate pr-3">{{ $item->name ?? 'Unspecified' }}</span>
+                            <span class="text-sm font-extrabold text-slate-800">{{ $item->count }}</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5">
+                            <div class="bg-[#8B0000] h-1.5 rounded-full transition-all duration-500" style="width: {{ round(($item->count / $allSubmittersMax) * 100) }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Move modal to body to avoid stacking context issues with header
+        function openSeeAllModal() {
+            const modal = document.getElementById('seeAllModal');
+            const panel = document.getElementById('seeAllModalPanel');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                panel.classList.remove('translate-x-full');
+                panel.classList.add('translate-x-0');
+            }, 10);
+        }
+        function closeSeeAllModal() {
+            const modal = document.getElementById('seeAllModal');
+            const panel = document.getElementById('seeAllModalPanel');
+            modal.classList.add('opacity-0');
+            panel.classList.remove('translate-x-0');
+            panel.classList.add('translate-x-full');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        // Move modals to body to avoid stacking context issues with header
         document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('filterModal');
-            if (modal) {
-                document.body.appendChild(modal);
-            }
+            const filterModal = document.getElementById('filterModal');
+            const seeAllModal = document.getElementById('seeAllModal');
+            if (filterModal) document.body.appendChild(filterModal);
+            if (seeAllModal) document.body.appendChild(seeAllModal);
         });
     </script>
 </x-super_admin_layout>
+

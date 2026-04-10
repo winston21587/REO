@@ -138,7 +138,7 @@
                 <div class="relative z-10">
                     <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1">Submission Trends</h2>
                     <div class="flex items-end gap-4 mb-8">
-                        <p class="text-5xl font-extrabold text-slate-900">Daily Overview</p>
+                        <p class="text-5xl font-extrabold text-slate-900">{{ $selectedMonth === 'all' ? 'Monthly Overview' : 'Daily Overview' }}</p>
                         <p class="text-sm text-slate-500 font-medium mb-1.5">{{ $selectedMonth === 'all' ? 'All Months' : DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} {{ $selectedYear === 'all' ? 'All Years' : $selectedYear }}</p>
                     </div>
 

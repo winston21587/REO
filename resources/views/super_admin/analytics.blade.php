@@ -21,38 +21,52 @@
         
         <!-- Active Filters Display -->
         <div class="flex flex-wrap gap-2 -mt-4 mb-2">
-            <span class="px-2.5 py-1 bg-red-50 text-[#8B0000] border border-red-100 rounded-lg text-xs font-bold flex items-center gap-1">
-                <i class="fas fa-calendar-alt opacity-70"></i> {{ $selectedMonth === 'all' ? 'All Months' : DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} {{ $selectedYear === 'all' ? 'All Years' : $selectedYear }}
-            </span>
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
+                <i class="fas fa-calendar-alt text-slate-400"></i>
+                @if($selectedMonth === 'all' && $selectedYear === 'all')
+                    All Time
+                @else
+                    {{ $selectedMonth === 'all' ? 'All Months' : DateTime::createFromFormat('!m', $selectedMonth)->format('M') }} {{ $selectedYear === 'all' ? 'All Years' : $selectedYear }}
+                @endif
+                @if($selectedMonth !== 'all' || $selectedYear !== 'all')
+                    <button type="button" onclick="clearFilter('date')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+                @endif
+            </div>
             @if($selectedStatus) 
-            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
-                <i class="fas fa-info-circle opacity-50"></i> {{ $selectedStatus }}
-            </span> 
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
+                <i class="fas fa-info-circle text-slate-400"></i> {{ $selectedStatus }}
+                <button type="button" onclick="clearFilter('status')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            </div> 
             @endif
             @if($selectedReviewType) 
-            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
-                <i class="fas fa-clipboard-check opacity-50"></i> {{ $selectedReviewType }}
-            </span> 
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
+                <i class="fas fa-clipboard-check text-slate-400"></i> {{ $selectedReviewType }}
+                <button type="button" onclick="clearFilter('review_type')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            </div> 
             @endif
             @if($selectedThesisType) 
-            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
-                <i class="fas fa-book opacity-50"></i> {{ $selectedThesisType }}
-            </span> 
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
+                <i class="fas fa-book text-slate-400"></i> {{ $selectedThesisType }}
+                <button type="button" onclick="clearFilter('thesis_type')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            </div> 
             @endif
             @if($selectedCategory) 
-            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
-                <i class="fas fa-tags opacity-50"></i> {{ $selectedCategory }}
-            </span> 
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
+                <i class="fas fa-tags text-slate-400"></i> {{ $selectedCategory }}
+                <button type="button" onclick="clearFilter('category')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            </div> 
             @endif
             @if($selectedAffiliation) 
-            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
-                <i class="fas fa-users opacity-50"></i> {{ $selectedAffiliation }}
-            </span> 
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
+                <i class="fas fa-users text-slate-400"></i> {{ $selectedAffiliation }}
+                <button type="button" onclick="clearFilter('affiliation')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            </div> 
             @endif
             @if($selectedCollege && $selectedAffiliation !== 'External') 
-            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-1">
-                <i class="fas fa-university opacity-50"></i> {{ $selectedCollege }}
-            </span> 
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
+                <i class="fas fa-university text-slate-400"></i> {{ $selectedCollege }}
+                <button type="button" onclick="clearFilter('college')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            </div> 
             @endif
         </div>
 
@@ -158,15 +172,9 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script>
-            // --- Modal and Filter Logic ---
-            let currentMode = 'normal';
+            // --- Drawer and Filter Logic ---
 
-            // Check URL parameters to see if advanced filters were applied on load
             document.addEventListener('DOMContentLoaded', function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('review_type') || urlParams.get('thesis_type') || urlParams.get('category') || urlParams.get('affiliation') || urlParams.get('college')) {
-                    switchFilterTab('advanced');
-                }
                 toggleCollegeFilter();
             });
 
@@ -194,8 +202,8 @@
                 // Trigger transitions after removing hidden
                 setTimeout(() => {
                     filterModal.classList.remove('opacity-0');
-                    filterModalPanel.classList.remove('scale-95', 'opacity-0');
-                    filterModalPanel.classList.add('scale-100', 'opacity-100');
+                    filterModalPanel.classList.remove('translate-x-full');
+                    filterModalPanel.classList.add('translate-x-0');
                 }, 10);
             }
 
@@ -205,44 +213,16 @@
                 if (!filterModal) return;
 
                 filterModal.classList.add('opacity-0');
-                filterModalPanel.classList.remove('scale-100', 'opacity-100');
-                filterModalPanel.classList.add('scale-95', 'opacity-0');
+                filterModalPanel.classList.remove('translate-x-0');
+                filterModalPanel.classList.add('translate-x-full');
                 
                 setTimeout(() => {
                     filterModal.classList.add('hidden');
                 }, 300); // match standard tailwind transition duration
             }
 
-            function switchFilterTab(mode) {
-                currentMode = mode;
-                const tabNormal = document.getElementById('tab-normal');
-                const tabAdvanced = document.getElementById('tab-advanced');
-                const advancedSection = document.getElementById('advancedFiltersSection');
-                
-                if (mode === 'normal') {
-                    // Update Tabs
-                    tabNormal.className = "flex-1 py-3 text-sm font-bold border-b-2 border-[#8B0000] text-[#8B0000] bg-white transition-colors focus:outline-none";
-                    tabAdvanced.className = "flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors focus:outline-none";
-                    // Hide Advanced Section
-                    advancedSection.classList.add('hidden');
-                } else {
-                    // Update Tabs
-                    tabAdvanced.className = "flex-1 py-3 text-sm font-bold border-b-2 border-[#8B0000] text-[#8B0000] bg-white transition-colors focus:outline-none";
-                    tabNormal.className = "flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors focus:outline-none";
-                    // Show Advanced Section
-                    advancedSection.classList.remove('hidden');
-                }
-            }
-
             function prepareFilterSubmit() {
-                // If in normal mode, clear advanced inputs before submitting
-                if (currentMode === 'normal') {
-                    document.getElementById('filter_review_type').value = '';
-                    document.getElementById('filter_thesis_type').value = '';
-                    document.getElementById('filter_category').value = '';
-                    document.getElementById('filter_affiliation').value = '';
-                    document.getElementById('filter_college').value = '';
-                }
+                // All filters are always visible in the drawer — no clearing needed
             }
 
             function resetFilters() {
@@ -263,6 +243,22 @@
                 document.getElementById('filter_college').value = '';
                 
                 // Clear active filter indicators by submitting
+                document.getElementById('filterModalForm').submit();
+            }
+
+            function clearFilter(filterType) {
+                if (filterType === 'date') {
+                    document.getElementById('filter_month').value = 'all';
+                    document.getElementById('filter_year').value = 'all';
+                } else {
+                    const input = document.getElementById('filter_' + filterType);
+                    if (input) input.value = '';
+                }
+                
+                if (filterType === 'affiliation') {
+                    document.getElementById('filter_college').value = '';
+                }
+                
                 document.getElementById('filterModalForm').submit();
             }
 
@@ -401,34 +397,24 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-        <!-- Filter Modal -->
-        <div id="filterModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-4 overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="filterModalPanel">
+        <!-- Filter Drawer -->
+        <div id="filterModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex justify-end backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+            <div class="bg-white shadow-2xl w-full max-w-md h-full overflow-y-auto transform transition-transform translate-x-full duration-300 flex flex-col" id="filterModalPanel">
                 <!-- Modal Header -->
-                <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-filter text-[#8B0000]"></i> Filter Analytics Data</h3>
+                <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-filter text-[#8B0000]"></i> Global Filters</h3>
                     <button type="button" onclick="closeFilterModal()" class="text-slate-400 hover:text-[#8B0000] focus:outline-none transition-colors">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
 
-                <!-- Tabs -->
-                <div class="flex border-b border-slate-200 bg-slate-50/50 px-8 pt-4">
-                    <button type="button" id="tab-normal" onclick="switchFilterTab('normal')" class="pb-3 px-6 text-sm font-bold border-b-2 border-[#8B0000] text-[#8B0000] transition-colors focus:outline-none flex items-center gap-2">
-                        <i class="fas fa-calendar-alt"></i> Date Range
-                    </button>
-                    <button type="button" id="tab-advanced" onclick="switchFilterTab('advanced')" class="pb-3 px-6 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors focus:outline-none flex items-center gap-2">
-                        <i class="fas fa-sliders-h"></i> Advanced Metrics
-                    </button>
-                </div>
-
                 <!-- Complete Filter Form -->
-                <form id="filterModalForm" method="GET" action="{{ route('super_admin.analytics') }}" class="p-8">
-                    <div class="space-y-8">
-                        <!-- Date Range & Basic Status (Always visible but grouped) -->
+                <form id="filterModalForm" method="GET" action="{{ route('super_admin.analytics') }}" class="flex-1 flex flex-col">
+                    <div class="p-6 space-y-8 flex-1">
+                        <!-- Date Range & Basic Status -->
                         <div>
-                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Basic Filter</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Time & Status</h4>
+                            <div class="grid grid-cols-1 gap-5">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-2">Month</label>
                                     <div class="relative">
@@ -487,10 +473,10 @@
                             </div>
                         </div>
 
-                        <!-- Advanced Options (Hidden in Normal Tab) -->
-                        <div id="advancedFiltersSection" class="hidden border-t border-slate-200 pt-6 animate-[fadeIn_0.3s_ease-out]">
-                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Advance Filter</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Advanced Options -->
+                        <div id="advancedFiltersSection" class="pt-6 border-t border-slate-200">
+                            <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Advanced Attributes</h4>
+                            <div class="grid grid-cols-1 gap-5">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
                                         <i class="fas fa-clipboard-check text-slate-400"></i> Review Type
@@ -573,16 +559,15 @@
                     </div>
 
                     <!-- Modal Actions -->
-                    <div class="mt-8 flex gap-3 justify-end pt-6 border-t border-slate-200">
-                        <button type="button" onclick="closeFilterModal()" class="px-6 py-2.5 bg-white border border-slate-300 text-slate-600 rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm">
-                            Cancel
-                        </button>
-                        <button type="button" onclick="resetFilters()" class="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-slate-200 transition-colors shadow-sm">
-                            Reset to Default
-                        </button>
-                        <button type="submit" onclick="prepareFilterSubmit()" class="px-8 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md flex items-center gap-2">
-                            <i class="fas fa-check"></i> Apply Filters
-                        </button>
+                    <div class="p-6 bg-slate-50 border-t border-slate-200 sticky bottom-0">
+                        <div class="flex gap-3 justify-end">
+                            <button type="button" onclick="resetFilters()" class="flex-1 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm">
+                                Reset
+                            </button>
+                            <button type="submit" onclick="prepareFilterSubmit()" class="flex-1 py-3 bg-[#8B0000] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2">
+                                <i class="fas fa-check"></i> Apply
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

@@ -9,7 +9,8 @@
                             <th class="p-6">Researcher</th>
                             <th class="p-6">Reviewers</th>
                             <th class="p-6">Submission Date</th>
-                            <th class="p-6">Status / Review Type</th>
+                            <th class="p-6">Document Status</th>
+                            <th class="p-6">Reviewer Status</th>
                             <th class="p-6 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -70,29 +71,20 @@
                                 </td>
                                 <td class="p-6">
                                     @php
-                                        $statusColors = [
+                                        $isAdvanced = in_array($data->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed']);
+                                        $docStatus = $isAdvanced ? 'Hardcopy Received' : $data->Status;
+                                        
+                                        $docColors = [
                                             'For Initial Review' => 'bg-blue-50 text-blue-700 border-blue-100', // legacy
                                             'Incomplete - Awaiting Hardcopy' => 'bg-red-50 text-red-700 border-red-100',
                                             'Incomplete Hardcopy' => 'bg-red-50 text-red-700 border-red-100',
                                             'Hardcopy Received' => 'bg-teal-50 text-teal-700 border-teal-100',
-                                            'Reviewer Assigned' => 'bg-blue-50 text-blue-700 border-blue-100',
-                                            'Under Review' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                                            'Reviewed' => 'bg-green-50 text-green-700 border-green-100',
-                                            'Waiting for Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
-                                            'Revision Submitted' => 'bg-purple-50 text-purple-700 border-purple-100',
-                                            'Panel Deliberation' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                                            'Approved' => 'bg-green-50 text-green-700 border-green-100',
-                                            'Submission of Revisions / Resubmission' => 'bg-purple-50 text-purple-700 border-purple-100',
-                                            'Checking of Revisions' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
                                         ];
-                                        $colorClass = $statusColors[$data->Status] ?? 'bg-slate-50 text-slate-700 border-slate-100';
-
-                                        // Ensure the UI directly displays the new phase statuses without overriding them
-                                        $displayStatus = $data->Status;
+                                        $docClass = $docColors[$docStatus] ?? 'bg-slate-50 text-slate-700 border-slate-100';
                                     @endphp
                                     <div class="flex items-center gap-2">
-                                        <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }}">
-                                            {{ $displayStatus }}
+                                        <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $docClass }}">
+                                            {{ $docStatus }}
                                         </span>
                                         @if($data->Status === 'Incomplete - Awaiting Hardcopy')
                                             @php
@@ -107,6 +99,24 @@
                                                 </span>
                                             @endif
                                         @endif
+                                    </div>
+                                </td>
+                                <td class="p-6">
+                                    @php
+                                        $revStatus = $isAdvanced ? $data->Status : 'Pending Assignment';
+                                        
+                                        $revColors = [
+                                            'Pending Assignment' => 'bg-slate-50 text-slate-500 border-slate-200',
+                                            'Reviewer Assigned' => 'bg-blue-50 text-blue-700 border-blue-100',
+                                            'Under Review' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                                            'Reviewed' => 'bg-green-50 text-green-700 border-green-100',
+                                        ];
+                                        $revClass = $revColors[$revStatus] ?? 'bg-slate-50 text-slate-700 border-slate-100';
+                                    @endphp
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $revClass }}">
+                                            {{ $revStatus }}
+                                        </span>
                                     </div>
                                 </td>
                                 <td class="p-6 text-right relative">
@@ -147,7 +157,7 @@
                                                     </form>
                                                 @else
                                                     <button
-                                                        @click="open = false; openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($displayStatus) }})"
+                                                        @click="open = false; openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($data->Status) }})"
                                                         class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
                                                         <i class="fas fa-sync-alt w-4"></i> Update Status
                                                     </button>
@@ -226,18 +236,22 @@
                                                         </button>
                                                         @endif
                                                     @endif
-                                                @elseif($data->Review_Type)
-                                                    <!-- Generate Letter -->
+                                                    @endif
+                                                <!-- Generate Recommendation Letter (Only when Reviewed) -->
+                                                @if($data->Status === 'Reviewed')
                                                     <a href="{{ route('admin.recommendation.form', $data->id) }}"
                                                         class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                        <i class="fas fa-file-signature w-4"></i> Result of Review
+                                                        <i class="fas fa-file-signature w-4"></i> Recommendation Letter
                                                     </a>
                                                 @endif
 
-                                                <button @click="open = false; $dispatch('open-assign-modal', { id: '{{ $data->id }}', title: {{ json_encode($data->Study_Protocol_title) }}, assigned: {{ json_encode($data->assigned_reviewers ?? []) }} })"
-                                                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                    <i class="fas fa-users-cog w-4"></i> Assign Reviewers
-                                                </button>
+                                                <!-- Assign Reviewers (Only after Hardcopy Received) -->
+                                                @if(in_array($data->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review']))
+                                                    <button @click="open = false; $dispatch('open-assign-modal', { id: '{{ $data->id }}', title: {{ json_encode($data->Study_Protocol_title) }}, assigned: {{ json_encode($data->assigned_reviewers ?? []) }} })"
+                                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
+                                                        <i class="fas fa-users-cog w-4"></i> Assign Reviewers
+                                                    </button>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>

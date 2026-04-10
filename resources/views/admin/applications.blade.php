@@ -63,18 +63,42 @@
                                 </div>
                             </div>
 
-                            <!-- Status Section -->
+                            <!-- Document Status Section -->
                             <div class="p-3 border-b border-slate-100">
-                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Current Status</label>
+                                <label class="block text-[10px] font-extrabold text-[#8B0000] uppercase tracking-widest mb-2">Document Status</label>
                                 <div class="space-y-2">
-                                    @php $selectedStatuses = request('statuses', []); @endphp
+                                    @php $docStatuses = request('doc_statuses', []); @endphp
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="statuses[]" value="For Initial Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('For Initial Review', $selectedStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors text-balance leading-snug">For Initial Review (Includes Hardcopy Receiving)</span>
+                                        <input type="checkbox" name="doc_statuses[]" value="Incomplete - Awaiting Hardcopy" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Incomplete - Awaiting Hardcopy', $docStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors text-balance leading-snug">Incomplete - Awaiting Hardcopy</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="statuses[]" value="Under Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Under Review', $selectedStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Under Review</span>
+                                        <input type="checkbox" name="doc_statuses[]" value="Incomplete Hardcopy" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Incomplete Hardcopy', $docStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Incomplete Hardcopy</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="doc_statuses[]" value="Hardcopy Received" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Hardcopy Received', $docStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Hardcopy Received</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Reviewer Status Section -->
+                            <div class="p-3 border-b border-slate-100">
+                                <label class="block text-[10px] font-extrabold text-blue-700 uppercase tracking-widest mb-2">Reviewer Status</label>
+                                <div class="space-y-2">
+                                    @php $revStatuses = request('rev_statuses', []); @endphp
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="rev_statuses[]" value="Reviewer Assigned" class="auto-submit-input rounded text-blue-600 focus:ring-blue-600" {{ in_array('Reviewer Assigned', $revStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Reviewer Assigned</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="rev_statuses[]" value="Under Review" class="auto-submit-input rounded text-blue-600 focus:ring-blue-600" {{ in_array('Under Review', $revStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Under Review</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" name="rev_statuses[]" value="Reviewed" class="auto-submit-input rounded text-blue-600 focus:ring-blue-600" {{ in_array('Reviewed', $revStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Reviewed</span>
                                     </label>
                                 </div>
                             </div>

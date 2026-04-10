@@ -501,30 +501,28 @@ class AdminController extends Controller
     {
         $query = Research_title::with(['researcher.user', 'files', 'adminFiles']);
 
-        // Comprehensive Active Statuses allowed in Active Protocols (intake, review, and revision loops before final verdict)
+        // Comprehensive Active Statuses allowed in Active Protocols (intake, and review loops before final verdict)
+        // Note: Revision statuses are excluded and handled solely in the Revisions dashboard.
         $allowedStatuses = [
             'Incomplete - Awaiting Hardcopy',
             'Incomplete Hardcopy',
             'Hardcopy Received',
             'Reviewer Assigned',
             'Under Review',
-            'Reviewed',
-            'Waiting for Revision',
-            'Revision Submitted',
+            'Reviewed'
         ];
 
         // 1. Handle Status Filters (Checkboxes)
-        if ($request->filled('statuses') && is_array($request->statuses)) {
-            // Map generic groups to actual DB statuses if needed
-            $filterStatuses = [];
-            foreach ($request->statuses as $status) {
-                if ($status === 'For Initial Review') {
-                    $filterStatuses = array_merge($filterStatuses, ['For Initial Review', 'Complete - Awaiting Hardcopy', 'Incomplete - Awaiting Hardcopy', 'Hardcopy Received - For Initial Review']);
-                } else {
-                    $filterStatuses[] = $status;
-                }
-            }
-            // Ensure they are only filtering within allowed statuses
+        $filterStatuses = [];
+        if ($request->filled('doc_statuses') && is_array($request->doc_statuses)) {
+            $filterStatuses = array_merge($filterStatuses, $request->doc_statuses);
+        }
+        if ($request->filled('rev_statuses') && is_array($request->rev_statuses)) {
+            $filterStatuses = array_merge($filterStatuses, $request->rev_statuses);
+        }
+
+        if (!empty($filterStatuses)) {
+            // Ensure they are only filtering within allowed active statuses
             $validFilters = array_intersect($filterStatuses, $allowedStatuses);
             $query->whereIn('Status', !empty($validFilters) ? $validFilters : $allowedStatuses);
         } else {

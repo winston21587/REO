@@ -327,28 +327,52 @@ class AdminController extends Controller
         // 5. Top Submitting Colleges or Departments (Smart Drill-Down)
         if ($selectedCollege && $selectedAffiliation !== 'External') {
             // Drill into departments within the selected college
-            $allSubmitters = (clone $baseQuery)
+            $activeSubmittersQuery = (clone $baseQuery)
                 ->join('researchers', 'research_title_information.researcher_id', '=', 'researchers.id')
                 ->where('researchers.college', $selectedCollege)
                 ->whereNotNull('researchers.department')
                 ->where('researchers.department', '!=', '')
                 ->selectRaw('researchers.department as name, COUNT(*) as count')
                 ->groupBy('researchers.department')
-                ->orderByDesc('count')
-                ->get();
+                ->pluck('count', 'name')
+                ->toArray();
+                
+            $collegeRecord = \App\Models\College::where('name', $selectedCollege)->first();
+            $allEntities = $collegeRecord ? $collegeRecord->departments()->pluck('name')->toArray() : [];
             $topSubmittersLabel = 'Top Departments';
         } else {
-            $allSubmitters = (clone $baseQuery)
+            $activeSubmittersQuery = (clone $baseQuery)
                 ->join('researchers', 'research_title_information.researcher_id', '=', 'researchers.id')
                 ->whereNotNull('researchers.college')
                 ->where('researchers.college', '!=', '')
                 ->selectRaw('researchers.college as name, COUNT(*) as count')
                 ->groupBy('researchers.college')
-                ->orderByDesc('count')
-                ->get();
+                ->pluck('count', 'name')
+                ->toArray();
+                
+            $allEntities = \App\Models\College::pluck('name')->toArray();
             $topSubmittersLabel = 'Top Submitting Colleges';
         }
-        $topSubmitters = $allSubmitters->take(5);
+        
+        $allSubmittersCollection = collect();
+        foreach ($allEntities as $entityName) {
+            $allSubmittersCollection->push((object)[
+                'name' => $entityName,
+                'count' => $activeSubmittersQuery[$entityName] ?? 0,
+            ]);
+        }
+        // Include any active submitters that might not be in the predefined list (e.g., misspelled legacy data)
+        foreach ($activeSubmittersQuery as $name => $count) {
+            if (!in_array($name, $allEntities)) {
+                $allSubmittersCollection->push((object)[
+                    'name' => $name,
+                    'count' => $count,
+                ]);
+            }
+        }
+        
+        $allSubmitters = $allSubmittersCollection->sortByDesc('count')->values();
+        $topSubmitters = $allSubmitters->where('count', '>', 0)->take(5);
         $topSubmittersMax = $topSubmitters->max('count') ?: 1;
         $allSubmittersMax = $allSubmitters->max('count') ?: 1;
 

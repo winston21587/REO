@@ -108,11 +108,14 @@ public function appointment()
                     $action = 'Status Changed';
                 }
 
+                $oldString = is_array($oldValue) ? json_encode($oldValue) : (string)$oldValue;
+                $newString = is_array($newValue) ? json_encode($newValue) : (string)$newValue;
+
                 TitleLog::create([
                     'research_title_id' => $researchTitle->id,
                     'user_id' => auth()->id(),
                     'action' => $action,
-                    'description' => "Changed from '{$oldValue}' to '{$newValue}'."
+                    'description' => "Changed from '{$oldString}' to '{$newString}'."
                 ]);
             }
         });

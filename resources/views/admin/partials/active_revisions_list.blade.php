@@ -7,6 +7,7 @@
             <th class="p-6">Research Title</th>
             <th class="p-6">Researcher</th>
             <th class="p-6">Last Updated</th>
+            <th class="p-6">Review Type</th>
             <th class="p-6">Status</th>
             <th class="p-6 text-right">Actions</th>
         </tr>
@@ -50,6 +51,23 @@
                     <i class="far fa-clock text-slate-400"></i>
                     {{ $data->updated_at->format('M d, Y') }}
                 </div>
+            </td>
+            <td class="p-6">
+                @if($data->Review_Type)
+                    @php
+                        $rtColors = [
+                            'Exempt Review' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                            'Expedited Review' => 'bg-amber-50 text-amber-700 border-amber-200',
+                            'Full Board Review' => 'bg-red-50 text-red-700 border-red-200',
+                        ];
+                        $rtColor = $rtColors[$data->Review_Type] ?? 'bg-slate-50 text-slate-600 border-slate-200';
+                    @endphp
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border {{ $rtColor }}">
+                        {{ $data->Review_Type }}
+                    </span>
+                @else
+                    <span class="text-xs text-slate-400 italic">—</span>
+                @endif
             </td>
             <td class="p-6">
                 @php
@@ -134,6 +152,25 @@
                                             <button onclick='openRevisionLogsModal(@json($data->revisionLogs))' class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
                                                 <i class="fas fa-history w-4 text-center"></i> View Logs
                                             </button>
+
+                                            {{-- RC Letter Actions --}}
+                                            @php
+                                                $recLetter = $data->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first()
+                                                    ?? $data->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first();
+                                            @endphp
+
+                                            @if($recLetter)
+                                            <a href="{{ route('admin.recommendation.view_saved', $data->id) }}"
+                                                target="_blank"
+                                                class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
+                                                <i class="fas fa-file-pdf w-4 text-center"></i> View Recommendation Letter
+                                            </a>
+                                            @endif
+
+                                            <a href="{{ route('admin.recommendation.form', $data->id) }}"
+                                                class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
+                                                <i class="fas fa-file-signature w-4 text-center"></i> Generate Recommendation Letter
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -145,7 +182,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="6" class="p-12 text-center text-slate-400">
+            <td colspan="7" class="p-12 text-center text-slate-400">
                 <i class="fas fa-folder-open text-4xl mb-4 text-slate-300"></i>
                 <p>No revisions found matching the selected filters.</p>
             </td>

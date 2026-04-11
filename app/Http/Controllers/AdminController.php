@@ -1779,7 +1779,7 @@ class AdminController extends Controller
 
     public function revisions(Request $request)
     {
-        $query = Research_title::with(['researcher.user', 'revisionLogs.user', 'user']);
+        $query = Research_title::with(['researcher.user', 'revisionLogs.user', 'user', 'files', 'adminFiles']);
 
         // Default valid statuses for this page
         $defaultStatuses = ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation'];

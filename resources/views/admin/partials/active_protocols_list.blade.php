@@ -127,7 +127,7 @@
                                         </button>
 
                                         <div x-show="open"
-                                            class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden"
+                                            class="absolute right-0 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden {{ (count($datas) > 2 && $loop->iteration >= count($datas) - 1) ? 'bottom-full mb-2 origin-bottom-right' : 'top-full mt-2 origin-top-right' }}"
                                             style="display: none;">
                                             <div class="p-1">
                                                 <a href="{{ route('admin.view_files', $data->id) }}"

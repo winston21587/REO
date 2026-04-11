@@ -255,7 +255,7 @@
                                                             <i class="fas fa-lock w-4 text-slate-300 text-xs"></i>
                                                             <span class="text-sm font-medium text-slate-300">Generate Recommendation Letter</span>
                                                             <span class="ml-auto text-[9px] font-bold bg-orange-50 text-orange-500 px-1.5 py-0.5 rounded-full border border-orange-200 leading-none whitespace-nowrap">
-                                                                OR Not Submitted
+                                                                OR Required
                                                             </span>
                                                         </div>
                                                         @php

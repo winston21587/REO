@@ -71,17 +71,18 @@
                                         $docStatus = $isAdvanced ? 'Hardcopy Received' : $data->Status;
                                         
                                         $docColors = [
-                                            'For Initial Review' => 'bg-blue-50 text-blue-700 border-blue-100', // legacy
-                                            'Incomplete - Awaiting Hardcopy' => 'bg-red-50 text-red-700 border-red-100',
-                                            'Incomplete Hardcopy' => 'bg-red-50 text-red-700 border-red-100',
-                                            'Hardcopy Received' => 'bg-teal-50 text-teal-700 border-teal-100',
+                                            'For Initial Review' => 'text-blue-500', // legacy
+                                            'Incomplete - Awaiting Hardcopy' => 'text-red-500',
+                                            'Incomplete Hardcopy' => 'text-red-500',
+                                            'Hardcopy Received' => 'text-teal-500',
                                         ];
-                                        $docClass = $docColors[$docStatus] ?? 'bg-slate-50 text-slate-700 border-slate-100';
+                                        $docClass = $docColors[$docStatus] ?? 'text-slate-500';
                                     @endphp
                                     <div class="flex items-center gap-2">
-                                        <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $docClass }}">
+                                        <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                                            <svg class="h-2 w-2 fill-current {{ $docClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
                                             {{ $docStatus }}
-                                        </span>
+                                        </div>
                                         @if($data->Status === 'Incomplete - Awaiting Hardcopy')
                                             @php
                                                 $latestDeficiency = \App\Models\SubmissionFeedback::where('research_title_id', $data->id)
@@ -102,17 +103,16 @@
                                         $revStatus = $isAdvanced ? $data->Status : 'Pending Assignment';
                                         
                                         $revColors = [
-                                            'Pending Assignment' => 'bg-slate-50 text-slate-500 border-slate-200',
-                                            'Reviewer Assigned' => 'bg-blue-50 text-blue-700 border-blue-100',
-                                            'Under Review' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                                            'Reviewed' => 'bg-green-50 text-green-700 border-green-100',
+                                            'Pending Assignment' => 'text-slate-400',
+                                            'Reviewer Assigned' => 'text-blue-500',
+                                            'Under Review' => 'text-indigo-500',
+                                            'Reviewed' => 'text-green-500',
                                         ];
-                                        $revClass = $revColors[$revStatus] ?? 'bg-slate-50 text-slate-700 border-slate-100';
+                                        $revClass = $revColors[$revStatus] ?? 'text-slate-500';
                                     @endphp
-                                    <div class="flex items-center gap-2">
-                                        <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $revClass }}">
-                                            {{ $revStatus }}
-                                        </span>
+                                    <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                                        <svg class="h-2 w-2 fill-current {{ $revClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
+                                        {{ $revStatus }}
                                     </div>
                                 </td>
                                 <td class="p-6">

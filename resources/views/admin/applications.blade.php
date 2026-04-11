@@ -367,9 +367,9 @@
 
                         <!-- Footer -->
                         <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-wrap sm:flex-nowrap gap-3 items-center justify-between">
-                            <button type="button" @click="assigned = []" x-show="assigned.length > 0" x-transition.opacity
+                            <button type="button" @click="confirmUnchooseReviewer($event.target.closest('form'), protocolTitle, () => { assigned = [] })" x-show="initialAssignedCount > 0" x-transition.opacity
                                 class="w-full sm:w-auto px-4 py-2.5 bg-red-50 text-red-600 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors border border-red-100 flex-shrink-0">
-                                <i class="fas fa-user-times mr-1"></i> Clear Select
+                                <i class="fas fa-user-times mr-1"></i> Unchoose
                             </button>
                             <div class="flex gap-3 w-full sm:w-auto flex-1 sm:flex-none" :class="assigned.length > 0 ? '' : 'w-full sm:w-full'">
                                 <button type="button" @click="open = false"
@@ -390,6 +390,33 @@
 
 
     <script>
+        function confirmUnchooseReviewer(form, title, clearSelectionCallback) {
+            Swal.fire({
+                title: 'Unchoose Reviewer?',
+                html: `<p class="text-slate-600 text-sm mt-2">Are you sure you want to unchoose the reviewer for the research:<br><br><b>${title}</b>?</p>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#8B0000',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, Unchoose',
+                cancelButtonText: 'Cancel',
+                scrollbarPadding: false,
+                backdrop: `rgba(15, 23, 42, 0.75)`,
+                customClass: {
+                    popup: 'rounded-2xl shadow-2xl border border-slate-200 font-sans p-6',
+                    title: 'font-heading text-xl text-slate-800 font-bold',
+                    confirmButton: 'bg-[#8B0000] text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-red-900 outline-none mx-2',
+                    cancelButton: 'bg-slate-100 text-slate-600 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-200 outline-none mx-2'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    clearSelectionCallback();
+                    // Small timeout to allow Alpine to update the DOM (uncheck radios binding to reviewers[] array)
+                    setTimeout(() => form.submit(), 50);
+                }
+            });
+        }
+
         function confirmFinalize(id, title) {
             Swal.fire({
                 title: 'Finalize Review?',

@@ -44,14 +44,61 @@
                                 <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Current Review Type</span>
                                 <span class="font-bold text-slate-800 text-sm" id="currentReviewTypeDisplay">Unassigned</span>
                             </div>
-                            <div>
-                                <select name="review_type" id="reviewTypeSelect" class="border-slate-200 rounded-lg text-sm bg-slate-50 cursor-pointer outline-none focus:ring-2 focus:ring-[#8B0000]">
+                            <div class="flex-1 w-full max-w-[240px]">
+                                <select name="review_type" id="reviewTypeSelect" class="hidden">
                                     <option value="">-- Change Review Type --</option>
                                     <option value="Unassigned">Unassigned (N/A)</option>
                                     <option value="Exempt Review">Exempt Review</option>
                                     <option value="Expedited Review">Expedited Review</option>
                                     <option value="Full Board Review">Full Board Review</option>
                                 </select>
+                                
+                                <div x-data="{ 
+                                        open: false,
+                                        value: '',
+                                        options: [],
+                                        get displayValue() {
+                                            let selected = this.options.find(o => o.value === this.value);
+                                            return selected ? selected.text : '-- Change Review Type --';
+                                        },
+                                        syncFromSelect() {
+                                            const sel = document.getElementById('reviewTypeSelect');
+                                            this.value = sel.value;
+                                            this.options = Array.from(sel.options).filter(o => o.value).map(o => ({
+                                                value: o.value,
+                                                text: o.textContent,
+                                                disabled: o.disabled
+                                            }));
+                                        }
+                                    }" 
+                                    @update-review-options.window="syncFromSelect()"
+                                    @click.outside="open = false" 
+                                    class="relative w-full">
+
+                                   <button type="button" @click.stop.prevent="open = !open" 
+                                       class="flex items-center justify-between w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 hover:border-slate-300 hover:bg-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-all">
+                                       <span x-text="displayValue" class="font-bold text-slate-700 truncate pr-2" :class="{ 'text-slate-400 font-medium': !value }"></span>
+                                       <i class="fas fa-chevron-down text-slate-400 text-[10px] transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
+                                   </button>
+
+                                   <div x-show="open" x-transition.opacity.duration.150ms x-transition:enter-start="transform scale-95" x-transition:enter-end="transform scale-100" style="display: none;" 
+                                       class="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden py-1">
+                                       <template x-for="opt in options" :key="opt.value">
+                                           <button type="button" 
+                                               @click.stop.prevent="if(!opt.disabled) { value = opt.value; document.getElementById('reviewTypeSelect').value = opt.value; open = false; }"
+                                               :class="{ 
+                                                   'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': opt.disabled, 
+                                                   'hover:bg-slate-50 hover:pl-5': !opt.disabled && value !== opt.value, 
+                                                   'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === opt.value && !opt.disabled 
+                                               }"
+                                               class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
+                                               <span x-text="opt.text" class="text-left w-full"></span>
+                                               <i x-show="opt.disabled" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
+                                               <div x-show="opt.disabled" class="absolute inset-0 bg-repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)"></div>
+                                           </button>
+                                       </template>
+                                   </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -196,8 +243,27 @@
         form.action = `/admin/update-status/${id}`;
 
         // Reset UI
-        document.getElementById('reviewTypeSelect').value = "";
+        const reviewTypeSelect = document.getElementById('reviewTypeSelect');
+        reviewTypeSelect.value = "";
         document.getElementById('currentReviewTypeDisplay').textContent = currentReviewType || 'Unassigned';
+        
+        // Dynamically disable currently selected review type
+        Array.from(reviewTypeSelect.options).forEach(opt => {
+            if (opt.value) {
+                let baseText = opt.value === 'Unassigned' ? 'Unassigned (N/A)' : opt.value;
+                if (opt.value === currentReviewType || (!currentReviewType && opt.value === 'Unassigned')) {
+                    opt.disabled = true;
+                    opt.textContent = baseText + ' (Current)';
+                } else {
+                    opt.disabled = false;
+                    opt.textContent = baseText;
+                }
+            }
+        });
+        
+        // Broadcast custom event to sync with the Alpine UI dropdown
+        window.dispatchEvent(new CustomEvent('update-review-options'));
+
         const date = new Date();
         date.setDate(date.getDate() + 2);
         const minDate = date.toISOString().split('T')[0];

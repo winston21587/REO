@@ -896,8 +896,10 @@ class AdminController extends Controller
         }
         // ---------------------------------------------------------
         // CASE B: NEW Update Status Logic (Review Type + Appointment)
+        // Only fires when a non-empty review_type is actually submitted
+        // (prevents intercepting status-action-only submissions from the Revisions modal)
         // ---------------------------------------------------------
-        elseif ($request->has('review_type')) {
+        elseif ($request->filled('review_type')) {
             $request->validate([
                 'review_type' => 'required|string', // Expedited, Exempt, Full Review
                 'appointment_date' => 'required|date|after:tomorrow',
@@ -906,10 +908,18 @@ class AdminController extends Controller
             $submission->Review_Type = $request->review_type;
 
             // Only update system status if a definitive Status Action is selected.
-            // Otherwise, we simply save the Review_Type categorization without advancing the timeline.
-            // (e.g. It stays 'Hardcopy Received' so reviewers remain 'Pending Assignment')
-            if ($request->has('status_action') && !empty($request->status_action)) {
-                $submission->Status = $request->status_action;
+            // Apply the same action->status mapping as CASE C to avoid saving raw action names.
+            if ($request->filled('status_action')) {
+                $action = $request->status_action;
+                if ($action === 'Modifications Required') {
+                    $submission->Status = 'Waiting for Revision';
+                } elseif ($action === 'Panel Deliberation') {
+                    $submission->Status = 'Panel Deliberation';
+                } elseif ($action === 'Approved') {
+                    $submission->Status = 'Approved';
+                } else {
+                    $submission->Status = $action; // fallback for any future actions
+                }
             }
 
             $submission->save();
@@ -933,14 +943,9 @@ class AdminController extends Controller
                 'is_read' => false
             ]);
 
-            // Redirect to Recommendation Letter Form
-            // We do NOT finalize the status to "Waiting for Revision" yet.
-            // The letter generation step will handle that.
-
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    // 'redirect' => route('admin.recommendation.form', $id) // REMOVED REDIRECT
                 ]);
             }
 

@@ -54,18 +54,17 @@
             <td class="p-6">
                 @php
                     $statusColors = [
-                        'Waiting for Revision' => 'bg-orange-50 text-orange-700 border-orange-100',
-                        'Revision Submitted' => 'bg-purple-50 text-purple-700 border-purple-100',
-                        'Corrections Submitted' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
-                        'Checking of Revisions' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                        'Panel Deliberation' => 'bg-pink-50 text-pink-700 border-pink-100',
+                        'Waiting for Revision' => 'text-orange-600',
+                        'Revision Submitted' => 'text-purple-600',
+                        'Corrections Submitted' => 'text-emerald-600',
+                        'Checking of Revisions' => 'text-indigo-600',
+                        'Panel Deliberation' => 'text-pink-600',
                     ];
-                    $colorClass = $statusColors[$data->Status] ?? 'bg-slate-50 text-slate-700 border-slate-100';
+                    $colorClass = $statusColors[$data->Status] ?? 'text-slate-500';
                 @endphp
-                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorClass }} inline-flex items-center gap-1.5 whitespace-nowrap">
-                    <span class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                <div class="text-sm font-bold {{ $colorClass }}">
                     {{ $data->Status }}
-                </span>
+                </div>
             </td>
             <td class="p-6 text-right relative">
                 <div class="relative" x-data="{ open: false }">

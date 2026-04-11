@@ -103,6 +103,18 @@ class ReviewerController extends Controller
             return back()->withErrors(['error' => 'You must upload at least one evaluation document before completing the review.']);
         }
 
+        // Attach the suggested review type to the latest evaluation document uploaded by this reviewer
+        $latestUpload = $submission->adminFiles()
+            ->where('uploaded_by', Auth::id())
+            ->where('category', 'like', 'Reviewer Uploads%')
+            ->latest()
+            ->first();
+
+        if ($latestUpload && $request->has('suggested_review_type')) {
+            $latestUpload->suggested_review_type = $request->input('suggested_review_type');
+            $latestUpload->save();
+        }
+
         $submission->Status = 'Reviewed';
         $submission->save();
 

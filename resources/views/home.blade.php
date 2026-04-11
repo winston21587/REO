@@ -169,7 +169,7 @@
                                     <a href="{{ route('manage.files', $title->id) }}"
                                         class="col-span-2 w-full py-2.5 px-6 bg-[#8B0000] text-white rounded-xl font-bold text-center shadow-md shadow-red-900/10 hover:bg-red-800 transition-all flex items-center justify-center gap-2 text-sm">
                                         <i class="fas {{ $checkStatus === 'Incomplete' ? 'fa-file-upload' : 'fa-folder-open' }}"></i> 
-                                        {{ $checkStatus === 'Incomplete' ? 'Update Files' : 'Manage Files' }}
+                                        {{ $checkStatus === 'Incomplete' ? 'Add Files' : 'Manage Files' }}
                                     </a>
 
                                     @if(!$title->Official_Receipt_Number || !$title->or_file_path)
@@ -325,7 +325,7 @@
                                 <div class="flex flex-col gap-3 min-w-[200px]">
                                     <a href="{{ route('manage.files', $title->id) }}" class="w-full py-3 px-6 bg-[#8B0000] text-white rounded-xl font-bold text-center shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-xl transition-all flex items-center justify-center gap-2">
                                         <i class="fas {{ $checkStatus === 'Incomplete' ? 'fa-file-upload' : 'fa-folder-open' }}"></i> 
-                                        {{ $checkStatus === 'Incomplete' ? 'Update Files' : 'Manage Files' }}
+                                        {{ $checkStatus === 'Incomplete' ? 'Add Files' : 'Manage Files' }}
                                     </a>
 
                                     @if(!$title->Official_Receipt_Number || !$title->or_file_path)

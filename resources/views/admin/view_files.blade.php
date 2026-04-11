@@ -94,9 +94,9 @@
                     'ext' => $ext,
                     'revision_number' => $file->revision_number,
                     'uploaded_at' => $file->created_at->format('M d, Y'),
-                    'icon' => $attrs['icon'],
                     'color' => $attrs['color'],
                     'bg' => $attrs['bg'],
+                    'suggested_review_type' => $file->suggested_review_type,
                     'public_url' => asset($file->filepath),
                 ];
             };
@@ -492,7 +492,10 @@
                                                 </div>
                                                 <div class="min-w-0 flex-1">
                                                     <p class="text-sm font-bold truncate" :class="activeFile && activeFile.id === file.id ? 'text-slate-800' : 'text-slate-800'" x-text="file.filename"></p>
-                                                    <p class="text-[10px] text-slate-400" x-text="'Uploaded: ' + file.uploaded_at"></p>
+                                                    <div class="flex items-center gap-2 mt-0.5">
+                                                        <p class="text-[10px] text-slate-400" x-text="'Uploaded: ' + file.uploaded_at"></p>
+                                                        <span x-show="file.suggested_review_type" class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase bg-emerald-50 text-emerald-600 border border-emerald-200" x-text="file.suggested_review_type"></span>
+                                                    </div>
                                                 </div>
                                                 <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-[#8B0000] flex-shrink-0"></div>
                                             </button>

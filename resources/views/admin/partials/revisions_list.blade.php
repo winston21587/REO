@@ -182,16 +182,16 @@
                                                                     <a href="{{ route('admin.recommendation.view_file', $currentLetter->id) }}"
                                                                         target="_blank"
                                                                         class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                                        <i class="fas fa-file-pdf w-4 text-center"></i> View Recommendation Letter
+                                                                        <i class="fas fa-file-pdf w-4 text-center"></i> View Current Recommendation Letter
                                                                     </a>
                                                                 @endif
 
                                                                 @if($previousLetters->isNotEmpty())
-                                                                    <div class="ml-7 mr-2 space-y-0.5 border-l-2 border-slate-100 pl-3 mb-1">
+                                                                    <div class="space-y-0.5 mb-1">
                                                                         @foreach($previousLetters as $letter)
                                                                             <a href="{{ route('admin.recommendation.view_file', $letter->id) }}"
                                                                                 target="_blank"
-                                                                                class="flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded transition-colors">
+                                                                                class="flex items-center gap-3 px-4 py-2 text-[11px] font-medium text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-lg transition-colors">
                                                                                 <i class="fas fa-file-archive w-3 text-center text-[10px]"></i>
                                                                                 <span class="flex-1 truncate">Previous Letter</span>
                                                                                 <span class="text-[9px] text-slate-300 font-mono whitespace-nowrap">{{ $letter->created_at->format('M d, Y') }}</span>

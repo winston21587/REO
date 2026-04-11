@@ -152,13 +152,26 @@
                                                         
                                                         <div class="pointer-events-auto w-screen max-w-sm flex flex-col h-full bg-white shadow-2xl">
                                                             <!-- Drawer Header -->
-                                                            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-start bg-slate-50 flex-none">
-                                                                <div class="pr-3">
-                                                                    <h3 class="font-heading font-bold text-lg text-slate-800 leading-tight">Protocol Actions</h3>
-                                                                    <p class="text-xs text-[#8B0000] mt-1 font-mono font-bold">#{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}</p>
-                                                                    <p class="text-xs text-slate-500 mt-1 line-clamp-2" title="{{ $data->Study_Protocol_title }}">{{ $data->Study_Protocol_title }}</p>
+                                                            <div class="px-6 py-6 border-b border-slate-100 flex justify-between items-start bg-slate-50 flex-none text-left">
+                                                                <div class="pr-3 w-full">
+                                                                    <h3 class="font-heading font-extrabold text-lg text-slate-800 leading-tight line-clamp-3" title="{{ $data->Study_Protocol_title }}">
+                                                                        {{ $data->Study_Protocol_title }}
+                                                                    </h3>
+                                                                    
+                                                                    <div class="mt-3 space-y-1.5">
+                                                                        <div class="flex items-center gap-2 text-sm text-slate-600">
+                                                                            <i class="fas fa-user-circle text-slate-400 w-4 text-center"></i>
+                                                                            <span class="font-medium truncate">{{ $data->researcher->user->first_name ?? '' }} {{ $data->researcher->user->last_name ?? 'Unknown' }}</span>
+                                                                        </div>
+                                                                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                                                                            <i class="far fa-calendar-alt text-slate-400 w-4 text-center"></i>
+                                                                            <span>{{ $data->created_at->format('M d, Y') }}</span>
+                                                                            <span class="mx-1 text-slate-300">•</span>
+                                                                            <span class="text-[#8B0000] font-mono font-bold">#{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                <button @click="open = false" class="text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-1">
+                                                                <button @click="open = false" class="text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
                                                                     <i class="fas fa-times text-lg"></i>
                                                                 </button>
                                                             </div>

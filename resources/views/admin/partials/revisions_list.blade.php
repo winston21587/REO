@@ -187,17 +187,15 @@
                                                                 @endif
 
                                                                 @if($previousLetters->isNotEmpty())
-                                                                    <div class="space-y-0.5 mb-1">
-                                                                        @foreach($previousLetters as $letter)
-                                                                            <a href="{{ route('admin.recommendation.view_file', $letter->id) }}"
-                                                                                target="_blank"
-                                                                                class="flex items-center gap-3 px-4 py-2 text-[11px] font-medium text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-lg transition-colors">
-                                                                                <i class="fas fa-file-archive w-4 text-center text-[10px]"></i>
-                                                                                <span class="flex-1 truncate">Previous Letter</span>
-                                                                                <span class="text-[9px] text-slate-300 font-mono whitespace-nowrap">{{ $letter->created_at->format('M d, Y') }}</span>
-                                                                            </a>
-                                                                        @endforeach
-                                                                    </div>
+                                                                    @foreach($previousLetters as $letter)
+                                                                        <a href="{{ route('admin.recommendation.view_file', $letter->id) }}"
+                                                                            target="_blank"
+                                                                            class="flex items-center gap-3 px-4 py-2 text-[11px] font-medium text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-lg transition-colors">
+                                                                            <i class="fas fa-file-archive w-4 text-center text-[10px]"></i>
+                                                                            <span class="flex-1 truncate">Previous Letter</span>
+                                                                            <span class="text-[9px] text-slate-300 font-mono whitespace-nowrap">{{ $letter->created_at->format('M d, Y') }}</span>
+                                                                        </a>
+                                                                    @endforeach
                                                                 @endif
                                                             @endif
 

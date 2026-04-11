@@ -240,40 +240,35 @@
                                                         class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
                                                         <i class="fas fa-file-pdf w-4"></i> View Recommendation Letter
                                                     </a>
+                                                @endif
 
-                                                    <!-- Proceed to Revision (Only if not yet finalized) -->
-                                                    @if(!in_array($data->Status, ['Panel Deliberation', 'Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']))
-                                                        @if($data->is_or_verified)
-                                                        <form id="finalizeForm-{{ $data->id }}"
-                                                            action="{{ route('admin.recommendation.finalize', $data->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <button type="button"
-                                                                onclick="confirmFinalize('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')"
-                                                                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
-                                                                <i class="fas fa-check-circle w-4"></i> Proceed to Revision
-                                                            </button>
-                                                        </form>
-                                                        @else
-                                                        <div title="Official Receipt must be received and verified before proceeding to revision."
+                                                <!-- Generate Recommendation Letter (Only when Reviewed) -->
+                                                @if($data->Status === 'Reviewed')
+                                                    @if($data->is_or_verified)
+                                                        <a href="{{ route('admin.recommendation.form', $data->id) }}"
+                                                            class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
+                                                            <i class="fas fa-file-signature w-4"></i> Generate Recommendation Letter
+                                                        </a>
+                                                    @else
+                                                        <div title="Official Receipt must be received and verified before generating a Recommendation Letter."
                                                              class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-300 cursor-not-allowed rounded-lg select-none">
                                                             <i class="fas fa-lock w-4"></i>
-                                                            <span>Proceed to Revision</span>
+                                                            <span>Generate Recommendation Letter</span>
                                                             <span class="ml-auto text-[9px] font-bold bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full border border-orange-200 leading-none">
                                                                 No Receipt
                                                             </span>
                                                         </div>
+                                                        @php
+                                                            $researcherUserId = optional(optional($data->researcher)->user)->id;
+                                                            $alreadyNotified = $researcherUserId && \App\Models\UserNotification::where('user_id', $researcherUserId)
+                                                                ->where('research_id', $data->id)
+                                                                ->where('type', 'receipt_reminder')
+                                                                ->where('is_read', false)
+                                                                ->where('created_at', '>=', \Carbon\Carbon::now()->subHours(24))
+                                                                ->exists();
+                                                        @endphp
                                                         <button
                                                             type="button"
-                                                            @php
-                                                                $researcherUserId = optional(optional($data->researcher)->user)->id;
-                                                                $alreadyNotified = $researcherUserId && \App\Models\UserNotification::where('user_id', $researcherUserId)
-                                                                    ->where('research_id', $data->id)
-                                                                    ->where('type', 'receipt_reminder')
-                                                                    ->where('is_read', false)
-                                                                    ->where('created_at', '>=', \Carbon\Carbon::now()->subHours(24))
-                                                                    ->exists();
-                                                            @endphp
                                                             @if($alreadyNotified)
                                                             disabled
                                                             title="A receipt reminder has already been sent. Awaiting researcher response."
@@ -298,15 +293,7 @@
                                                                 </span>
                                                             @endif
                                                         </button>
-                                                        @endif
                                                     @endif
-                                                    @endif
-                                                <!-- Generate Recommendation Letter (Only when Reviewed) -->
-                                                @if($data->Status === 'Reviewed')
-                                                    <a href="{{ route('admin.recommendation.form', $data->id) }}"
-                                                        class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                        <i class="fas fa-file-signature w-4"></i> Generate Recommendation Letter
-                                                    </a>
                                                 @endif
 
                                                 <!-- Assign Reviewers (Only after Hardcopy Received) -->

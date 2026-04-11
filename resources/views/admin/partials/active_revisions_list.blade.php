@@ -171,7 +171,7 @@
                                                     <a href="{{ route('admin.recommendation.view_file', $currentLetter->id) }}"
                                                         target="_blank"
                                                         class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                        <i class="fas fa-file-pdf w-4 text-center"></i> View Recommendation Letter
+                                                        <i class="fas fa-file-pdf w-4 text-center"></i> View Current Recommendation Letter
                                                     </a>
                                                 @endif
 

@@ -116,29 +116,47 @@
                                 <td class="p-6">
                                     @php
                                         $reviewerSuggestedType = $data->adminFiles->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
+                                        $hasTop = !empty($data->Review_Type) && $data->Review_Type !== 'Unassigned';
+                                        $hasMid = !empty($reviewerSuggestedType);
+                                        $typeColors = [
+                                            'Exempt Review' => 'text-emerald-500',
+                                            'Expedited Review' => 'text-blue-500',
+                                            'Full Board Review' => 'text-amber-500'
+                                        ];
                                     @endphp
-                                    @if($data->Review_Type)
-                                        @php
-                                            $typeColors = [
-                                                'Exempt Review' => 'text-emerald-600',
-                                                'Expedited Review' => 'text-blue-600',
-                                                'Full Board Review' => 'text-amber-600'
-                                            ];
-                                            $typeClass = $typeColors[$data->Review_Type] ?? 'text-slate-500';
-                                        @endphp
-                                        <div class="text-sm font-bold {{ $typeClass }}">
-                                            <span class="whitespace-nowrap">{{ $data->Review_Type }}</span>
-                                        </div>
-                                    @elseif($reviewerSuggestedType)
-                                        <div class="flex flex-col">
-                                            <div class="text-sm font-bold text-slate-500">
-                                                <span class="whitespace-nowrap">{{ $reviewerSuggestedType }}</span>
+                                    <div class="flex flex-col gap-2">
+                                        @if($hasTop || $hasMid)
+                                            <div class="flex flex-col gap-1.5">
+                                            @if($hasTop)
+                                                <div class="flex items-center gap-2 group cursor-default" title="Official Review Type">
+                                                    <div class="flex items-center justify-center w-5 h-5 rounded border border-slate-100 bg-slate-50 shadow-sm group-hover:border-slate-200 transition-colors">
+                                                        <svg class="h-2 w-2 fill-current {{ $typeColors[$data->Review_Type] ?? 'text-slate-500' }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
+                                                    </div>
+                                                    <span class="text-sm font-bold text-slate-700 tracking-tight">{{ $data->Review_Type }}</span>
+                                                </div>
+                                            @endif
+                                            
+                                            @if($hasMid)
+                                                <div class="flex items-center gap-2 group cursor-default {{ $hasTop ? 'mt-1 opacity-90' : '' }}" title="Suggested by Reviewer">
+                                                    <div class="flex items-center justify-center w-5 h-5 rounded border border-dashed border-slate-300 bg-transparent flex-shrink-0">
+                                                        <svg class="h-1.5 w-1.5 fill-current text-slate-400" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
+                                                    </div>
+                                                    <div class="flex flex-col justify-center">
+                                                        <span class="text-[13px] font-semibold text-slate-600 leading-none mb-0.5">{{ $reviewerSuggestedType }}</span>
+                                                        <span class="text-[9px] font-extrabold uppercase tracking-widest text-[#8B0000]/70 leading-none">Suggested</span>
+                                                    </div>
+                                                </div>
+                                            @endif
                                             </div>
-                                            <span class="text-[10px] text-slate-400 mt-1 italic pl-4">Suggested by reviewer</span>
-                                        </div>
-                                    @else
-                                        <span class="text-xs font-medium text-slate-400 italic">Unassigned</span>
-                                    @endif
+                                        @else
+                                            <div class="flex items-center gap-2 opacity-60">
+                                                <div class="w-5 h-5 rounded border border-slate-200 flex items-center justify-center bg-slate-50/50">
+                                                    <i class="fas fa-minus text-[8px] text-slate-400"></i>
+                                                </div>
+                                                <span class="text-xs font-semibold text-slate-400">Unassigned</span>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="p-6 text-right relative">
                                     <div class="relative" x-data="{ open: false }">

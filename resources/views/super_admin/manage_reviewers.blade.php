@@ -105,7 +105,7 @@
                                         onclick="openReviewedModal(
                                             '{{ addslashes($user->first_name . ' ' . $user->last_name) }}',
                                             {{ $reviewedCount }},
-                                            {{ json_encode($reviewedTitles->pluck('Study_Protocol_title')) }}
+                                            {{ json_encode($reviewedTitles->map(fn($t) => ['id' => $t->id, 'title' => $t->Study_Protocol_title])) }}
                                         )"
                                         class="flex items-center gap-2 group hover:text-[#8B0000] transition-colors">
                                         <span class="text-sm font-extrabold text-[#8B0000] bg-red-50 border border-red-200 rounded-full px-2.5 py-0.5 group-hover:bg-red-100 transition-colors">
@@ -555,16 +555,17 @@
 
 <script>
     let _allReviewedTitles = [];
+    const _viewFilesBase = '{{ url('admin/view_files') }}';
 
-    function openReviewedModal(reviewerName, count, titles) {
-        _allReviewedTitles = titles;
+    function openReviewedModal(reviewerName, count, titlesData) {
+        _allReviewedTitles = titlesData; // array of {id, title}
 
         document.getElementById('reviewedModalReviewerName').textContent = reviewerName;
         document.getElementById('reviewedModalCount').textContent = count;
         document.getElementById('reviewedModalLabel').textContent = count === 1 ? ' reviewed protocol' : ' reviewed protocols';
         document.getElementById('reviewedModalSearch').value = '';
 
-        renderReviewedTitles(titles);
+        renderReviewedTitles(titlesData);
 
         const modal = document.getElementById('reviewedTitlesModal');
         modal.classList.remove('hidden');
@@ -577,15 +578,16 @@
     }
 
     function filterReviewedTitles(query) {
-        const filtered = query.trim() === ''
+        const q = query.trim().toLowerCase();
+        const filtered = q === ''
             ? _allReviewedTitles
-            : _allReviewedTitles.filter(t => t.toLowerCase().includes(query.toLowerCase()));
+            : _allReviewedTitles.filter(item => item.title.toLowerCase().includes(q));
         renderReviewedTitles(filtered, query.trim());
     }
 
-    function renderReviewedTitles(titles, highlight = '') {
+    function renderReviewedTitles(items, highlight = '') {
         const container = document.getElementById('reviewedTitlesList');
-        if (titles.length === 0) {
+        if (!items || items.length === 0) {
             container.innerHTML = `
                 <div class="py-10 text-center text-slate-400">
                     <i class="fas fa-search text-2xl mb-3 text-slate-300"></i>
@@ -594,18 +596,25 @@
             return;
         }
 
-        container.innerHTML = titles.map((title, i) => {
-            let displayTitle = escapeHtml(title);
+        container.innerHTML = items.map((item, i) => {
+            let displayTitle = escapeHtml(item.title);
             if (highlight) {
                 const regex = new RegExp(`(${escapeRegex(highlight)})`, 'gi');
                 displayTitle = displayTitle.replace(regex, '<mark class="bg-yellow-100 text-yellow-900 rounded px-0.5">$1</mark>');
             }
+            const viewUrl = `${_viewFilesBase}/${item.id}`;
             return `
-                <div class="flex items-start gap-3 py-3 ${i !== 0 ? 'border-t border-slate-50' : ''}">
-                    <div class="w-6 h-6 rounded-full bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="flex items-center gap-3 py-3 ${i !== 0 ? 'border-t border-slate-50' : ''}">
+                    <div class="w-6 h-6 rounded-full bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
                         <span class="text-[10px] font-extrabold text-[#8B0000]">${i + 1}</span>
                     </div>
-                    <p class="text-sm text-slate-700 font-medium leading-snug">${displayTitle}</p>
+                    <p class="text-sm text-slate-700 font-medium leading-snug flex-1">${displayTitle}</p>
+                    <a href="${viewUrl}"
+                       class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#8B0000] bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 transition-colors whitespace-nowrap"
+                       title="View protocol files">
+                        <i class="fas fa-folder-open text-[10px]"></i>
+                        View Details
+                    </a>
                 </div>`;
         }).join('');
     }

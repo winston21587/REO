@@ -119,41 +119,30 @@
                                         $hasTop = !empty($data->Review_Type) && $data->Review_Type !== 'Unassigned';
                                         $hasMid = !empty($reviewerSuggestedType);
                                         $typeColors = [
-                                            'Exempt Review' => 'text-emerald-500',
-                                            'Expedited Review' => 'text-blue-500',
-                                            'Full Board Review' => 'text-amber-500'
+                                            'Exempt Review' => 'text-emerald-600',
+                                            'Expedited Review' => 'text-blue-600',
+                                            'Full Board Review' => 'text-amber-600'
                                         ];
                                     @endphp
                                     <div class="flex flex-col gap-2">
                                         @if($hasTop || $hasMid)
                                             <div class="flex flex-col gap-1.5">
                                             @if($hasTop)
-                                                <div class="flex items-center gap-2 group cursor-default" title="Official Review Type">
-                                                    <div class="flex items-center justify-center w-5 h-5 rounded border border-slate-100 bg-slate-50 shadow-sm group-hover:border-slate-200 transition-colors">
-                                                        <svg class="h-2 w-2 fill-current {{ $typeColors[$data->Review_Type] ?? 'text-slate-500' }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
-                                                    </div>
-                                                    <span class="text-sm font-bold text-slate-700 tracking-tight">{{ $data->Review_Type }}</span>
+                                                <div class="flex items-center group cursor-default" title="Official Review Type">
+                                                    <span class="text-sm font-bold {{ $typeColors[$data->Review_Type] ?? 'text-slate-500' }} tracking-tight">{{ $data->Review_Type }}</span>
                                                 </div>
                                             @endif
                                             
                                             @if($hasMid)
-                                                <div class="flex items-center gap-2 group cursor-default {{ $hasTop ? 'mt-1 opacity-90' : '' }}" title="Suggested by Reviewer">
-                                                    <div class="flex items-center justify-center w-5 h-5 rounded border border-dashed border-slate-300 bg-transparent flex-shrink-0">
-                                                        <svg class="h-1.5 w-1.5 fill-current text-slate-400" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
-                                                    </div>
-                                                    <div class="flex flex-col justify-center">
-                                                        <span class="text-[13px] font-semibold text-slate-600 leading-none mb-0.5">{{ $reviewerSuggestedType }}</span>
-                                                        <span class="text-[9px] font-extrabold uppercase tracking-widest text-[#8B0000]/70 leading-none">Suggested</span>
-                                                    </div>
+                                                <div class="flex flex-col cursor-default {{ $hasTop ? 'mt-1 opacity-90 pl-3 border-l-2 border-slate-200' : '' }}" title="Suggested by Reviewer">
+                                                    <span class="text-[13px] font-bold text-slate-500 leading-none mb-1">{{ $reviewerSuggestedType }}</span>
+                                                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-[#8B0000]/70 leading-none">Suggested</span>
                                                 </div>
                                             @endif
                                             </div>
                                         @else
                                             <div class="flex items-center gap-2 opacity-60">
-                                                <div class="w-5 h-5 rounded border border-slate-200 flex items-center justify-center bg-slate-50/50">
-                                                    <i class="fas fa-minus text-[8px] text-slate-400"></i>
-                                                </div>
-                                                <span class="text-xs font-semibold text-slate-400">Unassigned</span>
+                                                <span class="text-xs font-semibold text-slate-400 italic">Unassigned</span>
                                             </div>
                                         @endif
                                     </div>

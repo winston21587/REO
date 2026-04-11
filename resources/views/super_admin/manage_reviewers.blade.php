@@ -58,6 +58,7 @@
                             <th class="p-6">Name / Role</th>
                             <th class="p-6">Contact Info</th>
                             <th class="p-6">Affiliation</th>
+                            <th class="p-6">Reviewed Titles</th>
                             <th class="p-6">Status</th>
                             <th class="p-6 text-right">Actions</th>
                         </tr>
@@ -91,6 +92,47 @@
                                     <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span> External
                                 </span>
                                 @endif
+                            </td>
+                            @php
+                                $reviewedTitles = \App\Models\Research_title::where('Status', 'Reviewed')
+                                    ->whereJsonContains('assigned_reviewers', (string) $user->id)
+                                    ->get(['id','Study_Protocol_title']);
+                                $reviewedCount = $reviewedTitles->count();
+                            @endphp
+                            <td class="p-6" x-data="{ showTitles: false }">
+                                <div class="flex flex-col gap-2">
+                                    <button type="button" @click="showTitles = !showTitles"
+                                        class="flex items-center gap-2 text-left group w-max">
+                                        <span class="text-sm font-extrabold
+                                            {{ $reviewedCount > 0 ? 'text-[#8B0000]' : 'text-slate-400' }}">
+                                            {{ $reviewedCount }}
+                                        </span>
+                                        <span class="text-xs text-slate-500 font-medium"
+                                            :class="showTitles ? 'text-[#8B0000]' : ''">
+                                            {{ $reviewedCount === 1 ? 'title' : 'titles' }}
+                                        </span>
+                                        @if($reviewedCount > 0)
+                                            <i class="fas fa-chevron-down text-[9px] text-slate-400 transition-transform duration-200"
+                                               :class="showTitles ? 'rotate-180 text-[#8B0000]' : ''"></i>
+                                        @endif
+                                    </button>
+                                    @if($reviewedCount > 0)
+                                        <div x-show="showTitles" x-transition:enter="transition ease-out duration-150"
+                                             x-transition:enter-start="opacity-0 -translate-y-1"
+                                             x-transition:enter-end="opacity-100 translate-y-0"
+                                             class="space-y-1 max-w-[220px]" style="display:none">
+                                            @foreach($reviewedTitles as $rt)
+                                                <div class="flex items-start gap-2 py-1.5 px-2 bg-slate-50 rounded-lg border border-slate-100">
+                                                    <div class="w-1 h-1 rounded-full bg-[#8B0000] mt-1.5 flex-shrink-0"></div>
+                                                    <p class="text-[11px] text-slate-600 font-medium leading-snug line-clamp-2"
+                                                       title="{{ $rt->Study_Protocol_title }}">
+                                                        {{ $rt->Study_Protocol_title }}
+                                                    </p>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
                             </td>
                             <td class="p-6">
                                 <div class="flex items-center gap-1.5 pl-1">
@@ -144,7 +186,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="p-8 text-center text-slate-500">
+                            <td colspan="6" class="p-8 text-center text-slate-500">
                                 No Reviewers found.
                             </td>
                         </tr>

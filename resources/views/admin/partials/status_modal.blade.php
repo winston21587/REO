@@ -75,7 +75,7 @@
                                     @click.outside="open = false" 
                                     class="relative w-full">
 
-                                   <button type="button" @click="open = !open" 
+                                   <button type="button" @click.stop.prevent="open = !open" 
                                        class="flex items-center justify-between w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 hover:border-slate-300 hover:bg-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-all">
                                        <span x-text="displayValue" class="font-bold text-slate-700 truncate pr-2" :class="{ 'text-slate-400 font-medium': !value }"></span>
                                        <i class="fas fa-chevron-down text-slate-400 text-[10px] transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
@@ -85,7 +85,7 @@
                                        class="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden py-1">
                                        <template x-for="opt in options" :key="opt.value">
                                            <button type="button" 
-                                               @click="if(!opt.disabled) { value = opt.value; document.getElementById('reviewTypeSelect').value = opt.value; open = false; }"
+                                               @click.stop.prevent="if(!opt.disabled) { value = opt.value; document.getElementById('reviewTypeSelect').value = opt.value; open = false; }"
                                                :class="{ 
                                                    'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': opt.disabled, 
                                                    'hover:bg-slate-50 hover:pl-5': !opt.disabled && value !== opt.value, 

@@ -167,16 +167,48 @@
 
                                                             {{-- RC Letter Actions --}}
                                                             @php
-                                                                $recLetter = $data->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first()
-                                                                    ?? $data->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first();
+                                                                $allLetters = $data->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review'])
+                                                                    ->merge($data->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review']))
+                                                                    ->sortByDesc('created_at');
+                                                                $hasAnyLetter = $allLetters->isNotEmpty();
                                                             @endphp
 
-                                                            @if($recLetter)
-                                                            <a href="{{ route('admin.recommendation.view_saved', $data->id) }}"
-                                                                target="_blank"
-                                                                class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                                <i class="fas fa-file-pdf w-4 text-center"></i> View Recommendation Letter
-                                                            </a>
+                                                            @if($hasAnyLetter)
+                                                                @if($allLetters->count() === 1)
+                                                                    {{-- Single letter: direct link --}}
+                                                                    <a href="{{ route('admin.recommendation.view_file', $allLetters->first()->id) }}"
+                                                                        target="_blank"
+                                                                        class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
+                                                                        <i class="fas fa-file-pdf w-4 text-center"></i> View Recommendation Letter
+                                                                    </a>
+                                                                @else
+                                                                    {{-- Multiple letters: expandable dropdown --}}
+                                                                    <div x-data="{ expanded: false }">
+                                                                        <button @click="expanded = !expanded"
+                                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
+                                                                            <i class="fas fa-file-pdf w-4 text-center"></i>
+                                                                            <span class="flex-1">View Recommendation Letter</span>
+                                                                            <span class="text-[9px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full border border-slate-200 leading-none">
+                                                                                {{ $allLetters->count() }}
+                                                                            </span>
+                                                                            <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"></i>
+                                                                        </button>
+                                                                        <div x-show="expanded" x-collapse class="ml-7 mr-2 mt-1 space-y-1 border-l-2 border-slate-100 pl-3">
+                                                                            @foreach($allLetters as $letter)
+                                                                                @php
+                                                                                    $isActive = in_array($letter->filetype, ['Result of Review (Admin Generated)', 'recommendation letter']);
+                                                                                @endphp
+                                                                                <a href="{{ route('admin.recommendation.view_file', $letter->id) }}"
+                                                                                    target="_blank"
+                                                                                    class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-colors {{ $isActive ? 'text-[#8B0000] bg-red-50/50 hover:bg-red-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700' }}">
+                                                                                    <i class="fas {{ $isActive ? 'fa-file-alt' : 'fa-file-archive' }} w-3 text-center"></i>
+                                                                                    <span class="flex-1 truncate">{{ $isActive ? 'Current Letter' : 'Previous Letter' }}</span>
+                                                                                    <span class="text-[9px] text-slate-400 font-mono whitespace-nowrap">{{ $letter->created_at->format('M d, Y') }}</span>
+                                                                                </a>
+                                                                            @endforeach
+                                                                        </div>
+                                                                    </div>
+                                                                @endif
                                                             @endif
 
                                                             <a href="{{ route('admin.recommendation.form', $data->id) }}"

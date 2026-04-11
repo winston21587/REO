@@ -299,6 +299,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/recommendation-letter/generate', [AdminController::class, 'generateRecommendationLetter'])->name('admin.recommendation.generate');
         Route::post('/admin/recommendation-letter/finalize/{id}', [AdminController::class, 'finalizeReview'])->name('admin.recommendation.finalize');
         Route::get('/admin/recommendation-letter/view-saved/{id}', [AdminController::class, 'viewSavedRecommendationLetter'])->name('admin.recommendation.view_saved');
+        Route::get('/admin/recommendation-letter/view-file/{fileId}', [AdminController::class, 'viewRecommendationLetterFile'])->name('admin.recommendation.view_file');
                 // Notify researcher that their official receipt is required
         Route::post('/admin/protocols/{id}/notify-receipt', [AdminController::class, 'notifyReceiptRequired'])->name('admin.notify_receipt_required');
 

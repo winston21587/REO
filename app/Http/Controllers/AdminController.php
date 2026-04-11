@@ -1314,6 +1314,19 @@ class AdminController extends Controller
         return response()->file(public_path($path));
     }
 
+    public function viewRecommendationLetterFile($fileId)
+    {
+        $file = researcher_files::findOrFail($fileId);
+
+        $path = str_replace('storage/', '', $file->filepath);
+
+        if (!Storage::disk('public_uploads')->exists($path)) {
+            return back()->with('error', 'File not found.');
+        }
+
+        return response()->file(public_path($path));
+    }
+
     public function generateRecommendationLetter(Request $request)
     {
         $rules = [

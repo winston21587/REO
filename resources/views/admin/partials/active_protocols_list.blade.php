@@ -251,16 +251,12 @@
                                                         </a>
                                                     @else
                                                         <div title="Official Receipt must be received and verified before generating a Recommendation Letter."
-                                                             class="px-4 py-3 rounded-lg select-none">
-                                                            <div class="flex items-center gap-2 mb-1.5">
-                                                                <i class="fas fa-lock text-slate-300 text-xs"></i>
-                                                                <span class="text-sm font-medium text-slate-300">Generate Recommendation Letter</span>
-                                                            </div>
-                                                            <div class="flex items-center gap-2 pl-6">
-                                                                <span class="text-[10px] font-bold bg-orange-50 text-orange-500 px-2 py-0.5 rounded-full border border-orange-200 leading-none">
-                                                                    OR Not Submitted
-                                                                </span>
-                                                            </div>
+                                                             class="flex items-center gap-3 px-4 py-3 rounded-lg select-none">
+                                                            <i class="fas fa-lock w-4 text-slate-300 text-xs"></i>
+                                                            <span class="text-sm font-medium text-slate-300">Generate Recommendation Letter</span>
+                                                            <span class="ml-auto text-[9px] font-bold bg-orange-50 text-orange-500 px-1.5 py-0.5 rounded-full border border-orange-200 leading-none whitespace-nowrap">
+                                                                OR Not Submitted
+                                                            </span>
                                                         </div>
                                                         @php
                                                             $researcherUserId = optional(optional($data->researcher)->user)->id;

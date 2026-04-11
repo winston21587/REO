@@ -74,53 +74,48 @@
                                             this.open = false;
                                         }
                                     }" 
-                                    @update-review-options.window="lockedType = $event.detail.locked; value = ''; if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = '';"
-                                    @click.outside="open = false" 
+                                    @update-review-options.window="lockedType = $event.detail.locked || 'Unassigned'; value = ''; if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; open = false;"
                                     class="relative w-full">
 
-                                   <button type="button" @click.prevent="open = !open" 
+                                   <button type="button" @click="open = !open" 
                                        class="flex items-center justify-between w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 hover:border-slate-300 hover:bg-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-all">
                                        <span x-text="displayValue" class="font-bold text-slate-700 truncate pr-2" :class="{ 'text-slate-400 font-medium': !value }"></span>
                                        <i class="fas fa-chevron-down text-slate-400 text-[10px] transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
                                    </button>
 
-                                   <div x-show="open" x-transition.opacity.duration.150ms x-transition:enter-start="transform scale-95" x-transition:enter-end="transform scale-100" style="display: none;" 
+                                   <div x-show="open" @click.outside="open = false" style="display: none;" 
                                        class="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden py-1">
                                        
                                        <!-- Option: Unassigned -->
-                                       <button type="button" @click.prevent="selectOption('Unassigned')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Unassigned', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Unassigned' && value !== 'Unassigned', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Unassigned' }"
+                                       <button type="button" @click="selectOption('Unassigned')"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Unassigned', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Unassigned' && value !== 'Unassigned', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Unassigned' && lockedType !== 'Unassigned' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
                                            <span class="text-left w-full" x-text="lockedType === 'Unassigned' ? 'Unassigned (N/A) (Current)' : 'Unassigned (N/A)'"></span>
                                            <i x-show="lockedType === 'Unassigned'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
-                                           <div x-show="lockedType === 'Unassigned'" class="absolute inset-0 bg-repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)"></div>
                                        </button>
 
                                        <!-- Option: Exempt Review -->
-                                       <button type="button" @click.prevent="selectOption('Exempt Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Exempt Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Exempt Review' && value !== 'Exempt Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Exempt Review' }"
+                                       <button type="button" @click="selectOption('Exempt Review')"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Exempt Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Exempt Review' && value !== 'Exempt Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Exempt Review' && lockedType !== 'Exempt Review' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
                                            <span class="text-left w-full" x-text="lockedType === 'Exempt Review' ? 'Exempt Review (Current)' : 'Exempt Review'"></span>
                                            <i x-show="lockedType === 'Exempt Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
-                                           <div x-show="lockedType === 'Exempt Review'" class="absolute inset-0 bg-repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)"></div>
                                        </button>
 
                                        <!-- Option: Expedited Review -->
-                                       <button type="button" @click.prevent="selectOption('Expedited Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Expedited Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Expedited Review' && value !== 'Expedited Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Expedited Review' }"
+                                       <button type="button" @click="selectOption('Expedited Review')"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Expedited Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Expedited Review' && value !== 'Expedited Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Expedited Review' && lockedType !== 'Expedited Review' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
                                            <span class="text-left w-full" x-text="lockedType === 'Expedited Review' ? 'Expedited Review (Current)' : 'Expedited Review'"></span>
                                            <i x-show="lockedType === 'Expedited Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
-                                           <div x-show="lockedType === 'Expedited Review'" class="absolute inset-0 bg-repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)"></div>
                                        </button>
 
                                        <!-- Option: Full Board Review -->
-                                       <button type="button" @click.prevent="selectOption('Full Board Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Full Board Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Full Board Review' && value !== 'Full Board Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Full Board Review' }"
+                                       <button type="button" @click="selectOption('Full Board Review')"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Full Board Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Full Board Review' && value !== 'Full Board Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Full Board Review' && lockedType !== 'Full Board Review' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
                                            <span class="text-left w-full" x-text="lockedType === 'Full Board Review' ? 'Full Board Review (Current)' : 'Full Board Review'"></span>
                                            <i x-show="lockedType === 'Full Board Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
-                                           <div x-show="lockedType === 'Full Board Review'" class="absolute inset-0 bg-repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)"></div>
                                        </button>
 
                                    </div>

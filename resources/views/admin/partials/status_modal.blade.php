@@ -63,6 +63,7 @@
                                         },
                                         syncFromSelect() {
                                             const sel = document.getElementById('reviewTypeSelect');
+                                            if(!sel) return;
                                             this.value = sel.value;
                                             this.options = Array.from(sel.options).filter(o => o.value).map(o => ({
                                                 value: o.value,
@@ -71,6 +72,7 @@
                                             }));
                                         }
                                     }" 
+                                    x-init="syncFromSelect()"
                                     @update-review-options.window="syncFromSelect()"
                                     @click.outside="open = false" 
                                     class="relative w-full">

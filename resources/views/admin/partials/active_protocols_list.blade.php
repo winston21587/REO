@@ -4,24 +4,20 @@
                     <thead>
                         <tr
                             class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                            <th class="p-6">Protocol ID</th>
                             <th class="p-6">Research Title</th>
                             <th class="p-6">Researcher</th>
                             <th class="p-6">Reviewers</th>
                             <th class="p-6">Submission Date</th>
                             <th class="p-6">Document Status</th>
                             <th class="p-6">Reviewer Status</th>
+                            <th class="p-6">Review Type</th>
                             <th class="p-6 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse($datas as $data)
                             <tr class="hover:bg-slate-50/80 transition-colors group">
-                                <td class="p-6">
-                                    <span class="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">
-                                        #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
-                                    </span>
-                                </td>
+
                                 <td class="p-6">
                                     <p class="font-bold text-slate-800 text-sm line-clamp-1 group-hover:text-[#8B0000] transition-colors"
                                         title="{{ $data->Study_Protocol_title }}">
@@ -119,6 +115,31 @@
                                         {{ $revStatus }}
                                     </div>
                                 </td>
+                                <td class="p-6">
+                                    @php
+                                        $reviewerSuggestedType = $data->adminFiles->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
+                                    @endphp
+                                    @if($data->Review_Type)
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border
+                                                @if($data->Review_Type === 'Exempt Review') bg-emerald-50 text-emerald-700 border-emerald-200
+                                                @elseif($data->Review_Type === 'Expedited Review') bg-blue-50 text-blue-700 border-blue-200
+                                                @elseif($data->Review_Type === 'Full Board Review') bg-amber-50 text-amber-700 border-amber-200
+                                                @else bg-slate-100 text-slate-600 border-slate-200 @endif">
+                                                {{ $data->Review_Type }}
+                                            </span>
+                                        </div>
+                                    @elseif($reviewerSuggestedType)
+                                        <div class="flex flex-col">
+                                            <span class="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border border-slate-200 text-slate-700 bg-slate-50 w-max">
+                                                {{ $reviewerSuggestedType }}
+                                            </span>
+                                            <span class="text-[10px] text-slate-400 mt-1 italic pl-1">Suggested by reviewer</span>
+                                        </div>
+                                    @else
+                                        <span class="text-xs font-medium text-slate-400 italic">Unassigned</span>
+                                    @endif
+                                </td>
                                 <td class="p-6 text-right relative">
                                     <div class="relative" x-data="{ open: false }">
                                         <button @click="open = !open" @click.away="open = false"
@@ -196,7 +217,7 @@
 
                                                 @else
                                                     <button
-                                                        @click="open = false; openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($data->Status) }})"
+                                                        @click="open = false; openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($data->Status) }}, {{ json_encode($data->Review_Type) }})"
                                                         class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
                                                         <i class="fas fa-sync-alt w-4"></i> Update Status
                                                     </button>

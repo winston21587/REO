@@ -125,13 +125,13 @@
                                             'Full Board Review' => 'text-amber-600'
                                         ];
                                     @endphp
-                                    <div class="flex flex-col gap-0.5 {{ !$hasTop && !$isNA ? 'opacity-60' : '' }}">
+                                    <div class="flex flex-col gap-0.5 {{ !$hasTop ? 'opacity-60' : '' }}">
                                         @if($hasTop)
                                             <div class="flex items-center cursor-default" title="Official Review Type">
                                                 <span class="text-sm font-bold {{ $typeColors[$data->Review_Type] ?? 'text-slate-500' }} tracking-tight leading-tight">{{ $data->Review_Type }}</span>
                                             </div>
                                         @elseif($isNA)
-                                            <span class="text-sm font-bold text-slate-500 tracking-tight leading-tight">N/A</span>
+                                            <span class="text-sm font-semibold text-slate-500 italic tracking-tight leading-tight">N/A</span>
                                         @else
                                             <span class="text-sm font-semibold text-slate-500 italic leading-tight">Unassigned</span>
                                         @endif

@@ -166,7 +166,7 @@
                         </button>
                         <button type="submit" id="submitStatusBtn"
                             class="flex-1 px-4 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] transition-colors shadow-lg shadow-red-900/20 flex justify-center items-center gap-2">
-                            <span>{{ request()->routeIs('admin.applications') ? 'Proceed to Next Stage' : 'Update & Notify' }}</span>
+                            <span>{{ request()->routeIs('admin.applications') ? 'Update Status' : 'Update & Notify' }}</span>
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>

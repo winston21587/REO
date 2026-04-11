@@ -50,8 +50,8 @@
 
         @php
             $allFiles = $researchTitle->files->merge($researchTitle->adminFiles ?? collect());
-            $letters = $allFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->sortByDesc('created_at');
-            $protocolDocs = $researchTitle->files->whereNotIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter']);
+            $letters = $allFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review'])->sortByDesc('created_at');
+            $protocolDocs = $researchTitle->files->whereNotIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review']);
 
             $originalFiles = $protocolDocs->whereNull('revision_number')->sortByDesc('created_at');
             $archivedFiles = $protocolDocs->where('revision_number', '>', 0)->sortByDesc('created_at');

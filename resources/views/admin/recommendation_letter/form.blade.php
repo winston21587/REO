@@ -18,23 +18,60 @@
                 <input type="hidden" name="id" value="{{ $submission->id }}">
                 <input type="hidden" name="email" value="{{ $submission->researcher->user->email ?? '' }}">
 
-                <!-- Existing Letter Indicator -->
-                @if(isset($hasLetter) && $hasLetter)
-                <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between gap-3 animate-pulse">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                            <i class="fas fa-check-circle text-xl"></i>
+                <!-- Existing Letter Indicator & Archive -->
+                <div class="space-y-4">
+                    @if(isset($hasLetter) && $hasLetter)
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between gap-3 animate-pulse">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shadow-sm flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-lg"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-extrabold text-amber-900 tracking-tight">Active Recommendation Letter Exists</h4>
+                                <p class="text-[12px] text-amber-700 font-medium">Generating a new one will automatically archive the current letter into the history log.</p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="text-sm font-bold text-green-800">Recommendation Letter Already Generated</h4>
-                            <p class="text-xs text-green-600">A letter has already been created for this protocol.</p>
+                        <a href="{{ route('admin.recommendation.view_saved', $submission->id) }}" target="_blank" class="px-4 py-2 bg-amber-600 text-white text-[12px] font-bold rounded-lg hover:bg-amber-700 transition-colors shadow-sm flex items-center gap-2 flex-shrink-0">
+                            <i class="fas fa-external-link-alt"></i> View Active
+                        </a>
+                    </div>
+                    @endif
+
+                    @if(isset($archivedLetters) && $archivedLetters->isNotEmpty())
+                    <div x-data="{ open: false }" class="border border-slate-200 rounded-xl bg-slate-50 overflow-hidden">
+                        <button type="button" @click="open = !open" class="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-slate-100/80 transition-colors focus:outline-none">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fas fa-history text-slate-400"></i>
+                                <span class="text-sm font-bold text-slate-700">History of RC Letters ({{ $archivedLetters->count() }})</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-slate-400 text-[11px] transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-collapse>
+                            <div class="px-5 pb-5 pt-1 space-y-3">
+                                @foreach($archivedLetters as $archived)
+                                <div class="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:border-slate-200 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
+                                            <i class="fas fa-file-signature"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[13px] font-bold text-slate-700 line-clamp-1">Archived Result of Review</p>
+                                            <p class="text-[11px] font-medium text-slate-400 flex items-center gap-1.5 mt-0.5">
+                                                <i class="far fa-clock text-[10px]"></i>
+                                                {{ $archived->created_at->format('M d, Y \\a\\t h:i A') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('admin.serve_file', $archived->id) }}" target="_blank" class="text-slate-400 hover:text-[#8B0000] hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center transition-all bg-white border border-slate-100 flex-shrink-0">
+                                        <i class="fas fa-external-link-alt text-[10px]"></i>
+                                    </a>
+                                </div>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
-                    <a href="{{ route('admin.recommendation.view_saved', $submission->id) }}" target="_blank" class="px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
-                        <i class="fas fa-eye"></i> View Letter
-                    </a>
+                    @endif
                 </div>
-                @endif
 
                 <!-- Section 1: Basic Info -->
                 <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">

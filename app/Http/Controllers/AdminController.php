@@ -1290,7 +1290,12 @@ class AdminController extends Controller
         $hasLetter = $submission->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty()
             || $submission->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->isNotEmpty();
 
-        return view('admin.recommendation_letter.form', compact('submission', 'hasLetter'));
+        // Fetch Archived Letters
+        $archivedLetters = $submission->files->where('filetype', 'Archived Result of Review')
+            ->concat($submission->adminFiles->where('filetype', 'Archived Result of Review'))
+            ->sortByDesc('created_at');
+
+        return view('admin.recommendation_letter.form', compact('submission', 'hasLetter', 'archivedLetters'));
     }
 
     public function viewSavedRecommendationLetter($id)
@@ -1444,6 +1449,11 @@ class AdminController extends Controller
             }
 
             Storage::disk('public_uploads')->put($path, $pdf->Output('S'));
+
+            // Archive existing recommendation letters to maintain history
+            \App\Models\researcher_files::where('research_title_id', $submission->id)
+                ->where('filetype', 'Result of Review (Admin Generated)')
+                ->update(['filetype' => 'Archived Result of Review']);
 
             // Save to DB
             researcher_files::create([

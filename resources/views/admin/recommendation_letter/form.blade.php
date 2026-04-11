@@ -13,7 +13,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-            <form action="{{ route('admin.recommendation.generate') }}" method="POST" target="_blank" class="p-8 space-y-8">
+            <form action="{{ route('admin.recommendation.generate') }}" method="POST" onsubmit="this.target = event.submitter.value === 'view' ? '_blank' : '_self'" class="p-8 space-y-8">
                 @csrf
                 <input type="hidden" name="id" value="{{ $submission->id }}">
                 <input type="hidden" name="email" value="{{ $submission->researcher->user->email ?? '' }}">
@@ -61,12 +61,12 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Number of Sets to Submit</label>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Number of Sets to Submit <span class="text-red-500">*</span></label>
                             <input type="text" name="num_sets" class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm" placeholder="e.g. 3" required>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Envelope Type</label>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Envelope Type <span class="text-red-500">*</span></label>
                             <input type="text" name="envelope_type" class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm" placeholder="e.g. Brown Envelope" required>
                         </div>
                     </div>

@@ -70,6 +70,8 @@
                 return str_starts_with($f->category ?? '', 'Reviewer Uploads');
             })->sortByDesc('created_at');
 
+            $latestSuggestedType = $reviewerDocs->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
+
             $hasRevisions = $revisionFolders->isNotEmpty();
 
             // Build enriched file sets for Alpine (all JSON encoded via x-data)
@@ -568,6 +570,14 @@
                                 {{ $revisionFolders->count() }} submitted
                             </span>
                         </div>
+                        @if($latestSuggestedType)
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-100 mt-2">
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i class="fas fa-lightbulb text-amber-400 w-3"></i> Suggested Type</span>
+                            <span class="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                                {{ $latestSuggestedType }}
+                            </span>
+                        </div>
+                        @endif
                     </div>
                 </div>
 

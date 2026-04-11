@@ -59,7 +59,7 @@
                                         lockedType: 'Unassigned',
                                         get displayValue() {
                                             const map = {
-                                                'Unassigned': 'Unassigned (N/A)',
+                                                'Unassigned': 'Unassigned',
                                                 'Exempt Review': 'Exempt Review',
                                                 'Expedited Review': 'Expedited Review',
                                                 'Full Board Review': 'Full Board Review'
@@ -74,7 +74,7 @@
                                             this.open = false;
                                         }
                                     }" 
-                                    @update-review-options.window="lockedType = $event.detail.locked || 'Unassigned'; value = ''; if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; open = false;"
+                                    @update-review-options.window="lockedType = $event.detail.locked === 'N/A' ? 'Unassigned' : ($event.detail.locked || 'Unassigned'); value = ''; if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; open = false;"
                                     class="relative w-full">
 
                                    <button type="button" @click="open = !open" 
@@ -90,7 +90,7 @@
                                        <button type="button" @click="selectOption('Unassigned')"
                                            :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Unassigned', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Unassigned' && value !== 'Unassigned', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Unassigned' && lockedType !== 'Unassigned' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
-                                           <span class="text-left w-full" x-text="lockedType === 'Unassigned' ? 'Unassigned (N/A) (Current)' : 'Unassigned (N/A)'"></span>
+                                           <span class="text-left w-full" x-text="lockedType === 'Unassigned' ? 'Unassigned (Current)' : 'Unassigned'"></span>
                                            <i x-show="lockedType === 'Unassigned'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
                                        </button>
 
@@ -266,13 +266,13 @@
         // Reset UI
         const reviewTypeSelect = document.getElementById('reviewTypeSelect');
         reviewTypeSelect.value = "";
-        document.getElementById('currentReviewTypeDisplay').textContent = currentReviewType || 'Unassigned';
+        document.getElementById('currentReviewTypeDisplay').textContent = currentReviewType === 'N/A' ? 'Unassigned' : (currentReviewType || 'Unassigned');
         
         // Dynamically disable currently selected review type
         Array.from(reviewTypeSelect.options).forEach(opt => {
             if (opt.value) {
-                let baseText = opt.value === 'Unassigned' ? 'Unassigned (N/A)' : opt.value;
-                if (opt.value === currentReviewType || (!currentReviewType && opt.value === 'Unassigned')) {
+                let baseText = opt.value === 'Unassigned' ? 'Unassigned' : opt.value;
+                if (opt.value === currentReviewType || (!currentReviewType && opt.value === 'Unassigned') || (opt.value === 'Unassigned' && currentReviewType === 'N/A')) {
                     opt.disabled = true;
                     opt.textContent = baseText + ' (Current)';
                 } else {

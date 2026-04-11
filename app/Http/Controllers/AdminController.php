@@ -851,6 +851,9 @@ class AdminController extends Controller
             } elseif ($request->classification === 'Hardcopy Complete') {
                 $newStatus = 'Hardcopy Received';
                 $submission->Status = $newStatus;
+                if ($submission->Review_Type === 'N/A') {
+                    $submission->Review_Type = 'Unassigned';
+                }
                 $submission->save();
                 
                 $message = "Your hardcopy for \"{$submission->Study_Protocol_title}\" has been received and verified.";

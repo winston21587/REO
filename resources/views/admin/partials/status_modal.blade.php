@@ -46,7 +46,7 @@
                             </div>
                             <div class="flex-1 w-full max-w-[240px]">
                                 <select name="review_type" id="reviewTypeSelect" class="hidden">
-                                    <option value="">-- Change Review Type --</option>
+                                    <option value="">Change Review Type</option>
                                     <option value="Unassigned">Unassigned (N/A)</option>
                                     <option value="Exempt Review">Exempt Review</option>
                                     <option value="Expedited Review">Expedited Review</option>
@@ -64,7 +64,7 @@
                                                 'Expedited Review': 'Expedited Review',
                                                 'Full Board Review': 'Full Board Review'
                                             };
-                                            return map[this.value] || '-- Change Review Type --';
+                                            return map[this.value] || 'Change Review Type';
                                         },
                                         selectOption(val) {
                                             if (val === this.lockedType) return;

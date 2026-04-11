@@ -334,16 +334,16 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                                                <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0 sm:ml-3">
+                                            <div class="bg-slate-50 px-6 py-4 border-t border-slate-100">
+                                                <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0">
                                                     @csrf
-                                                    <div class="mb-4 text-left border-t border-slate-100 pt-4 mt-4">
+                                                    <div class="mb-4 text-left">
                                                         <label class="block text-xs font-bold text-slate-700 mb-2">Suggested Review Type</label>
                                                         <div class="relative">
                                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                                 <i class="fas fa-layer-group text-slate-400 text-sm"></i>
                                                             </div>
-                                                            <select name="suggested_review_type" required class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-300 transition-colors appearance-none">
+                                                            <select name="suggested_review_type" required class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-300 transition-colors appearance-none">
                                                                 <option value="" disabled selected>Select a review type...</option>
                                                                 <option value="Exempt Review">Exempt Review</option>
                                                                 <option value="Expedited Review">Expedited Review</option>
@@ -354,13 +354,15 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <button type="submit" class="w-full inline-flex justify-center rounded-xl shadow-sm px-4 py-2 bg-green-600 text-base font-bold text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto sm:text-sm transition-colors border border-transparent">
-                                                        Confirm Completion
-                                                    </button>
+                                                    <div class="flex gap-3">
+                                                        <button type="button" @click="showModal = false" class="flex-1 inline-flex justify-center rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
+                                                            Cancel
+                                                        </button>
+                                                        <button type="submit" class="flex-1 inline-flex justify-center rounded-xl shadow-sm px-4 py-2.5 bg-green-600 text-sm font-bold text-white hover:bg-green-700 focus:outline-none transition-colors border border-transparent">
+                                                            Confirm Completion
+                                                        </button>
+                                                    </div>
                                                 </form>
-                                                <button type="button" @click="showModal = false" class="mt-3 w-full inline-flex justify-center rounded-xl border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 sm:mt-0 sm:w-auto sm:text-sm">
-                                                    Cancel
-                                                </button>
                                             </div>
                                         </div>
                                     </div>

@@ -79,8 +79,8 @@
                                         $docClass = $docColors[$docStatus] ?? 'text-slate-500';
                                     @endphp
                                     <div class="flex items-center gap-2">
-                                        <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                            <svg class="h-2 w-2 fill-current {{ $docClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
+                                        <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
+                                            <svg class="h-2.5 w-2.5 fill-current {{ $docClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
                                             {{ $docStatus }}
                                         </div>
                                         @if($data->Status === 'Incomplete - Awaiting Hardcopy')
@@ -110,8 +110,8 @@
                                         ];
                                         $revClass = $revColors[$revStatus] ?? 'text-slate-500';
                                     @endphp
-                                    <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                        <svg class="h-2 w-2 fill-current {{ $revClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
+                                    <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
+                                        <svg class="h-2.5 w-2.5 fill-current {{ $revClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
                                         {{ $revStatus }}
                                     </div>
                                 </td>
@@ -120,21 +120,25 @@
                                         $reviewerSuggestedType = $data->adminFiles->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
                                     @endphp
                                     @if($data->Review_Type)
-                                        <div class="flex items-center gap-2">
-                                            <span class="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border
-                                                @if($data->Review_Type === 'Exempt Review') bg-emerald-50 text-emerald-700 border-emerald-200
-                                                @elseif($data->Review_Type === 'Expedited Review') bg-blue-50 text-blue-700 border-blue-200
-                                                @elseif($data->Review_Type === 'Full Board Review') bg-amber-50 text-amber-700 border-amber-200
-                                                @else bg-slate-100 text-slate-600 border-slate-200 @endif">
-                                                {{ $data->Review_Type }}
-                                            </span>
+                                        @php
+                                            $typeColors = [
+                                                'Exempt Review' => 'text-emerald-500',
+                                                'Expedited Review' => 'text-blue-500',
+                                                'Full Board Review' => 'text-amber-500'
+                                            ];
+                                            $typeClass = $typeColors[$data->Review_Type] ?? 'text-slate-500';
+                                        @endphp
+                                        <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
+                                            <svg class="h-2.5 w-2.5 fill-current {{ $typeClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
+                                            <span class="whitespace-nowrap">{{ $data->Review_Type }}</span>
                                         </div>
                                     @elseif($reviewerSuggestedType)
                                         <div class="flex flex-col">
-                                            <span class="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border border-slate-200 text-slate-700 bg-slate-50 w-max">
-                                                {{ $reviewerSuggestedType }}
-                                            </span>
-                                            <span class="text-[10px] text-slate-400 mt-1 italic pl-1">Suggested by reviewer</span>
+                                            <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
+                                                <svg class="h-2.5 w-2.5 fill-current text-slate-400" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
+                                                <span class="whitespace-nowrap">{{ $reviewerSuggestedType }}</span>
+                                            </div>
+                                            <span class="text-[10px] text-slate-400 mt-1 italic pl-4">Suggested by reviewer</span>
                                         </div>
                                     @else
                                         <span class="text-xs font-medium text-slate-400 italic">Unassigned</span>

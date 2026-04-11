@@ -56,10 +56,10 @@
                                 <div x-data="{ 
                                         open: false,
                                         value: '',
-                                        lockedType: 'N/A',
+                                        lockedType: 'Unassigned',
                                         get displayValue() {
                                             const map = {
-                                                'N/A': 'N/A',
+                                                'Unassigned': 'Unassigned',
                                                 'Exempt Review': 'Exempt Review',
                                                 'Expedited Review': 'Expedited Review',
                                                 'Full Board Review': 'Full Board Review'
@@ -74,7 +74,7 @@
                                             this.open = false;
                                         }
                                     }" 
-                                    @update-review-options.window="lockedType = $event.detail.locked || 'N/A'; value = ''; if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; open = false;"
+                                    @update-review-options.window="lockedType = $event.detail.locked === 'N/A' ? 'Unassigned' : ($event.detail.locked || 'Unassigned'); value = ''; if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; open = false;"
                                     class="relative w-full">
 
                                    <button type="button" @click="open = !open" 
@@ -86,12 +86,12 @@
                                    <div x-show="open" @click.outside="open = false" style="display: none;" 
                                        class="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden py-1">
                                        
-                                       <!-- Option: N/A -->
-                                       <button type="button" @click="selectOption('N/A')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'N/A' || lockedType === 'Unassigned', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'N/A' && lockedType !== 'Unassigned' && value !== 'N/A', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'N/A' && lockedType !== 'N/A' && lockedType !== 'Unassigned' }"
+                                       <!-- Option: Unassigned -->
+                                       <button type="button" @click="selectOption('Unassigned')"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Unassigned', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Unassigned' && value !== 'Unassigned', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Unassigned' && lockedType !== 'Unassigned' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
-                                           <span class="text-left w-full" x-text="(lockedType === 'N/A' || lockedType === 'Unassigned') ? 'N/A (Current)' : 'N/A'"></span>
-                                           <i x-show="lockedType === 'N/A' || lockedType === 'Unassigned'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
+                                           <span class="text-left w-full" x-text="lockedType === 'Unassigned' ? 'Unassigned (Current)' : 'Unassigned'"></span>
+                                           <i x-show="lockedType === 'Unassigned'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
                                        </button>
 
                                        <!-- Option: Exempt Review -->
@@ -266,13 +266,13 @@
         // Reset UI
         const reviewTypeSelect = document.getElementById('reviewTypeSelect');
         reviewTypeSelect.value = "";
-        document.getElementById('currentReviewTypeDisplay').textContent = currentReviewType || 'N/A';
+        document.getElementById('currentReviewTypeDisplay').textContent = currentReviewType === 'N/A' ? 'Unassigned' : (currentReviewType || 'Unassigned');
         
         // Dynamically disable currently selected review type
         Array.from(reviewTypeSelect.options).forEach(opt => {
             if (opt.value) {
-                let baseText = opt.value === 'N/A' ? 'N/A' : opt.value;
-                if (opt.value === currentReviewType || (!currentReviewType && opt.value === 'N/A') || (opt.value === 'N/A' && currentReviewType === 'Unassigned')) {
+                let baseText = opt.value === 'Unassigned' ? 'Unassigned' : opt.value;
+                if (opt.value === currentReviewType || (!currentReviewType && opt.value === 'Unassigned') || (opt.value === 'Unassigned' && currentReviewType === 'N/A')) {
                     opt.disabled = true;
                     opt.textContent = baseText + ' (Current)';
                 } else {
@@ -283,7 +283,7 @@
         });
         
         // Broadcast custom event to sync with the Alpine UI dropdown
-        window.dispatchEvent(new CustomEvent('update-review-options', { detail: { locked: currentReviewType || 'N/A' } }));
+        window.dispatchEvent(new CustomEvent('update-review-options', { detail: { locked: currentReviewType || 'Unassigned' } }));
 
         const date = new Date();
         date.setDate(date.getDate() + 2);

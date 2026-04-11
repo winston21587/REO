@@ -34,18 +34,16 @@
                     </div>
                 @endif
 
-                <div class="flex items-center justify-between mt-4">
+                <div class="flex items-center justify-end gap-3 mt-4">
                     <a href="{{ route('admin.view_files', $sub->id) }}"
-                        class="bg-[#dc2626] hover:bg-[#b91c1c] text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                        class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-slate-300">
                         View Details
                     </a>
-
-                    <div class="flex items-center gap-2">
-                        <button onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')"
-                            class="bg-[#fecaca] hover:bg-[#fca5a5] text-[#991b1b] px-4 py-2 rounded-lg text-xs font-bold transition-all">
-                            Action
-                        </button>
-                    </div>
+                    
+                    <button onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')"
+                        class="bg-[#8B0000] hover:bg-[#6d0000] text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
+                        Action
+                    </button>
                 </div>
             </div>
         @empty

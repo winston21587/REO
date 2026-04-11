@@ -126,10 +126,45 @@
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
 
-                                        <div x-show="open"
-                                            class="absolute right-0 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden {{ (count($datas) > 2 && $loop->iteration >= count($datas) - 1) ? 'bottom-full mb-2 origin-bottom-right' : 'top-full mt-2 origin-top-right' }}"
-                                            style="display: none;">
-                                            <div class="p-1">
+                                        <!-- SIDEBAR DRAWER -->
+                                        <div x-show="open" style="display: none;" class="relative z-[100]" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+                                            <!-- Background backdrop -->
+                                            <div x-show="open" 
+                                                 x-transition:enter="ease-in-out duration-300" 
+                                                 x-transition:enter-start="opacity-0" 
+                                                 x-transition:enter-end="opacity-100" 
+                                                 x-transition:leave="ease-in-out duration-300" 
+                                                 x-transition:leave-start="opacity-100" 
+                                                 x-transition:leave-end="opacity-0" 
+                                                 class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+                                                 @click="open = false"></div>
+
+                                            <div class="fixed inset-0 overflow-hidden pointer-events-none">
+                                                <div class="absolute inset-0 overflow-hidden">
+                                                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10"
+                                                         x-show="open"
+                                                         x-transition:enter="transform transition ease-in-out duration-300 sm:duration-400"
+                                                         x-transition:enter-start="translate-x-full"
+                                                         x-transition:enter-end="translate-x-0"
+                                                         x-transition:leave="transform transition ease-in-out duration-300 sm:duration-400"
+                                                         x-transition:leave-start="translate-x-0"
+                                                         x-transition:leave-end="translate-x-full">
+                                                        
+                                                        <div class="pointer-events-auto w-screen max-w-sm flex flex-col h-full bg-white shadow-2xl">
+                                                            <!-- Drawer Header -->
+                                                            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-start bg-slate-50 flex-none">
+                                                                <div class="pr-3">
+                                                                    <h3 class="font-heading font-bold text-lg text-slate-800 leading-tight">Protocol Actions</h3>
+                                                                    <p class="text-xs text-[#8B0000] mt-1 font-mono font-bold">#{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}</p>
+                                                                    <p class="text-xs text-slate-500 mt-1 line-clamp-2" title="{{ $data->Study_Protocol_title }}">{{ $data->Study_Protocol_title }}</p>
+                                                                </div>
+                                                                <button @click="open = false" class="text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-1">
+                                                                    <i class="fas fa-times text-lg"></i>
+                                                                </button>
+                                                            </div>
+
+                                                            <!-- Drawer Actions List -->
+                                                            <div class="flex-1 overflow-y-auto p-4 space-y-2">
                                                 <a href="{{ route('admin.view_files', $data->id) }}"
                                                     class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
                                                     <i class="fas fa-eye w-4"></i> View Details
@@ -257,6 +292,10 @@
                                                         <i class="fas fa-undo-alt w-4"></i> Step Backward (Undo)
                                                     </button>
                                                 </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

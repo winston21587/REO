@@ -48,7 +48,7 @@
                                 <select name="review_type" id="reviewTypeSelect" class="border-slate-200 rounded-lg text-sm bg-slate-50 cursor-pointer outline-none focus:ring-2 focus:ring-[#8B0000]">
                                     <option value="">-- Change Review Type --</option>
                                     <option value="Unassigned">Unassigned (N/A)</option>
-                                    <option value="Exempt Review">Exempt Review</option>
+                                    <option value="Exempt Review">Exempt Review test</option>
                                     <option value="Expedited Review">Expedited Review</option>
                                     <option value="Full Board Review">Full Board Review</option>
                                 </select>

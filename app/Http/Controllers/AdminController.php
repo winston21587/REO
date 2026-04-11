@@ -1469,14 +1469,20 @@ class AdminController extends Controller
                 'user_id' => $user->id, // or $user->user_id if depending on relationship structure
                 'research_id' => $submission->id,
                 'title' => 'Result of Review Available',
-                'message' => "Your Result of Review letter for \"{$submission->Study_Protocol_title}\" has been generated. You may now view it in your dashboard.",
-                'type' => 'document_upload', // or 'status_update'
+                'message' => "Your Result of Review letter for \"{$submission->Study_Protocol_title}\" has been generated. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.",
+                'type' => 'document_upload',
                 'is_read' => false
             ]);
 
-            // Redirect back to the form with success message
-            // The user will manually click "Proceed to Revision"
-            return redirect()->back()->with('success', 'Recommendation Letter generated and saved successfully. You can now proceed to the next stage.');
+            // Automatically transition to "Waiting for Revision" if not already in a revision status
+            $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation'];
+            if (!in_array($submission->Status, $revisionStatuses)) {
+                $submission->Status = 'Waiting for Revision';
+                $submission->save();
+            }
+
+            // Redirect to the Revisions page
+            return redirect()->route('admin.revisions')->with('success', 'Recommendation Letter generated and sent successfully. The protocol has been moved to Revisions.');
         }
     }
 

@@ -54,9 +54,9 @@
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Review Type</label>
                             @php $defaultRT = request('review_type', $submission->Review_Type); @endphp
                             <select name="review_type" class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-white cursor-pointer">
-                                <option value="Exempt" {{ $defaultRT == 'Exempt' ? 'selected' : '' }}>Exempt</option>
-                                <option value="Expedited" {{ $defaultRT == 'Expedited' ? 'selected' : '' }}>Expedited</option>
-                                <option value="Full Review" {{ $defaultRT == 'Full Review' ? 'selected' : '' }}>Full Review</option>
+                                <option value="Exempt Review" {{ $defaultRT == 'Exempt Review' ? 'selected' : '' }}>Exempt Review</option>
+                                <option value="Expedited Review" {{ $defaultRT == 'Expedited Review' ? 'selected' : '' }}>Expedited Review</option>
+                                <option value="Full Board Review" {{ $defaultRT == 'Full Board Review' ? 'selected' : '' }}>Full Board Review</option>
                             </select>
                         </div>
 

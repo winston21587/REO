@@ -71,16 +71,15 @@
                                         $docStatus = $isAdvanced ? 'Hardcopy Received' : $data->Status;
                                         
                                         $docColors = [
-                                            'For Initial Review' => 'text-blue-500', // legacy
-                                            'Incomplete - Awaiting Hardcopy' => 'text-red-500',
-                                            'Incomplete Hardcopy' => 'text-red-500',
-                                            'Hardcopy Received' => 'text-teal-500',
+                                            'For Initial Review' => 'text-blue-600', // legacy
+                                            'Incomplete - Awaiting Hardcopy' => 'text-red-600',
+                                            'Incomplete Hardcopy' => 'text-red-600',
+                                            'Hardcopy Received' => 'text-teal-600',
                                         ];
                                         $docClass = $docColors[$docStatus] ?? 'text-slate-500';
                                     @endphp
                                     <div class="flex items-center gap-2">
-                                        <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
-                                            <svg class="h-2.5 w-2.5 fill-current {{ $docClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
+                                        <div class="text-sm font-bold {{ $docClass }}">
                                             {{ $docStatus }}
                                         </div>
                                         @if($data->Status === 'Incomplete - Awaiting Hardcopy')
@@ -103,15 +102,14 @@
                                         $revStatus = $isAdvanced ? $data->Status : 'Pending Assignment';
                                         
                                         $revColors = [
-                                            'Pending Assignment' => 'text-slate-400',
-                                            'Reviewer Assigned' => 'text-blue-500',
-                                            'Under Review' => 'text-indigo-500',
-                                            'Reviewed' => 'text-green-500',
+                                            'Pending Assignment' => 'text-slate-500',
+                                            'Reviewer Assigned' => 'text-blue-600',
+                                            'Under Review' => 'text-indigo-600',
+                                            'Reviewed' => 'text-green-600',
                                         ];
                                         $revClass = $revColors[$revStatus] ?? 'text-slate-500';
                                     @endphp
-                                    <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
-                                        <svg class="h-2.5 w-2.5 fill-current {{ $revClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
+                                    <div class="text-sm font-bold {{ $revClass }}">
                                         {{ $revStatus }}
                                     </div>
                                 </td>
@@ -122,20 +120,18 @@
                                     @if($data->Review_Type)
                                         @php
                                             $typeColors = [
-                                                'Exempt Review' => 'text-emerald-500',
-                                                'Expedited Review' => 'text-blue-500',
-                                                'Full Board Review' => 'text-amber-500'
+                                                'Exempt Review' => 'text-emerald-600',
+                                                'Expedited Review' => 'text-blue-600',
+                                                'Full Board Review' => 'text-amber-600'
                                             ];
                                             $typeClass = $typeColors[$data->Review_Type] ?? 'text-slate-500';
                                         @endphp
-                                        <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
-                                            <svg class="h-2.5 w-2.5 fill-current {{ $typeClass }}" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
+                                        <div class="text-sm font-bold {{ $typeClass }}">
                                             <span class="whitespace-nowrap">{{ $data->Review_Type }}</span>
                                         </div>
                                     @elseif($reviewerSuggestedType)
                                         <div class="flex flex-col">
-                                            <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
-                                                <svg class="h-2.5 w-2.5 fill-current text-slate-400" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>
+                                            <div class="text-sm font-bold text-slate-500">
                                                 <span class="whitespace-nowrap">{{ $reviewerSuggestedType }}</span>
                                             </div>
                                             <span class="text-[10px] text-slate-400 mt-1 italic pl-4">Suggested by reviewer</span>

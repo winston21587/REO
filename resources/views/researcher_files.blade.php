@@ -176,13 +176,14 @@
         @endphp
 
         <!-- Recommendation Letters Section -->
-        @if($letters->isNotEmpty())
+        @if($letters->isNotEmpty() || $archivedLetters->isNotEmpty())
         <div class="mb-10">
             <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                 <i class="fas fa-envelope-open-text text-emerald-600"></i>
                 Recommendation Letters
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {{-- Active Letters --}}
                 @foreach($letters as $file)
                     <div class="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-lg hover:border-emerald-200 transition-all duration-300">
                         <div class="p-5 flex items-start gap-4 border-b border-emerald-50 bg-emerald-50/30">
@@ -199,7 +200,7 @@
                             </div>
                         </div>
 
-                         <!-- Preview Area -->
+                        <!-- Preview Area -->
                         <div class="relative bg-slate-50 flex-1 min-h-[150px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
                              <iframe src="{{ asset($file->filepath) }}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
                              <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
@@ -217,53 +218,46 @@
                         </div>
                     </div>
                 @endforeach
-            </div>
 
-            {{-- Previous (Archived) Letters --}}
-            @if($archivedLetters->isNotEmpty())
-            <div x-data="{ open: false }" class="mt-6 border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden">
-                <button type="button" @click="open = !open" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-100/80 transition-colors focus:outline-none">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        <div>
-                            <h4 class="text-sm font-bold text-slate-700">Previous Letters ({{ $archivedLetters->count() }})</h4>
-                            <p class="text-[11px] text-slate-400 font-medium">Older versions of the Result of Review</p>
-                        </div>
-                    </div>
-                    <i class="fas fa-chevron-down text-slate-400 text-xs transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
-                </button>
-                <div x-show="open" x-collapse>
-                    <div class="px-6 pb-6 pt-2 space-y-3">
-                        @foreach($archivedLetters as $archived)
-                        <div class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl shadow-sm hover:border-slate-200 transition-colors">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
-                                    <i class="fas fa-file-signature"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-slate-700 line-clamp-1">{{ $archived->filename }}</p>
-                                    <p class="text-[11px] font-medium text-slate-400 flex items-center gap-1.5 mt-0.5">
-                                        <i class="far fa-clock text-[10px]"></i>
-                                        {{ $archived->created_at->format('M d, Y \a\t h:i A') }}
-                                    </p>
-                                </div>
+                {{-- Archived (Previous) Letters --}}
+                @foreach($archivedLetters as $file)
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:shadow-lg hover:border-slate-300 transition-all duration-300">
+                        <div class="p-5 flex items-start gap-4 border-b border-slate-100 bg-slate-50/50">
+                            <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-400">
+                                <i class="fas fa-history text-xl"></i>
                             </div>
-                            <div class="flex items-center gap-2 flex-shrink-0">
-                                <a href="{{ asset($archived->filepath) }}" target="_blank" class="w-9 h-9 rounded-full flex items-center justify-center bg-slate-50 border border-slate-200 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 hover:border-red-200 transition-all" title="View">
-                                    <i class="fas fa-external-link-alt text-[11px]"></i>
-                                </a>
-                                <a href="{{ asset($archived->filepath) }}" download class="w-9 h-9 rounded-full flex items-center justify-center bg-slate-50 border border-slate-200 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-all" title="Download">
-                                    <i class="fas fa-download text-[11px]"></i>
+                            <div class="min-w-0 flex-1">
+                                <h4 class="font-bold text-slate-700 text-sm leading-snug truncate mb-1" title="{{ $file->filename }}">
+                                    {{ $file->filename }}
+                                </h4>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500">
+                                    Previous Version
+                                </span>
+                                <p class="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                                    <i class="far fa-clock"></i> {{ $file->created_at->format('M d, Y') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Preview Area -->
+                        <div class="relative bg-slate-50 flex-1 min-h-[150px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
+                             <iframe src="{{ asset($file->filepath) }}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full border-0 pointer-events-none opacity-60 group-hover:opacity-90 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
+                             <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
+                                <a href="{{ asset($file->filepath) }}" target="_blank" class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur-sm text-slate-900 px-5 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-slate-600 hover:text-white flex items-center gap-2">
+                                    <i class="fas fa-external-link-alt"></i> View Fullscreen
                                 </a>
                             </div>
                         </div>
-                        @endforeach
+
+                        <!-- Read-Only Actions -->
+                        <div class="p-4 bg-white">
+                            <a href="{{ asset($file->filepath) }}" download class="block w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-xl text-sm font-bold text-center transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-download"></i> Download File
+                            </a>
+                        </div>
                     </div>
-                </div>
+                @endforeach
             </div>
-            @endif
         </div>
         @endif
 

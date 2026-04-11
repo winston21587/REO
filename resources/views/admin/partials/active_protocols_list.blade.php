@@ -308,9 +308,11 @@
 
                                                 <!-- Assign Reviewers (Only after Hardcopy Received) -->
                                                 @if(in_array($data->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review']))
+                                                    @php $hasReviewersAssigned = !empty($data->assigned_reviewers) && count($data->assigned_reviewers) > 0; @endphp
                                                     <button @click="open = false; $dispatch('open-assign-modal', { id: '{{ $data->id }}', title: {{ json_encode($data->Study_Protocol_title) }}, assigned: {{ json_encode($data->assigned_reviewers ?? []) }} })"
                                                         class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                        <i class="fas fa-users-cog w-4"></i> Assign Reviewers
+                                                        <i class="fas {{ $hasReviewersAssigned ? 'fa-user-edit' : 'fa-users-cog' }} w-4"></i> 
+                                                        {{ $hasReviewersAssigned ? 'Change Reviewer' : 'Assign Reviewers' }}
                                                     </button>
                                                 @endif
 

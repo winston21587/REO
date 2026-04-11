@@ -200,10 +200,10 @@
 
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-lg border border-slate-100"
+                <div class="relative transform overflow-hidden rounded-[2rem] bg-white text-left shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] transition-all w-full max-w-lg border border-slate-100"
                     x-show="open" @click.away="open = false"
                     x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                    x-transition:enter-start="opacity-0 translate-y-8 scale-95"
                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
                     x-transition:leave="ease-in duration-200"
                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
@@ -213,49 +213,49 @@
                         @csrf
 
                         <!-- Modal Header -->
-                        <div class="px-6 pt-6 pb-4 border-b border-slate-100">
+                        <div class="px-7 pt-7 pb-2">
                             <div class="flex items-start justify-between gap-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#8B0000] to-red-700 flex items-center justify-center shadow-lg shadow-red-900/20 flex-shrink-0">
-                                        <i class="fas fa-users-cog text-white text-base"></i>
+                                <div class="flex items-center gap-3.5">
+                                    <div class="w-12 h-12 rounded-[1rem] bg-red-50 flex items-center justify-center border border-red-100/50 flex-shrink-0">
+                                        <i class="fas fa-users-cog text-[#8B0000] text-lg"></i>
                                     </div>
                                     <div>
-                                        <h3 class="text-lg font-bold text-slate-900 leading-tight" id="assign-modal-title" x-text="initialAssignedCount > 0 ? 'Change Reviewer' : 'Assign Reviewer'">Assign Reviewer</h3>
-                                        <p class="text-xs text-slate-500 mt-0.5 line-clamp-1" x-text="protocolTitle"></p>
+                                        <h3 class="text-[1.15rem] font-extrabold text-slate-800 tracking-tight leading-tight" id="assign-modal-title" x-text="initialAssignedCount > 0 ? 'Change Reviewer' : 'Assign Reviewer'">Assign Reviewer</h3>
+                                        <p class="text-xs text-slate-500 mt-1 font-medium line-clamp-1" x-text="protocolTitle"></p>
                                     </div>
                                 </div>
-                                <button type="button" @click="open = false" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 mt-0.5">
-                                    <i class="fas fa-times"></i>
+                                <button type="button" @click="open = false" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 mt-1">
+                                    <i class="fas fa-times text-sm"></i>
                                 </button>
                             </div>
 
                             <!-- Search + Filter Row -->
-                            <div class="flex gap-2 mt-4">
-                                <div class="relative flex-1">
-                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-slate-400 text-sm"></i>
+                            <div class="flex gap-2 mt-5">
+                                <div class="relative flex-1 group">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-[#8B0000]">
+                                        <i class="fas fa-search text-slate-400 group-focus-within:text-[#8B0000] text-[13px]"></i>
                                     </div>
                                     <input type="text" x-model="search" placeholder="Search by name or expertise..."
-                                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all">
+                                        class="w-full pl-10 pr-4 py-3 bg-slate-100/60 border border-transparent rounded-full text-[13px] font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-200 transition-all">
                                 </div>
                                 <!-- College Filter -->
-                                <div class="relative flex-shrink-0">
+                                <div class="relative flex-shrink-0 group">
                                     <select x-model="collegeFilter"
-                                        class="h-full pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all cursor-pointer appearance-none font-medium">
+                                        class="h-full pl-4 pr-9 py-3 bg-slate-100/60 border border-transparent rounded-full text-[13px] text-slate-700 focus:outline-none focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-200 transition-all cursor-pointer appearance-none font-medium">
                                         <option value="">All Colleges</option>
                                         @foreach($reviewerColleges as $college)
                                             <option value="{{ strtolower($college) }}">{{ $college }}</option>
                                         @endforeach
                                     </select>
-                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
-                                        <i class="fas fa-chevron-down text-slate-400 text-[10px]"></i>
+                                    <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+                                        <i class="fas fa-chevron-down text-slate-400 text-[10px] group-focus-within:text-[#8B0000]"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Reviewer Cards List -->
-                        <div class="px-4 py-3 max-h-[320px] overflow-y-auto space-y-2 custom-scrollbar" x-ref="reviewerCards">
+                        <div class="px-7 py-5 max-h-[360px] overflow-y-auto space-y-3 custom-scrollbar" x-ref="reviewerCards">
                             @forelse($reviewers as $reviewer)
                                 @php
                                     $initials = strtoupper(substr($reviewer->first_name ?? 'U', 0, 1) . substr($reviewer->last_name ?? '', 0, 1));
@@ -273,12 +273,15 @@
                                         (search === '' || '{{ $searchableText }}'.includes(search.toLowerCase())) &&
                                         (collegeFilter === '' || '{{ strtolower($reviewerCollege ?? '') }}' === collegeFilter)
                                     "
-                                    class="rounded-xl border-2 transition-all overflow-hidden"
-                                    :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'border-[#8B0000] shadow-md shadow-red-900/10' : 'border-slate-100 hover:border-slate-200'">
+                                    class="rounded-[1.25rem] border transition-all duration-300 relative overflow-hidden group/card"
+                                    :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'bg-red-50/30 border-red-200 shadow-md shadow-red-900/5 translate-y-0' : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 hover:-translate-y-0.5'">
+                                    
+                                    <!-- Selection Left Indicator -->
+                                    <div class="absolute left-0 top-0 bottom-0 w-[4px] bg-[#8B0000] transition-transform duration-300 origin-left"
+                                         :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'scale-x-100' : 'scale-x-0 group-hover/card:bg-slate-200 group-hover/card:scale-x-100'"></div>
 
                                     <!-- Card Top: Click to select -->
-                                    <label class="flex items-start gap-4 p-4 cursor-pointer group"
-                                           :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'bg-red-50/40' : 'bg-white hover:bg-slate-50/80'">
+                                    <label class="flex items-start gap-4 p-5 pl-6 cursor-pointer relative z-10 w-full">
 
                                         <input type="radio" name="reviewers[]" value="{{ $reviewer->id }}"
                                             x-model="assigned"
@@ -287,70 +290,74 @@
                                             class="sr-only">
 
                                         <!-- Avatar -->
-                                        <div class="w-11 h-11 rounded-xl bg-gradient-to-br {{ $avatarColor }} flex items-center justify-center text-white text-sm font-extrabold flex-shrink-0 shadow-md">
+                                        <div class="w-12 h-12 rounded-full bg-gradient-to-br {{ $avatarColor }} flex items-center justify-center text-white text-[13px] tracking-wide font-bold flex-shrink-0 shadow-sm">
                                             {{ $initials }}
                                         </div>
 
                                         <!-- Info -->
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-start justify-between gap-2">
+                                        <div class="flex-1 min-w-0 pr-8">
+                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                                 <div class="min-w-0">
-                                                    <p class="text-sm font-bold text-slate-800 leading-tight">{{ $reviewer->first_name }} {{ $reviewer->last_name }}</p>
+                                                    <p class="text-[14px] font-bold text-slate-800 leading-tight group-hover/card:text-[#8B0000] transition-colors">{{ $reviewer->first_name }} {{ $reviewer->last_name }}</p>
                                                     @if($reviewerCollege)
-                                                        <p class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
-                                                            <i class="fas fa-university text-[9px] text-slate-400"></i>
+                                                        <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
+                                                            <i class="fas fa-university text-[9px] opacity-70"></i>
                                                             {{ $reviewerCollege }}
                                                         </p>
                                                     @endif
                                                 </div>
                                                 <!-- Workload Badge -->
-                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0
-                                                    {{ $activeCount === 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ($activeCount <= 2 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200') }}">
+                                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 tracking-wide
+                                                    {{ $activeCount === 0 ? 'bg-emerald-50 text-emerald-600' : ($activeCount <= 2 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600') }}">
                                                     {{ $activeCount }} reviewing
                                                 </span>
                                             </div>
 
                                             @if($reviewer->reviewer && !empty($reviewer->reviewer->expertise))
-                                                <div class="flex flex-wrap gap-1 mt-2">
-                                                    @foreach(array_slice($reviewer->reviewer->expertise, 0, 3) as $exp)
-                                                        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-semibold rounded-md border border-slate-200">{{ $exp }}</span>
+                                                <div class="flex flex-wrap items-center gap-1.5 mt-2.5">
+                                                    @foreach(array_slice($reviewer->reviewer->expertise, 0, 3) as $index => $exp)
+                                                        @if($index > 0)
+                                                            <span class="text-slate-300 text-[10px]">&bull;</span>
+                                                        @endif
+                                                        <span class="text-slate-500 text-[11px] font-medium tracking-tight lowercase">{{ $exp }}</span>
                                                     @endforeach
                                                     @if(count($reviewer->reviewer->expertise) > 3)
-                                                        <span class="px-2 py-0.5 bg-slate-100 text-slate-400 text-[10px] font-semibold rounded-md border border-slate-200">+{{ count($reviewer->reviewer->expertise) - 3 }}</span>
+                                                        <span class="text-slate-300 text-[10px]">&bull;</span>
+                                                        <span class="text-slate-400 text-[11px] font-medium tracking-tight lowercase font-style-italic">+{{ count($reviewer->reviewer->expertise) - 3 }} more</span>
                                                     @endif
                                                 </div>
                                             @endif
                                         </div>
 
                                         <!-- Selected checkmark -->
-                                        <div class="flex-shrink-0 mt-0.5"
-                                             :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'"
-                                             style="transition: opacity 0.15s">
-                                            <div class="w-5 h-5 rounded-full bg-[#8B0000] flex items-center justify-center shadow-sm">
-                                                <i class="fas fa-check text-white text-[9px]"></i>
+                                        <div class="absolute right-5 top-1/2 -translate-y-1/2 flex-shrink-0"
+                                             :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'opacity-100 scale-100' : 'opacity-0 scale-75 group-hover/card:opacity-30 group-hover/card:scale-100'"
+                                             style="transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1)">
+                                            <div class="w-6 h-6 rounded-full bg-[#8B0000] flex items-center justify-center shadow-lg shadow-red-900/20">
+                                                <i class="fas fa-check text-white text-[10px]"></i>
                                             </div>
                                         </div>
                                     </label>
 
                                     <!-- Active Titles Accordion -->
                                     @if($activeCount > 0)
-                                        <div class="border-t border-dashed px-4 py-0"
-                                             :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'border-red-200' : 'border-slate-100'">
+                                        <div class="border-t transition-colors px-6 py-0 bg-slate-50/50"
+                                             :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'border-red-100' : 'border-slate-100'">
                                             <button type="button"
                                                 @click.prevent="expandedReviewer = expandedReviewer === '{{ $reviewer->id }}' ? null : '{{ $reviewer->id }}'"
-                                                class="w-full flex items-center justify-between py-2.5 text-left group/acc">
-                                                <span class="text-[11px] font-bold text-slate-500 group-hover/acc:text-slate-700 transition-colors flex items-center gap-1.5">
-                                                    <i class="fas fa-folder-open text-[9px] text-slate-400"></i>
+                                                class="w-full flex items-center justify-between py-3 text-left group/acc">
+                                                <span class="text-[11px] font-bold text-slate-500 group-hover/acc:text-slate-800 transition-colors flex items-center gap-2">
+                                                    <i class="fas fa-folder-open text-slate-400 group-hover/acc:text-slate-600 transition-colors"></i>
                                                     Currently Reviewing ({{ $activeCount }})
                                                 </span>
-                                                <i class="fas fa-chevron-down text-[9px] text-slate-400 transition-transform"
+                                                <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-300 group-hover/acc:text-slate-800"
                                                    :class="expandedReviewer === '{{ $reviewer->id }}' ? 'rotate-180' : ''"></i>
                                             </button>
-                                            <div x-show="expandedReviewer === '{{ $reviewer->id }}'" x-collapse class="pb-3 space-y-1.5">
+                                            <div x-show="expandedReviewer === '{{ $reviewer->id }}'" x-collapse class="pb-4 space-y-2">
                                                 @foreach($activeTitles as $aTitle)
-                                                    <div class="flex items-start gap-2 py-1.5 px-2 rounded-lg bg-slate-50 border border-slate-100">
-                                                        <div class="w-1 h-1 rounded-full bg-[#8B0000] mt-1.5 flex-shrink-0"></div>
-                                                        <p class="text-[11px] text-slate-600 font-medium leading-snug line-clamp-2">{{ $aTitle->Study_Protocol_title }}</p>
+                                                    <div class="flex items-start gap-2.5 py-2 px-3 rounded-xl bg-white border border-slate-100 shadow-sm">
+                                                        <div class="w-1.5 h-1.5 rounded-full bg-[#8B0000]/80 mt-1.5 flex-shrink-0"></div>
+                                                        <p class="text-[12px] text-slate-600 font-medium leading-relaxed">{{ $aTitle->Study_Protocol_title }}</p>
                                                     </div>
                                                 @endforeach
                                             </div>
@@ -366,19 +373,19 @@
                         </div>
 
                         <!-- Footer -->
-                        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-wrap sm:flex-nowrap gap-3 items-center justify-between">
+                        <div class="px-7 py-5 border-t border-slate-100/60 bg-slate-50/50 flex flex-wrap sm:flex-nowrap gap-3 items-center justify-between rounded-b-[2rem]">
                             <button type="button" @click="open = false; confirmUnchooseReviewer($event.target.closest('form'), protocolTitle, () => { assigned = [] }, () => { open = true })" x-show="initialAssignedCount > 0" x-transition.opacity
-                                class="w-full sm:w-auto px-4 py-2.5 bg-red-50 text-red-600 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors border border-red-100 flex-shrink-0">
-                                <i class="fas fa-user-times mr-1"></i> Unchoose
+                                class="w-full sm:w-auto px-5 py-3 bg-red-50/50 text-red-600 rounded-full text-[13px] font-bold hover:bg-red-100 transition-colors border border-red-100 flex-shrink-0">
+                                <i class="fas fa-user-times mr-1.5"></i> Unchoose
                             </button>
-                            <div class="flex gap-3 w-full sm:w-auto flex-1 sm:flex-none" :class="assigned.length > 0 ? '' : 'w-full sm:w-full'">
+                            <div class="flex gap-3 w-full sm:w-auto flex-1 sm:flex-none justify-end" :class="assigned.length > 0 ? '' : 'w-full sm:w-full'">
                                 <button type="button" @click="open = false"
-                                    class="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">
+                                    class="px-6 py-3 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 rounded-full text-[13px] font-bold hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
                                     Cancel
                                 </button>
                                 <button type="submit"
-                                    class="flex-1 px-4 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-red-900 transition-colors shadow-lg shadow-red-900/20">
-                                    <i class="fas fa-user-check mr-1.5"></i> Save Assignment
+                                    class="px-7 py-3 bg-[#8B0000] text-white rounded-full text-[13px] font-bold hover:bg-red-900 focus:ring-4 focus:ring-red-900/20 transition-all shadow-lg shadow-red-900/20 flex items-center justify-center min-w-[160px]">
+                                    <i class="fas fa-user-check mr-2"></i> Save Assignment
                                 </button>
                             </div>
                         </div>

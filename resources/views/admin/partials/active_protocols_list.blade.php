@@ -116,7 +116,7 @@
                                 <td class="p-6">
                                     @php
                                         $reviewerSuggestedType = $data->adminFiles->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
-                                        $hasTop = !empty($data->Review_Type) && $data->Review_Type !== 'Unassigned';
+                                        $hasTop = !empty($data->Review_Type) && $data->Review_Type !== 'Unassigned' && $data->Review_Type !== 'N/A';
                                         $hasMid = !empty($reviewerSuggestedType);
                                         $typeColors = [
                                             'Exempt Review' => 'text-emerald-600',
@@ -130,7 +130,7 @@
                                                 <span class="text-sm font-bold {{ $typeColors[$data->Review_Type] ?? 'text-slate-500' }} tracking-tight leading-tight">{{ $data->Review_Type }}</span>
                                             </div>
                                         @else
-                                            <span class="text-sm font-semibold text-slate-500 italic leading-tight">Unassigned</span>
+                                            <span class="text-sm font-semibold text-slate-500 tracking-tight leading-tight">N/A</span>
                                         @endif
                                         
                                         @if($hasMid)

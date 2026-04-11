@@ -14,77 +14,114 @@
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                 </div>
                 
-                <div class="relative">
-                    <button type="button" @click="expanded = !expanded" @click.outside="expanded = false"
-                        class="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm transition-colors justify-between w-[120px]">
-                        <span><i class="fas fa-filter mr-1 text-slate-400"></i> Filter</span>
-                        <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-180' : ''"></i>
-                    </button>
+                    <!-- Filter Drawer Toggle -->
+                    <div class="relative" x-data="{ expanded: sessionStorage.getItem('revisionsFilterExpanded') === 'true' }" x-init="$watch('expanded', value => sessionStorage.setItem('revisionsFilterExpanded', value))">
+                        <button type="button" @click="expanded = true"
+                            class="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm transition-colors justify-between w-[120px]">
+                            <span><i class="fas fa-filter mr-1 text-slate-400"></i> Filter</span>
+                            <i class="fas fa-bars text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-90' : ''"></i>
+                        </button>
 
-                    <!-- Advanced Dropdown -->
-                    <div x-show="expanded" x-cloak x-transition.opacity.duration.200ms @click.stop
-                        class="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
-                        
-                        <!-- Sort Section -->
-                        <div class="p-3 border-b border-slate-100 bg-slate-50/50">
-                            <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort By</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="radio" name="revisions_sort" value="updated_at" class="revisions-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('sort_by', 'updated_at') == 'updated_at' ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Last Updated</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="radio" name="revisions_sort" value="Title" class="revisions-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('sort_by') == 'Title' ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
-                                </label>
-                            </div>
-                        </div>
+                        <!-- Advanced Filter Drawer -->
+                        <div x-show="expanded" style="display: none;" class="relative z-[100]" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+                            <!-- Background backdrop -->
+                            <div x-show="expanded" 
+                                 x-transition:enter="ease-in-out duration-300" 
+                                 x-transition:enter-start="opacity-0" 
+                                 x-transition:enter-end="opacity-100" 
+                                 x-transition:leave="ease-in-out duration-300" 
+                                 x-transition:leave-start="opacity-100" 
+                                 x-transition:leave-end="opacity-0" 
+                                 class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+                                 @click="expanded = false"></div>
 
-                        <!-- Status Section -->
-                        <div class="p-3 border-b border-slate-100">
-                            <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Current Status</label>
-                            <div class="space-y-2">
-                                @php $selectedStatuses = request('statuses', []); @endphp
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" name="revisions_status[]" value="Waiting for Revision" class="revisions-filter-input rounded text-orange-600 focus:ring-orange-500" {{ in_array('Waiting for Revision', $selectedStatuses) ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-700 group-hover:text-orange-600 transition-colors">Waiting for Revision</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" name="revisions_status[]" value="Revision Submitted" class="revisions-filter-input rounded text-purple-600 focus:ring-purple-500" {{ in_array('Revision Submitted', $selectedStatuses) ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-700 group-hover:text-purple-600 transition-colors">Revision Submitted</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" name="revisions_status[]" value="Checking of Revisions" class="revisions-filter-input rounded text-indigo-600 focus:ring-indigo-500" {{ in_array('Checking of Revisions', $selectedStatuses) ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-700 group-hover:text-indigo-600 transition-colors">Checking of Revisions</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" name="revisions_status[]" value="Panel Deliberation" class="revisions-filter-input rounded text-pink-600 focus:ring-pink-500" {{ in_array('Panel Deliberation', $selectedStatuses) ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-700 group-hover:text-pink-600 transition-colors">Panel Deliberation</span>
-                                </label>
-                            </div>
-                        </div>
+                            <div class="fixed inset-0 overflow-hidden pointer-events-none">
+                                <div class="absolute inset-0 overflow-hidden">
+                                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10"
+                                         x-show="expanded"
+                                         x-transition:enter="transform transition ease-in-out duration-300 sm:duration-400"
+                                         x-transition:enter-start="translate-x-full"
+                                         x-transition:enter-end="translate-x-0"
+                                         x-transition:leave="transform transition ease-in-out duration-300 sm:duration-400"
+                                         x-transition:leave-start="translate-x-0"
+                                         x-transition:leave-end="translate-x-full">
+                                        
+                                        <div class="pointer-events-auto w-screen max-w-xs flex flex-col h-full bg-white shadow-2xl">
+                                            <!-- Drawer Header -->
+                                            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-none text-left">
+                                                <h3 class="font-heading font-extrabold text-lg text-slate-800 leading-tight">Apply Filters</h3>
+                                                <button type="button" @click="expanded = false" class="text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
+                                                    <i class="fas fa-times text-lg"></i>
+                                                </button>
+                                            </div>
 
-                        <!-- Review Type Section -->
-                        <div class="p-3">
-                            <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Review Type</label>
-                            <div class="space-y-2">
-                                @php $selectedTypes = request('review_types', []); @endphp
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" name="revisions_review_types[]" value="Exempt Review" class="revisions-filter-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Exempt Review', $selectedTypes) ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Exempt</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" name="revisions_review_types[]" value="Expedited Review" class="revisions-filter-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Expedited Review', $selectedTypes) ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Expedited</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" name="revisions_review_types[]" value="Full Board Review" class="revisions-filter-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Full Board Review', $selectedTypes) ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Full Board</span>
-                                </label>
+                                            <!-- Drawer Filters List -->
+                                            <div class="flex-1 overflow-y-auto w-full pb-10">
+                                                <!-- Sort Section -->
+                                                <div class="p-3 border-b border-slate-100 bg-slate-50/50">
+                                                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort By</label>
+                                                    <div class="space-y-2">
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="radio" name="revisions_sort" value="updated_at" class="revisions-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('sort_by', 'updated_at') == 'updated_at' ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Last Updated</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="radio" name="revisions_sort" value="Title" class="revisions-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('sort_by') == 'Title' ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Status Section -->
+                                                <div class="p-3 border-b border-slate-100">
+                                                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Current Status</label>
+                                                    <div class="space-y-2">
+                                                        @php $selectedStatuses = request('statuses', []); @endphp
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_status[]" value="Waiting for Revision" class="revisions-filter-input rounded text-orange-600 focus:ring-orange-500" {{ in_array('Waiting for Revision', $selectedStatuses) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-orange-600 transition-colors">Waiting for Revision</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_status[]" value="Revision Submitted" class="revisions-filter-input rounded text-purple-600 focus:ring-purple-500" {{ in_array('Revision Submitted', $selectedStatuses) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-purple-600 transition-colors">Revision Submitted</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_status[]" value="Checking of Revisions" class="revisions-filter-input rounded text-indigo-600 focus:ring-indigo-500" {{ in_array('Checking of Revisions', $selectedStatuses) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-indigo-600 transition-colors">Checking of Revisions</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_status[]" value="Panel Deliberation" class="revisions-filter-input rounded text-pink-600 focus:ring-pink-500" {{ in_array('Panel Deliberation', $selectedStatuses) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-pink-600 transition-colors">Panel Deliberation</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Review Type Section -->
+                                                <div class="p-3">
+                                                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Review Type</label>
+                                                    <div class="space-y-2">
+                                                        @php $selectedTypes = request('review_types', []); @endphp
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_review_types[]" value="Exempt Review" class="revisions-filter-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Exempt Review', $selectedTypes) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Exempt</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_review_types[]" value="Expedited Review" class="revisions-filter-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Expedited Review', $selectedTypes) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Expedited</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_review_types[]" value="Full Board Review" class="revisions-filter-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Full Board Review', $selectedTypes) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Full Board</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
             </div>
         </div>
 

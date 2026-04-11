@@ -1463,23 +1463,28 @@ class AdminController extends Controller
                 'filetype' => 'Result of Review (Admin Generated)',
             ]);
 
+            // Build notification message with optional deadline
+            $notifMessage = "Your Result of Review letter for \"{$submission->Study_Protocol_title}\" has been generated. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.";
+
+            if ($request->has('deadline') && !empty($request->deadline)) {
+                $formattedDate = \Carbon\Carbon::parse($request->deadline)->format('F j, Y');
+                $notifMessage .= "\n\nDeadline for Revision: " . $formattedDate;
+            }
+
             // Notify the user
-            $user = $submission->researcher->user; // Get user from submission
+            $user = $submission->researcher->user;
             UserNotification::create([
-                'user_id' => $user->id, // or $user->user_id if depending on relationship structure
+                'user_id' => $user->id,
                 'research_id' => $submission->id,
                 'title' => 'Result of Review Available',
-                'message' => "Your Result of Review letter for \"{$submission->Study_Protocol_title}\" has been generated. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.",
+                'message' => $notifMessage,
                 'type' => 'document_upload',
                 'is_read' => false
             ]);
 
-            // Automatically transition to "Waiting for Revision" if not already in a revision status
-            $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation'];
-            if (!in_array($submission->Status, $revisionStatuses)) {
-                $submission->Status = 'Waiting for Revision';
-                $submission->save();
-            }
+            // Transition to "Waiting for Revision"
+            $submission->Status = 'Waiting for Revision';
+            $submission->save();
 
             // Redirect to the Revisions page
             return redirect()->route('admin.revisions')->with('success', 'Recommendation Letter generated and sent successfully. The protocol has been moved to Revisions.');

@@ -13,7 +13,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-            <form action="{{ route('admin.recommendation.generate') }}" method="POST" onsubmit="this.target = event.submitter.value === 'view' ? '_blank' : '_self'" class="p-8 space-y-8">
+            <form id="rcLetterForm" action="{{ route('admin.recommendation.generate') }}" method="POST" onsubmit="this.target = event.submitter && event.submitter.value === 'view' ? '_blank' : '_self'" class="p-8 space-y-8">
                 @csrf
                 <input type="hidden" name="id" value="{{ $submission->id }}">
                 <input type="hidden" name="email" value="{{ $submission->researcher->user->email ?? '' }}">
@@ -220,12 +220,61 @@
                     <button type="submit" name="action" value="view" formnovalidate class="flex-1 px-6 py-3 bg-white border-2 border-[#8B0000] text-[#8B0000] rounded-xl text-sm font-bold hover:bg-red-50 transition-colors flex justify-center items-center gap-2">
                         <i class="fas fa-eye"></i> View PDF
                     </button>
-                    <button type="submit" name="action" value="save" class="flex-1 px-6 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] transition-colors shadow-lg shadow-red-900/20 flex justify-center items-center gap-2">
+                    <button type="button" id="openFinalizeBtn" class="flex-1 px-6 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] transition-colors shadow-lg shadow-red-900/20 flex justify-center items-center gap-2">
                         <i class="fas fa-save"></i> Save & Send
                     </button>
                 </div>
 
+                {{-- Hidden fields injected by the modal --}}
+                <input type="hidden" name="action" id="formAction" value="view">
+                <input type="hidden" name="deadline" id="formDeadline" value="">
+
             </form>
+        </div>
+    </div>
+
+    <!-- Finalize Review Modal -->
+    <div id="finalizeModal" class="fixed inset-0 z-50 hidden" aria-labelledby="finalize-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeFinalizeModal()"></div>
+        
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-200">
+                    
+                    <!-- Modal Body -->
+                    <div class="px-8 py-8 bg-white text-center">
+                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 mb-5">
+                            <i class="fas fa-question text-slate-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2" id="finalize-title">Finalize Review?</h3>
+                        <p class="text-sm text-slate-500 mb-6">
+                            Are you sure you want to send the Recommendation Letter for 
+                            "<strong class="text-slate-700">{{ $submission->Study_Protocol_title }}</strong>"?
+                            This will notify the researcher and set the status to Waiting for Revision.
+                        </p>
+
+                        <div class="text-left mb-6">
+                            <label for="deadlineInput" class="block text-sm font-bold text-slate-700 mb-2">
+                                Revision Deadline <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" id="deadlineInput" required
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm"
+                                min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                            <p id="deadlineError" class="text-xs text-red-500 mt-1 hidden">Please select a revision deadline.</p>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="bg-slate-50 px-8 py-5 flex justify-center gap-3 border-t border-slate-100">
+                        <button type="button" onclick="confirmFinalizeSend()" class="px-8 py-2.5 bg-[#8B0000] text-white text-sm font-bold rounded-xl hover:bg-[#6d0000] transition-colors shadow-lg shadow-red-900/20">
+                            Yes, Proceed
+                        </button>
+                        <button type="button" onclick="closeFinalizeModal()" class="px-8 py-2.5 bg-white text-slate-600 text-sm font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -236,5 +285,45 @@
             checkboxes.forEach(cb => cb.checked = !allChecked);
             this.textContent = allChecked ? 'Check All' : 'Uncheck All';
         });
+
+        // Finalize Modal Logic
+        const form = document.getElementById('rcLetterForm');
+        const modal = document.getElementById('finalizeModal');
+
+        document.getElementById('openFinalizeBtn').addEventListener('click', function() {
+            // Validate the form before showing the modal
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            modal.classList.remove('hidden');
+        });
+
+        function closeFinalizeModal() {
+            modal.classList.add('hidden');
+        }
+
+        function confirmFinalizeSend() {
+            const deadlineInput = document.getElementById('deadlineInput');
+            const deadlineError = document.getElementById('deadlineError');
+
+            if (!deadlineInput.value) {
+                deadlineError.classList.remove('hidden');
+                deadlineInput.classList.add('border-red-500');
+                return;
+            }
+
+            deadlineError.classList.add('hidden');
+            deadlineInput.classList.remove('border-red-500');
+
+            // Inject values into the form
+            document.getElementById('formAction').value = 'save';
+            document.getElementById('formDeadline').value = deadlineInput.value;
+            form.target = '_self';
+
+            // Close modal and submit
+            closeFinalizeModal();
+            form.submit();
+        }
     </script>
 </x-admin_layout>

@@ -808,17 +808,45 @@ class AdminController extends Controller
                 //     ->where('message', 'like', '%marked as Incomplete%')
                 //     ->delete();
 
-            } elseif ($request->classification === 'Undo Complete') {
-                $newStatus = 'Pending';
+            } elseif ($request->classification === 'Revert Phase') {
+                $currentStatus = $submission->Status;
+                
+                switch ($currentStatus) {
+                    case 'Reviewed':
+                        $newStatus = 'Under Review';
+                        $message = "Submission reverted back to Under Review.";
+                        break;
+                    case 'Under Review':
+                        $newStatus = 'Reviewer Assigned';
+                        $message = "Submission reverted back to Reviewer Assigned.";
+                        break;
+                    case 'Reviewer Assigned':
+                        $newStatus = 'Hardcopy Received';
+                        $submission->assigned_reviewers = null; // Unassign reviewers
+                        $message = "Reviewers successfully unassigned. Status reverted to Hardcopy Received.";
+                        break;
+                    case 'Hardcopy Received':
+                        $newStatus = 'Incomplete - Awaiting Hardcopy';
+                        $message = "Submission reverted back to Incomplete - Awaiting Hardcopy.";
+                        break;
+                    case 'Incomplete Hardcopy':
+                        $newStatus = 'Incomplete - Awaiting Hardcopy';
+                        $message = "Submission reverted back to Incomplete - Awaiting Hardcopy.";
+                        break;
+                    case 'Incomplete - Awaiting Hardcopy':
+                    default:
+                        $newStatus = 'Pending';
+                        // Delete the appointment
+                        Appointment::where('research_title_id', $submission->id)
+                            ->where('stage', 'Hardcopy Submission')
+                            ->delete();
+                        $message = "Submission completely reverted to Initial Intake (Pending). Appointment cancelled.";
+                        break;
+                }
+
                 $submission->Status = $newStatus;
                 $submission->save();
 
-                // Delete the appointment
-                Appointment::where('research_title_id', $submission->id)
-                    ->where('stage', 'Hardcopy Submission')
-                    ->delete();
-
-                $message = "Submission reverted to Pending. Appointment cancelled.";
                 
             } elseif ($request->classification === 'Hardcopy Complete') {
                 $newStatus = 'Hardcopy Received';

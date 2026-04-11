@@ -150,7 +150,8 @@
             $allFiles = $researchTitle->files->merge($researchTitle->adminFiles ?? collect());
             
             $letters = $allFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->sortByDesc('created_at');
-            $protocolDocs = $researchTitle->files->whereNotIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter']);
+            $archivedLetters = $allFiles->where('filetype', 'Archived Result of Review')->sortByDesc('created_at');
+            $protocolDocs = $researchTitle->files->whereNotIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review']);
 
             // "Draft Workspace" = files with revision_number = -1
             $draftFiles = $protocolDocs->where('revision_number', -1)->sortByDesc('created_at');
@@ -217,6 +218,52 @@
                     </div>
                 @endforeach
             </div>
+
+            {{-- Previous (Archived) Letters --}}
+            @if($archivedLetters->isNotEmpty())
+            <div x-data="{ open: false }" class="mt-6 border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden">
+                <button type="button" @click="open = !open" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-100/80 transition-colors focus:outline-none">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-700">Previous Letters ({{ $archivedLetters->count() }})</h4>
+                            <p class="text-[11px] text-slate-400 font-medium">Older versions of the Result of Review</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-down text-slate-400 text-xs transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="open" x-collapse>
+                    <div class="px-6 pb-6 pt-2 space-y-3">
+                        @foreach($archivedLetters as $archived)
+                        <div class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl shadow-sm hover:border-slate-200 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
+                                    <i class="fas fa-file-signature"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700 line-clamp-1">{{ $archived->filename }}</p>
+                                    <p class="text-[11px] font-medium text-slate-400 flex items-center gap-1.5 mt-0.5">
+                                        <i class="far fa-clock text-[10px]"></i>
+                                        {{ $archived->created_at->format('M d, Y \a\t h:i A') }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <a href="{{ asset($archived->filepath) }}" target="_blank" class="w-9 h-9 rounded-full flex items-center justify-center bg-slate-50 border border-slate-200 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 hover:border-red-200 transition-all" title="View">
+                                    <i class="fas fa-external-link-alt text-[11px]"></i>
+                                </a>
+                                <a href="{{ asset($archived->filepath) }}" download class="w-9 h-9 rounded-full flex items-center justify-center bg-slate-50 border border-slate-200 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-all" title="Download">
+                                    <i class="fas fa-download text-[11px]"></i>
+                                </a>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
         @endif
 

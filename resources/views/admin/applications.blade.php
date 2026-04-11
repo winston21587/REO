@@ -16,18 +16,49 @@
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
 
-                    <!-- Filter Dropdown -->
+                    <!-- Filter Drawer Toggle -->
                     <div class="relative" x-data="{ expanded: sessionStorage.getItem('activeProtocolsFilterExpanded') === 'true' }" x-init="$watch('expanded', value => sessionStorage.setItem('activeProtocolsFilterExpanded', value))">
-                        <button type="button" @click="expanded = !expanded" @click.outside="expanded = false"
+                        <button type="button" @click="expanded = true"
                             class="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm transition-colors w-[150px] justify-between">
                             <span><i class="fas fa-filter mr-1 text-slate-400"></i> Filter</span>
-                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-180' : ''"></i>
+                            <i class="fas fa-bars text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-90' : ''"></i>
                         </button>
 
-                        <!-- Advanced Dropdown Menu -->
-                        <div x-show="expanded" x-cloak x-transition.opacity.duration.200ms @click.stop
-                            class="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-[80vh] overflow-y-auto">
-                            
+                        <!-- Advanced Filter Drawer -->
+                        <div x-show="expanded" style="display: none;" class="relative z-[100]" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+                            <!-- Background backdrop -->
+                            <div x-show="expanded" 
+                                 x-transition:enter="ease-in-out duration-300" 
+                                 x-transition:enter-start="opacity-0" 
+                                 x-transition:enter-end="opacity-100" 
+                                 x-transition:leave="ease-in-out duration-300" 
+                                 x-transition:leave-start="opacity-100" 
+                                 x-transition:leave-end="opacity-0" 
+                                 class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+                                 @click="expanded = false"></div>
+
+                            <div class="fixed inset-0 overflow-hidden pointer-events-none">
+                                <div class="absolute inset-0 overflow-hidden">
+                                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10"
+                                         x-show="expanded"
+                                         x-transition:enter="transform transition ease-in-out duration-300 sm:duration-400"
+                                         x-transition:enter-start="translate-x-full"
+                                         x-transition:enter-end="translate-x-0"
+                                         x-transition:leave="transform transition ease-in-out duration-300 sm:duration-400"
+                                         x-transition:leave-start="translate-x-0"
+                                         x-transition:leave-end="translate-x-full">
+                                        
+                                        <div class="pointer-events-auto w-screen max-w-xs flex flex-col h-full bg-white shadow-2xl">
+                                            <!-- Drawer Header -->
+                                            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-none text-left">
+                                                <h3 class="font-heading font-extrabold text-lg text-slate-800 leading-tight">Apply Filters</h3>
+                                                <button type="button" @click="expanded = false" class="text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
+                                                    <i class="fas fa-times text-lg"></i>
+                                                </button>
+                                            </div>
+
+                                            <!-- Drawer Filters List -->
+                                            <div class="flex-1 overflow-y-auto w-full pb-10">
                             <!-- Sort Section -->
                             <div class="p-3 border-b border-slate-100 bg-slate-50/50">
                                 <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort By</label>
@@ -121,10 +152,15 @@
                                     </label>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                                            </div> <!-- End Drawer Filters List -->
+                                        </div> <!-- End pointer-events-auto bg-white shadow-2xl -->
+                                    </div> <!-- End pointer-events-none flex -->
+                                </div> <!-- End absolute inset-0 -->
+                            </div> <!-- End fixed inset-0 pointer-events-none -->
+                        </div> <!-- End Drawer relative z-[100] modal -->
+                    </div> <!-- End Filter Toggle relative x-data -->
+                </form> <!-- End Form -->
+            </div> <!-- End Header Right flex -->
         </div>
 
         <div id="active-protocols-wrapper" class="flex-1 flex flex-col min-h-[400px]">

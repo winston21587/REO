@@ -32,7 +32,6 @@
             <div class="px-4 py-6 sm:p-6 bg-slate-50/50 overflow-y-auto">
                 <form id="statusForm" method="POST" class="space-y-6">
                     @csrf
-                    <input type="hidden" name="review_type" id="reviewTypeInput">
                     <input type="hidden" name="status_action" id="statusActionInput">
 
 
@@ -40,47 +39,18 @@
                     <!-- 1. Review Classification -->
                     <div class="{{ request()->routeIs('admin.revisions') ? 'hidden' : '' }}">
                         <label class="block text-sm font-bold text-slate-700 mb-3">Review Classification</label>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <!-- Expedited -->
-                            <div onclick="selectReviewType('Expedited Review', this)"
-                                class="review-option cursor-pointer relative bg-white border-2 border-slate-200 rounded-xl p-4 hover:border-[#8B0000] hover:shadow-md transition-all group">
-                                <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
-                                    <i class="fas fa-check-circle text-[#8B0000]"></i>
-                                </div>
-                                <div
-                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-[#8B0000]">
-                                    <i class="fas fa-bolt text-lg"></i>
-                                </div>
-                                <h4 class="font-bold text-slate-800 text-sm">Expedited</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Minimal risk studies</p>
+                        <div class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Current Review Type</span>
+                                <span class="font-bold text-slate-800 text-sm" id="currentReviewTypeDisplay">Unassigned</span>
                             </div>
-
-                            <!-- Exempt -->
-                            <div onclick="selectReviewType('Exempt Review', this)"
-                                class="review-option cursor-pointer relative bg-white border-2 border-slate-200 rounded-xl p-4 hover:border-[#8B0000] hover:shadow-md transition-all group">
-                                <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
-                                    <i class="fas fa-check-circle text-[#8B0000]"></i>
-                                </div>
-                                <div
-                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-[#8B0000]">
-                                    <i class="fas fa-shield-alt text-lg"></i>
-                                </div>
-                                <h4 class="font-bold text-slate-800 text-sm">Exempt</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Less than minimal risk</p>
-                            </div>
-
-                            <!-- Full Board -->
-                            <div onclick="selectReviewType('Full Board Review', this)"
-                                class="review-option cursor-pointer relative bg-white border-2 border-slate-200 rounded-xl p-4 hover:border-[#8B0000] hover:shadow-md transition-all group">
-                                <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
-                                    <i class="fas fa-check-circle text-[#8B0000]"></i>
-                                </div>
-                                <div
-                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-[#8B0000]">
-                                    <i class="fas fa-users text-lg"></i>
-                                </div>
-                                <h4 class="font-bold text-slate-800 text-sm">Full Board</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">High risk / Vulnerable</p>
+                            <div>
+                                <select name="review_type" id="reviewTypeSelect" class="border-slate-200 rounded-lg text-sm bg-slate-50 cursor-pointer outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                    <option value="">-- Change Review Type --</option>
+                                    <option value="Exempt Review">Exempt Review</option>
+                                    <option value="Expedited Review">Expedited Review</option>
+                                    <option value="Full Board Review">Full Board Review</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -179,62 +149,10 @@
 <script>
     const isApplicationsPage = {{ request()->routeIs('admin.applications') ? 'true' : 'false' }};
 
-    function selectReviewType(type, element) {
-        // 1. Update Hidden Input
-        document.getElementById('reviewTypeInput').value = type;
-
-        // Auto-set status if on Applications page
-        if (isApplicationsPage) {
-            // Logic removed to prevent auto-redirect to revision
-            document.getElementById('statusActionInput').value = '';
-        } else {
-            document.getElementById('statusActionInput').value = ''; // Clear status action if not auto-setting
-        }
-
-        // 2. Visual Selection
-        // Remove active class from all options (Review Types)
-        document.querySelectorAll('.review-option').forEach(el => {
-            el.classList.remove('border-[#8B0000]', 'bg-red-50');
-            el.classList.add('border-slate-200');
-            el.querySelector('.check-icon').classList.add('opacity-0');
-            el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
-            el.querySelector('.icon-box').classList.add('text-slate-400');
-        });
-
-        // Remove active class from all options (Status Actions)
-        document.querySelectorAll('.status-option').forEach(el => {
-            el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
-            el.classList.add('border-slate-200');
-            el.querySelector('.check-icon').classList.add('opacity-0');
-            // Reset icon colors
-            const iconBox = el.querySelector('.icon-box');
-            iconBox.classList.remove('text-orange-500', 'text-blue-500', 'text-green-500');
-            iconBox.classList.add('text-slate-400');
-        });
-
-        // Add active class to clicked option
-        element.classList.remove('border-slate-200');
-        element.classList.add('border-[#8B0000]', 'bg-red-50');
-        element.querySelector('.check-icon').classList.remove('opacity-0');
-        element.querySelector('.icon-box').classList.remove('text-slate-400');
-        element.querySelector('.icon-box').classList.add('text-[#8B0000]');
-    }
-
     function selectStatus(status, element) {
         // 1. Update Hidden Input
         document.getElementById('statusActionInput').value = status;
-        document.getElementById('reviewTypeInput').value = ''; // Clear review type
-
-        // 2. Visual Selection
-        // Remove active class from all options (Review Types)
-        document.querySelectorAll('.review-option').forEach(el => {
-            el.classList.remove('border-[#8B0000]', 'bg-red-50');
-            el.classList.add('border-slate-200');
-            el.querySelector('.check-icon').classList.add('opacity-0');
-            el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
-            el.querySelector('.icon-box').classList.add('text-slate-400');
-        });
-
+        document.getElementById('reviewTypeSelect').value = ''; // Clear review type dropdown selection
         // Remove active class from all options (Status Actions)
         document.querySelectorAll('.status-option').forEach(el => {
             el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
@@ -271,13 +189,14 @@
         element.querySelector('.icon-box').classList.add(activeText);
     }
 
-    async function openStatusModal(id, title, currentStatus = null) {
+    async function openStatusModal(id, title, currentStatus = null, currentReviewType = null) {
         document.getElementById('statusModalTitle').textContent = title;
         const form = document.getElementById('statusForm');
         form.action = `/admin/update-status/${id}`;
 
         // Reset UI
-        document.getElementById('reviewTypeInput').value = "";
+        document.getElementById('reviewTypeSelect').value = "";
+        document.getElementById('currentReviewTypeDisplay').textContent = currentReviewType || 'Unassigned';
         const date = new Date();
         date.setDate(date.getDate() + 2);
         const minDate = date.toISOString().split('T')[0];
@@ -286,34 +205,19 @@
         apptInput.min = minDate;
         document.getElementById('remarks').value = ""; // Reset message box
 
-        // Reset Box Selection Visuals
-        document.querySelectorAll('.review-option').forEach(el => {
-            el.classList.remove('border-[#8B0000]', 'bg-red-50');
-            el.classList.add('border-slate-200');
-            el.querySelector('.check-icon').classList.add('opacity-0');
-            el.querySelector('.icon-box').classList.remove('text-[#8B0000]');
-            el.querySelector('.icon-box').classList.add('text-slate-400');
-        });
+
 
         // Auto-select current status
         if (currentStatus) {
-            const reviewTypesMap = {
-                'Expedited Review': 0,
-                'Exempt Review': 1,
-                'Full Board Review': 2
-            };
             const statusMap = {
                 'Modifications Required': 0,
                 'Panel Deliberation': 1,
                 'Approved': 2
             };
 
-            const reviewBoxes = document.querySelectorAll('.review-option');
             const statusBoxes = document.querySelectorAll('.status-option');
 
-            if (currentStatus in reviewTypesMap && reviewBoxes[reviewTypesMap[currentStatus]]) {
-                selectReviewType(currentStatus, reviewBoxes[reviewTypesMap[currentStatus]]);
-            } else if (currentStatus in statusMap && statusBoxes[statusMap[currentStatus]]) {
+            if (currentStatus in statusMap && statusBoxes[statusMap[currentStatus]]) {
                 selectStatus(currentStatus, statusBoxes[statusMap[currentStatus]]);
             }
         }
@@ -345,7 +249,7 @@
         e.preventDefault();
 
         // Client-side Validation
-        const reviewType = document.getElementById('reviewTypeInput').value;
+        const reviewType = document.getElementById('reviewTypeSelect').value;
         const statusAction = document.getElementById('statusActionInput').value;
         const appointmentDate = document.getElementById('appointmentDate').value;
 

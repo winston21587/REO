@@ -174,73 +174,205 @@
     @include('admin.partials.status_modal')
 
     <!-- Assign Reviewer Modal -->
-    <div x-data="{ open: false, protocolId: '', protocolTitle: '', assigned: [] }" 
-         @open-assign-modal.window="open = true; protocolId = $event.detail.id; protocolTitle = $event.detail.title; assigned = Array.isArray($event.detail.assigned) ? $event.detail.assigned : [];" 
+    @php
+        $reviewerColleges = $reviewers->pluck('college')->filter()->unique()->sort()->values();
+    @endphp
+    <div x-data="{
+            open: false,
+            protocolId: '',
+            protocolTitle: '',
+            assigned: [],
+            search: '',
+            collegeFilter: '',
+            expandedReviewer: null
+         }"
+         @open-assign-modal.window="open = true; protocolId = $event.detail.id; protocolTitle = $event.detail.title; assigned = Array.isArray($event.detail.assigned) ? $event.detail.assigned : []; search = ''; collegeFilter = ''; expandedReviewer = null;"
          class="relative z-[9999]"
-         aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;" x-show="open">
+         aria-labelledby="assign-modal-title" role="dialog" aria-modal="true" style="display: none;" x-show="open">
 
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" x-show="open"
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" x-show="open"
             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
-            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            @click="open = false"></div>
 
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md"
-                    x-show="open" @click.away="open = false" x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-lg border border-slate-100"
+                    x-show="open" @click.away="open = false"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
                     x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 scale-95">
 
                     <form :action="'{{ url('admin/applications') }}/' + protocolId + '/assign-reviewers'" method="POST">
                         @csrf
-                        <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                            <div class="sm:flex sm:items-start">
-                                <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                                    <i class="fas fa-users-cog text-blue-600"></i>
+
+                        <!-- Modal Header -->
+                        <div class="px-6 pt-6 pb-4 border-b border-slate-100">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#8B0000] to-red-700 flex items-center justify-center shadow-lg shadow-red-900/20 flex-shrink-0">
+                                        <i class="fas fa-users-cog text-white text-base"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-slate-900 leading-tight" id="assign-modal-title">Assign Reviewer</h3>
+                                        <p class="text-xs text-slate-500 mt-0.5 line-clamp-1" x-text="protocolTitle"></p>
+                                    </div>
                                 </div>
-                                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                    <h3 class="text-lg font-bold leading-6 text-slate-900" id="modal-title">Assign Reviewers</h3>
-                                    <div class="mt-2">
-                                        <p class="text-sm text-slate-500 mb-4" x-text="'Select reviewers for: ' + protocolTitle"></p>
-                                        
-                                        <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
-                                            @foreach($reviewers as $reviewer)
-                                                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                                                    <!-- Swapping strictly to a Radio array enforcing mutual-exclusivity -->
-                                                    <input type="radio" name="reviewers[]" value="{{ $reviewer->id }}" 
-                                                           :checked="assigned.map(String).includes('{{ $reviewer->id }}')"
-                                                           class="border-slate-300 text-[#8B0000] focus:ring-[#8B0000] w-5 h-5">
-                                                    <div>
-                                                        <p class="text-sm font-bold text-slate-800">{{ $reviewer->first_name }} {{ $reviewer->last_name }}</p>
-                                                        <p class="text-xs text-slate-500">{{ $reviewer->college ?? ucfirst($reviewer->role) }}</p>
-                                                        
-                                                        <!-- Render dynamic expertise metrics if present safely -->
-                                                        @if($reviewer->reviewer && !empty($reviewer->reviewer->expertise))
-                                                            <div class="flex flex-wrap gap-1 mt-1.5">
-                                                                @foreach($reviewer->reviewer->expertise as $exp)
-                                                                    <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-md border border-blue-100">{{ $exp }}</span>
-                                                                @endforeach
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                </label>
-                                            @endforeach
-                                        </div>
+                                <button type="button" @click="open = false" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <!-- Search + Filter Row -->
+                            <div class="flex gap-2 mt-4">
+                                <div class="relative flex-1">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-slate-400 text-sm"></i>
+                                    </div>
+                                    <input type="text" x-model="search" placeholder="Search by name or expertise..."
+                                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all">
+                                </div>
+                                <!-- College Filter -->
+                                <div class="relative flex-shrink-0">
+                                    <select x-model="collegeFilter"
+                                        class="h-full pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all cursor-pointer appearance-none font-medium">
+                                        <option value="">All Colleges</option>
+                                        @foreach($reviewerColleges as $college)
+                                            <option value="{{ strtolower($college) }}">{{ $college }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                                        <i class="fas fa-chevron-down text-slate-400 text-[10px]"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                            <button type="submit"
-                                class="inline-flex w-full justify-center rounded-xl bg-[#8B0000] px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-red-900 sm:ml-3 sm:w-auto transition-colors">
-                                Save Assignments
-                            </button>
+
+                        <!-- Reviewer Cards List -->
+                        <div class="px-4 py-3 max-h-[320px] overflow-y-auto space-y-2 custom-scrollbar" x-ref="reviewerCards">
+                            @forelse($reviewers as $reviewer)
+                                @php
+                                    $initials = strtoupper(substr($reviewer->first_name ?? 'U', 0, 1) . substr($reviewer->last_name ?? '', 0, 1));
+                                    $activeTitles = \App\Models\Research_title::whereIn('Status', ['Reviewer Assigned','Under Review'])
+                                        ->whereJsonContains('assigned_reviewers', (string) $reviewer->id)
+                                        ->get(['id','Study_Protocol_title']);
+                                    $activeCount = $activeTitles->count();
+                                    $colorPalette = ['from-sky-500 to-blue-600', 'from-violet-500 to-purple-600', 'from-emerald-500 to-teal-600', 'from-amber-500 to-orange-600', 'from-rose-500 to-pink-600'];
+                                    $avatarColor = $colorPalette[$reviewer->id % count($colorPalette)];
+                                    $reviewerCollege = $reviewer->college ?? null;
+                                    $searchableText = strtolower($reviewer->first_name . ' ' . $reviewer->last_name . ' ' . ($reviewerCollege ?? '') . ' ' . implode(' ', $reviewer->reviewer?->expertise ?? []));
+                                @endphp
+                                <div
+                                    x-show="
+                                        (search === '' || '{{ $searchableText }}'.includes(search.toLowerCase())) &&
+                                        (collegeFilter === '' || '{{ strtolower($reviewerCollege ?? '') }}' === collegeFilter)
+                                    "
+                                    class="rounded-xl border-2 transition-all overflow-hidden"
+                                    :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'border-[#8B0000] shadow-md shadow-red-900/10' : 'border-slate-100 hover:border-slate-200'">
+
+                                    <!-- Card Top: Click to select -->
+                                    <label class="flex items-start gap-4 p-4 cursor-pointer group"
+                                           :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'bg-red-50/40' : 'bg-white hover:bg-slate-50/80'">
+
+                                        <input type="radio" name="reviewers[]" value="{{ $reviewer->id }}"
+                                            x-model="assigned"
+                                            :checked="assigned.map(String).includes('{{ $reviewer->id }}')"
+                                            @change="assigned = ['{{ $reviewer->id }}']"
+                                            class="sr-only">
+
+                                        <!-- Avatar -->
+                                        <div class="w-11 h-11 rounded-xl bg-gradient-to-br {{ $avatarColor }} flex items-center justify-center text-white text-sm font-extrabold flex-shrink-0 shadow-md">
+                                            {{ $initials }}
+                                        </div>
+
+                                        <!-- Info -->
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div class="min-w-0">
+                                                    <p class="text-sm font-bold text-slate-800 leading-tight">{{ $reviewer->first_name }} {{ $reviewer->last_name }}</p>
+                                                    @if($reviewerCollege)
+                                                        <p class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                                                            <i class="fas fa-university text-[9px] text-slate-400"></i>
+                                                            {{ $reviewerCollege }}
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                                <!-- Workload Badge -->
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0
+                                                    {{ $activeCount === 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ($activeCount <= 2 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200') }}">
+                                                    {{ $activeCount }} reviewing
+                                                </span>
+                                            </div>
+
+                                            @if($reviewer->reviewer && !empty($reviewer->reviewer->expertise))
+                                                <div class="flex flex-wrap gap-1 mt-2">
+                                                    @foreach(array_slice($reviewer->reviewer->expertise, 0, 3) as $exp)
+                                                        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-semibold rounded-md border border-slate-200">{{ $exp }}</span>
+                                                    @endforeach
+                                                    @if(count($reviewer->reviewer->expertise) > 3)
+                                                        <span class="px-2 py-0.5 bg-slate-100 text-slate-400 text-[10px] font-semibold rounded-md border border-slate-200">+{{ count($reviewer->reviewer->expertise) - 3 }}</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        <!-- Selected checkmark -->
+                                        <div class="flex-shrink-0 mt-0.5"
+                                             :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'"
+                                             style="transition: opacity 0.15s">
+                                            <div class="w-5 h-5 rounded-full bg-[#8B0000] flex items-center justify-center shadow-sm">
+                                                <i class="fas fa-check text-white text-[9px]"></i>
+                                            </div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Active Titles Accordion -->
+                                    @if($activeCount > 0)
+                                        <div class="border-t border-dashed px-4 py-0"
+                                             :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'border-red-200' : 'border-slate-100'">
+                                            <button type="button"
+                                                @click.prevent="expandedReviewer = expandedReviewer === '{{ $reviewer->id }}' ? null : '{{ $reviewer->id }}'"
+                                                class="w-full flex items-center justify-between py-2.5 text-left group/acc">
+                                                <span class="text-[11px] font-bold text-slate-500 group-hover/acc:text-slate-700 transition-colors flex items-center gap-1.5">
+                                                    <i class="fas fa-folder-open text-[9px] text-slate-400"></i>
+                                                    Currently Reviewing ({{ $activeCount }})
+                                                </span>
+                                                <i class="fas fa-chevron-down text-[9px] text-slate-400 transition-transform"
+                                                   :class="expandedReviewer === '{{ $reviewer->id }}' ? 'rotate-180' : ''"></i>
+                                            </button>
+                                            <div x-show="expandedReviewer === '{{ $reviewer->id }}'" x-collapse class="pb-3 space-y-1.5">
+                                                @foreach($activeTitles as $aTitle)
+                                                    <div class="flex items-start gap-2 py-1.5 px-2 rounded-lg bg-slate-50 border border-slate-100">
+                                                        <div class="w-1 h-1 rounded-full bg-[#8B0000] mt-1.5 flex-shrink-0"></div>
+                                                        <p class="text-[11px] text-slate-600 font-medium leading-snug line-clamp-2">{{ $aTitle->Study_Protocol_title }}</p>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @empty
+                                <div class="py-10 text-center text-slate-400">
+                                    <i class="fas fa-user-slash text-3xl mb-3 text-slate-300"></i>
+                                    <p class="text-sm font-medium">No reviewers available.</p>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex gap-3">
                             <button type="button" @click="open = false"
-                                class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-colors">
+                                class="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">
                                 Cancel
+                            </button>
+                            <button type="submit"
+                                class="flex-1 px-4 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-red-900 transition-colors shadow-lg shadow-red-900/20">
+                                <i class="fas fa-user-check mr-1.5"></i> Save Assignment
                             </button>
                         </div>
                     </form>
@@ -248,6 +380,7 @@
             </div>
         </div>
     </div>
+
 
     <script>
         function confirmFinalize(id, title) {

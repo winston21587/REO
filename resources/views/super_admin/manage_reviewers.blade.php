@@ -99,40 +99,26 @@
                                     ->get(['id','Study_Protocol_title']);
                                 $reviewedCount = $reviewedTitles->count();
                             @endphp
-                            <td class="p-6" x-data="{ showTitles: false }">
-                                <div class="flex flex-col gap-2">
-                                    <button type="button" @click="showTitles = !showTitles"
-                                        class="flex items-center gap-2 text-left group w-max">
-                                        <span class="text-sm font-extrabold
-                                            {{ $reviewedCount > 0 ? 'text-[#8B0000]' : 'text-slate-400' }}">
+                            <td class="p-6">
+                                @if($reviewedCount > 0)
+                                    <button type="button"
+                                        onclick="openReviewedModal(
+                                            '{{ addslashes($user->first_name . ' ' . $user->last_name) }}',
+                                            {{ $reviewedCount }},
+                                            {{ json_encode($reviewedTitles->pluck('Study_Protocol_title')) }}
+                                        )"
+                                        class="flex items-center gap-2 group hover:text-[#8B0000] transition-colors">
+                                        <span class="text-sm font-extrabold text-[#8B0000] bg-red-50 border border-red-200 rounded-full px-2.5 py-0.5 group-hover:bg-red-100 transition-colors">
                                             {{ $reviewedCount }}
                                         </span>
-                                        <span class="text-xs text-slate-500 font-medium"
-                                            :class="showTitles ? 'text-[#8B0000]' : ''">
+                                        <span class="text-xs text-slate-500 font-medium group-hover:text-[#8B0000] transition-colors">
                                             {{ $reviewedCount === 1 ? 'title' : 'titles' }}
                                         </span>
-                                        @if($reviewedCount > 0)
-                                            <i class="fas fa-chevron-down text-[9px] text-slate-400 transition-transform duration-200"
-                                               :class="showTitles ? 'rotate-180 text-[#8B0000]' : ''"></i>
-                                        @endif
+                                        <i class="fas fa-external-link-alt text-[9px] text-slate-300 group-hover:text-[#8B0000] transition-colors"></i>
                                     </button>
-                                    @if($reviewedCount > 0)
-                                        <div x-show="showTitles" x-transition:enter="transition ease-out duration-150"
-                                             x-transition:enter-start="opacity-0 -translate-y-1"
-                                             x-transition:enter-end="opacity-100 translate-y-0"
-                                             class="space-y-1 max-w-[220px]" style="display:none">
-                                            @foreach($reviewedTitles as $rt)
-                                                <div class="flex items-start gap-2 py-1.5 px-2 bg-slate-50 rounded-lg border border-slate-100">
-                                                    <div class="w-1 h-1 rounded-full bg-[#8B0000] mt-1.5 flex-shrink-0"></div>
-                                                    <p class="text-[11px] text-slate-600 font-medium leading-snug line-clamp-2"
-                                                       title="{{ $rt->Study_Protocol_title }}">
-                                                        {{ $rt->Study_Protocol_title }}
-                                                    </p>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                </div>
+                                @else
+                                    <span class="text-xs font-medium text-slate-400 italic">No reviews yet</span>
+                                @endif
                             </td>
                             <td class="p-6">
                                 <div class="flex items-center gap-1.5 pl-1">
@@ -197,6 +183,62 @@
             
             <div class="p-4 border-t border-slate-100 bg-slate-50">
                 {{ $users->links() }}
+            </div>
+        </div>
+
+        <!-- Reviewed Titles Modal (shared, JS-driven) -->
+        <div id="reviewedTitlesModal" class="fixed inset-0 z-[9999] hidden" aria-modal="true" role="dialog">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeReviewedModal()"></div>
+
+            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-lg flex flex-col max-h-[80vh]"
+                     style="animation: fadeInUp 0.25s ease-out">
+
+                    <!-- Modal Header -->
+                    <div class="px-6 pt-6 pb-4 border-b border-slate-100 flex items-start justify-between gap-4 flex-shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8B0000] to-red-700 flex items-center justify-center shadow-lg shadow-red-900/20 flex-shrink-0">
+                                <i class="fas fa-clipboard-check text-white text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900" id="reviewedModalReviewerName">Reviewer</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">
+                                    <span id="reviewedModalCount" class="font-bold text-[#8B0000]">0</span>
+                                    <span id="reviewedModalLabel"> reviewed protocols</span>
+                                </p>
+                            </div>
+                        </div>
+                        <button onclick="closeReviewedModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- Search inside modal -->
+                    <div class="px-6 py-3 border-b border-slate-50 flex-shrink-0">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-slate-400 text-xs"></i>
+                            </div>
+                            <input type="text" id="reviewedModalSearch"
+                                oninput="filterReviewedTitles(this.value)"
+                                placeholder="Filter titles..."
+                                class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Title List -->
+                    <div class="overflow-y-auto flex-1 px-6 py-4" id="reviewedTitlesList">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="px-6 py-4 border-t border-slate-100 flex-shrink-0 flex justify-end">
+                        <button onclick="closeReviewedModal()" class="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">
+                            Close
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -510,3 +552,74 @@
         </div>
     </div>
 </x-super_admin_layout>
+
+<script>
+    let _allReviewedTitles = [];
+
+    function openReviewedModal(reviewerName, count, titles) {
+        _allReviewedTitles = titles;
+
+        document.getElementById('reviewedModalReviewerName').textContent = reviewerName;
+        document.getElementById('reviewedModalCount').textContent = count;
+        document.getElementById('reviewedModalLabel').textContent = count === 1 ? ' reviewed protocol' : ' reviewed protocols';
+        document.getElementById('reviewedModalSearch').value = '';
+
+        renderReviewedTitles(titles);
+
+        const modal = document.getElementById('reviewedTitlesModal');
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeReviewedModal() {
+        document.getElementById('reviewedTitlesModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    function filterReviewedTitles(query) {
+        const filtered = query.trim() === ''
+            ? _allReviewedTitles
+            : _allReviewedTitles.filter(t => t.toLowerCase().includes(query.toLowerCase()));
+        renderReviewedTitles(filtered, query.trim());
+    }
+
+    function renderReviewedTitles(titles, highlight = '') {
+        const container = document.getElementById('reviewedTitlesList');
+        if (titles.length === 0) {
+            container.innerHTML = `
+                <div class="py-10 text-center text-slate-400">
+                    <i class="fas fa-search text-2xl mb-3 text-slate-300"></i>
+                    <p class="text-sm font-medium">No titles match your search.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = titles.map((title, i) => {
+            let displayTitle = escapeHtml(title);
+            if (highlight) {
+                const regex = new RegExp(`(${escapeRegex(highlight)})`, 'gi');
+                displayTitle = displayTitle.replace(regex, '<mark class="bg-yellow-100 text-yellow-900 rounded px-0.5">$1</mark>');
+            }
+            return `
+                <div class="flex items-start gap-3 py-3 ${i !== 0 ? 'border-t border-slate-50' : ''}">
+                    <div class="w-6 h-6 rounded-full bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span class="text-[10px] font-extrabold text-[#8B0000]">${i + 1}</span>
+                    </div>
+                    <p class="text-sm text-slate-700 font-medium leading-snug">${displayTitle}</p>
+                </div>`;
+        }).join('');
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeReviewedModal();
+    });
+</script>

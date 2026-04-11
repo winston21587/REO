@@ -1059,14 +1059,16 @@ class AdminController extends Controller
 
         $submission->save();
 
-        $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function($user) {
-            return $user->first_name . ' ' . $user->last_name;
-        })->implode(', ');
+        if (!empty($request->reviewers)) {
+            $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function($user) {
+                return $user->first_name . ' ' . $user->last_name;
+            })->implode(', ');
 
-        // Optional: Send Notification to Reviewers
-        // foreach($request->reviewers as $reviewer_id) {
-        //     Notification::send(User::find($reviewer_id), new ReviewerAssigned($submission));
-        // }
+            // Optional: Send Notification to Reviewers
+            // foreach($request->reviewers as $reviewer_id) {
+            //     Notification::send(User::find($reviewer_id), new ReviewerAssigned($submission));
+            // }
+        }
 
         if ($request->ajax()) {
             return response()->json(['success' => true, 'message' => $actionMessage]);

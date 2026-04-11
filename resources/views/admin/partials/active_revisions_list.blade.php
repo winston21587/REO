@@ -56,15 +56,15 @@
                 @if($data->Review_Type)
                     @php
                         $rtColors = [
-                            'Exempt Review' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                            'Expedited Review' => 'bg-amber-50 text-amber-700 border-amber-200',
-                            'Full Board Review' => 'bg-red-50 text-red-700 border-red-200',
+                            'Exempt Review' => 'text-emerald-600',
+                            'Expedited Review' => 'text-amber-600',
+                            'Full Board Review' => 'text-red-600',
                         ];
-                        $rtColor = $rtColors[$data->Review_Type] ?? 'bg-slate-50 text-slate-600 border-slate-200';
+                        $rtColor = $rtColors[$data->Review_Type] ?? 'text-slate-500';
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border {{ $rtColor }}">
+                    <div class="text-sm font-bold {{ $rtColor }}">
                         {{ $data->Review_Type }}
-                    </span>
+                    </div>
                 @else
                     <span class="text-xs text-slate-400 italic">—</span>
                 @endif

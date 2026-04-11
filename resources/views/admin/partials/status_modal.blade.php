@@ -196,8 +196,24 @@
         form.action = `/admin/update-status/${id}`;
 
         // Reset UI
-        document.getElementById('reviewTypeSelect').value = "";
+        const reviewTypeSelect = document.getElementById('reviewTypeSelect');
+        reviewTypeSelect.value = "";
         document.getElementById('currentReviewTypeDisplay').textContent = currentReviewType || 'Unassigned';
+        
+        // Dynamically disable currently selected review type
+        Array.from(reviewTypeSelect.options).forEach(opt => {
+            if (opt.value) {
+                let baseText = opt.value === 'Unassigned' ? 'Unassigned (N/A)' : opt.value;
+                if (opt.value === currentReviewType || (!currentReviewType && opt.value === 'Unassigned')) {
+                    opt.disabled = true;
+                    opt.textContent = baseText + ' (Current)';
+                } else {
+                    opt.disabled = false;
+                    opt.textContent = baseText;
+                }
+            }
+        });
+
         const date = new Date();
         date.setDate(date.getDate() + 2);
         const minDate = date.toISOString().split('T')[0];

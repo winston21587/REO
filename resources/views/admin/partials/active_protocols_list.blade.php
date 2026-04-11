@@ -124,25 +124,19 @@
                                             'Full Board Review' => 'text-amber-600'
                                         ];
                                     @endphp
-                                    <div class="flex flex-col gap-2">
-                                        @if($hasTop || $hasMid)
-                                            <div class="flex flex-col gap-1.5">
-                                            @if($hasTop)
-                                                <div class="flex items-center group cursor-default" title="Official Review Type">
-                                                    <span class="text-sm font-bold {{ $typeColors[$data->Review_Type] ?? 'text-slate-500' }} tracking-tight">{{ $data->Review_Type }}</span>
-                                                </div>
-                                            @endif
-                                            
-                                            @if($hasMid)
-                                                <div class="flex flex-col cursor-default {{ $hasTop ? 'mt-1 opacity-90 pl-3 border-l-2 border-slate-200' : '' }}" title="Suggested by Reviewer">
-                                                    <span class="text-[13px] font-bold text-slate-500 leading-none mb-1">{{ $reviewerSuggestedType }}</span>
-                                                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-[#8B0000]/70 leading-none">Suggested</span>
-                                                </div>
-                                            @endif
+                                    <div class="flex flex-col gap-0.5 {{ !$hasTop ? 'opacity-60' : '' }}">
+                                        @if($hasTop)
+                                            <div class="flex items-center cursor-default" title="Official Review Type">
+                                                <span class="text-sm font-bold {{ $typeColors[$data->Review_Type] ?? 'text-slate-500' }} tracking-tight leading-tight">{{ $data->Review_Type }}</span>
                                             </div>
                                         @else
-                                            <div class="flex items-center gap-2 opacity-60">
-                                                <span class="text-xs font-semibold text-slate-400 italic">Unassigned</span>
+                                            <span class="text-sm font-semibold text-slate-500 italic leading-tight">Unassigned</span>
+                                        @endif
+                                        
+                                        @if($hasMid)
+                                            <div class="flex items-start gap-1.5 mt-0.5 {{ $hasTop ? 'opacity-60' : 'opacity-80' }}" title="Suggested by Reviewer">
+                                                <i class="fas fa-level-up-alt text-[9px] text-slate-400 rotate-90 mt-[3px]"></i>
+                                                <span class="text-[10px] font-bold text-slate-500 leading-tight">Suggested: {{ str_replace(' Review', '', $reviewerSuggestedType) }}</span>
                                             </div>
                                         @endif
                                     </div>

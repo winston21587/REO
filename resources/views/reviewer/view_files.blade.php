@@ -147,7 +147,7 @@
                 },
                 getOfficeUrl(file) {
                     if (!file || !file.public_url) return '';
-                    return 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(file.public_url);
+                    return 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(file.public_url);
                 },
                 isViewable(file) {
                     if (!file) return false;

@@ -6,8 +6,7 @@
                 $latestFileUpload = $sub->files->max('pivot.created_at') ?? $sub->files->max('created_at');
                 $hasNewFilesUploaded = $latestFileUpload && \Carbon\Carbon::parse($latestFileUpload)->gt($sub->updated_at);
             @endphp
-            <div
-                class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group border-l-4 {{ $hasNewFilesUploaded ? 'border-l-amber-400' : 'border-l-red-400' }}">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group">
                 <div class="flex justify-between items-start mb-3">
                     <div class="flex-1 min-w-0">
                         <h3 class="font-bold text-slate-800 text-lg leading-tight group-hover:text-[#8B0000] transition-colors line-clamp-1"

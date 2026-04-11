@@ -378,7 +378,7 @@
                                 class="w-full sm:w-auto px-5 py-3 bg-red-50/50 text-red-600 rounded-full text-[13px] font-bold hover:bg-red-100 transition-colors border border-red-100 flex-shrink-0">
                                 <i class="fas fa-user-times mr-1.5"></i> Unchoose
                             </button>
-                            <div class="flex gap-3 w-full sm:w-auto flex-1 sm:flex-none justify-end" :class="assigned.length > 0 ? '' : 'w-full sm:w-full'">
+                            <div class="flex gap-3 w-full sm:w-auto justify-end ml-auto">
                                 <button type="button" @click="open = false"
                                     class="px-6 py-3 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 rounded-full text-[13px] font-bold hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
                                     Cancel

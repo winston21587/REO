@@ -875,19 +875,13 @@ class AdminController extends Controller
                 'appointment_date' => 'required|date|after:tomorrow',
             ]);
 
-            $newStatus = 'Under Review'; // Or keep it as 'For Initial Review' but with a type? 
-            // Usually, after assigning a type, it goes to "Under Review" or stays in "For Initial Review" until reviewers are assigned.
-            // Let's assume it updates the Review_Type column and sets status to 'Under Review' or keeps it.
-            // The user said "update status", so let's set it to 'Under Review' or similar.
-            // Actually, the user prompt implies this IS the status update.
-
             $submission->Review_Type = $request->review_type;
 
-            // Use status_action if provided (e.g. from auto-set JS), otherwise default to 'Under Review'
+            // Only update system status if a definitive Status Action is selected.
+            // Otherwise, we simply save the Review_Type categorization without advancing the timeline.
+            // (e.g. It stays 'Hardcopy Received' so reviewers remain 'Pending Assignment')
             if ($request->has('status_action') && !empty($request->status_action)) {
                 $submission->Status = $request->status_action;
-            } else {
-                $submission->Status = 'Under Review';
             }
 
             $submission->save();

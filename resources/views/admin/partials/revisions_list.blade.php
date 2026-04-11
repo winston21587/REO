@@ -182,20 +182,22 @@
                                                                     <a href="{{ route('admin.recommendation.view_file', $currentLetter->id) }}"
                                                                         target="_blank"
                                                                         class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                                        <i class="fas fa-file-pdf w-4 text-center"></i> View Current Recommendation Letter
+                                                                        <i class="fas fa-file-pdf w-4 text-center"></i> View Recommendation Letter
                                                                     </a>
                                                                 @endif
 
                                                                 @if($previousLetters->isNotEmpty())
-                                                                    @foreach($previousLetters as $letter)
-                                                                        <a href="{{ route('admin.recommendation.view_file', $letter->id) }}"
-                                                                            target="_blank"
-                                                                            class="flex items-center gap-3 px-4 py-2 text-[11px] font-medium text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-lg transition-colors">
-                                                                            <i class="fas fa-file-archive w-4 text-center text-[10px]"></i>
-                                                                            <span class="truncate">Previous Letter</span>
-                                                                            <span class="text-[9px] text-slate-300 font-mono whitespace-nowrap ml-auto">{{ $letter->created_at->format('M d, Y') }}</span>
-                                                                        </a>
-                                                                    @endforeach
+                                                                    <div class="ml-6 border-l-2 border-slate-100 pl-2 space-y-0.5 mb-1">
+                                                                        @foreach($previousLetters as $letter)
+                                                                            <a href="{{ route('admin.recommendation.view_file', $letter->id) }}"
+                                                                                target="_blank"
+                                                                                class="flex items-center gap-3 px-2 py-2 text-[11px] font-medium text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-lg transition-colors">
+                                                                                <i class="fas fa-file-archive w-4 text-center text-[10px]"></i>
+                                                                                <span class="truncate">Previous Letter</span>
+                                                                                <span class="text-[9px] text-slate-300 font-mono whitespace-nowrap ml-auto">{{ $letter->created_at->format('M d, Y') }}</span>
+                                                                            </a>
+                                                                        @endforeach
+                                                                    </div>
                                                                 @endif
                                                             @endif
 

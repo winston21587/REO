@@ -28,6 +28,12 @@ class ReviewerController extends Controller
     public function viewFiles($id)
     {
         $researchTitle = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
+        
+        // Automatically transition status when reviewer opens the files for the first time
+        if ($researchTitle->Status === 'Reviewer Assigned') {
+            $researchTitle->Status = 'Under Review';
+            $researchTitle->save();
+        }
         $requirementsMap = \App\Models\DocumentRequirement::all()->keyBy('name')->toArray();
         $backUrl = url()->previous(route('reviewer.dashboard'));
         return view('reviewer.view_files', compact('researchTitle', 'backUrl', 'requirementsMap'));

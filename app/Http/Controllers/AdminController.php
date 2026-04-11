@@ -1033,14 +1033,30 @@ class AdminController extends Controller
     public function assignReviewers(Request $request, $id)
     {
         $request->validate([
-            'reviewers' => 'required|array',
+            'reviewers' => 'nullable|array',
             'reviewers.*' => 'exists:users,id', // or users table depending on reviewers setup
         ]);
 
         $submission = Research_title::findOrFail($id);
 
-        $submission->assigned_reviewers = $request->reviewers;
-        $submission->Status = 'Reviewer Assigned'; // Auto-update status explicitly upon assignments
+        if (empty($request->reviewers)) {
+            $submission->assigned_reviewers = null;
+            
+            // If they are unassigning reviewers mid-way, it reverts to Hardcopy Received
+            if (in_array($submission->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed'])) {
+                $submission->Status = 'Hardcopy Received';
+            }
+            $actionMessage = 'Reviewers unassigned successfully.';
+        } else {
+            $submission->assigned_reviewers = $request->reviewers;
+            
+            // Even if mid-review, changing reviewers resets to Reviewer Assigned
+            if (in_array($submission->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review', 'Reviewed'])) {
+                $submission->Status = 'Reviewer Assigned';
+            }
+            $actionMessage = 'Reviewers assigned successfully.';
+        }
+
         $submission->save();
 
         $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function($user) {
@@ -1053,10 +1069,10 @@ class AdminController extends Controller
         // }
 
         if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Reviewers assigned successfully.']);
+            return response()->json(['success' => true, 'message' => $actionMessage]);
         }
 
-        return redirect()->back()->with('success', 'Reviewers assigned successfully.');
+        return redirect()->back()->with('success', $actionMessage);
     }
     public function setInitialReview(Request $request, $id)
     {

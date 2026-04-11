@@ -182,11 +182,12 @@
             protocolId: '',
             protocolTitle: '',
             assigned: [],
+            initialAssignedCount: 0,
             search: '',
             collegeFilter: '',
             expandedReviewer: null
          }"
-         @open-assign-modal.window="open = true; protocolId = $event.detail.id; protocolTitle = $event.detail.title; assigned = Array.isArray($event.detail.assigned) ? $event.detail.assigned : []; search = ''; collegeFilter = ''; expandedReviewer = null;"
+         @open-assign-modal.window="open = true; protocolId = $event.detail.id; protocolTitle = $event.detail.title; assigned = Array.isArray($event.detail.assigned) ? $event.detail.assigned : []; initialAssignedCount = assigned.length; search = ''; collegeFilter = ''; expandedReviewer = null;"
          class="relative z-[9999]"
          aria-labelledby="assign-modal-title" role="dialog" aria-modal="true" style="display: none;" x-show="open">
 
@@ -219,7 +220,7 @@
                                         <i class="fas fa-users-cog text-white text-base"></i>
                                     </div>
                                     <div>
-                                        <h3 class="text-lg font-bold text-slate-900 leading-tight" id="assign-modal-title">Assign Reviewer</h3>
+                                        <h3 class="text-lg font-bold text-slate-900 leading-tight" id="assign-modal-title" x-text="initialAssignedCount > 0 ? 'Change Reviewer' : 'Assign Reviewer'">Assign Reviewer</h3>
                                         <p class="text-xs text-slate-500 mt-0.5 line-clamp-1" x-text="protocolTitle"></p>
                                     </div>
                                 </div>
@@ -365,15 +366,21 @@
                         </div>
 
                         <!-- Footer -->
-                        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex gap-3">
-                            <button type="button" @click="open = false"
-                                class="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">
-                                Cancel
+                        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-wrap sm:flex-nowrap gap-3 items-center justify-between">
+                            <button type="button" @click="assigned = []" x-show="assigned.length > 0" x-transition.opacity
+                                class="w-full sm:w-auto px-4 py-2.5 bg-red-50 text-red-600 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors border border-red-100 flex-shrink-0">
+                                <i class="fas fa-user-times mr-1"></i> Clear Select
                             </button>
-                            <button type="submit"
-                                class="flex-1 px-4 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-red-900 transition-colors shadow-lg shadow-red-900/20">
-                                <i class="fas fa-user-check mr-1.5"></i> Save Assignment
-                            </button>
+                            <div class="flex gap-3 w-full sm:w-auto flex-1 sm:flex-none" :class="assigned.length > 0 ? '' : 'w-full sm:w-full'">
+                                <button type="button" @click="open = false"
+                                    class="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    class="flex-1 px-4 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-red-900 transition-colors shadow-lg shadow-red-900/20">
+                                    <i class="fas fa-user-check mr-1.5"></i> Save Assignment
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>

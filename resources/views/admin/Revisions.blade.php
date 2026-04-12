@@ -131,23 +131,23 @@
                                                         @php $selectedDecisions = request('reviewer_decisions', []); @endphp
                                                         <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_reviewer_decisions[]" value="Approved" class="revisions-filter-input rounded text-green-600 focus:ring-green-500" {{ in_array('Approved', $selectedDecisions) ? 'checked' : '' }}>
-                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-green-600 transition-colors">✅ Approved</span>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-green-600 transition-colors">Approved</span>
                                                         </label>
                                                         <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_reviewer_decisions[]" value="Minor revision/s required" class="revisions-filter-input rounded text-yellow-600 focus:ring-yellow-500" {{ in_array('Minor revision/s required', $selectedDecisions) ? 'checked' : '' }}>
-                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-yellow-600 transition-colors">🟡 Minor revision/s</span>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-yellow-600 transition-colors">Minor revision/s</span>
                                                         </label>
                                                         <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_reviewer_decisions[]" value="Major revision/s required" class="revisions-filter-input rounded text-orange-600 focus:ring-orange-500" {{ in_array('Major revision/s required', $selectedDecisions) ? 'checked' : '' }}>
-                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-orange-600 transition-colors">🟠 Major revision/s</span>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-orange-600 transition-colors">Major revision/s</span>
                                                         </label>
                                                         <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_reviewer_decisions[]" value="Disapproved" class="revisions-filter-input rounded text-red-600 focus:ring-red-500" {{ in_array('Disapproved', $selectedDecisions) ? 'checked' : '' }}>
-                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-red-600 transition-colors">❌ Disapproved</span>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-red-600 transition-colors">Disapproved</span>
                                                         </label>
                                                         <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_reviewer_decisions[]" value="Panel Deliberation" class="revisions-filter-input rounded text-pink-600 focus:ring-pink-500" {{ in_array('Panel Deliberation', $selectedDecisions) ? 'checked' : '' }}>
-                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-pink-600 transition-colors">⚖️ Panel Deliberation</span>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-pink-600 transition-colors">Panel Deliberation</span>
                                                         </label>
                                                     </div>
                                                 </div>

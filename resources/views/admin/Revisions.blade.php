@@ -76,7 +76,7 @@
                                                 <div class="p-3 border-b border-slate-100">
                                                     <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Protocol Status</label>
                                                     <div class="space-y-2">
-                                                        @php $selectedStatuses = request('statuses', ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions', 'Reviewed']); @endphp
+                                                        @php $selectedStatuses = request('statuses', ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions', 'Reviewed', 'Panel Deliberation']); @endphp
                                                         <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_status[]" value="Waiting for Revision" class="revisions-filter-input rounded text-orange-600 focus:ring-orange-500" {{ in_array('Waiting for Revision', $selectedStatuses) ? 'checked' : '' }}>
                                                             <span class="text-sm font-medium text-slate-700 group-hover:text-orange-600 transition-colors">Waiting for Revision</span>
@@ -92,6 +92,10 @@
                                                         <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_status[]" value="Reviewed" class="revisions-filter-input rounded text-emerald-600 focus:ring-emerald-500" {{ in_array('Reviewed', $selectedStatuses) ? 'checked' : '' }}>
                                                             <span class="text-sm font-medium text-slate-700 group-hover:text-emerald-600 transition-colors">Reviewed</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_status[]" value="Panel Deliberation" class="revisions-filter-input rounded text-pink-600 focus:ring-pink-500" {{ in_array('Panel Deliberation', $selectedStatuses) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-pink-600 transition-colors">Panel Deliberation</span>
                                                         </label>
                                                     </div>
                                                 </div>

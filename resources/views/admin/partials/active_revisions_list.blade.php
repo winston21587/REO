@@ -79,21 +79,26 @@
             </td>
             <td class="p-6">
                 @php
+                    // Keep visual status as Reviewed even if internal status is Panel Deliberation
+                    $displayStatus = $data->Status === 'Panel Deliberation' ? 'Reviewed' : $data->Status;
+                    
                     $statusColors = [
                         'Waiting for Revision' => 'text-orange-600',
                         'Revision Submitted' => 'text-purple-600',
                         'Reviewing Revisions' => 'text-indigo-600',
                         'Reviewed' => 'text-emerald-600',
                     ];
-                    $colorClass = $statusColors[$data->Status] ?? 'text-slate-500';
+                    $colorClass = $statusColors[$displayStatus] ?? 'text-slate-500';
                 @endphp
                 <div class="text-sm font-bold {{ $colorClass }}">
-                    {{ $data->Status }}
+                    {{ $displayStatus }}
                 </div>
             </td>
             <td class="p-6">
                 @if($data->Status === 'Waiting for Revision')
                     <span class="text-sm font-bold text-orange-600">Modifications Required</span>
+                @elseif($data->Status === 'Panel Deliberation')
+                    <span class="text-sm font-bold text-pink-600 uppercase">Panel Deliberation</span>
                 @else
                     <span class="text-sm font-bold text-slate-400 italic">Unassigned</span>
                 @endif

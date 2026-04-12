@@ -59,6 +59,12 @@ class ReviewerController extends Controller
             $researchTitle->Status = 'Under Review';
             $researchTitle->save();
         }
+
+        // Automatically transition status when reviewer opens files from Re-Evaluation
+        if ($researchTitle->Status === 'Waiting for Revision') {
+            $researchTitle->Status = 'Reviewing Revisions';
+            $researchTitle->save();
+        }
         $requirementsMap = \App\Models\DocumentRequirement::all()->keyBy('name')->toArray();
         $backUrl = url()->previous(route('reviewer.dashboard'));
         return view('reviewer.view_files', compact('researchTitle', 'backUrl', 'requirementsMap'));

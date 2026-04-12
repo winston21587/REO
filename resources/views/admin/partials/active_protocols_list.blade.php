@@ -102,7 +102,7 @@
                                         $revStatus = $isAdvanced ? $data->Status : 'Pending Assignment';
                                         
                                         $revColors = [
-                                            'Pending Assignment' => 'text-slate-500',
+                                            'Pending Assignment' => 'text-slate-400 italic opacity-80',
                                             'Reviewer Assigned' => 'text-blue-600',
                                             'Under Review' => 'text-indigo-600',
                                             'Reviewed' => 'text-green-600',

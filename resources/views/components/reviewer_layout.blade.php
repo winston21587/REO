@@ -68,6 +68,13 @@
                             <i class="fas fa-check-circle w-5 text-center"></i>
                             <span class="flex-1">Reviewed Protocols</span>
                         </a>
+
+                        <!-- Re-Evaluation -->
+                        <a href="{{ route('reviewer.reevaluation') }}"
+                            class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium transition-all {{ request()->routeIs('reviewer.reevaluation') ? 'bg-white/10 text-white border-l-4 border-red-500' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                            <i class="fas fa-sync-alt w-5 text-center"></i>
+                            <span class="flex-1">Re-Evaluation</span>
+                        </a>
                     </div>
                 </div>
             </nav>

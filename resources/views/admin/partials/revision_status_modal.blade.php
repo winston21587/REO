@@ -161,7 +161,7 @@
             element.querySelector('.icon-box').classList.add(activeText);
         }
 
-        function openRevisionStatusModal(id, title, currentStatus = null) {
+        function openRevisionStatusModal(id, title, currentStatus = null, currentReviewType = null) {
             document.getElementById('revisionStatusModalTitle').textContent = title;
             const form = document.getElementById('revisionStatusForm');
             form.action = `/admin/update-status/${id}`;
@@ -170,6 +170,16 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('revisionAppointmentDate').value = today;
             document.getElementById('revisionRemarks').value = ""; 
+            
+            // Hide Panel Deliberation if not Full Board Review
+            const panelDeliberationOption = document.querySelector('.revision-status-option[onclick*="Panel Deliberation"]');
+            if (panelDeliberationOption) {
+                if (currentReviewType !== 'Full Board Review') {
+                    panelDeliberationOption.style.display = 'none';
+                } else {
+                    panelDeliberationOption.style.display = 'block';
+                }
+            }
             
             // Reset Box Selection Visuals
             document.querySelectorAll('.revision-status-option').forEach(el => {

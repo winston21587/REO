@@ -7,8 +7,8 @@
                 <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Generate Recommendation Letter</h1>
                 <p class="text-slate-500 mt-2 text-sm">Result of Review Form</p>
             </div>
-            <a href="{{ route('admin.applications') }}" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors">
-                <i class="fas fa-arrow-left mr-2"></i> Back to Applications
+            <a href="{{ url()->previous() }}" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i> Back
             </a>
         </div>
 

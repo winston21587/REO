@@ -351,7 +351,7 @@ class Research_title_Controller extends Controller
             }
 
             // Determine new status
-            $newStatus = 'Corrections Submitted';
+            $newStatus = 'Revision Submitted';
             $logMessage = "Resubmitted corrections: " . $request->revision_message;
 
             // Create Submission Feedback (User Correction) & Revision Log for Admin View

@@ -3,8 +3,8 @@
         
         <!-- Header -->
         <div class="flex flex-col flex-wrap gap-4 pb-6 border-b border-slate-200">
-            <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Assigned Protocols</h1>
-            <p class="text-slate-500 mt-2 text-sm">Review the research protocols assigned to you by the administrative oversight committee.</p>
+            <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">{{ $pageTitle ?? 'Assigned Protocols' }}</h1>
+            <p class="text-slate-500 mt-2 text-sm">{{ $pageDescription ?? 'Review the research protocols assigned to you by the administrative oversight committee.' }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

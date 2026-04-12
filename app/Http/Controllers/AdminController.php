@@ -1806,7 +1806,7 @@ class AdminController extends Controller
         $query = Research_title::with(['researcher.user', 'revisionLogs.user', 'user', 'files', 'adminFiles']);
 
         // Default valid statuses for this page
-        $defaultStatuses = ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation'];
+        $defaultStatuses = ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation', 'Reviewed'];
 
         if ($request->filled('statuses') && is_array($request->statuses)) {
             // Intersect to ensure they only filter within the allowed Revisions statuses
@@ -1818,6 +1818,10 @@ class AdminController extends Controller
 
         if ($request->filled('review_types') && is_array($request->review_types)) {
             $query->whereIn('Review_Type', $request->review_types);
+        }
+
+        if ($request->filled('reviewer_decisions') && is_array($request->reviewer_decisions)) {
+            $query->whereIn('reviewer_decision', $request->reviewer_decisions);
         }
 
         if ($request->filled('search')) {

@@ -14,15 +14,40 @@ class ReviewerController extends Controller
     {
         $userId = Auth::id();
         
+        // Only show initial-review statuses; revision-related papers go to Re-Evaluation
+        $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions'];
+
         $titles = Research_title::where(function($q) use ($userId) {
                 $q->whereJsonContains('assigned_reviewers', (string)$userId)
                   ->orWhereJsonContains('assigned_reviewers', $userId);
             })
             ->where('Status', '!=', 'Reviewed')
+            ->whereNotIn('Status', $revisionStatuses)
             ->latest()
             ->get();
 
         return view('reviewer.dashboard', compact('titles'));
+    }
+
+    public function reEvaluation()
+    {
+        $userId = Auth::id();
+        
+        // Show all revision-related statuses so the reviewer can track the full cycle
+        $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions'];
+
+        $titles = Research_title::where(function($q) use ($userId) {
+                $q->whereJsonContains('assigned_reviewers', (string)$userId)
+                  ->orWhereJsonContains('assigned_reviewers', $userId);
+            })
+            ->whereIn('Status', $revisionStatuses)
+            ->latest()
+            ->get();
+
+        $pageTitle = 'Re-Evaluation';
+        $pageDescription = 'Review protocols that have been revised by the researcher and returned for re-evaluation.';
+
+        return view('reviewer.dashboard', compact('titles', 'pageTitle', 'pageDescription'));
     }
 
     public function viewFiles($id)
@@ -99,6 +124,9 @@ class ReviewerController extends Controller
     {
         $submission = Research_title::findOrFail($id);
         
+        // Determine if this is a re-evaluation (revision-related status)
+        $isReEvaluation = in_array($submission->Status, ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']);
+
         // Prevent completing if no reviewer uploads exist
         $hasUploads = $submission->adminFiles()
             ->where('uploaded_by', Auth::id())
@@ -121,8 +149,32 @@ class ReviewerController extends Controller
             $latestUpload->save();
         }
 
+        // Save Review Decision & Remarks (Re-Evaluation only)
+        if ($request->has('review_decision')) {
+            $submission->reviewer_decision = $request->input('review_decision');
+
+            $msg = "Review Decision: " . $request->input('review_decision') . "\nRemarks: " . $request->input('remarks', 'None');
+            \App\Models\SubmissionFeedback::create([
+                'research_title_id' => $submission->id,
+                'user_id' => Auth::id(),
+                'type' => 'reviewer_decision',
+                'message' => $msg
+            ]);
+            
+            \App\Models\RevisionLog::create([
+                'research_title_id' => $submission->id,
+                'user_id' => Auth::id(),
+                'message' => $msg
+            ]);
+        }
+
         $submission->Status = 'Reviewed';
         $submission->save();
+
+        // Redirect based on context
+        if ($isReEvaluation) {
+            return redirect()->route('reviewer.reevaluation')->with('success', 'Re-evaluation completed successfully!');
+        }
 
         return redirect()->route('reviewer.dashboard')->with('success', 'Protocol review marked as complete!');
     }

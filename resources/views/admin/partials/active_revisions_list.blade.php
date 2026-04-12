@@ -3,12 +3,13 @@
 <table class="w-full text-left border-collapse">
     <thead>
         <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-            <th class="p-6">Protocol ID</th>
             <th class="p-6">Research Title</th>
             <th class="p-6">Researcher</th>
+            <th class="p-6">Reviewer</th>
             <th class="p-6">Last Updated</th>
             <th class="p-6">Review Type</th>
             <th class="p-6">Status</th>
+            <th class="p-6">Review Decision</th>
             <th class="p-6 text-right">Actions</th>
         </tr>
     </thead>
@@ -16,19 +17,9 @@
         @forelse($datas as $data)
         <tr class="hover:bg-slate-50/80 transition-colors group">
             <td class="p-6">
-                <span class="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">
-                    #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
-                </span>
-            </td>
-            <td class="p-6">
                 <p class="font-bold text-slate-800 text-sm line-clamp-1 group-hover:text-[#8B0000] transition-colors" title="{{ $data->Study_Protocol_title }}">
                     {{ $data->Study_Protocol_title }}
                 </p>
-                @if($data->Review_Type)
-                <span class="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase tracking-wider">
-                    {{ $data->Review_Type }}
-                </span>
-                @endif
             </td>
             <td class="p-6">
                 <div class="flex items-center gap-3">
@@ -45,6 +36,23 @@
                         </p>
                     </div>
                 </div>
+            </td>
+            <td class="p-6">
+                @php
+                    $reviewers = [];
+                    if (!empty($data->assigned_reviewers)) {
+                        $reviewers = \App\Models\User::whereIn('id', $data->assigned_reviewers)->get();
+                    }
+                @endphp
+                @if(count($reviewers) > 0)
+                    <div class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+                        @foreach($reviewers as $rev)
+                            <span>{{ $rev->first_name }} {{ $rev->last_name }}</span>
+                        @endforeach
+                    </div>
+                @else
+                    <span class="text-sm italic text-slate-400">Unassigned</span>
+                @endif
             </td>
             <td class="p-6">
                 <div class="flex items-center gap-2 text-sm text-slate-600">
@@ -83,6 +91,23 @@
                 <div class="text-sm font-bold {{ $colorClass }}">
                     {{ $data->Status }}
                 </div>
+            </td>
+            <td class="p-6">
+                @if($data->reviewer_decision)
+                    @php
+                        $rdColor = 'text-slate-600';
+                        if ($data->reviewer_decision === 'Approved') $rdColor = 'text-green-600';
+                        elseif ($data->reviewer_decision === 'Minor revision/s required') $rdColor = 'text-yellow-600';
+                        elseif ($data->reviewer_decision === 'Major revision/s required') $rdColor = 'text-orange-600';
+                        elseif ($data->reviewer_decision === 'Disapproved') $rdColor = 'text-red-600';
+                        elseif ($data->reviewer_decision === 'Panel Deliberation') $rdColor = 'text-pink-600';
+                    @endphp
+                    <div class="text-sm font-bold {{ $rdColor }} leading-tight">
+                        {{ $data->reviewer_decision }}
+                    </div>
+                @else
+                    <span class="text-xs text-slate-400 italic">Pending</span>
+                @endif
             </td>
             <td class="p-6 text-right relative">
                 <div class="relative" x-data="{ open: false }">
@@ -145,7 +170,7 @@
                                             <a href="{{ route('admin.view_files', $data->id) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
                                                 <i class="fas fa-eye w-4 text-center"></i> View Files
                                             </a>
-                                            <button onclick="openRevisionStatusModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}', '{{ addslashes($data->Status) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
+                                            <button onclick="openRevisionStatusModal('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}', '{{ addslashes($data->Status) }}', '{{ addslashes($data->Review_Type) }}')" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
                                                 <i class="fas fa-sync-alt w-4 text-center"></i> Update Status
                                             </button>
                                             

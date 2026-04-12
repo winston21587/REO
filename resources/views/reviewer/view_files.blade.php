@@ -337,8 +337,38 @@
                                             <div class="bg-slate-50 px-6 py-4 border-t border-slate-100">
                                                 <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0">
                                                     @csrf
+                                                    @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']))
+                                                    <!-- Re-Evaluation Fields -->
                                                     <div class="mb-4 text-left">
-                                                        <label class="block text-xs font-bold text-slate-700 mb-2">Suggested Review Type</label>
+                                                        <label class="block text-xs font-bold text-slate-700 mb-2">Review Decision</label>
+                                                        <div class="relative">
+                                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                <i class="fas fa-gavel text-slate-400 text-sm"></i>
+                                                            </div>
+                                                            <select name="review_decision" required class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-300 transition-colors appearance-none">
+                                                                <option value="" disabled selected>Select a recommendation...</option>
+                                                                <option value="Approved">✅ Approved (No further revisions needed)</option>
+                                                                <option value="Minor revision/s required">🟡 Minor revision/s required</option>
+                                                                <option value="Major revision/s required">🟠 Major revision/s required</option>
+                                                                <option value="Disapproved">❌ Disapproved</option>
+                                                                @if($researchTitle->Review_Type === 'Full Board Review')
+                                                                <option value="Panel Deliberation">⚖️ Panel Deliberation</option>
+                                                                @endif
+                                                            </select>
+                                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                                <i class="fas fa-chevron-down text-slate-400 text-xs"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mb-4 text-left">
+                                                        <label class="block text-xs font-bold text-slate-700 mb-2">Brief Remarks (Optional)</label>
+                                                        <textarea name="remarks" rows="2" placeholder="Brief summary of your decision..." class="w-full px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none shadow-sm"></textarea>
+                                                    </div>
+                                                    @else
+                                                    <!-- Initial Review Fields -->
+                                                    <div class="mb-4 text-left">
+                                                        <label class="block text-xs font-bold text-slate-700 mb-2">Suggested Next Review Type</label>
                                                         <div class="relative">
                                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                                 <i class="fas fa-layer-group text-slate-400 text-sm"></i>
@@ -354,6 +384,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    @endif
                                                     <div class="flex gap-3">
                                                         <button type="button" @click="showModal = false" class="flex-1 inline-flex justify-center rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
                                                             Cancel

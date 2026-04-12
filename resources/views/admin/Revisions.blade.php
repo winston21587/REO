@@ -74,9 +74,9 @@
 
                                                 <!-- Status Section -->
                                                 <div class="p-3 border-b border-slate-100">
-                                                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Current Status</label>
+                                                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Protocol Status</label>
                                                     <div class="space-y-2">
-                                                        @php $selectedStatuses = request('statuses', []); @endphp
+                                                        @php $selectedStatuses = request('statuses', ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation', 'Reviewed']); @endphp
                                                         <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_status[]" value="Waiting for Revision" class="revisions-filter-input rounded text-orange-600 focus:ring-orange-500" {{ in_array('Waiting for Revision', $selectedStatuses) ? 'checked' : '' }}>
                                                             <span class="text-sm font-medium text-slate-700 group-hover:text-orange-600 transition-colors">Waiting for Revision</span>
@@ -86,6 +86,10 @@
                                                             <span class="text-sm font-medium text-slate-700 group-hover:text-purple-600 transition-colors">Revision Submitted</span>
                                                         </label>
                                                         <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_status[]" value="Corrections Submitted" class="revisions-filter-input rounded text-violet-600 focus:ring-violet-500" {{ in_array('Corrections Submitted', $selectedStatuses) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-violet-600 transition-colors">Corrections Submitted</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_status[]" value="Checking of Revisions" class="revisions-filter-input rounded text-indigo-600 focus:ring-indigo-500" {{ in_array('Checking of Revisions', $selectedStatuses) ? 'checked' : '' }}>
                                                             <span class="text-sm font-medium text-slate-700 group-hover:text-indigo-600 transition-colors">Checking of Revisions</span>
                                                         </label>
@@ -93,11 +97,15 @@
                                                             <input type="checkbox" name="revisions_status[]" value="Panel Deliberation" class="revisions-filter-input rounded text-pink-600 focus:ring-pink-500" {{ in_array('Panel Deliberation', $selectedStatuses) ? 'checked' : '' }}>
                                                             <span class="text-sm font-medium text-slate-700 group-hover:text-pink-600 transition-colors">Panel Deliberation</span>
                                                         </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_status[]" value="Reviewed" class="revisions-filter-input rounded text-emerald-600 focus:ring-emerald-500" {{ in_array('Reviewed', $selectedStatuses) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-emerald-600 transition-colors">Reviewed</span>
+                                                        </label>
                                                     </div>
                                                 </div>
 
                                                 <!-- Review Type Section -->
-                                                <div class="p-3">
+                                                <div class="p-3 border-b border-slate-100">
                                                     <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Review Type</label>
                                                     <div class="space-y-2">
                                                         @php $selectedTypes = request('review_types', []); @endphp
@@ -112,6 +120,34 @@
                                                         <label class="flex items-center gap-2 cursor-pointer group">
                                                             <input type="checkbox" name="revisions_review_types[]" value="Full Board Review" class="revisions-filter-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Full Board Review', $selectedTypes) ? 'checked' : '' }}>
                                                             <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Full Board</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Reviewer Decision Section -->
+                                                <div class="p-3">
+                                                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Reviewer Decision</label>
+                                                    <div class="space-y-2">
+                                                        @php $selectedDecisions = request('reviewer_decisions', []); @endphp
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_reviewer_decisions[]" value="Approved" class="revisions-filter-input rounded text-green-600 focus:ring-green-500" {{ in_array('Approved', $selectedDecisions) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-green-600 transition-colors">✅ Approved</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_reviewer_decisions[]" value="Minor revision/s required" class="revisions-filter-input rounded text-yellow-600 focus:ring-yellow-500" {{ in_array('Minor revision/s required', $selectedDecisions) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-yellow-600 transition-colors">🟡 Minor revision/s</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_reviewer_decisions[]" value="Major revision/s required" class="revisions-filter-input rounded text-orange-600 focus:ring-orange-500" {{ in_array('Major revision/s required', $selectedDecisions) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-orange-600 transition-colors">🟠 Major revision/s</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_reviewer_decisions[]" value="Disapproved" class="revisions-filter-input rounded text-red-600 focus:ring-red-500" {{ in_array('Disapproved', $selectedDecisions) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-red-600 transition-colors">❌ Disapproved</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                                            <input type="checkbox" name="revisions_reviewer_decisions[]" value="Panel Deliberation" class="revisions-filter-input rounded text-pink-600 focus:ring-pink-500" {{ in_array('Panel Deliberation', $selectedDecisions) ? 'checked' : '' }}>
+                                                            <span class="text-sm font-medium text-slate-700 group-hover:text-pink-600 transition-colors">⚖️ Panel Deliberation</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -251,6 +287,12 @@
                     params.delete('review_types[]');
                     document.querySelectorAll('input[name="revisions_review_types[]"]:checked').forEach(cb => {
                         params.append('review_types[]', cb.value);
+                    });
+
+                    // Reviewer Decision
+                    params.delete('reviewer_decisions[]');
+                    document.querySelectorAll('input[name="revisions_reviewer_decisions[]"]:checked').forEach(cb => {
+                        params.append('reviewer_decisions[]', cb.value);
                     });
 
                     if (resetPage) params.delete('page');

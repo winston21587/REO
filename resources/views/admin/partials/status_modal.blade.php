@@ -285,6 +285,16 @@
         // Broadcast custom event to sync with the Alpine UI dropdown
         window.dispatchEvent(new CustomEvent('update-review-options', { detail: { locked: currentReviewType || 'Unassigned' } }));
 
+        // Hide Panel Deliberation if not Full Board Review
+        const panelDeliberationOption = document.querySelector('.status-option[onclick*="Panel Deliberation"]');
+        if (panelDeliberationOption) {
+            if (currentReviewType !== 'Full Board Review') {
+                panelDeliberationOption.style.display = 'none';
+            } else {
+                panelDeliberationOption.style.display = 'block';
+            }
+        }
+
         const date = new Date();
         date.setDate(date.getDate() + 2);
         const minDate = date.toISOString().split('T')[0];

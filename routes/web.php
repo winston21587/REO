@@ -310,6 +310,7 @@ Route::middleware(['auth'])->group(function () {
     // ====================================================
     Route::middleware(['role:reviewer'])->group(function () {
         Route::get('/reviewer', [\App\Http\Controllers\ReviewerController::class, 'index'])->name('reviewer.dashboard');
+        Route::get('/reviewer/re-evaluation', [\App\Http\Controllers\ReviewerController::class, 'reEvaluation'])->name('reviewer.reevaluation');
         Route::get('/reviewer/reviewed-titles', [\App\Http\Controllers\ReviewerController::class, 'reviewedTitles'])->name('reviewer.reviewed_titles');
         Route::get('/reviewer/view-files/{id}', [\App\Http\Controllers\ReviewerController::class, 'viewFiles'])->name('reviewer.view_files');
         Route::get('/reviewer/file-serve/{id}', [\App\Http\Controllers\ReviewerController::class, 'serveFile'])->name('reviewer.serve_file');

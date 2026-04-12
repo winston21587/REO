@@ -337,7 +337,7 @@
                                             <div class="bg-slate-50 px-6 py-4 border-t border-slate-100">
                                                 <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0">
                                                     @csrf
-                                                    @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']))
+                                                    @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                                                     <!-- Re-Evaluation Fields -->
                                                     <div class="mb-4 text-left">
                                                         <label class="block text-xs font-bold text-slate-700 mb-2">Review Decision</label>

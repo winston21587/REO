@@ -649,8 +649,8 @@ class AdminController extends Controller
         // Adjust 'Pending' to the exact string you use in your DB (e.g., 'For Initial Review' or 'Submitted')
 
 
-        // 2. Fetch Pending Submissions (Recent Submissions: Pending + Corrections Submitted)
-        $pendingQuery = Research_title::with('revisionLogs')->whereIn('Status', ['Pending', 'Corrections Submitted']);
+        // 2. Fetch Pending Submissions (Recent Submissions: Pending)
+        $pendingQuery = Research_title::with('revisionLogs')->whereIn('Status', ['Pending']);
 
         // Search Filter
         if ($request->filled('recent_search')) {
@@ -1806,7 +1806,7 @@ class AdminController extends Controller
         $query = Research_title::with(['researcher.user', 'revisionLogs.user', 'user', 'files', 'adminFiles']);
 
         // Default valid statuses for this page
-        $defaultStatuses = ['Waiting for Revision', 'Revision Submitted', 'Corrections Submitted', 'Checking of Revisions', 'Panel Deliberation', 'Reviewed'];
+        $defaultStatuses = ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions', 'Reviewed'];
 
         if ($request->filled('statuses') && is_array($request->statuses)) {
             // Intersect to ensure they only filter within the allowed Revisions statuses

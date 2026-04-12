@@ -89,7 +89,7 @@
                                 'Waiting for Revision',
                                 'Modifications Required',
                                 'Revision Submitted',
-                                'Checking of Revisions',
+                                'Reviewing Revisions',
                                 'Submission of Revisions / Resubmission',
                                 'Returned',
                                 'Disapproved'

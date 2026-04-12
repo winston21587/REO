@@ -15,7 +15,7 @@ class ReviewerController extends Controller
         $userId = Auth::id();
         
         // Only show initial-review statuses; revision-related papers go to Re-Evaluation
-        $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions'];
+        $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions'];
 
         $titles = Research_title::where(function($q) use ($userId) {
                 $q->whereJsonContains('assigned_reviewers', (string)$userId)
@@ -34,7 +34,7 @@ class ReviewerController extends Controller
         $userId = Auth::id();
         
         // Show all revision-related statuses so the reviewer can track the full cycle
-        $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions'];
+        $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions'];
 
         $titles = Research_title::where(function($q) use ($userId) {
                 $q->whereJsonContains('assigned_reviewers', (string)$userId)
@@ -125,7 +125,7 @@ class ReviewerController extends Controller
         $submission = Research_title::findOrFail($id);
         
         // Determine if this is a re-evaluation (revision-related status)
-        $isReEvaluation = in_array($submission->Status, ['Waiting for Revision', 'Revision Submitted', 'Checking of Revisions']);
+        $isReEvaluation = in_array($submission->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']);
 
         // Prevent completing if no reviewer uploads exist
         $hasUploads = $submission->adminFiles()

@@ -10,20 +10,18 @@
                             {{ $sub->created_at->format('Y-m-d') }}
                         </p>
                     </div>
-                    @if($sub->Status === 'Corrections Submitted')
-                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200 uppercase tracking-wider shadow-sm cursor-default flex-shrink-0 ml-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                            Corrections
+                    @if($sub->Status === 'Revision Submitted')
+                        <span class="inline-flex items-center justify-center min-w-[70px] uppercase font-bold text-[10px] tracking-wider px-2 py-1 rounded bg-violet-50 text-violet-600 border border-violet-100 shrink-0">
+                            Resubmitted
                         </span>
                     @else
-                        <!-- <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-yellow-50 text-yellow-700 text-[10px] font-bold border border-yellow-200 uppercase tracking-wider shadow-sm cursor-default flex-shrink-0 ml-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                        <span class="inline-flex items-center justify-center min-w-[70px] uppercase font-bold text-[10px] tracking-wider px-2 py-1 rounded bg-orange-50 text-orange-600 border border-orange-100 shrink-0">
                             Pending
-                        </span> -->
+                        </span>
                     @endif
                 </div>
 
-                @if($sub->Status === 'Corrections Submitted' && $sub->revisionLogs->first())
+                @if($sub->Status === 'Revision Submitted' && $sub->revisionLogs->first())
                     <div class="mt-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
                         <p class="text-[11px] uppercase tracking-wider font-bold text-blue-800 mb-1">
                             <i class="fas fa-comment-alt mr-1"></i> Researcher's Note

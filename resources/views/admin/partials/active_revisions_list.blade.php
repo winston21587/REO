@@ -93,20 +93,16 @@
                 </div>
             </td>
             <td class="p-6">
-                @if($data->reviewer_decision)
-                    @php
-                        $rdColor = 'text-slate-600';
-                        if ($data->reviewer_decision === 'Approved') $rdColor = 'text-green-600';
-                        elseif ($data->reviewer_decision === 'Minor revision/s required') $rdColor = 'text-yellow-600';
-                        elseif ($data->reviewer_decision === 'Major revision/s required') $rdColor = 'text-orange-600';
-                        elseif ($data->reviewer_decision === 'Disapproved') $rdColor = 'text-red-600';
-                        elseif ($data->reviewer_decision === 'Panel Deliberation') $rdColor = 'text-pink-600';
-                    @endphp
-                    <div class="text-sm font-bold {{ $rdColor }} leading-tight">
-                        {{ $data->reviewer_decision }}
-                    </div>
+                @if($data->Status === 'Waiting for Revision')
+                    <span class="text-sm font-bold text-orange-600">Modifications Required</span>
                 @else
-                    <span class="text-xs text-slate-400 italic">Pending</span>
+                    <span class="text-sm font-bold text-slate-400 italic">Unassigned</span>
+                @endif
+                @if($data->reviewer_decision)
+                    <div class="flex items-start gap-1.5 mt-0.5 opacity-70" title="Reviewer's Recommendation">
+                        <i class="fas fa-level-up-alt text-[9px] text-slate-400 rotate-90 mt-[3px]"></i>
+                        <span class="text-[10px] font-bold text-slate-500 leading-tight">Suggested: {{ $data->reviewer_decision }}</span>
+                    </div>
                 @endif
             </td>
             <td class="p-6 text-right relative">

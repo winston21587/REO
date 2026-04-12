@@ -82,9 +82,8 @@
                     $statusColors = [
                         'Waiting for Revision' => 'text-orange-600',
                         'Revision Submitted' => 'text-purple-600',
-                        'Corrections Submitted' => 'text-emerald-600',
-                        'Checking of Revisions' => 'text-indigo-600',
-                        'Panel Deliberation' => 'text-pink-600',
+                        'Reviewing Revisions' => 'text-indigo-600',
+                        'Reviewed' => 'text-emerald-600',
                     ];
                     $colorClass = $statusColors[$data->Status] ?? 'text-slate-500';
                 @endphp

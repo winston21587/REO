@@ -9,7 +9,7 @@
             <th class="p-6">Last Updated</th>
             <th class="p-6">Review Type</th>
             <th class="p-6">Status</th>
-            <th class="p-6">Review Decision</th>
+            <th class="p-6">Action Taken</th>
             <th class="p-6 text-right">Actions</th>
         </tr>
     </thead>

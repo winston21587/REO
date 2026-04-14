@@ -340,7 +340,7 @@
                                                     @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                                                     <!-- Re-Evaluation Fields -->
                                                     <div class="mb-4 text-left">
-                                                        <label class="block text-xs font-bold text-slate-700 mb-2">Review Decision</label>
+                                                        <label class="block text-xs font-bold text-slate-700 mb-2">Action Taken</label>
                                                         <div class="relative">
                                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                                 <i class="fas fa-gavel text-slate-400 text-sm"></i>

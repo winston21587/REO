@@ -34,7 +34,7 @@ class ReviewerController extends Controller
         $userId = Auth::id();
         
         // Show all revision-related statuses so the reviewer can track the full cycle
-        $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions'];
+        $revisionStatuses = ['Revision Submitted', 'Reviewing Revisions'];
 
         $titles = Research_title::where(function($q) use ($userId) {
                 $q->whereJsonContains('assigned_reviewers', (string)$userId)
@@ -61,7 +61,7 @@ class ReviewerController extends Controller
         }
 
         // Automatically transition status when reviewer opens files from Re-Evaluation
-        if ($researchTitle->Status === 'Waiting for Revision') {
+        if ($researchTitle->Status === 'Revision Submitted') {
             $researchTitle->Status = 'Reviewing Revisions';
             $researchTitle->save();
         }

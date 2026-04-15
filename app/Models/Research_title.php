@@ -15,6 +15,7 @@ class Research_title extends Model
     protected $fillable = [
         'Study_Protocol_title',
         'Research_Category',
+        'research_type',
         'Review_Type',
         'reviewer_decision',
         'thesis_type',

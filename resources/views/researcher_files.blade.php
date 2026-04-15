@@ -147,6 +147,25 @@
         @endif
 
         @php
+            $disapprovalFeedback = $researchTitle->feedbacks()->where('type', 'disapproval_remark')->first();
+        @endphp
+
+        @if($researchTitle->Status === 'Disapproved' && $disapprovalFeedback)
+        <div class="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4 shadow-sm animate-[fadeInUp_0.5s_ease-out]">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 text-red-600">
+                <i class="fas fa-times-circle text-lg"></i>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold text-red-900 mb-1">Protocol Disapproved</h4>
+                <p class="text-red-800 text-sm font-medium mb-3">This research protocol has been disapproved due to the following reason:</p>
+                <div class="bg-white p-4 rounded-xl border border-red-100 shadow-sm">
+                    <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ $disapprovalFeedback->message }}</p>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        @php
             $allFiles = $researchTitle->files->merge($researchTitle->adminFiles ?? collect());
             
             $letters = $allFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->sortByDesc('created_at');

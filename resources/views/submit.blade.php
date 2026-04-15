@@ -48,7 +48,7 @@
                             <!-- Research Category -->
                             <div class="group">
                                 <label for="Research_Category"
-                                    class="block text-sm font-bold text-slate-700 mb-2">Research Review Fees</label>
+                                    class="block text-sm font-bold text-slate-700 mb-2">Review Fees</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <i
@@ -58,7 +58,7 @@
                                         onchange="toggleOtherCategory(this)"
                                         class="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200 appearance-none cursor-pointer"
                                         required>
-                                        <option value="" disabled selected>Select research review fees</option>
+                                        <option value="" disabled selected>Select review fees</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->name }}">
                                                 {{ $category->name }} - ₱ {{ number_format($category->fee, 2) }}
@@ -78,6 +78,30 @@
                                     <input type="text" name="other_category" id="other_category"
                                         class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10 transition-all"
                                         placeholder="Please specify...">
+                                </div>
+                            </div>
+
+                            <!-- Research Type -->
+                            <div class="group">
+                                <label for="research_type"
+                                    class="block text-sm font-bold text-slate-700 mb-2">Research Type</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-flask text-slate-400 group-focus-within:text-[#8B0000] transition-colors"></i>
+                                    </div>
+                                    <select name="research_type" id="research_type"
+                                        class="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200 appearance-none cursor-pointer"
+                                        required>
+                                        <option value="" disabled selected>Select research type</option>
+                                        <option value="Biomedical Studies">Biomedical Studies</option>
+                                        <option value="Health Operations Research">Health Operations Research</option>
+                                        <option value="Social Research">Social Research</option>
+                                        <option value="Public Health Research">Public Health Research</option>
+                                        <option value="Clinical Trials">Clinical Trials</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-chevron-down text-slate-400"></i>
+                                    </div>
                                 </div>
                             </div>
 

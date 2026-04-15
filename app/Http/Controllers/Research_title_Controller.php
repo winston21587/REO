@@ -32,6 +32,7 @@ class Research_title_Controller extends Controller
         $rules = [
             'Study_Protocol_title' => 'required|string|max:255',
             'Research_Category' => 'required|string|max:255',
+            'research_type' => 'required|string|max:255',
             'other_category' => 'nullable|string|max:255',
             'Adviser' => 'required|string|max:255',
         ];
@@ -95,6 +96,7 @@ class Research_title_Controller extends Controller
         $research = Research_title::create([
             'Study_Protocol_title' => $validated['Study_Protocol_title'],
             'Research_Category' => $finalCategory,
+            'research_type' => $validated['research_type'],
             'category_fee_at_submission' => $fee,
             'Created_by' => $user->first_name . ' ' . $user->last_name,
             'researcher_id' => $user->researcher->id,

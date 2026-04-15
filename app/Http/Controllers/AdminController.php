@@ -975,6 +975,12 @@ class AdminController extends Controller
                 $message = "Your research protocol \"{$submission->Study_Protocol_title}\" has been Disapproved.";
                 if ($request->remarks) {
                     $message .= "\n\nReason: " . $request->remarks;
+                    
+                    SubmissionFeedback::create([
+                        'research_title_id' => $submission->id,
+                        'message' => $request->remarks,
+                        'type' => 'disapproval_remark'
+                    ]);
                 }
             } elseif ($action === 'Panel Deliberation') {
                 $request->validate(['appointment_date' => 'required|date|after:tomorrow']);

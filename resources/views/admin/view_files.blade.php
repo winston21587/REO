@@ -50,6 +50,7 @@
 
         @php
             $disapprovalFeedback = $researchTitle->feedbacks()->where('type', 'disapproval_remark')->first();
+            $reviewerDecisions = $researchTitle->feedbacks()->where('type', 'reviewer_decision')->orderBy('created_at', 'desc')->get();
         @endphp
 
         @if($researchTitle->Status === 'Disapproved' && $disapprovalFeedback)
@@ -115,6 +116,7 @@
                     'ext' => $ext,
                     'revision_number' => $file->revision_number,
                     'uploaded_at' => $file->created_at->format('M d, Y'),
+                    'uploaded_by_name' => $file->uploader ? ($file->uploader->first_name . ' ' . $file->uploader->last_name) : 'Unknown User',
                     'color' => $attrs['color'],
                     'bg' => $attrs['bg'],
                     'suggested_review_type' => $file->suggested_review_type,
@@ -513,8 +515,9 @@
                                                 </div>
                                                 <div class="min-w-0 flex-1">
                                                     <p class="text-sm font-bold truncate" :class="activeFile && activeFile.id === file.id ? 'text-slate-800' : 'text-slate-800'" x-text="file.filename"></p>
+                                                    <p class="text-[10px] text-slate-500 font-medium mt-0.5" x-text="'Uploaded by: ' + file.uploaded_by_name"></p>
                                                     <div class="flex items-center gap-2 mt-0.5">
-                                                        <p class="text-[10px] text-slate-400" x-text="'Uploaded: ' + file.uploaded_at"></p>
+                                                        <p class="text-[10px] text-slate-400" x-text="'On: ' + file.uploaded_at"></p>
                                                         <span x-show="file.suggested_review_type" class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase bg-emerald-50 text-emerald-600 border border-emerald-200" x-text="file.suggested_review_type"></span>
                                                     </div>
                                                 </div>
@@ -583,9 +586,19 @@
                             <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i class="fas fa-calendar text-purple-400 w-3"></i> Submitted</span>
                             <span class="text-xs font-bold text-slate-800">{{ $researchTitle->created_at->format('M d, Y') }}</span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i class="fas fa-calendar text-purple-400 w-3"></i> Reviewer</span>
-                            <span class="text-xs font-bold text-slate-800">{{ $researchTitle->reviewer_id ?? 'Not Assigned' }}</span>
+                        <div class="flex justify-between items-start gap-4">
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2 pt-0.5 whitespace-nowrap"><i class="fas fa-users text-orange-400 w-3"></i> Reviewers</span>
+                            <div class="flex flex-col items-end text-right">
+                                @if($researchTitle->reviewers && $researchTitle->reviewers->count() > 0)
+                                    @foreach($researchTitle->reviewers as $rev)
+                                        <span class="text-xs font-bold text-slate-800">{{ $rev->first_name }} {{ $rev->last_name }}</span>
+                                    @endforeach
+                                @elseif(is_array($researchTitle->assigned_reviewers) && count($researchTitle->assigned_reviewers) > 0)
+                                    <span class="text-xs font-bold text-slate-800">{{ count($researchTitle->assigned_reviewers) }} Assigned</span>
+                                @else
+                                    <span class="text-xs font-bold text-slate-400 italic">Not Assigned</span>
+                                @endif
+                            </div>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i class="fas fa-code-branch text-indigo-400 w-3"></i> Revisions</span>
@@ -603,6 +616,28 @@
                         @endif
                     </div>
                 </div>
+
+                </div>
+
+                <!-- Reviewer Decisions -->
+                @if($reviewerDecisions->isNotEmpty())
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0 mt-4">
+                    <p class="text-[10px] font-extrabold text-[#8B0000] uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fas fa-gavel text-pink-400"></i> Reviewer Decisions
+                    </p>
+                    <div class="space-y-4">
+                        @foreach($reviewerDecisions as $decision)
+                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-slate-800">{{ $decision->user->first_name ?? 'Reviewer' }} {{ $decision->user->last_name ?? '' }}</span>
+                                <span class="text-[10px] text-slate-400">{{ $decision->created_at->format('M d, Y') }}</span>
+                            </div>
+                            <div class="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed">{{ $decision->message }}</div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
 
                 <!-- Activity Log -->
                 @if($researchTitle->titleLogs && $researchTitle->titleLogs->isNotEmpty())

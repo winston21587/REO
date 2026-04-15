@@ -76,4 +76,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(Reviewer::class);
     }
+
+    public function assignedTitles()
+    {
+        return $this->belongsToMany(Research_title::class, 'title_reviewer_assignments', 'reviewer_id', 'research_title_id')
+                    ->withPivot('role', 'status')
+                    ->withTimestamps();
+    }
 }

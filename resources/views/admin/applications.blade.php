@@ -181,13 +181,34 @@
             open: false,
             protocolId: '',
             protocolTitle: '',
+            reviewType: '',
             assigned: [],
             initialAssignedCount: 0,
             search: '',
             collegeFilter: '',
-            expandedReviewer: null
+            expandedReviewer: null,
+            maxSelection: function() {
+                return 99; // No limit
+            },
+            toggleSelection: function(id) {
+                if (this.assigned.includes(id)) {
+                    this.assigned = this.assigned.filter(val => val !== id);
+                } else {
+                    this.assigned.push(id);
+                }
+            }
          }"
-         @open-assign-modal.window="open = true; protocolId = $event.detail.id; protocolTitle = $event.detail.title; assigned = Array.isArray($event.detail.assigned) ? $event.detail.assigned : []; initialAssignedCount = assigned.length; search = ''; collegeFilter = ''; expandedReviewer = null;"
+         @open-assign-modal.window="
+            open = true; 
+            protocolId = $event.detail.id; 
+            protocolTitle = $event.detail.title; 
+            reviewType = $event.detail.reviewType;
+            assigned = Array.isArray($event.detail.assigned) ? [...$event.detail.assigned] : []; 
+            initialAssignedCount = assigned.length; 
+            search = ''; 
+            collegeFilter = ''; 
+            expandedReviewer = null;
+         "
          class="relative z-[9999]"
          aria-labelledby="assign-modal-title" role="dialog" aria-modal="true" style="display: none;" x-show="open">
 
@@ -220,13 +241,25 @@
                                         <i class="fas fa-users-cog text-[#8B0000] text-lg"></i>
                                     </div>
                                     <div>
-                                        <h3 class="text-[1.15rem] font-extrabold text-slate-800 tracking-tight leading-tight" id="assign-modal-title" x-text="initialAssignedCount > 0 ? 'Change Reviewer' : 'Assign Reviewer'">Assign Reviewer</h3>
-                                        <p class="text-xs text-slate-500 mt-1 font-medium line-clamp-1" x-text="protocolTitle"></p>
+                                        <h3 class="text-[1.15rem] font-extrabold text-slate-800 tracking-tight leading-tight" id="assign-modal-title" x-text="initialAssignedCount > 0 ? 'Change Reviewer(s)' : 'Assign Reviewer(s)'">Assign Reviewer(s)</h3>
+                                        <p class="text-xs text-slate-500 mt-1 font-medium line-clamp-1">
+                                            <span x-text="protocolTitle"></span>
+                                            <span x-show="reviewType" class="ml-1 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] uppercase font-bold text-slate-600" x-text="reviewType"></span>
+                                        </p>
                                     </div>
                                 </div>
                                 <button type="button" @click="open = false" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 mt-1">
                                     <i class="fas fa-times text-sm"></i>
                                 </button>
+                            </div>
+
+                            <!-- Selection Counter -->
+                            <div class="px-7 mt-2 pb-2">
+                                <p class="text-xs font-bold text-slate-600 flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500" x-show="assigned.length > 0"></i>
+                                    <i class="fas fa-info-circle text-blue-500" x-show="assigned.length === 0"></i>
+                                    <span>Selected: <span x-text="assigned.length" :class="assigned.length > 0 ? 'text-green-600' : 'text-slate-500'"></span></span>
+                                </p>
                             </div>
 
                             <!-- Search + Filter Row -->
@@ -281,12 +314,11 @@
                                          :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'scale-x-100' : 'scale-x-0 group-hover/card:bg-slate-200 group-hover/card:scale-x-100'"></div>
 
                                     <!-- Card Top: Click to select -->
-                                    <label class="flex items-start gap-4 p-5 pl-6 cursor-pointer relative z-10 w-full">
+                                    <label class="flex items-start gap-4 p-5 pl-6 cursor-pointer relative z-10 w-full"
+                                           @click.prevent="toggleSelection('{{ $reviewer->id }}')">
 
-                                        <input type="radio" name="reviewers[]" value="{{ $reviewer->id }}"
-                                            x-model="assigned"
+                                        <input type="checkbox" name="reviewers[]" value="{{ $reviewer->id }}"
                                             :checked="assigned.map(String).includes('{{ $reviewer->id }}')"
-                                            @change="assigned = ['{{ $reviewer->id }}']"
                                             class="sr-only">
 
                                         <!-- Avatar -->

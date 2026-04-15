@@ -1040,13 +1040,14 @@ class AdminController extends Controller
     {
         $request->validate([
             'reviewers' => 'nullable|array',
-            'reviewers.*' => 'exists:users,id', // or users table depending on reviewers setup
+            'reviewers.*' => 'exists:users,id',
         ]);
 
         $submission = Research_title::findOrFail($id);
 
         if (empty($request->reviewers)) {
             $submission->assigned_reviewers = null;
+            $submission->reviewers()->detach();
             
             // If they are unassigning reviewers mid-way, it reverts to Hardcopy Received
             if (in_array($submission->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed'])) {
@@ -1055,6 +1056,12 @@ class AdminController extends Controller
             $actionMessage = 'Reviewers unassigned successfully.';
         } else {
             $submission->assigned_reviewers = $request->reviewers;
+            
+            // Attach via pivot table. If multiple, all are Primary Reviewer for now.
+            $submission->reviewers()->syncWithPivotValues($request->reviewers, [
+                'role' => 'Primary Reviewer',
+                'status' => 'Pending'
+            ]);
             
             // Even if mid-review, changing reviewers resets to Reviewer Assigned
             if (in_array($submission->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review', 'Reviewed'])) {
@@ -1069,11 +1076,6 @@ class AdminController extends Controller
             $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function($user) {
                 return $user->first_name . ' ' . $user->last_name;
             })->implode(', ');
-
-            // Optional: Send Notification to Reviewers
-            // foreach($request->reviewers as $reviewer_id) {
-            //     Notification::send(User::find($reviewer_id), new ReviewerAssigned($submission));
-            // }
         }
 
         if ($request->ajax()) {

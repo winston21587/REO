@@ -21,9 +21,13 @@ class Researcher_files extends Model
         'revision_number'
     ];
 
-    // ✅ CORRECT RELATIONSHIP: A file belongs to ONE research title
     public function research()
     {
         return $this->belongsTo(Research_title::class, 'research_title_id');
+    }
+
+    public function uploader()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
     }
 }

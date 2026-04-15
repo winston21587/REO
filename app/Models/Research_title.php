@@ -60,6 +60,13 @@ public function adminFiles()
     return $this->hasMany(researcher_files::class, 'research_title_id');
 }
 
+public function reviewers()
+{
+    return $this->belongsToMany(User::class, 'title_reviewer_assignments', 'research_title_id', 'reviewer_id')
+                ->withPivot('role', 'status')
+                ->withTimestamps();
+}
+
 public function appointment()
 {
     return $this->hasMany(Appointment::class, 'research_title_id');

@@ -298,12 +298,24 @@
 
                                                 <!-- Assign Reviewers (Only after Hardcopy Received) -->
                                                 @if(in_array($data->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review']))
-                                                    @php $hasReviewersAssigned = !empty($data->assigned_reviewers) && count($data->assigned_reviewers) > 0; @endphp
-                                                    <button @click="open = false; $dispatch('open-assign-modal', { id: '{{ $data->id }}', title: {{ json_encode($data->Study_Protocol_title) }}, assigned: {{ json_encode($data->assigned_reviewers ?? []) }} })"
-                                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                        <i class="fas {{ $hasReviewersAssigned ? 'fa-user-edit' : 'fa-users-cog' }} w-4"></i> 
-                                                        {{ $hasReviewersAssigned ? 'Change Reviewer' : 'Assign Reviewers' }}
-                                                    </button>
+                                                    @php 
+                                                        $hasReviewersAssigned = !empty($data->assigned_reviewers) && count($data->assigned_reviewers) > 0;
+                                                        $hasValidReviewType = !empty($data->Review_Type) && !in_array($data->Review_Type, ['Unassigned', 'N/A']);
+                                                    @endphp
+                                                    @if($hasValidReviewType)
+                                                        <button @click="open = false; $dispatch('open-assign-modal', { id: '{{ $data->id }}', title: {{ json_encode($data->Study_Protocol_title) }}, assigned: {{ json_encode($data->assigned_reviewers ?? []) }}, reviewType: {{ json_encode($data->Review_Type) }} })"
+                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
+                                                            <i class="fas {{ $hasReviewersAssigned ? 'fa-user-edit' : 'fa-users-cog' }} w-4"></i> 
+                                                            {{ $hasReviewersAssigned ? 'Change Reviewer(s)' : 'Assign Reviewer(s)' }}
+                                                        </button>
+                                                    @else
+                                                        <div title="Review Classification must be set before assigning reviewers." class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 bg-slate-50 rounded-lg cursor-not-allowed select-none text-left">
+                                                            <i class="fas fa-users-slash w-4"></i> Assign Reviewer(s)
+                                                            <span class="ml-auto text-[9px] font-bold bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full border border-slate-300 leading-none whitespace-nowrap">
+                                                                Set Type First
+                                                            </span>
+                                                        </div>
+                                                    @endif
                                                 @endif
 
                                                 <hr class="border-slate-100 my-1">

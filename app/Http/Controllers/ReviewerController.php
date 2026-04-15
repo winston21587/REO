@@ -18,8 +18,11 @@ class ReviewerController extends Controller
         $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions'];
 
         $titles = Research_title::where(function($q) use ($userId) {
-                $q->whereJsonContains('assigned_reviewers', (string)$userId)
-                  ->orWhereJsonContains('assigned_reviewers', $userId);
+                $q->whereHas('reviewers', function($query) use ($userId) {
+                    $query->where('users.id', $userId);
+                })
+                ->orWhereJsonContains('assigned_reviewers', (string)$userId)
+                ->orWhereJsonContains('assigned_reviewers', $userId);
             })
             ->where('Status', '!=', 'Reviewed')
             ->whereNotIn('Status', $revisionStatuses)
@@ -37,8 +40,11 @@ class ReviewerController extends Controller
         $revisionStatuses = ['Revision Submitted', 'Reviewing Revisions'];
 
         $titles = Research_title::where(function($q) use ($userId) {
-                $q->whereJsonContains('assigned_reviewers', (string)$userId)
-                  ->orWhereJsonContains('assigned_reviewers', $userId);
+                $q->whereHas('reviewers', function($query) use ($userId) {
+                    $query->where('users.id', $userId);
+                })
+                ->orWhereJsonContains('assigned_reviewers', (string)$userId)
+                ->orWhereJsonContains('assigned_reviewers', $userId);
             })
             ->whereIn('Status', $revisionStatuses)
             ->latest()
@@ -191,8 +197,11 @@ class ReviewerController extends Controller
         
         $titles = Research_title::where(function($q) use ($userId) {
                 // Must be legitimately assigned
-                $q->whereJsonContains('assigned_reviewers', (string)$userId)
-                  ->orWhereJsonContains('assigned_reviewers', $userId);
+                $q->whereHas('reviewers', function($query) use ($userId) {
+                    $query->where('users.id', $userId);
+                })
+                ->orWhereJsonContains('assigned_reviewers', (string)$userId)
+                ->orWhereJsonContains('assigned_reviewers', $userId);
             })
             ->where('Status', 'Reviewed')
             ->latest()

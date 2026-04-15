@@ -576,6 +576,10 @@
                             <span class="text-xs font-bold text-slate-800 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">{{ $researchTitle->Research_Category }}</span>
                         </div>
                         <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i class="fas fa-microscope text-emerald-400 w-3"></i> Type</span>
+                            <span class="text-xs font-bold text-slate-800 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">{{ $researchTitle->research_type ?? 'N/A' }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
                             <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i class="fas fa-calendar text-purple-400 w-3"></i> Submitted</span>
                             <span class="text-xs font-bold text-slate-800">{{ $researchTitle->created_at->format('M d, Y') }}</span>
                         </div>

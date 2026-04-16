@@ -3,11 +3,11 @@
 
 You have been assigned as a Reviewer for the REO System. 
 
-Below are your login credentials for the Reviewer portal.
+Below is your temporary 6-digit OTP to access the Reviewer portal. You will be required to change your password upon your first login.
 
 **Email:** {{ $user->email }}
 <br>
-**Password:** {{ $password }}
+**Temporary OTP:** {{ $password }}
 
 <x-mail::button :url="'https://reoph.site'">
 Login to REO

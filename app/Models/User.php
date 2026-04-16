@@ -30,6 +30,7 @@ class User extends Authenticatable
         'first_time',
         'email_preferences',
         'display_preferences',
+        'require_password_change',
     ];
 
     /**
@@ -55,6 +56,7 @@ class User extends Authenticatable
             'is_verified' => 'boolean',
             'email_preferences' => 'array',
             'display_preferences' => 'array',
+            'require_password_change' => 'boolean',
         ];
     }
 

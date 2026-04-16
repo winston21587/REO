@@ -225,22 +225,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="space-y-1.5">
-                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
-                                    <div class="relative">
-                                        <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="password" name="password" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
-                                    </div>
-                                </div>
-                                <div class="space-y-1.5">
-                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Confirm Password</label>
-                                    <div class="relative">
-                                        <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="password" name="password_confirmation" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
-                                    </div>
-                                </div>
-                            </div>
+
 
                             <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-50 mt-6">
                                 <button type="button" @click="showAddModal = false" class="px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition-colors">

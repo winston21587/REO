@@ -77,6 +77,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/accept-terms', [AuthController::class, 'acceptTerms'])->name('accept.terms');
 
+    // Force Password Change Routes
+    Route::get('/password/change', [AuthController::class, 'showChangePassword'])->name('password.change');
+    Route::post('/password/change', [AuthController::class, 'updatePassword'])->name('password.updateFirstLogin');
+
     // --- NOTIFICATION ROUTES (Accessible by Admin & Researcher) ---
     Route::get('/notifications', function () {
         $notifications = UserNotification::where('user_id', Auth::id())

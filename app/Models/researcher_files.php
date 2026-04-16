@@ -12,13 +12,14 @@ class Researcher_files extends Model
     protected $table = 'researcher_files';
 
     protected $fillable = [
-        'research_title_id', // This matches the foreign key column
+        'research_title_id',
         'filename',
         'filepath',
-        'filetype',   
+        'filetype',
         'uploaded_by',
         'category',
-        'revision_number'
+        'revision_number',
+        'remarks',
     ];
 
     public function research()

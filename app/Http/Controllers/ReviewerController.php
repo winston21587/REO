@@ -18,13 +18,21 @@ class ReviewerController extends Controller
         $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions'];
 
         $titles = Research_title::where(function($q) use ($userId) {
+                // Modern Pivot logic
                 $q->whereHas('reviewers', function($query) use ($userId) {
-                    $query->where('users.id', $userId);
+                    $query->where('users.id', $userId)
+                          ->where('title_reviewer_assignments.status', 'Pending');
                 })
-                ->orWhereJsonContains('assigned_reviewers', (string)$userId)
-                ->orWhereJsonContains('assigned_reviewers', $userId);
+                // Legacy JSON logic handling
+                ->orWhere(function($query) use ($userId) {
+                    $query->whereDoesntHave('reviewers')
+                          ->where(function($q2) use ($userId) {
+                              $q2->whereJsonContains('assigned_reviewers', (string)$userId)
+                                 ->orWhereJsonContains('assigned_reviewers', $userId);
+                          })
+                          ->where('Status', '!=', 'Reviewed');
+                });
             })
-            ->where('Status', '!=', 'Reviewed')
             ->whereNotIn('Status', $revisionStatuses)
             ->latest()
             ->get();
@@ -41,10 +49,17 @@ class ReviewerController extends Controller
 
         $titles = Research_title::where(function($q) use ($userId) {
                 $q->whereHas('reviewers', function($query) use ($userId) {
-                    $query->where('users.id', $userId);
+                    $query->where('users.id', $userId)
+                          ->where('title_reviewer_assignments.status', 'Pending');
                 })
-                ->orWhereJsonContains('assigned_reviewers', (string)$userId)
-                ->orWhereJsonContains('assigned_reviewers', $userId);
+                ->orWhere(function($query) use ($userId) {
+                    $query->whereDoesntHave('reviewers')
+                          ->where(function($q2) use ($userId) {
+                              $q2->whereJsonContains('assigned_reviewers', (string)$userId)
+                                 ->orWhereJsonContains('assigned_reviewers', $userId);
+                          })
+                          ->where('Status', '!=', 'Reviewed');
+                });
             })
             ->whereIn('Status', $revisionStatuses)
             ->latest()
@@ -150,22 +165,45 @@ class ReviewerController extends Controller
         }
 
         // Attach the suggested review type to the latest evaluation document uploaded by this reviewer
-        $latestUpload = $submission->adminFiles()
+        $myUploads = $submission->adminFiles()
             ->where('uploaded_by', Auth::id())
             ->where('category', 'like', 'Reviewer Uploads%')
             ->latest()
-            ->first();
+            ->get();
+
+        $latestUpload = $myUploads->first();
 
         if ($latestUpload && $request->has('suggested_review_type')) {
             $latestUpload->suggested_review_type = $request->input('suggested_review_type');
             $latestUpload->save();
         }
 
+        // Save per-file remarks submitted from the modal
+        $fileRemarks = $request->input('file_remarks', []);
+        foreach ($fileRemarks as $fileId => $remark) {
+            if (!empty(trim($remark))) {
+                $uploadedFile = $myUploads->firstWhere('id', (int) $fileId);
+                if ($uploadedFile) {
+                    $uploadedFile->remarks = trim($remark);
+                    $uploadedFile->save();
+                }
+            }
+        }
+
         // Save Review Decision & Remarks (Re-Evaluation only)
         if ($request->has('review_decision')) {
             $submission->reviewer_decision = $request->input('review_decision');
 
-            $msg = "Review Decision: " . $request->input('review_decision') . "\nRemarks: " . $request->input('remarks', 'None');
+            // Build summary including any per-file remarks
+            $remarksLines = [];
+            foreach ($myUploads as $u) {
+                if ($u->remarks) {
+                    $remarksLines[] = '• ' . $u->filename . ': ' . $u->remarks;
+                }
+            }
+            $remarksText = !empty($remarksLines) ? implode("\n", $remarksLines) : 'None';
+
+            $msg = "Review Decision: " . $request->input('review_decision') . "\n\nFile Remarks:\n" . $remarksText;
             \App\Models\SubmissionFeedback::create([
                 'research_title_id' => $submission->id,
                 'user_id' => Auth::id(),
@@ -180,7 +218,19 @@ class ReviewerController extends Controller
             ]);
         }
 
-        $submission->Status = 'Reviewed';
+        if ($submission->reviewers()->where('reviewer_id', Auth::id())->exists()) {
+            $submission->reviewers()->updateExistingPivot(Auth::id(), ['status' => 'Completed']);
+            
+            // Check if there are any remaining Pending reviewers before global status switch
+            $pendingCount = $submission->reviewers()->wherePivot('status', 'Pending')->count();
+            if ($pendingCount === 0) {
+                $submission->Status = 'Reviewed';
+            }
+        } else {
+            // Legacy JSON fallback
+            $submission->Status = 'Reviewed';
+        }
+
         $submission->save();
 
         // Redirect based on context
@@ -196,14 +246,19 @@ class ReviewerController extends Controller
         $userId = Auth::id();
         
         $titles = Research_title::where(function($q) use ($userId) {
-                // Must be legitimately assigned
                 $q->whereHas('reviewers', function($query) use ($userId) {
-                    $query->where('users.id', $userId);
+                    $query->where('users.id', $userId)
+                          ->where('title_reviewer_assignments.status', 'Completed');
                 })
-                ->orWhereJsonContains('assigned_reviewers', (string)$userId)
-                ->orWhereJsonContains('assigned_reviewers', $userId);
+                ->orWhere(function($query) use ($userId) {
+                    $query->whereDoesntHave('reviewers')
+                          ->where(function($q2) use ($userId) {
+                              $q2->whereJsonContains('assigned_reviewers', (string)$userId)
+                                 ->orWhereJsonContains('assigned_reviewers', $userId);
+                          })
+                          ->where('Status', 'Reviewed');
+                });
             })
-            ->where('Status', 'Reviewed')
             ->latest()
             ->get();
 

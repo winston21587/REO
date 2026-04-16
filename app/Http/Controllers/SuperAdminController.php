@@ -52,8 +52,9 @@ class SuperAdminController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
         ]);
+
+        $otp = (string) rand(100000, 999999);
 
         try {
             DB::beginTransaction();
@@ -62,9 +63,10 @@ class SuperAdminController extends Controller
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password), 
+                'password' => Hash::make($otp), 
                 'role' => 'admin',
                 'is_verified' => true,
+                'require_password_change' => true,
             ]);
             
             $user->email_verified_at = now();
@@ -78,8 +80,8 @@ class SuperAdminController extends Controller
 
             // Send Email
             try {
-                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\AdminCreatedMail($user, $request->password));
-                $emailStatus = ' An email with their credentials has been sent.';
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\AdminCreatedMail($user, $otp));
+                $emailStatus = ' An email with their temporary credentials has been sent.';
             } catch (\Exception $e) {
                 // Ignore email failure for the main transaction, but notify user
                 $emailStatus = ' However, the credential email failed to send to ' . $user->email . '.';
@@ -118,6 +120,9 @@ class SuperAdminController extends Controller
         }
 
         try {
+            $user->email = 'deleted_' . time() . '_' . $user->email;
+            $user->save();
+            
             $user->delete();
             return redirect()->back()->with('success', 'Admin deleted successfully.');
         } catch (\Exception $e) {
@@ -166,12 +171,13 @@ class SuperAdminController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
             'college' => 'nullable|string|max:255',
             'expertise' => 'nullable|string|max:1000',
             'training_completed' => 'nullable|boolean',
             'external_user' => 'nullable|boolean',
         ]);
+
+        $otp = (string) rand(100000, 999999);
 
         try {
             DB::beginTransaction();
@@ -180,9 +186,10 @@ class SuperAdminController extends Controller
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password), 
+                'password' => Hash::make($otp), 
                 'role' => 'reviewer',
                 'is_verified' => true,
+                'require_password_change' => true,
             ]);
             
             $user->email_verified_at = now();
@@ -205,8 +212,8 @@ class SuperAdminController extends Controller
 
             // Send Email
             try {
-                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ReviewerCreatedMail($user, $request->password)); 
-                $emailStatus = ' An email with their credentials has been sent.';
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ReviewerCreatedMail($user, $otp)); 
+                $emailStatus = ' An email with their temporary credentials has been sent.';
             } catch (\Exception $e) {
                 // Ignore email failure for the main transaction, but notify user
                 $emailStatus = ' However, the credential email failed to send to ' . $user->email . '.';
@@ -245,6 +252,9 @@ class SuperAdminController extends Controller
         }
 
         try {
+            $user->email = 'deleted_' . time() . '_' . $user->email;
+            $user->save();
+            
             $user->delete();
             return redirect()->back()->with('success', 'Reviewer deleted successfully.');
         } catch (\Exception $e) {

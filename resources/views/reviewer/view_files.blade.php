@@ -321,25 +321,52 @@
                                         <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity" @click="showModal = false" aria-hidden="true"></div>
                                         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                                         <div x-show="showModal" x-transition.scale.origin.bottom class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
-                                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                                <div class="sm:flex sm:items-start">
-                                                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10 text-green-600">
-                                                        <i class="fas fa-exclamation-triangle"></i>
+                                            <div class="bg-white px-6 pt-6 pb-2">
+                                                <div class="flex items-center gap-3 mb-4">
+                                                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
+                                                        <i class="fas fa-clipboard-check"></i>
                                                     </div>
-                                                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                                        <h3 class="text-lg leading-6 font-bold text-slate-900" id="modal-title">Complete Review</h3>
-                                                        <div class="mt-2">
-                                                            <p class="text-sm text-slate-500">Are you sure you want to formally complete your review and submit all documents? You <span class="font-bold">might not be able to modify your uploads</span> once marked as Reviewed.</p>
-                                                        </div>
+                                                    <div>
+                                                        <h3 class="text-base leading-6 font-bold text-slate-900" id="modal-title">Complete Review</h3>
+                                                        <p class="text-xs text-slate-500 mt-0.5">Add remarks for each document, then confirm.</p>
                                                     </div>
                                                 </div>
+                                                <p class="text-xs text-slate-500 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl mb-4">
+                                                    <i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>
+                                                    You <span class="font-bold">might not be able to modify</span> your uploads once marked as reviewed.
+                                                </p>
                                             </div>
-                                            <div class="bg-slate-50 px-6 py-4 border-t border-slate-100">
-                                                <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0">
+                                            <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 max-h-[70vh] overflow-y-auto">
+                                                <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0 space-y-5">
                                                     @csrf
+
+                                                    {{-- Per-file remarks --}}
+                                                    <div>
+                                                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">File Remarks</p>
+                                                        <div class="space-y-3">
+                                                            @foreach($reviewerUploads as $upload)
+                                                            <div class="bg-white rounded-xl border border-slate-200 p-3 shadow-sm">
+                                                                <div class="flex items-center gap-2 mb-2">
+                                                                    <div class="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+                                                                        <i class="fas fa-file-alt text-[#8B0000] text-xs"></i>
+                                                                    </div>
+                                                                    <p class="text-xs font-bold text-slate-800 truncate" title="{{ $upload->filename }}">{{ $upload->filename }}</p>
+                                                                </div>
+                                                                <p class="text-[10px] text-slate-400 mb-1.5 ml-9">{{ str_replace('Reviewer Uploads - ', '', $upload->category) }}</p>
+                                                                <textarea
+                                                                    name="file_remarks[{{ $upload->id }}]"
+                                                                    rows="2"
+                                                                    placeholder="Add remarks for this file (optional)..."
+                                                                    class="w-full px-3 py-2 text-xs text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent outline-none shadow-sm resize-none bg-slate-50"
+                                                                >{{ $upload->remarks }}</textarea>
+                                                            </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+
                                                     @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
-                                                    <!-- Re-Evaluation Fields -->
-                                                    <div class="mb-4 text-left">
+                                                    {{-- Re-Evaluation Fields --}}
+                                                    <div class="text-left">
                                                         <label class="block text-xs font-bold text-slate-700 mb-2">Action Taken</label>
                                                         <div class="relative">
                                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -360,14 +387,9 @@
                                                             </div>
                                                         </div>
                                                     </div>
-
-                                                    <div class="mb-4 text-left">
-                                                        <label class="block text-xs font-bold text-slate-700 mb-2">Brief Remarks (Optional)</label>
-                                                        <textarea name="remarks" rows="2" placeholder="Brief summary of your decision..." class="w-full px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none shadow-sm"></textarea>
-                                                    </div>
                                                     @else
-                                                    <!-- Initial Review Fields -->
-                                                    <div class="mb-4 text-left">
+                                                    {{-- Initial Review Fields --}}
+                                                    <div class="text-left">
                                                         <label class="block text-xs font-bold text-slate-700 mb-2">Suggested Next Review Type</label>
                                                         <div class="relative">
                                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -385,7 +407,8 @@
                                                         </div>
                                                     </div>
                                                     @endif
-                                                    <div class="flex gap-3">
+
+                                                    <div class="flex gap-3 pt-1">
                                                         <button type="button" @click="showModal = false" class="flex-1 inline-flex justify-center rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
                                                             Cancel
                                                         </button>

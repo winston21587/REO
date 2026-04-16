@@ -90,7 +90,12 @@
                 return str_starts_with($f->category ?? '', 'Reviewer Uploads');
             })->sortByDesc('created_at');
 
-            $latestSuggestedType = $reviewerDocs->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
+            $suggestedTypes = $reviewerDocs->whereNotNull('suggested_review_type')->map(function($f) {
+                return [
+                    'type' => $f->suggested_review_type,
+                    'reviewer' => $f->uploader ? ($f->uploader->first_name . ' ' . $f->uploader->last_name) : 'Unknown User'
+                ];
+            })->unique('reviewer');
 
             $hasRevisions = $revisionFolders->isNotEmpty();
 
@@ -120,6 +125,7 @@
                     'color' => $attrs['color'],
                     'bg' => $attrs['bg'],
                     'suggested_review_type' => $file->suggested_review_type,
+                    'remarks' => $file->remarks ?? '',
                     'public_url' => asset($file->filepath),
                 ];
             };
@@ -520,6 +526,7 @@
                                                         <p class="text-[10px] text-slate-400" x-text="'On: ' + file.uploaded_at"></p>
                                                         <span x-show="file.suggested_review_type" class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase bg-emerald-50 text-emerald-600 border border-emerald-200" x-text="file.suggested_review_type"></span>
                                                     </div>
+                                                    <p x-show="file.remarks" class="text-[10px] italic text-slate-500 mt-1 line-clamp-2" x-text="'&quot;' + file.remarks + '&quot;'"></p>
                                                 </div>
                                                 <div x-show="activeFile && activeFile.id === file.id" class="w-2 h-2 rounded-full bg-[#8B0000] flex-shrink-0"></div>
                                             </button>
@@ -606,12 +613,21 @@
                                 {{ $revisionFolders->count() }} submitted
                             </span>
                         </div>
-                        @if($latestSuggestedType)
-                        <div class="flex justify-between items-center pt-2 border-t border-slate-100 mt-2">
-                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i class="fas fa-lightbulb text-amber-400 w-3"></i> Suggested Type</span>
-                            <span class="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-                                {{ $latestSuggestedType }}
+                        @if($suggestedTypes->isNotEmpty())
+                        <div class="border-t border-slate-100 mt-2 pt-3">
+                            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
+                                <i class="fas fa-lightbulb text-amber-400 w-3"></i> Suggested Review Types
                             </span>
+                            <div class="space-y-2">
+                                @foreach($suggestedTypes as $sugg)
+                                <div class="flex justify-between items-center gap-4">
+                                    <span class="text-xs font-bold text-slate-600 truncate">{{ $sugg['reviewer'] }}</span>
+                                    <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 whitespace-nowrap">
+                                        {{ $sugg['type'] }}
+                                    </span>
+                                </div>
+                                @endforeach
+                            </div>
                         </div>
                         @endif
                     </div>

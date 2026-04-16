@@ -33,6 +33,10 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
+            if ($user->require_password_change) {
+                return redirect()->route('password.change');
+            }
+
             if($user->role === 'reviewer'){
                 return redirect()->route('reviewer.dashboard');
             }
@@ -286,5 +290,43 @@ public function showVerifyForm(Request $request)
         $user->save();
 
         return redirect()->route('login')->with('success', 'Password has been reset successfully.');
+    }
+
+    // Change Password on first login
+    public function showChangePassword(Request $request)
+    {
+        // Must be authenticated and require password change
+        if (!Auth::check() || !Auth::user()->require_password_change) {
+            return redirect()->route('home');
+        }
+        return view('auth.change-password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        if (!Auth::check() || !Auth::user()->require_password_change) {
+            return redirect()->route('home');
+        }
+
+        $request->validate([
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = Auth::user();
+        $user->password = Hash::make($request->password);
+        $user->require_password_change = false;
+        $user->save();
+
+        if($user->role === 'super_admin'){
+            return redirect()->route('super_admin.analytics')->with('success', 'Password changed successfully!');
+        }
+        if($user->role === 'admin'){
+            return redirect()->route('admin.analytics')->with('success', 'Password changed successfully!');
+        }
+        if($user->role === 'reviewer'){
+            return redirect()->route('reviewer.dashboard')->with('success', 'Password changed successfully!');
+        }
+        
+        return redirect()->route('home')->with('success', 'Password changed successfully!');
     }
 }

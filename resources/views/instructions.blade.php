@@ -69,8 +69,7 @@
                         3</span>
                     <h3 class="font-bold text-slate-900 text-lg">Upload Submission</h3>
                 </div>
-                <p class="text-sm text-slate-500 mb-4">Upload your complied files to the portal. Our AI will pre-screen
-                    for errors.</p>
+                <p class="text-sm text-slate-500 mb-4">Upload your complied files to the portal.</p>
                 <a href="{{ route('submit') }}"
                     class="w-full flex items-center justify-center gap-2 text-sm font-bold text-white bg-[#8B0000] px-4 py-3 rounded-lg shadow-md shadow-red-900/20 active:scale-95 transition-transform">
                     <span class="material-symbols-outlined text-lg">upload_file</span> Start Submission

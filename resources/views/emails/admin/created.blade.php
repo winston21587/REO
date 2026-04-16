@@ -3,11 +3,11 @@
 
 You have been assigned as an Administrator for the REO System. 
 
-Below are your login credentials.
+Below is your temporary 6-digit OTP to access the Administrator portal. You will be required to change your password upon your first login.
 
 **Email:** {{ $user->email }}
 <br>
-**Password:** {{ $password }}
+**Temporary OTP:** {{ $password }}
 
 <x-mail::button :url="'https://reoph.site'">
 Login to REO

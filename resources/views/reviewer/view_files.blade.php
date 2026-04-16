@@ -347,10 +347,10 @@
                                     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                                         <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity" @click="showModal = false" aria-hidden="true"></div>
                                         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                                        <div x-show="showModal" x-transition.scale.origin.bottom class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-100">
+                                        <div x-show="showModal" x-transition.scale.origin.bottom class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-100 max-h-[90vh] flex flex-col">
                                             
                                             <!-- Header -->
-                                            <div class="bg-white px-6 pt-5 pb-4 border-b border-slate-100">
+                                            <div class="bg-white px-6 pt-5 pb-4 border-b border-slate-100 flex-shrink-0">
                                                 <div class="flex items-center justify-between">
                                                     <div class="flex items-center gap-3">
                                                         <div class="w-10 h-10 rounded-full flex items-center justify-center" :class="step === 1 ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'">
@@ -383,24 +383,55 @@
                                                         <span class="text-xs font-bold" :class="step === 2 ? 'text-green-600' : 'text-slate-400'">Action</span>
                                                     </div>
                                                 </div>
-                                                <p class="text-xs text-slate-500 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl mb-4">
+                                                <p class="text-[10px] text-slate-500 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl mt-4">
                                                     <i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>
                                                     You <span class="font-bold">might not be able to modify</span> your uploads once marked as reviewed.
                                                 </p>
                                             </div>
 
                                             <!-- Form wraps both steps -->
-                                            <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0">
+                                            <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0 flex-1 overflow-y-auto">
                                                 @csrf
 
                                                 <!-- ============================================ -->
                                                 <!-- STEP 1: Deliberation Assessment              -->
                                                 <!-- ============================================ -->
-                                                <div x-show="step === 1" class="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                                                <div x-show="step === 1" class="px-6 auto py-5 space-y-5">
 
                                                     <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl">
-                                                        <p class="text-xs text-blue-700 leading-relaxed"><i class="fas fa-info-circle mr-1"></i> Complete your assessment of the protocol below. You must fill out all fields before you can proceed to cast your final vote.</p>
+                                                        <p class="text-xs text-blue-700 leading-relaxed"><i class="fas fa-info-circle mr-1"></i> Complete your assessment of the protocol below. Include optional remarks for specific files.</p>
                                                     </div>
+
+                                                    {{-- Per-file remarks for RESEARCHER files --}}
+                                                    @php
+                                                        $filesToReview = $activeFiles->isNotEmpty() ? $activeFiles : $originalFiles;
+                                                    @endphp
+                                                    <div class="space-y-2">
+                                                        <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Document-Specific Remarks (Optional)</label>
+                                                        @foreach($filesToReview as $file)
+                                                            <div class="bg-slate-50 rounded-xl border border-slate-200 p-3 shadow-sm mb-3">
+                                                                <div class="flex items-center gap-2 mb-2">
+                                                                    <div class="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                                                                        <i class="fas fa-file-alt text-indigo-600 text-xs"></i>
+                                                                    </div>
+                                                                    <p class="text-[10px] font-bold text-slate-700 truncate" title="{{ $file->filename }}">{{ $file->filename }}</p>
+                                                                </div>
+                                                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-8">{{ $file->category }}</p>
+                                                                @php
+                                                                    $existingRemark = isset($myFileRemarks[$file->id]) ? $myFileRemarks[$file->id]->remarks : '';
+                                                                @endphp
+                                                                <textarea
+                                                                    name="file_remarks[{{ $file->id }}]"
+                                                                    rows="1"
+                                                                    placeholder="Add remarks for this document..."
+                                                                    class="w-full px-3 py-2 text-[11px] text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none shadow-sm resize-y bg-white"
+                                                                >{{ $existingRemark }}</textarea>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+
+                                                    <!-- Separator line -->
+                                                    <div class="border-t border-slate-200 my-4"></div>
 
                                                     <!-- Scientific Soundness -->
                                                     <div>
@@ -456,7 +487,7 @@
                                                 <!-- ============================================ -->
                                                 <!-- STEP 2: Final Action                        -->
                                                 <!-- ============================================ -->
-                                                <div x-show="step === 2" style="display: none;" class="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                                                <div x-show="step === 2" style="display: none;" class="px-6 py-5 space-y-4">
 
                                                     <!-- Read-only Summary Reference -->
                                                     <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">

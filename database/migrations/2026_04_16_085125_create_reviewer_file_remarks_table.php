@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('reviewer_file_remarks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('research_title_id')->constrained('research_title_information')->onDelete('cascade');
+            $table->foreignId('reviewer_id')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('file_id'); // From researcher_files
+            $table->text('remarks')->nullable();
             $table->timestamps();
         });
     }

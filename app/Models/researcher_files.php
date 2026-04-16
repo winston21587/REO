@@ -19,7 +19,6 @@ class Researcher_files extends Model
         'uploaded_by',
         'category',
         'revision_number',
-        'remarks',
     ];
 
     public function research()
@@ -30,5 +29,10 @@ class Researcher_files extends Model
     public function uploader()
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    public function reviewerRemarks()
+    {
+        return $this->hasMany(ReviewerFileRemark::class, 'file_id');
     }
 }

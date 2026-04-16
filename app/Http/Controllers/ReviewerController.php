@@ -88,7 +88,13 @@ class ReviewerController extends Controller
         }
         $requirementsMap = \App\Models\DocumentRequirement::all()->keyBy('name')->toArray();
         $backUrl = url()->previous(route('reviewer.dashboard'));
-        return view('reviewer.view_files', compact('researchTitle', 'backUrl', 'requirementsMap'));
+        
+        $myFileRemarks = \App\Models\ReviewerFileRemark::where('research_title_id', $id)
+            ->where('reviewer_id', Auth::id())
+            ->get()
+            ->keyBy('file_id');
+
+        return view('reviewer.view_files', compact('researchTitle', 'backUrl', 'requirementsMap', 'myFileRemarks'));
     }
 
     public function serveFile($id)
@@ -178,17 +184,23 @@ class ReviewerController extends Controller
             $latestUpload->save();
         }
 
-        // Save per-file remarks submitted from the modal
+        // Save per-file remarks submitted from the modal (applies to researcher's files)
         $fileRemarks = $request->input('file_remarks', []);
         foreach ($fileRemarks as $fileId => $remark) {
             if (!empty(trim($remark))) {
-                $uploadedFile = $myUploads->firstWhere('id', (int) $fileId);
-                if ($uploadedFile) {
-                    $uploadedFile->remarks = trim($remark);
-                    $uploadedFile->save();
-                }
+                \App\Models\ReviewerFileRemark::updateOrCreate(
+                    [
+                        'research_title_id' => $submission->id,
+                        'reviewer_id' => Auth::id(),
+                        'file_id' => $fileId
+                    ],
+                    [
+                        'remarks' => trim($remark)
+                    ]
+                );
             }
         }
+
 
         // Save Review Decision & Remarks (Re-Evaluation only)
         if ($request->has('review_decision')) {

@@ -229,22 +229,15 @@ class ReviewerController extends Controller
                 'user_id' => Auth::id(),
                 'message' => $msg
             ]);
-        } elseif ($request->filled('scientific_soundness') || $request->filled('summary_of_issues')) {
-            // Initial review (non re-evaluation) — still store deliberation notes
-            $deliberationNotes = "=== DELIBERATION NOTES ===\n";
-            $deliberationNotes .= "Scientific Soundness: " . $request->input('scientific_soundness', 'N/A') . "\n\n";
-            $deliberationNotes .= "Ethical Issues: " . $request->input('ethical_issues', 'N/A') . "\n\n";
-            $deliberationNotes .= "ICF Issues: " . $request->input('icf_issues', 'N/A') . "\n\n";
-            $deliberationNotes .= "Summary of Issues & Resolutions: " . $request->input('summary_of_issues', 'N/A') . "\n\n";
-            if ($request->filled('suggested_review_type')) {
-                $deliberationNotes .= "Suggested Review Type: " . $request->input('suggested_review_type');
-            }
+        } elseif ($request->filled('suggested_review_type')) {
+            // Initial review
+            $message = "Suggested Review Type: " . $request->input('suggested_review_type');
 
             \App\Models\SubmissionFeedback::create([
                 'research_title_id' => $submission->id,
                 'user_id' => Auth::id(),
                 'type' => 'reviewer_decision',
-                'message' => $deliberationNotes
+                'message' => $message
             ]);
         }
 

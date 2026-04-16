@@ -310,6 +310,7 @@
                         <div class="flex flex-col gap-3 mb-4">
                             <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest m-0">My Uploaded Evaluations</p>
                             @if($researchTitle->Status !== 'Reviewed')
+                            @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                             <div x-data="{ 
                                 showModal: false, 
                                 step: 1,
@@ -464,7 +465,6 @@
                                                         <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap" x-text="summary_of_issues"></p>
                                                     </div>
 
-                                                    @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                                                     <!-- Re-Evaluation: Action Taken -->
                                                     <div class="text-left">
                                                         <label class="block text-xs font-bold text-slate-700 mb-2">
@@ -491,8 +491,61 @@
                                                         <label class="block text-xs font-bold text-slate-700 mb-2">Brief Remarks (Optional)</label>
                                                         <textarea name="remarks" rows="2" placeholder="Brief summary of your decision..." class="w-full px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none shadow-sm"></textarea>
                                                     </div>
-                                                    @else
-                                                    <!-- Initial Review: Suggested Review Type -->
+                                                </div>
+
+                                                <!-- Step 2 Buttons -->
+                                                <div x-show="step === 2" style="display: none;" class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                                    <button type="button" @click="step = 1" class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
+                                                        <i class="fas fa-arrow-left text-xs"></i> Back to Deliberation
+                                                    </button>
+                                                    <button type="submit" class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-2.5 bg-green-600 text-sm font-bold text-white hover:bg-green-700 focus:outline-none transition-colors border border-transparent">
+                                                        <i class="fas fa-check-circle"></i> Finalize Review
+                                                    </button>
+                                                </div>
+
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @else
+                            <div x-data="{ showModal: false }" class="w-full">
+                                <button type="button" @click="showModal = true" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
+                                    <i class="fas fa-check-circle"></i> Complete Review
+                                </button>
+                                
+                                <!-- Simple Single-Step Modal -->
+                                <div x-show="showModal" style="display: none;" class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                        <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity" @click="showModal = false" aria-hidden="true"></div>
+                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                        <div x-show="showModal" x-transition.scale.origin.bottom class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
+                                            
+                                            <!-- Header -->
+                                            <div class="bg-white px-6 pt-5 pb-4 border-b border-slate-100">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                                                            <i class="fas fa-check-circle"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h3 class="text-lg leading-6 font-bold text-slate-900" id="modal-title">Complete Review</h3>
+                                                            <p class="text-xs text-slate-500 mt-0.5">Submit your final recommendation for this protocol.</p>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" @click="showModal = false" class="text-slate-400 hover:text-slate-500 transition-colors">
+                                                        <i class="fas fa-times text-xl"></i>
+                                                    </button>
+                                                </div>
+                                                <p class="text-xs text-slate-500 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl mt-4">
+                                                    <i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>
+                                                    You <span class="font-bold">might not be able to modify</span> your uploads once marked as reviewed.
+                                                </p>
+                                            </div>
+
+                                            <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="m-0">
+                                                @csrf
+                                                <div class="px-6 py-5">
                                                     <div class="text-left">
                                                         <label class="block text-xs font-bold text-slate-700 mb-2">
                                                             <i class="fas fa-layer-group text-indigo-400 mr-1"></i> Suggested Next Review Type <span class="text-red-400">*</span>
@@ -512,24 +565,22 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    @endif
                                                 </div>
 
-                                                <!-- Step 2 Buttons -->
-                                                <div x-show="step === 2" style="display: none;" class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-                                                    <button type="button" @click="step = 1" class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
-                                                        <i class="fas fa-arrow-left text-xs"></i> Back to Deliberation
+                                                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                                    <button type="button" @click="showModal = false" class="flex-1 inline-flex justify-center rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
+                                                        Cancel
                                                     </button>
                                                     <button type="submit" class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-2.5 bg-green-600 text-sm font-bold text-white hover:bg-green-700 focus:outline-none transition-colors border border-transparent">
                                                         <i class="fas fa-check-circle"></i> Finalize Review
                                                     </button>
                                                 </div>
-
                                             </form>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            @endif
                             @else
                             <div class="w-full text-center px-3 py-2 bg-green-50 text-green-600 rounded-xl text-xs font-bold border border-green-100"><i class="fas fa-check"></i> Review Completed</div>
                             @endif

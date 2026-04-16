@@ -30,10 +30,67 @@
                         @csrf
                         <input type="hidden" name="status_action" id="revisionStatusActionInput">
 
-                        <!-- Status Actions -->
+                        <!-- =============================================
+                             DELIBERATION NOTES (Required - Top Section)
+                             ============================================= -->
+                        <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                            <p class="text-xs text-blue-700 leading-relaxed"><i class="fas fa-info-circle mr-1"></i> Transcribe the committee's deliberation notes below. All fields are required before selecting an Action.</p>
+                        </div>
+
+                        <!-- Scientific Soundness -->
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-3">Status Actions</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-microscope text-indigo-400 mr-1"></i> Scientific Soundness <span class="text-red-400">*</span>
+                            </label>
+                            <textarea id="deliberation_scientific" name="scientific_soundness" rows="3" required
+                                placeholder="Document the committee's assessment of scientific merit, research design, methodology..."
+                                class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"></textarea>
+                        </div>
+
+                        <!-- Ethical Issues -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-balance-scale text-amber-400 mr-1"></i> Ethical Issues <span class="text-red-400">*</span>
+                            </label>
+                            <textarea id="deliberation_ethical" name="ethical_issues" rows="3" required
+                                placeholder="Document ethical considerations discussed: risk-benefit ratio, privacy, confidentiality, vulnerable populations..."
+                                class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"></textarea>
+                        </div>
+
+                        <!-- ICF Issues -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-file-signature text-emerald-400 mr-1"></i> Informed Consent Form (ICF) Issues <span class="text-red-400">*</span>
+                            </label>
+                            <textarea id="deliberation_icf" name="icf_issues" rows="3" required
+                                placeholder="Document ICF assessment: clarity of language, voluntariness, adequate disclosure, comprehension..."
+                                class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"></textarea>
+                        </div>
+
+                        <!-- Summary of Issues and Resolutions -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-list-check text-rose-400 mr-1"></i> Summary of Issues and Resolutions <span class="text-red-400">*</span>
+                            </label>
+                            <textarea id="deliberation_summary" name="summary_of_issues" rows="3" required
+                                placeholder="Summarize: which issues were resolved, which remain unresolved, and recommendations..."
+                                class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"></textarea>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="flex items-center gap-3 pt-2">
+                            <div class="h-px bg-slate-200 flex-1"></div>
+                            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Final Action</span>
+                            <div class="h-px bg-slate-200 flex-1"></div>
+                        </div>
+
+                        <!-- =============================================
+                             STATUS ACTIONS (Bottom Section)
+                             Panel Deliberation REMOVED per SOP
+                             ============================================= -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-3">Action Taken</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <!-- Modifications Required -->
                                 <div onclick="selectRevisionStatus('Modifications Required', this)" class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-orange-400 hover:shadow-md transition-all group">
                                     <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
@@ -56,18 +113,6 @@
                                     </div>
                                     <h4 class="font-bold text-slate-800 text-sm">Disapproved</h4>
                                     <p class="text-[10px] text-slate-500 mt-1">Serious ethical violations</p>
-                                </div>
-
-                                <!-- Panel Deliberation -->
-                                <div onclick="selectRevisionStatus('Panel Deliberation', this)" class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-blue-400 hover:shadow-md transition-all group">
-                                    <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
-                                        <i class="fas fa-check-circle text-blue-500"></i>
-                                    </div>
-                                    <div class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-blue-500">
-                                        <i class="fas fa-gavel text-lg"></i>
-                                    </div>
-                                    <h4 class="font-bold text-slate-800 text-sm">Panel Deliberation</h4>
-                                    <p class="text-[10px] text-slate-500 mt-1">Schedule meeting</p>
                                 </div>
 
                                 <!-- Approve -->
@@ -121,15 +166,13 @@
             // 1. Update Hidden Input
             document.getElementById('revisionStatusActionInput').value = status;
 
-            // 2. Visual Selection
-            // Remove active class from all options
+            // 2. Visual Selection — Remove active class from all options
             document.querySelectorAll('.revision-status-option').forEach(el => {
-                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
+                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-red-400', 'bg-red-50', 'border-green-400', 'bg-green-50');
                 el.classList.add('border-slate-200');
                 el.querySelector('.check-icon').classList.add('opacity-0');
-                // Reset icon colors
                 const iconBox = el.querySelector('.icon-box');
-                iconBox.classList.remove('text-orange-500', 'text-blue-500', 'text-green-500');
+                iconBox.classList.remove('text-orange-500', 'text-red-500', 'text-green-500');
                 iconBox.classList.add('text-slate-400');
             });
 
@@ -145,9 +188,6 @@
             } else if (status === 'Disapproved') {
                 activeClass = 'border-red-400 bg-red-50';
                 activeText = 'text-red-500';
-            } else if (status === 'Panel Deliberation') {
-                activeClass = 'border-blue-400 bg-blue-50';
-                activeText = 'text-blue-500';
             } else if (status === 'Approved') {
                 activeClass = 'border-green-400 bg-green-50';
                 activeText = 'text-green-500';
@@ -169,24 +209,21 @@
             // Reset UI
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('revisionAppointmentDate').value = today;
-            document.getElementById('revisionRemarks').value = ""; 
-            
-            // Hide Panel Deliberation if not Full Board Review
-            const panelDeliberationOption = document.querySelector('.revision-status-option[onclick*="Panel Deliberation"]');
-            if (panelDeliberationOption) {
-                if (currentReviewType !== 'Full Board Review') {
-                    panelDeliberationOption.style.display = 'none';
-                } else {
-                    panelDeliberationOption.style.display = 'block';
-                }
-            }
+            document.getElementById('revisionRemarks').value = "";
+            document.getElementById('revisionStatusActionInput').value = "";
+
+            // Reset deliberation fields
+            document.getElementById('deliberation_scientific').value = "";
+            document.getElementById('deliberation_ethical').value = "";
+            document.getElementById('deliberation_icf').value = "";
+            document.getElementById('deliberation_summary').value = "";
             
             // Reset Box Selection Visuals
             document.querySelectorAll('.revision-status-option').forEach(el => {
-                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-red-400', 'bg-red-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
+                el.classList.remove('border-orange-400', 'bg-orange-50', 'border-red-400', 'bg-red-50', 'border-green-400', 'bg-green-50');
                 el.classList.add('border-slate-200');
                 el.querySelector('.check-icon').classList.add('opacity-0');
-                el.querySelector('.icon-box').classList.remove('text-orange-500', 'text-red-500', 'text-blue-500', 'text-green-500');
+                el.querySelector('.icon-box').classList.remove('text-orange-500', 'text-red-500', 'text-green-500');
                 el.querySelector('.icon-box').classList.add('text-slate-400');
             });
 
@@ -195,8 +232,7 @@
                 const statusMap = {
                     'Modifications Required': 0,
                     'Disapproved': 1,
-                    'Panel Deliberation': 2,
-                    'Approved': 3
+                    'Approved': 2
                 };
 
                 const statusBoxes = document.querySelectorAll('.revision-status-option');
@@ -230,17 +266,21 @@
         document.getElementById('revisionStatusForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Client-side Validation
-            const statusAction = document.getElementById('revisionStatusActionInput').value;
-            const appointmentDate = document.getElementById('revisionAppointmentDate').value;
-            
-            if (!statusAction) {
-                alert('Please select a Status Action.');
+            // Client-side Validation: Deliberation fields are required
+            const scientific = document.getElementById('deliberation_scientific').value.trim();
+            const ethical = document.getElementById('deliberation_ethical').value.trim();
+            const icf = document.getElementById('deliberation_icf').value.trim();
+            const summary = document.getElementById('deliberation_summary').value.trim();
+
+            if (!scientific || !ethical || !icf || !summary) {
+                alert('Please fill out all deliberation fields (Scientific Soundness, Ethical Issues, ICF Issues, Summary) before submitting.');
                 return;
             }
 
-            if (statusAction === 'Panel Deliberation' && !appointmentDate) {
-                alert('Please set an Appointment Date.');
+            const statusAction = document.getElementById('revisionStatusActionInput').value;
+            
+            if (!statusAction) {
+                alert('Please select an Action Taken.');
                 return;
             }
 

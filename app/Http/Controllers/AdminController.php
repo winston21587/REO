@@ -916,8 +916,6 @@ class AdminController extends Controller
                 $action = $request->status_action;
                 if ($action === 'Modifications Required') {
                     $submission->Status = 'Waiting for Revision';
-                } elseif ($action === 'Panel Deliberation') {
-                    $submission->Status = 'Panel Deliberation';
                 } elseif ($action === 'Approved') {
                     $submission->Status = 'Approved';
                 } else {
@@ -955,12 +953,29 @@ class AdminController extends Controller
             return redirect()->back()->with('success', 'Review Type updated. Please proceed to generate the Recommendation Letter.');
         }
         // ---------------------------------------------------------
-        // CASE C: Status Actions (Revision, Panel, Approved)
-        // ---------------------------------------------------------
+        // CASE C: Status Actions (Revision, Approved, Disapproved)
+        // Panel Deliberation removed — deliberation is the process, not a vote result
         // ---------------------------------------------------------
         elseif ($request->has('status_action') && $request->status_action) {
             $action = $request->status_action;
             $newStatus = $action;
+
+            // Store deliberation notes if provided
+            if ($request->filled('scientific_soundness') || $request->filled('ethical_issues') || $request->filled('icf_issues') || $request->filled('summary_of_issues')) {
+                $deliberationMsg = "=== DELIBERATION NOTES (Admin) ===\n";
+                $deliberationMsg .= "Scientific Soundness: " . $request->input('scientific_soundness', 'N/A') . "\n\n";
+                $deliberationMsg .= "Ethical Issues: " . $request->input('ethical_issues', 'N/A') . "\n\n";
+                $deliberationMsg .= "ICF Issues: " . $request->input('icf_issues', 'N/A') . "\n\n";
+                $deliberationMsg .= "Summary of Issues & Resolutions: " . $request->input('summary_of_issues', 'N/A') . "\n\n";
+                $deliberationMsg .= "Action Taken: " . $action;
+
+                SubmissionFeedback::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => auth()->id(),
+                    'type' => 'admin_deliberation',
+                    'message' => $deliberationMsg
+                ]);
+            }
 
             if ($action === 'Modifications Required') {
                 $newStatus = 'Waiting for Revision'; // Map to internal status
@@ -981,19 +996,6 @@ class AdminController extends Controller
                         'message' => $request->remarks,
                         'type' => 'disapproval_remark'
                     ]);
-                }
-            } elseif ($action === 'Panel Deliberation') {
-                $request->validate(['appointment_date' => 'required|date|after:tomorrow']);
-                Appointment::create([
-                    'research_title_id' => $submission->id,
-                    'user_id' => $user->user_id,
-                    'appointment_date' => $request->appointment_date,
-                    'stage' => 'Panel Deliberation',
-                ]);
-                $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
-                $message = "Your research \"{$submission->Study_Protocol_title}\" is scheduled for Panel Deliberation on: {$dateFormatted}.";
-                if ($request->remarks) {
-                    $message .= "\n\nRemarks: " . $request->remarks;
                 }
             } elseif ($action === 'Approved') {
                 $message = "Congratulations! Your research \"{$submission->Study_Protocol_title}\" has been Approved.";

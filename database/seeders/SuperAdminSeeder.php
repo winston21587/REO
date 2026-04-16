@@ -16,12 +16,12 @@ class SuperAdminSeeder extends Seeder
     public function run(): void
     {
         $user = User::updateOrCreate(
-            ['email' => 'superadmin@example.com'], // using updateOrCreate to avoid duplicates if run multiple times
+            ['email' => 'admin@reo.com'], // using updateOrCreate to avoid duplicates if run multiple times
             [
                 'first_name' => 'Super',
                 'middle_name' => null,
                 'last_name' => 'Admin',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('adminpassword'),
                 'role' => 'super_admin',
                 'is_verified' => true,
                 'email_verified_at' => Carbon::now(),

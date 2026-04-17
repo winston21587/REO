@@ -1213,7 +1213,22 @@ class AdminController extends Controller
 
         $researchTitle = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
         $backUrl = url()->previous(route('admin.analytics'));
-        return view('admin.view_files', compact('researchTitle', 'backUrl'));
+
+        // Load all reviewer file remarks for this title's files, grouped by file_id
+        try {
+            $allFileRemarks = \App\Models\ReviewerFileRemark::with('reviewer')
+                ->whereIn('file_id', function($query) use ($id) {
+                    $query->select('researcher_file_id')
+                          ->from('research_title_files')
+                          ->where('research_title_id', $id);
+                })
+                ->get()
+                ->groupBy('file_id');
+        } catch (\Exception $e) {
+            $allFileRemarks = collect();
+        }
+
+        return view('admin.view_files', compact('researchTitle', 'backUrl', 'allFileRemarks'));
     }
 
     public function serveFile($id)

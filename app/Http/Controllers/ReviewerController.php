@@ -260,6 +260,27 @@ class ReviewerController extends Controller
         return redirect()->route('reviewer.dashboard')->with('success', 'Protocol review marked as complete!');
     }
 
+    public function saveFileRemark(Request $request, $fileId)
+    {
+        $request->validate(['remarks' => 'nullable|string|max:2000']);
+
+        $remark = trim($request->input('remarks', ''));
+
+        if ($remark === '') {
+            // Delete existing remark if cleared
+            \App\Models\ReviewerFileRemark::where('reviewer_id', Auth::id())
+                ->where('file_id', $fileId)
+                ->delete();
+        } else {
+            \App\Models\ReviewerFileRemark::updateOrCreate(
+                ['reviewer_id' => Auth::id(), 'file_id' => $fileId],
+                ['remarks' => $remark]
+            );
+        }
+
+        return response()->json(['success' => true, 'message' => 'Remark saved.']);
+    }
+
     public function reviewedTitles()
     {
         $userId = Auth::id();

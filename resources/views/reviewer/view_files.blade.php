@@ -129,6 +129,9 @@
             $serveRoute = route('reviewer.serve_file', 'FILE_ID');
         @endphp
 
+        @php
+            $remarksByFileId = $myFileRemarks->map(fn($r) => $r->remarks)->toArray();
+        @endphp
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8"
              x-data="{
                 activeFile: {{ $firstFile ? json_encode($firstFile) : 'null' }},
@@ -141,6 +144,11 @@
                 revisionNums: {{ json_encode(array_keys($jsRevisions)) }},
                 requirementsMap: {{ json_encode($requirementsMap) }},
                 serveRoute: '{{ $serveRoute }}',
+                remarksMap: {{ json_encode($remarksByFileId) }},
+                currentRemark: '',
+                remarkSaving: false,
+                remarkSaved: false,
+                remarkError: '',
                 getUrl(file) {
                     if (!file) return '';
                     return this.serveRoute.replace('FILE_ID', file.id);
@@ -161,8 +169,40 @@
                 },
                 isPdf(file) { return file && file.ext === 'pdf'; },
                 isOffice(file) { return file && ['doc','docx','ppt','pptx','xls','xlsx'].includes(file.ext); },
-                selectFile(file) { this.activeFile = file; }
-             }">
+                selectFile(file) {
+                    this.activeFile = file;
+                    this.currentRemark = file ? (this.remarksMap[file.id] || '') : '';
+                    this.remarkSaved = false;
+                    this.remarkError = '';
+                },
+                async saveRemark() {
+                    if (!this.activeFile) return;
+                    this.remarkSaving = true;
+                    this.remarkSaved = false;
+                    this.remarkError = '';
+                    try {
+                        const res = await fetch(`/reviewer/file-remark/${this.activeFile.id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                            },
+                            body: JSON.stringify({ remarks: this.currentRemark })
+                        });
+                        if (res.ok) {
+                            this.remarksMap[this.activeFile.id] = this.currentRemark;
+                            this.remarkSaved = true;
+                            setTimeout(() => this.remarkSaved = false, 2500);
+                        } else {
+                            this.remarkError = 'Failed to save. Try again.';
+                        }
+                    } catch(e) {
+                        this.remarkError = 'Network error.';
+                    }
+                    this.remarkSaving = false;
+                }
+             }"
+             x-init="currentRemark = activeFile ? (remarksMap[activeFile.id] || '') : ''">
 
             <!-- ===== LEFT — Viewer ===== -->
             <div class="lg:col-span-8 flex flex-col gap-4">
@@ -222,11 +262,40 @@
                             </div>
                         </div>
                     </template>
-                </div>
+                </div>{{-- end viewer pane --}}
 
+                <!-- ===== Inline File Remark Panel ===== -->
+                <div x-show="activeFile" style="display:none;"
+                     class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="fas fa-comment-alt text-indigo-400"></i>
+                            My Remark for <span class="text-indigo-600 truncate max-w-[180px]" x-text="activeFile ? activeFile.label : ''"></span>
+                        </p>
+                        <!-- Saved indicator -->
+                        <span x-show="remarkSaved" x-transition.opacity
+                              class="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                            <i class="fas fa-check-circle"></i> Saved!
+                        </span>
+                        <span x-show="!!remarkError" class="text-[10px] font-bold text-red-500" x-text="remarkError"></span>
+                    </div>
+                    <textarea
+                        x-model="currentRemark"
+                        placeholder="Add your remark or comment about this document..."
+                        rows="3"
+                        class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent outline-none shadow-sm resize-none bg-slate-50 transition-all"
+                    ></textarea>
+                    <div class="flex justify-end mt-2">
+                        <button type="button" @click="saveRemark()"
+                            :disabled="remarkSaving"
+                            class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all shadow-sm">
+                            <i class="fas" :class="remarkSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                            <span x-text="remarkSaving ? 'Saving...' : 'Save Remark'"></span>
+                        </button>
+                    </div>
+                </div>{{-- end remark panel --}}
 
-
-            </div>
+            </div>{{-- end left col lg:col-span-8 --}}
 
             <!-- ===== RIGHT — Sidebar ===== -->
             <div class="lg:col-span-4 flex flex-col gap-4 pb-8">

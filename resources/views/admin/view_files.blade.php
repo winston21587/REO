@@ -258,6 +258,68 @@
                     </div>
                 </div>
 
+                <!-- ===== Reviewer File Remarks ===== -->
+                @php
+                    $totalRemarks = $allFileRemarks->flatten()->count();
+                @endphp
+                @if($totalRemarks > 0)
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fas fa-comments text-indigo-400"></i>
+                        Reviewer Remarks
+                        <span class="ml-auto bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded-full">{{ $totalRemarks }}</span>
+                    </p>
+
+                    @php
+                        // Group remarks by reviewer for a cleaner view
+                        $remarksByReviewer = $allFileRemarks->flatten()->groupBy('reviewer_id');
+                    @endphp
+
+                    <div class="space-y-4 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
+                        @foreach($remarksByReviewer as $reviewerId => $remarks)
+                        @php
+                            $reviewer = $remarks->first()->reviewer;
+                            $reviewerName = $reviewer ? ($reviewer->first_name . ' ' . $reviewer->last_name) : 'Unknown Reviewer';
+                            $initial = $reviewer ? strtoupper(substr($reviewer->first_name, 0, 1)) : '?';
+                        @endphp
+                        <div class="border border-slate-100 rounded-xl overflow-hidden">
+                            {{-- Reviewer header --}}
+                            <div class="flex items-center gap-2.5 px-3 py-2.5 bg-indigo-50 border-b border-indigo-100">
+                                <div class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black flex-shrink-0">
+                                    {{ $initial }}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-indigo-900 truncate">{{ $reviewerName }}</p>
+                                    <p class="text-[9px] text-indigo-500 font-medium">{{ $remarks->count() }} file remark(s)</p>
+                                </div>
+                            </div>
+                            {{-- Per-file remarks --}}
+                            <div class="divide-y divide-slate-50">
+                                @foreach($remarks as $remark)
+                                @php
+                                    // Find the file this remark belongs to
+                                    $remarkFile = $researchTitle->files->firstWhere('id', $remark->file_id)
+                                        ?? $researchTitle->adminFiles->firstWhere('id', $remark->file_id);
+                                @endphp
+                                <div class="px-3 py-2.5">
+                                    @if($remarkFile)
+                                    <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1 truncate"
+                                       title="{{ $remarkFile->filename }}">
+                                        <i class="fas fa-file-alt text-slate-300 mr-1"></i>
+                                        {{ $remarkFile->category ?? $remarkFile->filename }}
+                                    </p>
+                                    @endif
+                                    <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{{ $remark->remarks }}</p>
+                                    <p class="text-[9px] text-slate-400 mt-1">{{ $remark->updated_at->format('M d, Y • h:i A') }}</p>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 <!-- Receipt & Payment Card -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
                     <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">

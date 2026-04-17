@@ -298,8 +298,8 @@
                                 @foreach($remarks as $remark)
                                 @php
                                     // Find the file this remark belongs to
-                                    $remarkFile = $researchTitle->files->firstWhere('id', $remark->file_id)
-                                        ?? $researchTitle->adminFiles->firstWhere('id', $remark->file_id);
+                                    $remarkFile = $researchTitle->files->firstWhere('id', $remark->researcher_file_id)
+                                        ?? $researchTitle->adminFiles->firstWhere('id', $remark->researcher_file_id);
                                 @endphp
                                 <div class="px-3 py-2.5">
                                     @if($remarkFile)

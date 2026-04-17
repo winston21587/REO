@@ -11,16 +11,6 @@ use App\Models\UserNotification; // Needed for the Notification route
 use App\Models\CmsContent;
 use App\Http\Controllers\CmsController;
 
-// Temporary debug route
-Route::get('/run-schema-update', function () {
-    if (!\Illuminate\Support\Facades\Schema::hasColumn('reviewer_file_remarks', 'research_title_id')) {
-        \Illuminate\Support\Facades\Schema::table('reviewer_file_remarks', function (\Illuminate\Database\Schema\Blueprint $table) {
-            $table->foreignId('research_title_id')->nullable()->constrained('research_title_information')->onDelete('cascade');
-        });
-        return "Column added successfully";
-    }
-    return "Column already exists";
-});
 
 // ====================================================
 // PUBLIC ROUTES

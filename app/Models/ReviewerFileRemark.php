@@ -9,7 +9,6 @@ class ReviewerFileRemark extends Model
     protected $fillable = [
         'research_title_id',
         'reviewer_id',
-        'researcher_file_id',
         'file_id',
         'remarks',
     ];
@@ -26,6 +25,6 @@ class ReviewerFileRemark extends Model
 
     public function file()
     {
-        return $this->belongsTo(researcher_files::class, 'researcher_file_id');
+        return $this->belongsTo(researcher_files::class, 'file_id');
     }
 }

@@ -14,26 +14,26 @@ class ReviewerController extends Controller
     public function index()
     {
         $userId = Auth::id();
-        
+
         // Only show initial-review statuses; revision-related papers go to Re-Evaluation
         $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions'];
 
-        $titles = Research_title::where(function($q) use ($userId) {
-                // Modern Pivot logic
-                $q->whereHas('reviewers', function($query) use ($userId) {
-                    $query->where('users.id', $userId)
-                          ->where('title_reviewer_assignments.status', 'Pending');
-                })
-                // Legacy JSON logic handling
-                ->orWhere(function($query) use ($userId) {
-                    $query->whereDoesntHave('reviewers')
-                          ->where(function($q2) use ($userId) {
-                              $q2->whereJsonContains('assigned_reviewers', (string)$userId)
-                                 ->orWhereJsonContains('assigned_reviewers', $userId);
-                          })
-                          ->where('Status', '!=', 'Reviewed');
-                });
+        $titles = Research_title::where(function ($q) use ($userId) {
+            // Modern Pivot logic
+            $q->whereHas('reviewers', function ($query) use ($userId) {
+                $query->where('users.id', $userId)
+                    ->where('title_reviewer_assignments.status', 'Pending');
             })
+                // Legacy JSON logic handling
+                ->orWhere(function ($query) use ($userId) {
+                    $query->whereDoesntHave('reviewers')
+                        ->where(function ($q2) use ($userId) {
+                            $q2->whereJsonContains('assigned_reviewers', (string) $userId)
+                                ->orWhereJsonContains('assigned_reviewers', $userId);
+                        })
+                        ->where('Status', '!=', 'Reviewed');
+                });
+        })
             ->whereNotIn('Status', $revisionStatuses)
             ->latest()
             ->get();
@@ -44,24 +44,24 @@ class ReviewerController extends Controller
     public function reEvaluation()
     {
         $userId = Auth::id();
-        
+
         // Show all revision-related statuses so the reviewer can track the full cycle
         $revisionStatuses = ['Revision Submitted', 'Reviewing Revisions'];
 
-        $titles = Research_title::where(function($q) use ($userId) {
-                $q->whereHas('reviewers', function($query) use ($userId) {
-                    $query->where('users.id', $userId)
-                          ->where('title_reviewer_assignments.status', 'Pending');
-                })
-                ->orWhere(function($query) use ($userId) {
-                    $query->whereDoesntHave('reviewers')
-                          ->where(function($q2) use ($userId) {
-                              $q2->whereJsonContains('assigned_reviewers', (string)$userId)
-                                 ->orWhereJsonContains('assigned_reviewers', $userId);
-                          })
-                          ->where('Status', '!=', 'Reviewed');
-                });
+        $titles = Research_title::where(function ($q) use ($userId) {
+            $q->whereHas('reviewers', function ($query) use ($userId) {
+                $query->where('users.id', $userId)
+                    ->where('title_reviewer_assignments.status', 'Pending');
             })
+                ->orWhere(function ($query) use ($userId) {
+                    $query->whereDoesntHave('reviewers')
+                        ->where(function ($q2) use ($userId) {
+                            $q2->whereJsonContains('assigned_reviewers', (string) $userId)
+                                ->orWhereJsonContains('assigned_reviewers', $userId);
+                        })
+                        ->where('Status', '!=', 'Reviewed');
+                });
+        })
             ->whereIn('Status', $revisionStatuses)
             ->latest()
             ->get();
@@ -75,7 +75,7 @@ class ReviewerController extends Controller
     public function viewFiles($id)
     {
         $researchTitle = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
-        
+
         // Automatically transition status when reviewer opens the files for the first time
         if ($researchTitle->Status === 'Reviewer Assigned') {
             $researchTitle->Status = 'Under Review';
@@ -89,18 +89,19 @@ class ReviewerController extends Controller
         }
         $requirementsMap = \App\Models\DocumentRequirement::all()->keyBy('name')->toArray();
         $backUrl = url()->previous(route('reviewer.dashboard'));
-        
+
         try {
-            $myFileRemarks = \App\Models\ReviewerFileRemark::whereIn('researcher_file_id', function($query) use ($id) {
-                // researcher_files links to research_title_information via the research_title_files pivot
-                $query->select('researcher_file_id')
-                      ->from('research_title_files')
-                      ->where('research_title_id', $id);
+            $myFileRemarks = \App\Models\ReviewerFileRemark::whereIn('file_id', function ($query) use ($id) {
+                // researcher_files has a direct foreign key to research_title
+                $query->select('id')
+                    ->from('researcher_files')
+                    ->where('research_title_id', $id);
             })
                 ->where('reviewer_id', Auth::id())
                 ->get()
-                ->keyBy('researcher_file_id');
+                ->keyBy('file_id');
         } catch (\Exception $e) {
+            \Log::error('Error loading remarks: ' . $e->getMessage());
             $myFileRemarks = collect();
         }
 
@@ -142,7 +143,7 @@ class ReviewerController extends Controller
         ]);
 
         $file = $request->file('file');
-        
+
         $originalExt = $file->getClientOriginalExtension();
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $modifiedName = $originalName . '_reviewer.' . $originalExt;
@@ -166,7 +167,7 @@ class ReviewerController extends Controller
     public function completeReview(Request $request, $id)
     {
         $submission = Research_title::findOrFail($id);
-        
+
         // Determine if this is a re-evaluation (revision-related status)
         $isReEvaluation = in_array($submission->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']);
 
@@ -201,7 +202,7 @@ class ReviewerController extends Controller
                 \App\Models\ReviewerFileRemark::updateOrCreate(
                     [
                         'reviewer_id' => Auth::id(),
-                        'researcher_file_id' => $fileId
+                        'file_id' => $fileId
                     ],
                     [
                         'remarks' => trim($remark),
@@ -233,7 +234,7 @@ class ReviewerController extends Controller
                 'type' => 'reviewer_decision',
                 'message' => $msg
             ]);
-            
+
             \App\Models\RevisionLog::create([
                 'research_title_id' => $submission->id,
                 'user_id' => Auth::id(),
@@ -268,21 +269,31 @@ class ReviewerController extends Controller
 
         $remark = trim($request->input('remarks', ''));
 
-        // Look up the research_title_id via the pivot table
-        $pivot = DB::table('research_title_files')
-            ->where('researcher_file_id', $fileId)
-            ->first();
+        // Look up the research_title_id explicitly from the request, fallback to db lookup
+        $titleId = $request->input('research_title_id');
+        if (!$titleId) {
+            $file = \App\Models\Researcher_files::find($fileId);
+            $titleId = $file ? $file->research_title_id : null;
 
-        $titleId = $pivot ? $pivot->research_title_id : null;
+            // If still null, try finding it via the pivot table
+            if (!$titleId) {
+                $pivot = \DB::table('research_title_files')->where('researcher_file_id', $fileId)->first();
+                $titleId = $pivot ? $pivot->research_title_id : null;
+            }
+        }
+
+        if (!$titleId) {
+            return response()->json(['success' => false, 'message' => 'Missing research_title_id.'], 400);
+        }
 
         if ($remark === '') {
             // Delete existing remark if cleared
             \App\Models\ReviewerFileRemark::where('reviewer_id', Auth::id())
-                ->where('researcher_file_id', $fileId)
+                ->where('file_id', $fileId)
                 ->delete();
         } else {
             \App\Models\ReviewerFileRemark::updateOrCreate(
-                ['reviewer_id' => Auth::id(), 'researcher_file_id' => $fileId],
+                ['reviewer_id' => Auth::id(), 'file_id' => $fileId],
                 ['remarks' => $remark, 'research_title_id' => $titleId]
             );
         }
@@ -293,21 +304,21 @@ class ReviewerController extends Controller
     public function reviewedTitles()
     {
         $userId = Auth::id();
-        
-        $titles = Research_title::where(function($q) use ($userId) {
-                $q->whereHas('reviewers', function($query) use ($userId) {
-                    $query->where('users.id', $userId)
-                          ->where('title_reviewer_assignments.status', 'Completed');
-                })
-                ->orWhere(function($query) use ($userId) {
-                    $query->whereDoesntHave('reviewers')
-                          ->where(function($q2) use ($userId) {
-                              $q2->whereJsonContains('assigned_reviewers', (string)$userId)
-                                 ->orWhereJsonContains('assigned_reviewers', $userId);
-                          })
-                          ->where('Status', 'Reviewed');
-                });
+
+        $titles = Research_title::where(function ($q) use ($userId) {
+            $q->whereHas('reviewers', function ($query) use ($userId) {
+                $query->where('users.id', $userId)
+                    ->where('title_reviewer_assignments.status', 'Completed');
             })
+                ->orWhere(function ($query) use ($userId) {
+                    $query->whereDoesntHave('reviewers')
+                        ->where(function ($q2) use ($userId) {
+                            $q2->whereJsonContains('assigned_reviewers', (string) $userId)
+                                ->orWhereJsonContains('assigned_reviewers', $userId);
+                        })
+                        ->where('Status', 'Reviewed');
+                });
+        })
             ->latest()
             ->get();
 

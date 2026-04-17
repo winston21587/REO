@@ -105,14 +105,14 @@ class AdminController extends Controller
 
         // Filter by College
         if ($request->has('college') && $request->college != '') {
-            $query->whereHas('researcher', function($q) use ($request) {
+            $query->whereHas('researcher', function ($q) use ($request) {
                 $q->where('college', $request->college);
             });
         }
 
         // Filter by Status (Affiliation)
         if ($request->has('status') && $request->status != '') {
-            $query->whereHas('researcher', function($q) use ($request) {
+            $query->whereHas('researcher', function ($q) use ($request) {
                 if ($request->status == 'internal') {
                     $q->where('external_user', false);
                 } elseif ($request->status == 'external') {
@@ -145,7 +145,7 @@ class AdminController extends Controller
         // Date Filter Logic
         $selectedYear = $request->filled('year') ? $request->input('year') : date('Y');
         $selectedMonth = $request->filled('month') ? $request->input('month') : date('m');
-        
+
         // New Filter Logic
         $selectedStatus = $request->input('status', null);
         $selectedReviewType = $request->input('review_type', null);
@@ -161,7 +161,7 @@ class AdminController extends Controller
 
         // Build base query with filters
         $baseQuery = Research_title::query();
-        
+
         // Apply date filters to base query
         if ($selectedYear !== 'all') {
             $baseQuery->whereYear('research_title_information.created_at', $selectedYear);
@@ -184,7 +184,7 @@ class AdminController extends Controller
             $baseQuery->where('Research_Category', $selectedCategory);
         }
         if ($selectedAffiliation) {
-            $baseQuery->whereHas('researcher', function($q) use ($selectedAffiliation) {
+            $baseQuery->whereHas('researcher', function ($q) use ($selectedAffiliation) {
                 if ($selectedAffiliation == 'Internal') {
                     $q->where('external_user', false);
                 } elseif ($selectedAffiliation == 'External') {
@@ -193,7 +193,7 @@ class AdminController extends Controller
             });
         }
         if ($selectedCollege && $selectedAffiliation !== 'External') {
-            $baseQuery->whereHas('researcher', function($q) use ($selectedCollege) {
+            $baseQuery->whereHas('researcher', function ($q) use ($selectedCollege) {
                 $q->where('college', $selectedCollege);
             });
         }
@@ -205,18 +205,24 @@ class AdminController extends Controller
         $previousPeriodQuery = clone $baseQuery;
         // remove existing whereYear/whereMonth constraints by creating a fresh query and applying only specific filters manually
         $previousPeriodQuery = Research_title::query();
-        if ($selectedStatus) $previousPeriodQuery->where('Status', $selectedStatus);
-        if ($selectedReviewType) $previousPeriodQuery->where('Review_Type', $selectedReviewType);
-        if ($selectedThesisType) $previousPeriodQuery->where('thesis_type', $selectedThesisType);
-        if ($selectedCategory) $previousPeriodQuery->where('Research_Category', $selectedCategory);
+        if ($selectedStatus)
+            $previousPeriodQuery->where('Status', $selectedStatus);
+        if ($selectedReviewType)
+            $previousPeriodQuery->where('Review_Type', $selectedReviewType);
+        if ($selectedThesisType)
+            $previousPeriodQuery->where('thesis_type', $selectedThesisType);
+        if ($selectedCategory)
+            $previousPeriodQuery->where('Research_Category', $selectedCategory);
         if ($selectedAffiliation) {
-            $previousPeriodQuery->whereHas('researcher', function($q) use ($selectedAffiliation) {
-                if ($selectedAffiliation == 'Internal') $q->where('external_user', false);
-                elseif ($selectedAffiliation == 'External') $q->where('external_user', true);
+            $previousPeriodQuery->whereHas('researcher', function ($q) use ($selectedAffiliation) {
+                if ($selectedAffiliation == 'Internal')
+                    $q->where('external_user', false);
+                elseif ($selectedAffiliation == 'External')
+                    $q->where('external_user', true);
             });
         }
         if ($selectedCollege && $selectedAffiliation !== 'External') {
-            $previousPeriodQuery->whereHas('researcher', function($q) use ($selectedCollege) {
+            $previousPeriodQuery->whereHas('researcher', function ($q) use ($selectedCollege) {
                 $q->where('college', $selectedCollege);
             });
         }
@@ -226,7 +232,10 @@ class AdminController extends Controller
         if ($selectedYear !== 'all' && $selectedMonth !== 'all') {
             $prevMonth = $selectedMonth - 1;
             $prevYear = $selectedYear;
-            if ($prevMonth == 0) { $prevMonth = 12; $prevYear--; }
+            if ($prevMonth == 0) {
+                $prevMonth = 12;
+                $prevYear--;
+            }
             $previousPeriodQuery->whereYear('created_at', $prevYear)->whereMonth('created_at', $prevMonth);
         } elseif ($selectedYear !== 'all') {
             $previousPeriodQuery->whereYear('created_at', $selectedYear - 1);
@@ -234,16 +243,19 @@ class AdminController extends Controller
             // Trend defaults to Current vs Previous Month when viewing "All Time"
             $currentMonthQuery = clone $previousPeriodQuery;
             $currentCountForTrend = $currentMonthQuery->whereYear('created_at', date('Y'))->whereMonth('created_at', date('m'))->count();
-            
+
             $prevMonth = date('m') - 1;
             $prevYear = date('Y');
-            if ($prevMonth == 0) { $prevMonth = 12; $prevYear--; }
+            if ($prevMonth == 0) {
+                $prevMonth = 12;
+                $prevYear--;
+            }
             $previousPeriodQuery->whereYear('created_at', $prevYear)->whereMonth('created_at', $prevMonth);
         }
 
         $previousCount = $previousPeriodQuery->count();
-        $submissionsGrowthRate = $previousCount > 0 
-            ? round((($currentCountForTrend - $previousCount) / $previousCount) * 100) 
+        $submissionsGrowthRate = $previousCount > 0
+            ? round((($currentCountForTrend - $previousCount) / $previousCount) * 100)
             : ($currentCountForTrend > 0 ? 100 : 0);
 
         // 2. Approved (Approved Status - matching the chart filter)
@@ -255,16 +267,16 @@ class AdminController extends Controller
         // Count Revisions / Bounced Back
         $revisionsCount = (clone $baseQuery)->where(function ($query) {
             $query->whereIn('Status', [
-                'Incomplete', 
-                'Incomplete - Awaiting Hardcopy', 
-                'Incomplete Hardcopy', 
-                'Waiting for Revision', 
+                'Incomplete',
+                'Incomplete - Awaiting Hardcopy',
+                'Incomplete Hardcopy',
+                'Waiting for Revision',
                 'Revision Submitted'
             ])
-            ->orWhereHas('feedbacks')
-            ->orWhereHas('revisionLogs');
+                ->orWhereHas('feedbacks')
+                ->orWhereHas('revisionLogs');
         })->count();
-        
+
         $revisionsRate = $totalSubmissions > 0 ? round(($revisionsCount / $totalSubmissions) * 100) : 0;
 
         // 3. Active Researchers
@@ -273,7 +285,7 @@ class AdminController extends Controller
         // 4. Submission Trends (Daily/Monthly/Yearly)
         $dailyData = [];
         $dayLabels = [];
-        
+
         if ($selectedYear === 'all' && $selectedMonth === 'all') {
             // Group by year
             $yearlyStats = (clone $baseQuery)
@@ -281,10 +293,11 @@ class AdminController extends Controller
                 ->groupBy('year')
                 ->pluck('count', 'year')
                 ->toArray();
-                
+
             ksort($yearlyStats);
             foreach ($yearlyStats as $year => $count) {
-                if (!$year) continue;
+                if (!$year)
+                    continue;
                 $dailyData[] = $count;
                 $dayLabels[] = (string) $year;
             }
@@ -300,7 +313,7 @@ class AdminController extends Controller
                 ->groupBy('month')
                 ->pluck('count', 'month')
                 ->toArray();
-                
+
             for ($i = 1; $i <= 12; $i++) {
                 $dailyData[] = $monthlyStats[$i] ?? 0;
                 $dayLabels[] = date('M', mktime(0, 0, 0, $i, 10)); // Jan, Feb...
@@ -336,7 +349,7 @@ class AdminController extends Controller
                 ->groupBy('researchers.department')
                 ->pluck('count', 'name')
                 ->toArray();
-                
+
             $collegeRecord = \App\Models\College::where('name', $selectedCollege)->first();
             $allEntities = $collegeRecord ? $collegeRecord->departments()->pluck('name')->toArray() : [];
             $topSubmittersLabel = 'Top Departments';
@@ -349,14 +362,14 @@ class AdminController extends Controller
                 ->groupBy('researchers.college')
                 ->pluck('count', 'name')
                 ->toArray();
-                
+
             $allEntities = \App\Models\College::pluck('name')->toArray();
             $topSubmittersLabel = 'Top Submitting Colleges';
         }
-        
+
         $allSubmittersCollection = collect();
         foreach ($allEntities as $entityName) {
-            $allSubmittersCollection->push((object)[
+            $allSubmittersCollection->push((object) [
                 'name' => $entityName,
                 'count' => $activeSubmittersQuery[$entityName] ?? 0,
             ]);
@@ -364,13 +377,13 @@ class AdminController extends Controller
         // Include any active submitters that might not be in the predefined list (e.g., misspelled legacy data)
         foreach ($activeSubmittersQuery as $name => $count) {
             if (!in_array($name, $allEntities)) {
-                $allSubmittersCollection->push((object)[
+                $allSubmittersCollection->push((object) [
                     'name' => $name,
                     'count' => $count,
                 ]);
             }
         }
-        
+
         $allSubmitters = $allSubmittersCollection->sortByDesc('count')->values();
         $topSubmitters = $allSubmitters->take(5);
         $topSubmittersMax = $topSubmitters->max('count') ?: 1;
@@ -378,10 +391,10 @@ class AdminController extends Controller
 
         // 6. Active Pipeline Stages
         $pipelineStages = [
-            ['label' => 'Pending Intake',        'count' => (clone $baseQuery)->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy'])->count(), 'color' => 'slate'],
-            ['label' => 'Under Review',          'count' => (clone $baseQuery)->whereIn('Status', ['For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review'])->count(), 'color' => 'blue'],
+            ['label' => 'Pending Intake', 'count' => (clone $baseQuery)->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy'])->count(), 'color' => 'slate'],
+            ['label' => 'Under Review', 'count' => (clone $baseQuery)->whereIn('Status', ['For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review'])->count(), 'color' => 'blue'],
             ['label' => 'Waiting for Revisions', 'count' => (clone $baseQuery)->whereIn('Status', ['Waiting for Revision'])->count(), 'color' => 'amber'],
-            ['label' => 'Final Verification',    'count' => (clone $baseQuery)->whereIn('Status', ['Complete - Awaiting Hardcopy'])->count(), 'color' => 'emerald'],
+            ['label' => 'Final Verification', 'count' => (clone $baseQuery)->whereIn('Status', ['Complete - Awaiting Hardcopy'])->count(), 'color' => 'emerald'],
         ];
         $pipelineMax = max(array_column($pipelineStages, 'count')) ?: 1;
 
@@ -411,7 +424,7 @@ class AdminController extends Controller
             ->pluck('Review_Type')
             ->sort()
             ->values();
-            
+
         $thesisTypes = \App\Models\ResearchCategory::pluck('name')
             ->sort()
             ->values();
@@ -433,18 +446,18 @@ class AdminController extends Controller
                 'Approved',
                 'Disapproved',
                 'Complete - Awaiting Hardcopy',
-                'Completed' 
+                'Completed'
             ]
         ];
-            
+
         $researchCategories = [
-            "Biomedical Studies", 
-            "Health Operations research", 
-            "Social Research", 
-            "Public Health Research", 
+            "Biomedical Studies",
+            "Health Operations research",
+            "Social Research",
+            "Public Health Research",
             "Clinical trials"
         ];
-        
+
         $colleges = \App\Models\College::all();
 
         return view('admin.Analytics', compact(
@@ -550,14 +563,14 @@ class AdminController extends Controller
         // 4. Handle Reviewer Assignment (Radio)
         if ($request->filled('assignment')) {
             if ($request->assignment === 'Unassigned') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->whereNull('assigned_reviewers')
-                      ->orWhereJsonLength('assigned_reviewers', 0)
-                      ->orWhere('assigned_reviewers', '[]');
+                        ->orWhereJsonLength('assigned_reviewers', 0)
+                        ->orWhere('assigned_reviewers', '[]');
                 });
             } elseif ($request->assignment === 'Assigned') {
                 $query->whereNotNull('assigned_reviewers')
-                      ->where('assigned_reviewers', '!=', '[]'); // Depending on how DB casts it
+                    ->where('assigned_reviewers', '!=', '[]'); // Depending on how DB casts it
             }
         }
 
@@ -776,7 +789,7 @@ class AdminController extends Controller
                 $submission->Status = $newStatus;
                 $submission->save();
                 $missingDocs = $request->input('missing_requirements', []);
-                
+
                 // Store in Feedbacks Table
                 SubmissionFeedback::create([
                     'research_title_id' => $submission->id,
@@ -810,7 +823,7 @@ class AdminController extends Controller
 
             } elseif ($request->classification === 'Revert Phase') {
                 $currentStatus = $submission->Status;
-                
+
                 switch ($currentStatus) {
                     case 'Reviewed':
                         $newStatus = 'Under Review';
@@ -847,7 +860,7 @@ class AdminController extends Controller
                 $submission->Status = $newStatus;
                 $submission->save();
 
-                
+
             } elseif ($request->classification === 'Hardcopy Complete') {
                 $newStatus = 'Hardcopy Received';
                 $submission->Status = $newStatus;
@@ -855,19 +868,19 @@ class AdminController extends Controller
                     $submission->Review_Type = 'Unassigned';
                 }
                 $submission->save();
-                
+
                 $message = "Your hardcopy for \"{$submission->Study_Protocol_title}\" has been received and verified.";
 
             } elseif ($request->classification === 'Hardcopy Incomplete') {
                 $request->validate([
                     'appointment_date' => 'required|date',
-                    'remarks'          => 'required|string',
+                    'remarks' => 'required|string',
                 ]);
 
                 $newStatus = 'Incomplete Hardcopy';
                 $submission->Status = $newStatus;
                 $submission->save();
-                
+
                 SubmissionFeedback::create([
                     'research_title_id' => $submission->id,
                     'user_id' => auth()->id(),
@@ -875,7 +888,7 @@ class AdminController extends Controller
                     'message' => $request->remarks,
                     'missing_requirements' => [],
                 ]);
-                
+
                 $appointment = Appointment::where('research_title_id', $submission->id)
                     ->where('stage', 'Hardcopy Submission')
                     ->first();
@@ -886,9 +899,9 @@ class AdminController extends Controller
                 } else {
                     Appointment::create([
                         'research_title_id' => $submission->id,
-                        'user_id'           => $user->user_id,
-                        'appointment_date'  => $request->appointment_date,
-                        'stage'             => 'Hardcopy Submission',
+                        'user_id' => $user->user_id,
+                        'appointment_date' => $request->appointment_date,
+                        'stage' => 'Hardcopy Submission',
                     ]);
                 }
 
@@ -990,7 +1003,7 @@ class AdminController extends Controller
                 $message = "Your research protocol \"{$submission->Study_Protocol_title}\" has been Disapproved.";
                 if ($request->remarks) {
                     $message .= "\n\nReason: " . $request->remarks;
-                    
+
                     SubmissionFeedback::create([
                         'research_title_id' => $submission->id,
                         'message' => $request->remarks,
@@ -1050,7 +1063,7 @@ class AdminController extends Controller
         if (empty($request->reviewers)) {
             $submission->assigned_reviewers = null;
             $submission->reviewers()->detach();
-            
+
             // If they are unassigning reviewers mid-way, it reverts to Hardcopy Received
             if (in_array($submission->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed'])) {
                 $submission->Status = 'Hardcopy Received';
@@ -1058,13 +1071,13 @@ class AdminController extends Controller
             $actionMessage = 'Reviewers unassigned successfully.';
         } else {
             $submission->assigned_reviewers = $request->reviewers;
-            
+
             // Attach via pivot table. If multiple, all are Primary Reviewer for now.
             $submission->reviewers()->syncWithPivotValues($request->reviewers, [
                 'role' => 'Primary Reviewer',
                 'status' => 'Pending'
             ]);
-            
+
             // Even if mid-review, changing reviewers resets to Reviewer Assigned
             if (in_array($submission->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review', 'Reviewed'])) {
                 $submission->Status = 'Reviewer Assigned';
@@ -1075,7 +1088,7 @@ class AdminController extends Controller
         $submission->save();
 
         if (!empty($request->reviewers)) {
-            $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function($user) {
+            $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function ($user) {
                 return $user->first_name . ' ' . $user->last_name;
             })->implode(', ');
         }
@@ -1217,13 +1230,13 @@ class AdminController extends Controller
         // Load all reviewer file remarks for this title's files, grouped by researcher_file_id
         try {
             $allFileRemarks = \App\Models\ReviewerFileRemark::with('reviewer')
-                ->whereIn('researcher_file_id', function($query) use ($id) {
-                    $query->select('researcher_file_id')
-                          ->from('research_title_files')
-                          ->where('research_title_id', $id);
+                ->whereIn('file_id', function ($query) use ($id) {
+                    $query->select('id')
+                        ->from('researcher_files')
+                        ->where('research_title_id', $id);
                 })
                 ->get()
-                ->groupBy('researcher_file_id');
+                ->groupBy('file_id');
         } catch (\Exception $e) {
             $allFileRemarks = collect();
         }
@@ -1390,7 +1403,7 @@ class AdminController extends Controller
 
         // Add page matching the template's orientation and size
         $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
-        
+
         // Import template covering the full page
         $pdf->useTemplate($tplIdx, 0, 0, $size['width'], $size['height']);
 
@@ -1437,7 +1450,7 @@ class AdminController extends Controller
         $pdf->SetFont('Arial', 'B', 12); // Make X bold and slightly larger
         $x = 12.7; // Base X for checkboxes (adjust if needed, user code had $x undefined but used it)
         // Looking at user code: checkAndMark($pdf, $x, 96.5, '1', $protocolChecks);
-      
+
 
         // Protocol/Proposal Checks
         $protocolChecks = $request->input('ethics_review_1', []);
@@ -1596,15 +1609,15 @@ class AdminController extends Controller
 
         if ($action === 'preview_cert' || $action === 'generate') {
             $rules = array_merge($rules, [
-                'cert_reo_summary'   => 'nullable|string|max:2000',
+                'cert_reo_summary' => 'nullable|string|max:2000',
             ]);
         }
 
         if ($action === 'preview_cover' || $action === 'generate') {
             $rules = array_merge($rules, [
-                'cover_version'         => 'nullable|string|max:50',
+                'cover_version' => 'nullable|string|max:50',
                 'cover_approved_period' => $action === 'generate' ? 'required|date' : 'nullable|date',
-                'cover_expiry_date'     => $action === 'generate' ? 'required|date|after_or_equal:cover_approved_period' : 'nullable|date',
+                'cover_expiry_date' => $action === 'generate' ? 'required|date|after_or_equal:cover_approved_period' : 'nullable|date',
             ]);
         }
 
@@ -1613,8 +1626,8 @@ class AdminController extends Controller
         }
 
         $rules['shared_researchers'] = $action === 'generate' ? 'required|string|max:1000' : 'nullable|string|max:1000';
-        $rules['shared_title']       = $action === 'generate' ? 'required|string|max:500' : 'nullable|string|max:500';
-        $rules['shared_reo_code']    = 'nullable|string|max:100';
+        $rules['shared_title'] = $action === 'generate' ? 'required|string|max:500' : 'nullable|string|max:500';
+        $rules['shared_reo_code'] = 'nullable|string|max:100';
 
         $request->validate($rules);
 
@@ -1630,173 +1643,173 @@ class AdminController extends Controller
         }
 
         $approvedFormatted = $request->has('cover_approved_period') ? Carbon::parse($request->cover_approved_period)->format('F j, Y') : '';
-        $expiryFormatted   = $request->has('cover_expiry_date') ? Carbon::parse($request->cover_expiry_date)->format('F j, Y') : '';
-        $formattedPickup   = $request->has('pickup_date') ? Carbon::parse($request->pickup_date)->format('F j, Y') : '';
+        $expiryFormatted = $request->has('cover_expiry_date') ? Carbon::parse($request->cover_expiry_date)->format('F j, Y') : '';
+        $formattedPickup = $request->has('pickup_date') ? Carbon::parse($request->pickup_date)->format('F j, Y') : '';
 
         // ----------------------------------------------------------------
         // 1. Generate Cover Letter
         // ----------------------------------------------------------------
         if ($action === 'preview_cover' || $action === 'generate') {
-        $coverTemplatePath = storage_path('app/public/certificates/Cover Letter.pdf');
-        if (!file_exists($coverTemplatePath)) {
-            return back()->with('error', 'Cover Letter template not found.');
-        }
+            $coverTemplatePath = storage_path('app/public/certificates/Cover Letter.pdf');
+            if (!file_exists($coverTemplatePath)) {
+                return back()->with('error', 'Cover Letter template not found.');
+            }
 
-        $coverPdf = new \setasign\Fpdi\Tcpdf\Fpdi();
-        $coverPdf->setSourceFile($coverTemplatePath);
-        $coverTpl = $coverPdf->importPage(1);
-        $size = $coverPdf->getTemplateSize($coverTpl);
-        $coverPdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
-        $coverPdf->useTemplate($coverTpl, 0, 0, $size['width'], $size['height']);
-        $coverPdf->SetAutoPageBreak(false);
-        $coverPdf->SetFont('helvetica', '', 11);
-        $coverPdf->SetTextColor(0, 0, 0);
+            $coverPdf = new \setasign\Fpdi\Tcpdf\Fpdi();
+            $coverPdf->setSourceFile($coverTemplatePath);
+            $coverTpl = $coverPdf->importPage(1);
+            $size = $coverPdf->getTemplateSize($coverTpl);
+            $coverPdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+            $coverPdf->useTemplate($coverTpl, 0, 0, $size['width'], $size['height']);
+            $coverPdf->SetAutoPageBreak(false);
+            $coverPdf->SetFont('helvetica', '', 11);
+            $coverPdf->SetTextColor(0, 0, 0);
 
-        // REO Code
-        if ($request->shared_reo_code) {
-            $coverPdf->SetXY(67, 126.6);
-            $coverPdf->Write(0, $request->shared_reo_code);
-        }
+            // REO Code
+            if ($request->shared_reo_code) {
+                $coverPdf->SetXY(67, 126.6);
+                $coverPdf->Write(0, $request->shared_reo_code);
+            }
 
-        // Title
-        $coverPdf->SetXY(67, 139);
-        $coverPdf->MultiCell(103, 4, $request->shared_title, 0, 'L');
-        // Approved period
-        $coverPdf->SetXY(67, 158);
-        $coverPdf->Write(0, $approvedFormatted);
-        // Expiry date
-        $coverPdf->SetXY(67, 163);
-        $coverPdf->Write(0, $expiryFormatted);
+            // Title
+            $coverPdf->SetXY(67, 139);
+            $coverPdf->MultiCell(103, 4, $request->shared_title, 0, 'L');
+            // Approved period
+            $coverPdf->SetXY(67, 158);
+            $coverPdf->Write(0, $approvedFormatted);
+            // Expiry date
+            $coverPdf->SetXY(67, 163);
+            $coverPdf->Write(0, $expiryFormatted);
 
-        // Version
-        if ($request->cover_version) {
-            $coverPdf->SetXY(67, 199); // Placing version under title
-            $coverPdf->Write(0, $request->cover_version);
-        }
+            // Version
+            if ($request->cover_version) {
+                $coverPdf->SetXY(67, 199); // Placing version under title
+                $coverPdf->Write(0, $request->cover_version);
+            }
 
 
-        // Researcher
-        $coverPdf->SetXY(67, 172);
-        // Explicitly set alignment to 'L' (Left) so names don't spread out to fill the 90mm width
-        $coverPdf->MultiCell(90, 4, $request->shared_researchers, 0, 'L');
+            // Researcher
+            $coverPdf->SetXY(67, 172);
+            // Explicitly set alignment to 'L' (Left) so names don't spread out to fill the 90mm width
+            $coverPdf->MultiCell(90, 4, $request->shared_researchers, 0, 'L');
 
-        if ($action === 'preview_cover') {
-            return response($coverPdf->Output('Preview_Cover_Letter.pdf', 'S'), 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="Preview_Cover_Letter.pdf"'
+            if ($action === 'preview_cover') {
+                return response($coverPdf->Output('Preview_Cover_Letter.pdf', 'S'), 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="Preview_Cover_Letter.pdf"'
+                ]);
+            }
+
+            $coverFilename = 'Cover_Letter_' . $submission->id . '_' . time() . '.pdf';
+            $coverPath = "uploads/research_{$submission->id}/" . $coverFilename;
+
+            // Ensure directory exists in public_uploads disk
+            if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
+                Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
+            }
+
+            // Write file using public_uploads to guarantee it is served directly from /public/uploads/ bypassing /storage symlinks
+            Storage::disk('public_uploads')->put($coverPath, $coverPdf->Output($coverFilename, 'S'));
+
+            researcher_files::create([
+                'research_title_id' => $submission->id,
+                'filename' => 'Cover Letter of Approval',
+                'filetype' => 'Approval Letter',
+                'filepath' => $coverPath,
             ]);
-        }
-
-        $coverFilename   = 'Cover_Letter_' . $submission->id . '_' . time() . '.pdf';
-        $coverPath = "uploads/research_{$submission->id}/" . $coverFilename;
-
-        // Ensure directory exists in public_uploads disk
-        if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
-            Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
-        }
-        
-        // Write file using public_uploads to guarantee it is served directly from /public/uploads/ bypassing /storage symlinks
-        Storage::disk('public_uploads')->put($coverPath, $coverPdf->Output($coverFilename, 'S'));
-
-        researcher_files::create([
-            'research_title_id' => $submission->id,
-            'filename'          => 'Cover Letter of Approval',
-            'filetype'          => 'Approval Letter',
-            'filepath'          => $coverPath,
-        ]);
         }
 
         // ----------------------------------------------------------------
         // 2. Generate Certificate of Exemption
         // ----------------------------------------------------------------
         if ($action === 'preview_cert' || $action === 'generate') {
-        $certTemplatePath = storage_path('app/public/certificates/2026-Certificate of Exemption template.pdf');
-        if (!file_exists($certTemplatePath)) {
-            return back()->with('error', 'Certificate of Exemption template not found.');
-        }
+            $certTemplatePath = storage_path('app/public/certificates/2026-Certificate of Exemption template.pdf');
+            if (!file_exists($certTemplatePath)) {
+                return back()->with('error', 'Certificate of Exemption template not found.');
+            }
 
-        // Map TCPDF font cache to the pre-compiled directory to avoid on-the-fly generation issues
-        if (!defined('K_PATH_FONTS')) {
-            define('K_PATH_FONTS', public_path('fonts/tcpdf/'));
-        }
+            // Map TCPDF font cache to the pre-compiled directory to avoid on-the-fly generation issues
+            if (!defined('K_PATH_FONTS')) {
+                define('K_PATH_FONTS', public_path('fonts/tcpdf/'));
+            }
 
-        $certPdf = new \setasign\Fpdi\Tcpdf\Fpdi();
-        $certPdf->setSourceFile($certTemplatePath);
-        $certTpl   = $certPdf->importPage(1);
-        $certSize  = $certPdf->getTemplateSize($certTpl);
-        $certPdf->AddPage($certSize['orientation'], [$certSize['width'], $certSize['height']]);
-        $certPdf->useTemplate($certTpl, 0, 0, $certSize['width'], $certSize['height']);
-        $certPdf->SetAutoPageBreak(false);
-        $certPdf->SetTextColor(0, 0, 0);
+            $certPdf = new \setasign\Fpdi\Tcpdf\Fpdi();
+            $certPdf->setSourceFile($certTemplatePath);
+            $certTpl = $certPdf->importPage(1);
+            $certSize = $certPdf->getTemplateSize($certTpl);
+            $certPdf->AddPage($certSize['orientation'], [$certSize['width'], $certSize['height']]);
+            $certPdf->useTemplate($certTpl, 0, 0, $certSize['width'], $certSize['height']);
+            $certPdf->SetAutoPageBreak(false);
+            $certPdf->SetTextColor(0, 0, 0);
 
-        $w = $certSize['width'];
+            $w = $certSize['width'];
 
-        // ── Names (researcher/s) — Nautilus Pompilius 18pt, centered, #6d412a ──
-        // K_PATH_FONTS is already defined above as public/fonts/tcpdf/
-        // TCPDF_FONTS::addTTFfont() converts the TTF and writes the cache files there.
-        $certPdf->SetTextColor(109, 65, 42); // #6d412a
-        $nautilusFontName = \TCPDF_FONTS::addTTFfont(
-            public_path('fonts/Nautilus.ttf'), // source TTF
-            'TrueTypeUnicode',                 // font type
-            '',                                // encoding
-            32,                                // flags
-            public_path('fonts/tcpdf/')        // output directory (= K_PATH_FONTS)
-        );
-        if (!$nautilusFontName) {
-            // Fallback to helvetica if Nautilus conversion fails
-            $nautilusFontName = 'helvetica';
-        }
-        $certPdf->SetFont($nautilusFontName, '', 18);
-        $certPdf->SetXY(30, 90);
-        $certPdf->MultiCell($w - 60, 6, $request->shared_researchers, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
+            // ── Names (researcher/s) — Nautilus Pompilius 18pt, centered, #6d412a ──
+            // K_PATH_FONTS is already defined above as public/fonts/tcpdf/
+            // TCPDF_FONTS::addTTFfont() converts the TTF and writes the cache files there.
+            $certPdf->SetTextColor(109, 65, 42); // #6d412a
+            $nautilusFontName = \TCPDF_FONTS::addTTFfont(
+                public_path('fonts/Nautilus.ttf'), // source TTF
+                'TrueTypeUnicode',                 // font type
+                '',                                // encoding
+                32,                                // flags
+                public_path('fonts/tcpdf/')        // output directory (= K_PATH_FONTS)
+            );
+            if (!$nautilusFontName) {
+                // Fallback to helvetica if Nautilus conversion fails
+                $nautilusFontName = 'helvetica';
+            }
+            $certPdf->SetFont($nautilusFontName, '', 18);
+            $certPdf->SetXY(30, 90);
+            $certPdf->MultiCell($w - 60, 6, $request->shared_researchers, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
 
-        // ── Title — Colette 11pt, centered, #2b1511 ──
-        // Note: only colette.php (Regular) is compiled — no bold variant exists.
-        $certPdf->SetTextColor(43, 21, 17); // #2b1511
-        $certPdf->SetFont('colette', '', 11);
-        $certPdf->SetXY(70, 157.5);
-        $certPdf->MultiCell(115, 6, $request->shared_title, 0, 'C');
-
-        // ── REO Code — Colette 11pt, centered, #2b1511 ──
-        if ($request->shared_reo_code) {
-            $certPdf->SetFont('colette', '', 11);
-            $certPdf->SetXY(20, 176);
-            $certPdf->Cell($w - 60, 6, $request->shared_reo_code, 0, 0, 'C');
-        }
-
-        // ── Summary / scope of exemption — Montserrat 11pt, justified, #2b1511 ──
-        // montserrat.php is pre-compiled in public/fonts/tcpdf/
-        if ($request->cert_reo_summary) {
+            // ── Title — Colette 11pt, centered, #2b1511 ──
+            // Note: only colette.php (Regular) is compiled — no bold variant exists.
             $certPdf->SetTextColor(43, 21, 17); // #2b1511
-            $certPdf->SetFont('montserrat', '', 11);
-            $certPdf->SetXY(30, 185);
-            $certPdf->MultiCell($w - 60, 5, $request->cert_reo_summary, 0, 'J', false, 1, null, null, true, 0, false, true, 0, 'T', false);
-        }
+            $certPdf->SetFont('colette', '', 11);
+            $certPdf->SetXY(70, 157.5);
+            $certPdf->MultiCell(115, 6, $request->shared_title, 0, 'C');
 
-        if ($action === 'preview_cert') {
-            return response($certPdf->Output('Preview_Certificate_of_Exemption.pdf', 'S'), 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="Preview_Certificate_of_Exemption.pdf"'
+            // ── REO Code — Colette 11pt, centered, #2b1511 ──
+            if ($request->shared_reo_code) {
+                $certPdf->SetFont('colette', '', 11);
+                $certPdf->SetXY(20, 176);
+                $certPdf->Cell($w - 60, 6, $request->shared_reo_code, 0, 0, 'C');
+            }
+
+            // ── Summary / scope of exemption — Montserrat 11pt, justified, #2b1511 ──
+            // montserrat.php is pre-compiled in public/fonts/tcpdf/
+            if ($request->cert_reo_summary) {
+                $certPdf->SetTextColor(43, 21, 17); // #2b1511
+                $certPdf->SetFont('montserrat', '', 11);
+                $certPdf->SetXY(30, 185);
+                $certPdf->MultiCell($w - 60, 5, $request->cert_reo_summary, 0, 'J', false, 1, null, null, true, 0, false, true, 0, 'T', false);
+            }
+
+            if ($action === 'preview_cert') {
+                return response($certPdf->Output('Preview_Certificate_of_Exemption.pdf', 'S'), 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="Preview_Certificate_of_Exemption.pdf"'
+                ]);
+            }
+
+            $certFilename = 'Certificate_' . $submission->id . '_' . time() . '.pdf';
+            $certPath = "uploads/research_{$submission->id}/" . $certFilename;
+
+            // Ensure directory exists in public_uploads disk
+            if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
+                Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
+            }
+
+            // Write file using public_uploads disk
+            Storage::disk('public_uploads')->put($certPath, $certPdf->Output($certFilename, 'S'));
+
+            researcher_files::create([
+                'research_title_id' => $submission->id,
+                'filename' => 'Ethics Clearance Certificate',
+                'filetype' => 'certificate',
+                'filepath' => $certPath,
             ]);
-        }
-
-        $certFilename   = 'Certificate_' . $submission->id . '_' . time() . '.pdf';
-        $certPath = "uploads/research_{$submission->id}/" . $certFilename;
-
-        // Ensure directory exists in public_uploads disk
-        if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
-            Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
-        }
-        
-        // Write file using public_uploads disk
-        Storage::disk('public_uploads')->put($certPath, $certPdf->Output($certFilename, 'S'));
-
-        researcher_files::create([
-            'research_title_id' => $submission->id,
-            'filename'          => 'Ethics Clearance Certificate',
-            'filetype'          => 'certificate',
-            'filepath'          => $certPath,
-        ]);
         }
 
         if ($action === 'generate') {
@@ -1806,18 +1819,18 @@ class AdminController extends Controller
             $pickupDate = Carbon::parse($request->pickup_date);
             Appointment::create([
                 'research_title_id' => $submission->id,
-                'user_id'           => $submission->researcher->user_id,
-                'appointment_date'  => $pickupDate->setTime(9, 0),
-                'stage'             => 'Certificate Pickup',
+                'user_id' => $submission->researcher->user_id,
+                'appointment_date' => $pickupDate->setTime(9, 0),
+                'stage' => 'Certificate Pickup',
             ]);
 
             UserNotification::create([
-                'user_id'     => $submission->researcher->user_id,
+                'user_id' => $submission->researcher->user_id,
                 'research_id' => $submission->id,
-                'title'       => 'Certification Documents Ready',
-                'message'     => "Your Cover Letter of Approval and Research Ethics Clearance Certificate for \"{$submission->Study_Protocol_title}\" have been generated and are ready for pickup at the REO building on {$formattedPickup}.",
-                'type'        => 'status_update',
-                'is_read'     => false,
+                'title' => 'Certification Documents Ready',
+                'message' => "Your Cover Letter of Approval and Research Ethics Clearance Certificate for \"{$submission->Study_Protocol_title}\" have been generated and are ready for pickup at the REO building on {$formattedPickup}.",
+                'type' => 'status_update',
+                'is_read' => false,
             ]);
 
             return redirect()
@@ -2094,12 +2107,12 @@ class AdminController extends Controller
         $defaultMessage = "Action Required: Your research protocol \"{$title->Study_Protocol_title}\" cannot proceed to the Revision stage until your Official Receipt (OR) has been submitted and verified. Please submit your Official Receipt at your earliest convenience.";
 
         UserNotification::create([
-            'user_id'     => $userId,
+            'user_id' => $userId,
             'research_id' => $id,
-            'title'       => 'Official Receipt Required',
-            'message'     => $customMessage ?: $defaultMessage,
-            'type'        => 'receipt_reminder',
-            'is_read'     => false,
+            'title' => 'Official Receipt Required',
+            'message' => $customMessage ?: $defaultMessage,
+            'type' => 'receipt_reminder',
+            'is_read' => false,
         ]);
 
         if ($request->ajax()) {

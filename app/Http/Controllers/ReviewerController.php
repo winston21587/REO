@@ -89,10 +89,19 @@ class ReviewerController extends Controller
         $requirementsMap = \App\Models\DocumentRequirement::all()->keyBy('name')->toArray();
         $backUrl = url()->previous(route('reviewer.dashboard'));
         
-        $myFileRemarks = \App\Models\ReviewerFileRemark::where('research_title_id', $id)
-            ->where('reviewer_id', Auth::id())
-            ->get()
-            ->keyBy('file_id');
+        try {
+            $myFileRemarks = \App\Models\ReviewerFileRemark::whereIn('file_id', function($query) use ($id) {
+                // researcher_files links to research_title_information via the research_title_files pivot
+                $query->select('researcher_file_id')
+                      ->from('research_title_files')
+                      ->where('research_title_id', $id);
+            })
+                ->where('reviewer_id', Auth::id())
+                ->get()
+                ->keyBy('file_id');
+        } catch (\Exception $e) {
+            $myFileRemarks = collect();
+        }
 
         return view('reviewer.view_files', compact('researchTitle', 'backUrl', 'requirementsMap', 'myFileRemarks'));
     }
@@ -190,7 +199,6 @@ class ReviewerController extends Controller
             if (!empty(trim($remark))) {
                 \App\Models\ReviewerFileRemark::updateOrCreate(
                     [
-                        'research_title_id' => $submission->id,
                         'reviewer_id' => Auth::id(),
                         'file_id' => $fileId
                     ],

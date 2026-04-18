@@ -1,0 +1,14 @@
+{
+    "result": "Error",
+    "message": "SQLSTATE[HY000]: General error: 1364 Field 'researcher_file_id' doesn't have a default value (Connection: mysql, SQL: insert into `reviewer_file_remarks` (`reviewer_id`, `file_id`, `remarks`, `research_title_id`, `updated_at`, `created_at`) values (10, 77, test test, 6, 2026-04-18 17:01:37, 2026-04-18 17:01:37))",
+    "log": [
+        {
+            "query": "select * from `reviewer_file_remarks` where (`reviewer_id` = ? and `file_id` = ?) limit 1",
+            "bindings": [
+                10,
+                77
+            ],
+            "time": 3.17
+        }
+    ]
+}

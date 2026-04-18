@@ -91,15 +91,14 @@ class ReviewerController extends Controller
         $backUrl = url()->previous(route('reviewer.dashboard'));
 
         try {
-            $myFileRemarks = \App\Models\ReviewerFileRemark::whereIn('file_id', function ($query) use ($id) {
-                // researcher_files has a direct foreign key to research_title
+            $myFileRemarks = \App\Models\ReviewerFileRemark::whereIn('researcher_file_id', function ($query) use ($id) {
                 $query->select('id')
                     ->from('researcher_files')
                     ->where('research_title_id', $id);
             })
                 ->where('reviewer_id', Auth::id())
                 ->get()
-                ->keyBy('file_id');
+                ->keyBy('researcher_file_id');
         } catch (\Exception $e) {
             \Log::error('Error loading remarks: ' . $e->getMessage());
             $myFileRemarks = collect();
@@ -202,7 +201,7 @@ class ReviewerController extends Controller
                 \App\Models\ReviewerFileRemark::updateOrCreate(
                     [
                         'reviewer_id' => Auth::id(),
-                        'file_id' => $fileId
+                        'researcher_file_id' => $fileId
                     ],
                     [
                         'remarks' => trim($remark),
@@ -252,15 +251,30 @@ class ReviewerController extends Controller
             ]);
         }
 
-        $submission->Status = 'Reviewed';
+        // Mark this reviewer's assignment as completed
+        $submission->reviewers()->updateExistingPivot(Auth::id(), ['status' => 'Completed']);
+
+        // Only mark the overall submission as 'Reviewed' when ALL assigned reviewers are done
+        $allDone = $submission->reviewers()->wherePivot('status', '!=', 'Completed')->doesntExist();
+        if ($allDone) {
+            $submission->Status = 'Reviewed';
+        } else {
+            // Keep active status so remaining reviewers can still work
+            if (!in_array($submission->Status, ['Under Review', 'Reviewing Revisions'])) {
+                $submission->Status = 'Under Review';
+            }
+        }
         $submission->save();
 
         // Redirect based on context
         if ($isReEvaluation) {
-            return redirect()->route('reviewer.reevaluation')->with('success', 'Re-evaluation completed successfully!');
+            return redirect()->route('reviewer.reevaluation')->with('success', 'Re-evaluation completed. Waiting for other reviewers.');
         }
 
-        return redirect()->route('reviewer.dashboard')->with('success', 'Protocol review marked as complete!');
+        if ($allDone) {
+            return redirect()->route('reviewer.reviewed_titles')->with('success', 'All reviewers have completed. Protocol marked as Reviewed!');
+        }
+        return redirect()->route('reviewer.reviewed_titles')->with('success', 'Your review is complete. Waiting for other reviewers to finish.');
     }
 
     public function saveFileRemark(Request $request, $fileId)
@@ -289,11 +303,11 @@ class ReviewerController extends Controller
         if ($remark === '') {
             // Delete existing remark if cleared
             \App\Models\ReviewerFileRemark::where('reviewer_id', Auth::id())
-                ->where('file_id', $fileId)
+                ->where('researcher_file_id', $fileId)
                 ->delete();
         } else {
             \App\Models\ReviewerFileRemark::updateOrCreate(
-                ['reviewer_id' => Auth::id(), 'file_id' => $fileId],
+                ['reviewer_id' => Auth::id(), 'researcher_file_id' => $fileId],
                 ['remarks' => $remark, 'research_title_id' => $titleId]
             );
         }

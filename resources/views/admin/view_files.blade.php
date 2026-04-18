@@ -320,7 +320,51 @@
                 </div>
                 @endif
 
-                <!-- ===== Reviewer Deliberation Reports (Feedback) ===== -->
+                {{-- ===== Reviewer Status Card ===== --}}
+                @if($reviewerAssignments->count() > 0)
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fas fa-users text-violet-500"></i>
+                        Reviewer Status
+                        @php
+                            $doneCount = $reviewerAssignments->filter(fn($r) => $r->pivot->status === 'Completed')->count();
+                            $totalCount = $reviewerAssignments->count();
+                        @endphp
+                        <span class="ml-auto text-[9px] font-black px-2 py-0.5 rounded-full {{ $doneCount === $totalCount ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' }}">
+                            {{ $doneCount }}/{{ $totalCount }} Done
+                        </span>
+                    </p>
+                    <div class="space-y-2">
+                        @foreach($reviewerAssignments as $rv)
+                        @php
+                            $isDone = $rv->pivot->status === 'Completed';
+                            $rvName = $rv->first_name . ' ' . $rv->last_name;
+                            $rvInitial = strtoupper(substr($rv->first_name, 0, 1));
+                        @endphp
+                        <div class="flex items-center gap-3 p-2.5 rounded-xl {{ $isDone ? 'bg-green-50 border border-green-100' : 'bg-amber-50 border border-amber-100' }}">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0 {{ $isDone ? 'bg-green-600 text-white' : 'bg-amber-400 text-white' }}">
+                                {{ $rvInitial }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-bold text-slate-800 truncate">{{ $rvName }}</p>
+                                <p class="text-[9px] font-semibold {{ $isDone ? 'text-green-600' : 'text-amber-600' }}">
+                                    {{ $isDone ? 'Done Reviewing' : 'Still Reviewing' }}
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0">
+                                @if($isDone)
+                                    <i class="fas fa-check-circle text-green-500 text-base"></i>
+                                @else
+                                    <i class="fas fa-spinner fa-spin text-amber-400 text-base"></i>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                {{-- ===== Reviewer Deliberation Reports (Feedback) ===== --}}
                 @if($reviewerDecisions->count() > 0)
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
                     <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -785,27 +829,6 @@
                     </div>
                 </div>
 
-                </div>
-
-                <!-- Reviewer Decisions -->
-                @if($reviewerDecisions->isNotEmpty())
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0 mt-4">
-                    <p class="text-[10px] font-extrabold text-[#8B0000] uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <i class="fas fa-gavel text-pink-400"></i> Reviewer Decisions
-                    </p>
-                    <div class="space-y-4">
-                        @foreach($reviewerDecisions as $decision)
-                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-slate-800">{{ $decision->user->first_name ?? 'Reviewer' }} {{ $decision->user->last_name ?? '' }}</span>
-                                <span class="text-[10px] text-slate-400">{{ $decision->created_at->format('M d, Y') }}</span>
-                            </div>
-                            <div class="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed">{{ $decision->message }}</div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
 
                 <!-- Activity Log -->
                 @if($researchTitle->titleLogs && $researchTitle->titleLogs->isNotEmpty())

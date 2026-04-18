@@ -1244,18 +1244,21 @@ class AdminController extends Controller
         // Load all reviewer file remarks for this title's files, grouped by researcher_file_id
         try {
             $allFileRemarks = \App\Models\ReviewerFileRemark::with('reviewer')
-                ->whereIn('file_id', function ($query) use ($id) {
+                ->whereIn('researcher_file_id', function ($query) use ($id) {
                     $query->select('id')
                         ->from('researcher_files')
                         ->where('research_title_id', $id);
                 })
                 ->get()
-                ->groupBy('file_id');
+                ->groupBy('researcher_file_id');
         } catch (\Exception $e) {
             $allFileRemarks = collect();
         }
 
-        return view('admin.view_files', compact('researchTitle', 'backUrl', 'allFileRemarks'));
+        // Load reviewer assignments with pivot status to show who is done and who is still reviewing
+        $reviewerAssignments = $researchTitle->reviewers()->withPivot('status', 'role')->get();
+
+        return view('admin.view_files', compact('researchTitle', 'backUrl', 'allFileRemarks', 'reviewerAssignments'));
     }
 
     public function serveFile($id)

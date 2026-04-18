@@ -45,7 +45,8 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-bold text-slate-800">{{ $log->user->first_name }} {{ $log->user->last_name }}
-                                <span class="text-xs font-normal text-slate-500">({{ ucfirst($log->user->role) }})</span></p>
+                                <span class="text-xs font-normal text-slate-500">({{ ucfirst($log->user->role) }})</span>
+                            </p>
                             <p class="text-xs text-slate-400 mb-2">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
                             <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
                                 <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
@@ -394,9 +395,11 @@
                         <div>
                             <p class="font-bold text-slate-900 leading-tight">
                                 {{ $researchTitle->researcher->user->first_name ?? 'Unknown' }}
-                                {{ $researchTitle->researcher->user->last_name ?? '' }}</p>
+                                {{ $researchTitle->researcher->user->last_name ?? '' }}
+                            </p>
                             <p class="text-xs text-slate-500 font-bold uppercase tracking-wide mt-0.5">
-                                {{ $researchTitle->researcher->college ?? 'External' }}</p>
+                                {{ $researchTitle->researcher->college ?? 'External' }}
+                            </p>
                             <p class="text-xs text-slate-400 mt-0.5">{{ $researchTitle->Research_Category }}</p>
                         </div>
                     </div>
@@ -421,7 +424,8 @@
                                         <p class="text-xs font-bold text-slate-700">Original Submission</p>
                                         <p class="text-[10px] text-slate-400">
                                             {{ $originalFiles->first()?->created_at?->format('M d, Y') ?? '—' }} ·
-                                            {{ $originalFiles->count() }} doc(s)</p>
+                                            {{ $originalFiles->count() }} doc(s)
+                                        </p>
                                     </div>
                                 </div>
                                 @foreach($revisionFolders->sortKeys() as $revNum => $files)
@@ -434,7 +438,8 @@
                                             <p class="text-xs font-bold text-slate-700">Revision {{ $revNum }}</p>
                                             <p class="text-[10px] text-slate-400">
                                                 {{ $files->first()?->created_at?->format('M d, Y') ?? '—' }} ·
-                                                {{ $files->count() }} doc(s)</p>
+                                                {{ $files->count() }} doc(s)
+                                            </p>
                                         </div>
                                     </div>
                                 @endforeach
@@ -482,300 +487,348 @@
                                 @if($researchTitle->Status !== 'Reviewed')
                                     @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                                         <div x-data="{ 
-                                            showModal: false, 
-                                            step: 1,
-                                            scientific_soundness: '',
-                                            ethical_issues: '',
-                                            icf_issues: '',
-                                            summary_of_issues: '',
-                                            stepOneValid() {
-                                                return this.scientific_soundness.trim() !== '' 
-                                                    && this.ethical_issues.trim() !== '' 
-                                                    && this.icf_issues.trim() !== '' 
-                                                    && this.summary_of_issues.trim() !== '';
-                                            },
-                                            proceedToStep2() {
-                                                if (!this.stepOneValid()) {
-                                                    alert('Please fill out all deliberation fields before proceeding.');
-                                                    return;
-                                                }
-                                                this.step = 2;
-                                            },
-                                            resetWizard() {
-                                                this.step = 1;
-                                                this.scientific_soundness = '';
-                                                this.ethical_issues = '';
-                                                this.icf_issues = '';
-                                                this.summary_of_issues = '';
-                                            }
-                                        }" class="w-full">
+                                                                                            showModal: false, 
+                                                                                            step: 1,
+                                                                                            scientific_soundness: '',
+                                                                                            ethical_issues: '',
+                                                                                            icf_issues: '',
+                                                                                            summary_of_issues: '',
+                                                                                            stepOneValid() {
+                                                                                                return this.scientific_soundness.trim() !== '' 
+                                                                                                    && this.ethical_issues.trim() !== '' 
+                                                                                                    && this.icf_issues.trim() !== '' 
+                                                                                                    && this.summary_of_issues.trim() !== '';
+                                                                                            },
+                                                                                            proceedToStep2() {
+                                                                                                if (!this.stepOneValid()) {
+                                                                                                    alert('Please fill out all deliberation fields before proceeding.');
+                                                                                                    return;
+                                                                                                }
+                                                                                                this.step = 2;
+                                                                                            },
+                                                                                            resetWizard() {
+                                                                                                this.step = 1;
+                                                                                                this.scientific_soundness = '';
+                                                                                                this.ethical_issues = '';
+                                                                                                this.icf_issues = '';
+                                                                                                this.summary_of_issues = '';
+                                                                                            }
+                                                                                        }" class="w-full">
                                             <button type="button" @click="resetWizard(); showModal = true"
                                                 class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
                                                 <i class="fas fa-check-circle"></i> Complete Review
                                             </button>
 
+                                            <!-- Embedded CSS for the custom thin scrollbar -->
+                                            <style>
+                                                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                                                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                                                .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+                                                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+                                            </style>
+
                                             <!-- Two-Step Wizard Modal -->
                                             <template x-teleport="body">
-                                            <div x-show="showModal" style="display: none;"
-                                                class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title"
-                                                role="dialog" aria-modal="true">
-                                                <div
-                                                    class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                                    <div x-show="showModal" x-transition.opacity
-                                                        class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity"
-                                                        @click="showModal = false" aria-hidden="true"></div>
-                                                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
-                                                        aria-hidden="true">&#8203;</span>
-                                                    <div x-show="showModal" x-transition.scale.origin.bottom
-                                                        class="inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-100 max-h-[90vh]">
+                                                <div x-show="showModal" style="display: none;"
+                                                    class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title"
+                                                    role="dialog" aria-modal="true">
+                                                    <div
+                                                        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                                        <div x-show="showModal" x-transition.opacity
+                                                            class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity"
+                                                            @click="showModal = false" aria-hidden="true"></div>
+                                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
+                                                            aria-hidden="true">&#8203;</span>
+                                                        <div x-show="showModal" x-transition.scale.origin.bottom
+                                                            class="inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl lg:max-w-6xl sm:w-full border border-slate-100 max-h-[90vh]">
 
-                                                        <!-- Header -->
-                                                        <div
-                                                            class="bg-white px-6 pt-5 pb-4 border-b border-slate-100 flex-shrink-0">
-                                                            <div class="flex items-center justify-between">
-                                                                <div class="flex items-center gap-3">
-                                                                    <div class="w-10 h-10 rounded-full flex items-center justify-center"
-                                                                        :class="step === 1 ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'">
-                                                                        <i class="fas"
-                                                                            :class="step === 1 ? 'fa-clipboard-list' : 'fa-gavel'"></i>
+                                                            <!-- Header -->
+                                                            <div
+                                                                class="bg-white px-6 pt-5 pb-4 border-b border-slate-100 flex-shrink-0">
+                                                                <div class="flex items-center justify-between">
+                                                                    <div class="flex items-center gap-3">
+                                                                        <div class="w-10 h-10 rounded-full flex items-center justify-center"
+                                                                            :class="step === 1 ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'">
+                                                                            <i class="fas"
+                                                                                :class="step === 1 ? 'fa-clipboard-list' : 'fa-gavel'"></i>
+                                                                        </div>
+                                                                        <div>
+                                                                            <h3 class="text-lg leading-6 font-bold text-slate-900"
+                                                                                id="modal-title"
+                                                                                x-text="step === 1 ? 'Step 1: Deliberation Assessment' : 'Step 2: Final Action'">
+                                                                            </h3>
+                                                                            <p class="text-xs text-slate-500 mt-0.5"
+                                                                                x-text="step === 1 ? 'Document your assessment before casting a vote' : 'Review your summary and select your recommendation'">
+                                                                            </p>
+                                                                        </div>
                                                                     </div>
-                                                                    <div>
-                                                                        <h3 class="text-lg leading-6 font-bold text-slate-900"
-                                                                            id="modal-title"
-                                                                            x-text="step === 1 ? 'Step 1: Deliberation Assessment' : 'Step 2: Final Action'">
-                                                                        </h3>
-                                                                        <p class="text-xs text-slate-500 mt-0.5"
-                                                                            x-text="step === 1 ? 'Document your assessment before casting a vote' : 'Review your summary and select your recommendation'">
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                                <button type="button" @click="showModal = false"
-                                                                    class="text-slate-400 hover:text-slate-500 transition-colors">
-                                                                    <i class="fas fa-times text-xl"></i>
-                                                                </button>
-                                                            </div>
-
-                                                            <!-- Step Indicator -->
-                                                            <div class="flex items-center gap-2 mt-4">
-                                                                <div class="flex items-center gap-1.5">
-                                                                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
-                                                                        :class="step === 1 ? 'bg-blue-600 text-white' : 'bg-green-500 text-white'">
-                                                                        <span x-show="step === 1">1</span>
-                                                                        <i x-show="step === 2" class="fas fa-check text-[10px]"></i>
-                                                                    </div>
-                                                                    <span class="text-xs font-bold"
-                                                                        :class="step === 1 ? 'text-blue-600' : 'text-green-500'">Deliberation</span>
-                                                                </div>
-                                                                <div class="flex-1 h-0.5 rounded-full transition-colors"
-                                                                    :class="step === 2 ? 'bg-green-500' : 'bg-slate-200'"></div>
-                                                                <div class="flex items-center gap-1.5">
-                                                                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
-                                                                        :class="step === 2 ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-400'">
-                                                                        2
-                                                                    </div>
-                                                                    <span class="text-xs font-bold"
-                                                                        :class="step === 2 ? 'text-green-600' : 'text-slate-400'">Action</span>
-                                                                </div>
-                                                            </div>
-                                                            <p
-                                                                class="text-[10px] text-slate-500 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl mt-4">
-                                                                <i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>
-                                                                You <span class="font-bold">might not be able to modify</span> your
-                                                                uploads once marked as reviewed.
-                                                            </p>
-                                                        </div>
-
-                                                        <!-- Form wraps both steps -->
-                                                        <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}"
-                                                            method="POST" class="m-0 flex-1 overflow-y-auto">
-                                                            @csrf
-
-                                                            <!-- ============================================ -->
-                                                            <!-- STEP 1: Deliberation Assessment              -->
-                                                            <!-- ============================================ -->
-                                                            <div x-show="step === 1" class="px-6 py-5 space-y-5">
-
-                                                                <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl">
-                                                                    <p class="text-xs text-blue-700 leading-relaxed"><i
-                                                                            class="fas fa-info-circle mr-1"></i> Complete your
-                                                                        assessment of the protocol below. Include optional remarks
-                                                                        for specific files.</p>
+                                                                    <button type="button" @click="showModal = false"
+                                                                        class="text-slate-400 hover:text-slate-500 transition-colors">
+                                                                        <i class="fas fa-times text-xl"></i>
+                                                                    </button>
                                                                 </div>
 
-                                                                {{-- Per-file remarks for RESEARCHER files --}}
-                                                                @php
-                                                                    $filesToReview = $activeFiles->isNotEmpty() ? $activeFiles : $originalFiles;
-                                                                @endphp
-                                                                <div class="space-y-3">
-                                                                    <label
-                                                                        class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Document-Specific
-                                                                        Remarks (Optional)</label>
-                                                                    @foreach($filesToReview as $file)
-                                                                        <div class="group relative bg-white border border-slate-200 rounded-xl p-4 transition-all hover:shadow-md hover:border-slate-300 mb-3">
-                                                                            <div class="flex items-start gap-4 mb-3">
-                                                                                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-indigo-100">
-                                                                                    <i class="fas fa-file-invoice text-indigo-600 text-sm"></i>
-                                                                                </div>
-                                                                                <div class="flex-1 min-w-0">
-                                                                                    <h4 class="text-sm font-bold text-slate-800 truncate" title="{{ $file->filename }}">{{ $file->filename }}</h4>
-                                                                                    <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mt-0.5">{{ $file->category }}</p>
+                                                                <!-- Step Indicator -->
+                                                                <div class="flex items-center gap-2 mt-4">
+                                                                    <div class="flex items-center gap-1.5">
+                                                                        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
+                                                                            :class="step === 1 ? 'bg-blue-600 text-white' : 'bg-green-500 text-white'">
+                                                                            <span x-show="step === 1">1</span>
+                                                                            <i x-show="step === 2"
+                                                                                class="fas fa-check text-[10px]"></i>
+                                                                        </div>
+                                                                        <span class="text-xs font-bold"
+                                                                            :class="step === 1 ? 'text-blue-600' : 'text-green-500'">Deliberation</span>
+                                                                    </div>
+                                                                    <div class="flex-1 h-0.5 rounded-full transition-colors"
+                                                                        :class="step === 2 ? 'bg-green-500' : 'bg-slate-200'"></div>
+                                                                    <div class="flex items-center gap-1.5">
+                                                                        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
+                                                                            :class="step === 2 ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-400'">
+                                                                            2
+                                                                        </div>
+                                                                        <span class="text-xs font-bold"
+                                                                            :class="step === 2 ? 'text-green-600' : 'text-slate-400'">Action</span>
+                                                                    </div>
+
+                                                                </div>
+
+                                                                <!-- Form wraps both steps -->
+                                                                <form
+                                                                    action="{{ route('reviewer.complete_review', $researchTitle->id) }}"
+                                                                    method="POST" class="m-0 flex-1 overflow-y-auto">
+                                                                    @csrf
+
+                                                                    <!-- ============================================ -->
+                                                                    <!-- STEP 1: Deliberation Assessment              -->
+                                                                    <!-- ============================================ -->
+                                                                    <div x-show="step === 1" class="px-6 py-5">
+
+
+
+                                                                        <!-- 2-COLUMN SPLIT-PANE GRID -->
+                                                                        <div
+                                                                            class="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
+
+                                                                            <!-- LEFT COLUMN (Document Remarks) -->
+                                                                            <div
+                                                                                class="xl:border-r xl:border-slate-100 xl:pr-8 xl:h-[55vh] flex flex-col">
+                                                                                {{-- Per-file remarks for RESEARCHER files --}}
+                                                                                @php
+                                                                                    $filesToReview = $activeFiles->isNotEmpty() ? $activeFiles : $originalFiles;
+                                                                                @endphp
+                                                                                <label
+                                                                                    class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Document-Specific
+                                                                                    Remarks (Optional)</label>
+
+                                                                                <div
+                                                                                    class="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                                                                                    @foreach($filesToReview as $file)
+                                                                                        <div
+                                                                                            class="group relative bg-white border border-slate-200 rounded-xl p-4 transition-all hover:shadow-md hover:border-slate-300 w-full mb-3">
+                                                                                            <div class="flex items-start gap-4 mb-3">
+                                                                                                <div
+                                                                                                    class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-indigo-100">
+                                                                                                    <i
+                                                                                                        class="fas fa-file-invoice text-indigo-600 text-sm"></i>
+                                                                                                </div>
+                                                                                                <div class="flex-1 min-w-0">
+                                                                                                    <h4 class="text-sm font-bold text-slate-800 truncate"
+                                                                                                        title="{{ $file->filename }}">
+                                                                                                        {{ $file->filename }}
+                                                                                                    </h4>
+                                                                                                    <p
+                                                                                                        class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mt-0.5">
+                                                                                                        {{ $file->category }}
+                                                                                                    </p>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            @php
+                                                                                                $existingRemark = isset($myFileRemarks[$file->id]) ? $myFileRemarks[$file->id]->remarks : '';
+                                                                                            @endphp
+                                                                                            <div class="relative">
+                                                                                                <div
+                                                                                                    class="absolute inset-y-0 left-0 pl-3 pt-3 pointer-events-none">
+                                                                                                    <i
+                                                                                                        class="fas fa-comment-dots text-slate-300"></i>
+                                                                                                </div>
+                                                                                                <textarea
+                                                                                                    name="file_remarks[{{ $file->id }}]"
+                                                                                                    rows="2"
+                                                                                                    placeholder="Add specific remarks for this document..."
+                                                                                                    class="w-full pl-10 pr-4 py-2.5 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none shadow-sm resize-none transition-all placeholder:text-slate-400 min-h-[60px]">{{ $existingRemark }}</textarea>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    @endforeach
                                                                                 </div>
                                                                             </div>
-                                                                            @php
-                                                                                $existingRemark = isset($myFileRemarks[$file->id]) ? $myFileRemarks[$file->id]->remarks : '';
-                                                                            @endphp
+
+                                                                            <!-- RIGHT COLUMN (Overarching Issues) -->
+                                                                            <div
+                                                                                class="space-y-6 flex-1 overflow-y-auto pr-4 custom-scrollbar xl:h-[55vh]">
+                                                                                <!-- Scientific Soundness -->
+                                                                                <div>
+                                                                                    <label
+                                                                                        class="block text-sm font-bold text-slate-800 mb-2 mt-4 xl:mt-0">
+                                                                                        <i
+                                                                                            class="fas fa-microscope text-indigo-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
+                                                                                        Scientific Soundness <span
+                                                                                            class="text-red-500">*</span>
+                                                                                    </label>
+                                                                                    <textarea x-model="scientific_soundness"
+                                                                                        name="scientific_soundness" rows="3"
+                                                                                        required
+                                                                                        placeholder="Evaluate the scientific merit: research design, methodology, data analysis plan, sample size justification..."
+                                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[90px] leading-relaxed"></textarea>
+                                                                                </div>
+
+                                                                                <!-- Ethical Issues -->
+                                                                                <div>
+                                                                                    <label
+                                                                                        class="block text-sm font-bold text-slate-800 mb-2">
+                                                                                        <i
+                                                                                            class="fas fa-balance-scale text-amber-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
+                                                                                        Ethical Issues <span
+                                                                                            class="text-red-500">*</span>
+                                                                                    </label>
+                                                                                    <textarea x-model="ethical_issues"
+                                                                                        name="ethical_issues" rows="3" required
+                                                                                        placeholder="Assess ethical considerations: risk-benefit ratio, privacy, confidentiality, vulnerable populations, potential harm..."
+                                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[90px] leading-relaxed"></textarea>
+                                                                                </div>
+
+                                                                                <!-- ICF Issues -->
+                                                                                <div>
+                                                                                    <label
+                                                                                        class="block text-sm font-bold text-slate-800 mb-2">
+                                                                                        <i
+                                                                                            class="fas fa-file-signature text-emerald-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
+                                                                                        Informed Consent Form (ICF) Issues <span
+                                                                                            class="text-red-500">*</span>
+                                                                                    </label>
+                                                                                    <textarea x-model="icf_issues" name="icf_issues"
+                                                                                        rows="3" required
+                                                                                        placeholder="Review the informed consent: clarity of language, voluntariness, adequate disclosure, comprehension, documentation process..."
+                                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[90px] leading-relaxed"></textarea>
+                                                                                </div>
+
+                                                                                <!-- Summary of Issues and Resolutions -->
+                                                                                <div>
+                                                                                    <label
+                                                                                        class="block text-sm font-bold text-slate-800 mb-2">
+                                                                                        <i
+                                                                                            class="fas fa-list-check text-rose-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
+                                                                                        Summary
+                                                                                        of Issues and Resolutions <span
+                                                                                            class="text-red-500">*</span>
+                                                                                    </label>
+                                                                                    <textarea x-model="summary_of_issues"
+                                                                                        name="summary_of_issues" rows="3" required
+                                                                                        placeholder="Summarize: which issues were resolved, which remain unresolved, and your recommendations for unresolved issues..."
+                                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[110px] leading-relaxed"></textarea>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Step 1 Buttons -->
+                                                                    <div x-show="step === 1"
+                                                                        class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                                                        <button type="button" @click="showModal = false"
+                                                                            class="flex-1 inline-flex justify-center rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
+                                                                            Cancel
+                                                                        </button>
+                                                                        <button type="button" @click="proceedToStep2()"
+                                                                            class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-2.5 bg-blue-600 text-sm font-bold text-white hover:bg-blue-700 focus:outline-none transition-colors border border-transparent">
+                                                                            Save Deliberation & Proceed <i
+                                                                                class="fas fa-arrow-right text-xs"></i>
+                                                                        </button>
+                                                                    </div>
+
+                                                                    <!-- ============================================ -->
+                                                                    <!-- STEP 2: Final Action                        -->
+                                                                    <!-- ============================================ -->
+                                                                    <div x-show="step === 2" style="display: none;"
+                                                                        class="px-6 py-5 space-y-4">
+
+                                                                        <!-- Read-only Summary Reference -->
+                                                                        <div
+                                                                            class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                                                            <p
+                                                                                class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">
+                                                                                <i class="fas fa-quote-left mr-1"></i> Your Summary
+                                                                                of
+                                                                                Issues
+                                                                            </p>
+                                                                            <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap"
+                                                                                x-text="summary_of_issues"></p>
+                                                                        </div>
+
+                                                                        <!-- Re-Evaluation: Action Taken -->
+                                                                        <div class="text-left">
+                                                                            <label
+                                                                                class="block text-xs font-bold text-slate-700 mb-2">
+                                                                                <i class="fas fa-gavel text-rose-400 mr-1"></i>
+                                                                                Action
+                                                                                Taken
+                                                                                <span class="text-red-400">*</span>
+                                                                            </label>
                                                                             <div class="relative">
-                                                                                <div class="absolute inset-y-0 left-0 pl-3 pt-3 pointer-events-none">
-                                                                                    <i class="fas fa-comment-dots text-slate-300"></i>
+                                                                                <div
+                                                                                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                                    <i
+                                                                                        class="fas fa-gavel text-slate-400 text-sm"></i>
                                                                                 </div>
-                                                                                <textarea name="file_remarks[{{ $file->id }}]" rows="2"
-                                                                                    placeholder="Add specific remarks for this document..."
-                                                                                    class="w-full pl-10 pr-4 py-2.5 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400" style="min-height: 48px;">{{ $existingRemark }}</textarea>
+                                                                                <select name="review_decision" required
+                                                                                    class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-300 transition-colors appearance-none">
+                                                                                    <option value="" disabled selected>Select a
+                                                                                        recommendation...</option>
+                                                                                    <option value="Approved">✅ Approved (No further
+                                                                                        revisions needed)</option>
+                                                                                    <option value="Minor revision/s required">🟡
+                                                                                        Minor
+                                                                                        revision/s required</option>
+                                                                                    <option value="Major revision/s required">🟠
+                                                                                        Major
+                                                                                        revision/s required</option>
+                                                                                    <option value="Disapproved">❌ Disapproved
+                                                                                    </option>
+                                                                                </select>
+                                                                                <div
+                                                                                    class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                                                    <i
+                                                                                        class="fas fa-chevron-down text-slate-400 text-xs"></i>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    @endforeach
-                                                                </div>
 
-                                                                <!-- Separator line -->
-                                                                <div class="border-t border-slate-200 my-4"></div>
-
-                                                                <!-- Scientific Soundness -->
-                                                                <div>
-                                                                    <label class="block text-sm font-bold text-slate-800 mb-2">
-                                                                        <i class="fas fa-microscope text-indigo-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
-                                                                        Scientific Soundness <span class="text-red-500">*</span>
-                                                                    </label>
-                                                                    <textarea x-model="scientific_soundness"
-                                                                        name="scientific_soundness" rows="3" required
-                                                                        placeholder="Evaluate the scientific merit: research design, methodology, data analysis plan, sample size justification..."
-                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[80px] leading-relaxed"></textarea>
-                                                                </div>
-
-                                                                <!-- Ethical Issues -->
-                                                                <div>
-                                                                    <label class="block text-sm font-bold text-slate-800 mb-2">
-                                                                        <i class="fas fa-balance-scale text-amber-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
-                                                                        Ethical Issues <span class="text-red-500">*</span>
-                                                                    </label>
-                                                                    <textarea x-model="ethical_issues" name="ethical_issues"
-                                                                        rows="3" required
-                                                                        placeholder="Assess ethical considerations: risk-benefit ratio, privacy, confidentiality, vulnerable populations, potential harm..."
-                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[80px] leading-relaxed"></textarea>
-                                                                </div>
-
-                                                                <!-- ICF Issues -->
-                                                                <div>
-                                                                    <label class="block text-sm font-bold text-slate-800 mb-2">
-                                                                        <i class="fas fa-file-signature text-emerald-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
-                                                                        Informed Consent Form (ICF) Issues <span
-                                                                            class="text-red-500">*</span>
-                                                                    </label>
-                                                                    <textarea x-model="icf_issues" name="icf_issues" rows="3"
-                                                                        required
-                                                                        placeholder="Review the informed consent: clarity of language, voluntariness, adequate disclosure, comprehension, documentation process..."
-                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[80px] leading-relaxed"></textarea>
-                                                                </div>
-
-                                                                <!-- Summary of Issues and Resolutions -->
-                                                                <div>
-                                                                    <label class="block text-sm font-bold text-slate-800 mb-2">
-                                                                        <i class="fas fa-list-check text-rose-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i> Summary
-                                                                        of Issues and Resolutions <span
-                                                                            class="text-red-500">*</span>
-                                                                    </label>
-                                                                    <textarea x-model="summary_of_issues" name="summary_of_issues"
-                                                                        rows="3" required
-                                                                        placeholder="Summarize: which issues were resolved, which remain unresolved, and your recommendations for unresolved issues..."
-                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[100px] leading-relaxed"></textarea>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Step 1 Buttons -->
-                                                            <div x-show="step === 1"
-                                                                class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-                                                                <button type="button" @click="showModal = false"
-                                                                    class="flex-1 inline-flex justify-center rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
-                                                                    Cancel
-                                                                </button>
-                                                                <button type="button" @click="proceedToStep2()"
-                                                                    class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-2.5 bg-blue-600 text-sm font-bold text-white hover:bg-blue-700 focus:outline-none transition-colors border border-transparent">
-                                                                    Save Deliberation & Proceed <i
-                                                                        class="fas fa-arrow-right text-xs"></i>
-                                                                </button>
-                                                            </div>
-
-                                                            <!-- ============================================ -->
-                                                            <!-- STEP 2: Final Action                        -->
-                                                            <!-- ============================================ -->
-                                                            <div x-show="step === 2" style="display: none;"
-                                                                class="px-6 py-5 space-y-4">
-
-                                                                <!-- Read-only Summary Reference -->
-                                                                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                                                                    <p
-                                                                        class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">
-                                                                        <i class="fas fa-quote-left mr-1"></i> Your Summary of
-                                                                        Issues</p>
-                                                                    <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap"
-                                                                        x-text="summary_of_issues"></p>
-                                                                </div>
-
-                                                                <!-- Re-Evaluation: Action Taken -->
-                                                                <div class="text-left">
-                                                                    <label class="block text-xs font-bold text-slate-700 mb-2">
-                                                                        <i class="fas fa-gavel text-rose-400 mr-1"></i> Action Taken
-                                                                        <span class="text-red-400">*</span>
-                                                                    </label>
-                                                                    <div class="relative">
-                                                                        <div
-                                                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                            <i class="fas fa-gavel text-slate-400 text-sm"></i>
-                                                                        </div>
-                                                                        <select name="review_decision" required
-                                                                            class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-300 transition-colors appearance-none">
-                                                                            <option value="" disabled selected>Select a
-                                                                                recommendation...</option>
-                                                                            <option value="Approved">✅ Approved (No further
-                                                                                revisions needed)</option>
-                                                                            <option value="Minor revision/s required">🟡 Minor
-                                                                                revision/s required</option>
-                                                                            <option value="Major revision/s required">🟠 Major
-                                                                                revision/s required</option>
-                                                                            <option value="Disapproved">❌ Disapproved</option>
-                                                                        </select>
-                                                                        <div
-                                                                            class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                                                            <i
-                                                                                class="fas fa-chevron-down text-slate-400 text-xs"></i>
+                                                                        <div class="text-left">
+                                                                            <label
+                                                                                class="block text-xs font-bold text-slate-700 mb-2">Brief
+                                                                                Remarks (Optional)</label>
+                                                                            <textarea name="remarks" rows="2"
+                                                                                placeholder="Brief summary of your decision..."
+                                                                                class="w-full px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none shadow-sm"></textarea>
                                                                         </div>
                                                                     </div>
-                                                                </div>
 
-                                                                <div class="text-left">
-                                                                    <label class="block text-xs font-bold text-slate-700 mb-2">Brief
-                                                                        Remarks (Optional)</label>
-                                                                    <textarea name="remarks" rows="2"
-                                                                        placeholder="Brief summary of your decision..."
-                                                                        class="w-full px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none shadow-sm"></textarea>
-                                                                </div>
+                                                                    <!-- Step 2 Buttons -->
+                                                                    <div x-show="step === 2" style="display: none;"
+                                                                        class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                                                        <button type="button" @click="step = 1"
+                                                                            class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
+                                                                            <i class="fas fa-arrow-left text-xs"></i> Back to
+                                                                            Deliberation
+                                                                        </button>
+                                                                        <button type="submit"
+                                                                            class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-2.5 bg-green-600 text-sm font-bold text-white hover:bg-green-700 focus:outline-none transition-colors border border-transparent">
+                                                                            <i class="fas fa-check-circle"></i> Finalize Review
+                                                                        </button>
+                                                                    </div>
+
+                                                                </form>
                                                             </div>
-
-                                                            <!-- Step 2 Buttons -->
-                                                            <div x-show="step === 2" style="display: none;"
-                                                                class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-                                                                <button type="button" @click="step = 1"
-                                                                    class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
-                                                                    <i class="fas fa-arrow-left text-xs"></i> Back to Deliberation
-                                                                </button>
-                                                                <button type="submit"
-                                                                    class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-2.5 bg-green-600 text-sm font-bold text-white hover:bg-green-700 focus:outline-none transition-colors border border-transparent">
-                                                                    <i class="fas fa-check-circle"></i> Finalize Review
-                                                                </button>
-                                                            </div>
-
-                                                        </form>
-                                                </div>
-                                            </div>
+                                                        </div>
                                             </template>
                                         </div>
                                     @else
@@ -787,103 +840,108 @@
 
                                             <!-- Simple Single-Step Modal -->
                                             <template x-teleport="body">
-                                            <div x-show="showModal" style="display: none;"
-                                                class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title"
-                                                role="dialog" aria-modal="true">
-                                                <div
-                                                    class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                                    <div x-show="showModal" x-transition.opacity
-                                                        class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity"
-                                                        @click="showModal = false" aria-hidden="true"></div>
-                                                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
-                                                        aria-hidden="true">&#8203;</span>
-                                                    <div x-show="showModal" x-transition.scale.origin.bottom
-                                                        class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
+                                                <div x-show="showModal" style="display: none;"
+                                                    class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title"
+                                                    role="dialog" aria-modal="true">
+                                                    <div
+                                                        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                                        <div x-show="showModal" x-transition.opacity
+                                                            class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity"
+                                                            @click="showModal = false" aria-hidden="true"></div>
+                                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
+                                                            aria-hidden="true">&#8203;</span>
+                                                        <div x-show="showModal" x-transition.scale.origin.bottom
+                                                            class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
 
-                                                        <!-- Header -->
-                                                        <div class="bg-white px-6 pt-5 pb-4 border-b border-slate-100">
-                                                            <div class="flex items-center justify-between">
-                                                                <div class="flex items-center gap-3">
-                                                                    <div
-                                                                        class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                                                                        <i class="fas fa-check-circle"></i>
+                                                            <!-- Header -->
+                                                            <div class="bg-white px-6 pt-5 pb-4 border-b border-slate-100">
+                                                                <div class="flex items-center justify-between">
+                                                                    <div class="flex items-center gap-3">
+                                                                        <div
+                                                                            class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                                                                            <i class="fas fa-check-circle"></i>
+                                                                        </div>
+                                                                        <div>
+                                                                            <h3 class="text-lg leading-6 font-bold text-slate-900"
+                                                                                id="modal-title">Complete Review</h3>
+                                                                            <p class="text-xs text-slate-500 mt-0.5">Submit your
+                                                                                final
+                                                                                recommendation for this protocol.</p>
+                                                                        </div>
                                                                     </div>
-                                                                    <div>
-                                                                        <h3 class="text-lg leading-6 font-bold text-slate-900"
-                                                                            id="modal-title">Complete Review</h3>
-                                                                        <p class="text-xs text-slate-500 mt-0.5">Submit your final
-                                                                            recommendation for this protocol.</p>
+                                                                    <button type="button" @click="showModal = false"
+                                                                        class="text-slate-400 hover:text-slate-500 transition-colors">
+                                                                        <i class="fas fa-times text-xl"></i>
+                                                                    </button>
+                                                                </div>
+                                                                <p
+                                                                    class="text-xs text-slate-500 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl mt-4">
+                                                                    <i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>
+                                                                    You <span class="font-bold">might not be able to modify</span>
+                                                                    your
+                                                                    uploads once marked as reviewed.
+                                                                </p>
+                                                            </div>
+
+                                                            <form
+                                                                action="{{ route('reviewer.complete_review', $researchTitle->id) }}"
+                                                                method="POST" class="m-0">
+                                                                @csrf
+                                                                <div class="px-6 py-5">
+                                                                    <div class="text-left">
+                                                                        <label class="block text-xs font-bold text-slate-700 mb-2">
+                                                                            <i class="fas fa-layer-group text-indigo-400 mr-1"></i>
+                                                                            Suggested Next Review Type <span
+                                                                                class="text-red-400">*</span>
+                                                                        </label>
+                                                                        <div class="relative">
+                                                                            <div
+                                                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                                <i
+                                                                                    class="fas fa-layer-group text-slate-400 text-sm"></i>
+                                                                            </div>
+                                                                            <select name="suggested_review_type" required
+                                                                                class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-300 transition-colors appearance-none">
+                                                                                <option value="" disabled selected>Select a review
+                                                                                    type...</option>
+                                                                                <option value="Exempt Review">Exempt Review</option>
+                                                                                <option value="Expedited Review">Expedited Review
+                                                                                </option>
+                                                                                <option value="Full Board Review">Full Board Review
+                                                                                </option>
+                                                                            </select>
+                                                                            <div
+                                                                                class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                                                <i
+                                                                                    class="fas fa-chevron-down text-slate-400 text-xs"></i>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                                <button type="button" @click="showModal = false"
-                                                                    class="text-slate-400 hover:text-slate-500 transition-colors">
-                                                                    <i class="fas fa-times text-xl"></i>
-                                                                </button>
-                                                            </div>
-                                                            <p
-                                                                class="text-xs text-slate-500 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl mt-4">
-                                                                <i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>
-                                                                You <span class="font-bold">might not be able to modify</span> your
-                                                                uploads once marked as reviewed.
-                                                            </p>
+
+                                                                <div
+                                                                    class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                                                    <button type="button" @click="showModal = false"
+                                                                        class="flex-1 inline-flex justify-center rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
+                                                                        Cancel
+                                                                    </button>
+                                                                    <button type="submit"
+                                                                        class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-2.5 bg-green-600 text-sm font-bold text-white hover:bg-green-700 focus:outline-none transition-colors border border-transparent">
+                                                                        <i class="fas fa-check-circle"></i> Finalize Review
+                                                                    </button>
+                                                                </div>
+                                                            </form>
                                                         </div>
-
-                                                        <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}"
-                                                            method="POST" class="m-0">
-                                                            @csrf
-                                                            <div class="px-6 py-5">
-                                                                <div class="text-left">
-                                                                    <label class="block text-xs font-bold text-slate-700 mb-2">
-                                                                        <i class="fas fa-layer-group text-indigo-400 mr-1"></i>
-                                                                        Suggested Next Review Type <span
-                                                                            class="text-red-400">*</span>
-                                                                    </label>
-                                                                    <div class="relative">
-                                                                        <div
-                                                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                            <i
-                                                                                class="fas fa-layer-group text-slate-400 text-sm"></i>
-                                                                        </div>
-                                                                        <select name="suggested_review_type" required
-                                                                            class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-300 transition-colors appearance-none">
-                                                                            <option value="" disabled selected>Select a review
-                                                                                type...</option>
-                                                                            <option value="Exempt Review">Exempt Review</option>
-                                                                            <option value="Expedited Review">Expedited Review
-                                                                            </option>
-                                                                            <option value="Full Board Review">Full Board Review
-                                                                            </option>
-                                                                        </select>
-                                                                        <div
-                                                                            class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                                                            <i
-                                                                                class="fas fa-chevron-down text-slate-400 text-xs"></i>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-                                                                <button type="button" @click="showModal = false"
-                                                                    class="flex-1 inline-flex justify-center rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
-                                                                    Cancel
-                                                                </button>
-                                                                <button type="submit"
-                                                                    class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-2.5 bg-green-600 text-sm font-bold text-white hover:bg-green-700 focus:outline-none transition-colors border border-transparent">
-                                                                    <i class="fas fa-check-circle"></i> Finalize Review
-                                                                </button>
-                                                            </div>
-                                                        </form>
                                                     </div>
                                                 </div>
-                                            </div>
                                             </template>
                                         </div>
                                     @endif
                                 @else
                                     <div
                                         class="w-full text-center px-3 py-2 bg-green-50 text-green-600 rounded-xl text-xs font-bold border border-green-100">
-                                        <i class="fas fa-check"></i> Review Completed</div>
+                                        <i class="fas fa-check"></i> Review Completed
+                                    </div>
                                 @endif
                             </div>
                             <div class="grid grid-cols-1 gap-2">
@@ -899,7 +957,8 @@
                                                 <p class="text-[10px] font-bold text-slate-800 truncate"
                                                     title="{{ $upload->filename }}">{{ $upload->filename }}</p>
                                                 <p class="text-[9px] text-slate-500 font-medium truncate">
-                                                    {{ str_replace('Reviewer Uploads - ', '', $upload->category) }}</p>
+                                                    {{ str_replace('Reviewer Uploads - ', '', $upload->category) }}
+                                                </p>
                                             </div>
                                         </div>
                                         <a href="{{ route('reviewer.serve_file', $upload->id) }}" target="_blank"
@@ -1046,7 +1105,8 @@
                                 <div
                                     class="px-4 py-2.5 bg-indigo-50/60 border-b border-indigo-100 flex items-center justify-between mb-2">
                                     <p class="text-xs font-extrabold text-indigo-600 uppercase tracking-wider">Revision
-                                        {{ $revNum }}</p>
+                                        {{ $revNum }}
+                                    </p>
                                 </div>
                                 <template x-for="group in revisions['{{ $revNum }}']" :key="group.category">
                                     <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2"
@@ -1189,7 +1249,8 @@
                                             <p class="text-xs font-bold text-slate-700 leading-tight">{{ $log->action }}</p>
                                             <p class="text-[10px] text-slate-500 mt-0.5">{{ $log->description }}</p>
                                             <p class="text-[9px] text-slate-400 mt-1">
-                                                {{ $log->created_at->format('M d, Y • h:i A') }}</p>
+                                                {{ $log->created_at->format('M d, Y • h:i A') }}
+                                            </p>
                                         </div>
                                     </div>
                                 @endforeach

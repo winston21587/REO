@@ -515,6 +515,7 @@
                                             </button>
 
                                             <!-- Two-Step Wizard Modal -->
+                                            <template x-teleport="body">
                                             <div x-show="showModal" style="display: none;"
                                                 class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title"
                                                 role="dialog" aria-modal="true">
@@ -526,7 +527,7 @@
                                                     <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
                                                         aria-hidden="true">&#8203;</span>
                                                     <div x-show="showModal" x-transition.scale.origin.bottom
-                                                        class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-100 max-h-[90vh] flex flex-col">
+                                                        class="inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-100 max-h-[90vh]">
 
                                                         <!-- Header -->
                                                         <div
@@ -592,7 +593,7 @@
                                                             <!-- ============================================ -->
                                                             <!-- STEP 1: Deliberation Assessment              -->
                                                             <!-- ============================================ -->
-                                                            <div x-show="step === 1" class="px-6 auto py-5 space-y-5">
+                                                            <div x-show="step === 1" class="px-6 py-5 space-y-5">
 
                                                                 <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl">
                                                                     <p class="text-xs text-blue-700 leading-relaxed"><i
@@ -605,32 +606,32 @@
                                                                 @php
                                                                     $filesToReview = $activeFiles->isNotEmpty() ? $activeFiles : $originalFiles;
                                                                 @endphp
-                                                                <div class="space-y-2">
+                                                                <div class="space-y-3">
                                                                     <label
-                                                                        class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Document-Specific
+                                                                        class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Document-Specific
                                                                         Remarks (Optional)</label>
                                                                     @foreach($filesToReview as $file)
-                                                                        <div
-                                                                            class="bg-slate-50 rounded-xl border border-slate-200 p-3 shadow-sm mb-3">
-                                                                            <div class="flex items-center gap-2 mb-2">
-                                                                                <div
-                                                                                    class="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                                                                                    <i
-                                                                                        class="fas fa-file-alt text-indigo-600 text-xs"></i>
+                                                                        <div class="group relative bg-white border border-slate-200 rounded-xl p-4 transition-all hover:shadow-md hover:border-slate-300 mb-3">
+                                                                            <div class="flex items-start gap-4 mb-3">
+                                                                                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-indigo-100">
+                                                                                    <i class="fas fa-file-invoice text-indigo-600 text-sm"></i>
                                                                                 </div>
-                                                                                <p class="text-[10px] font-bold text-slate-700 truncate"
-                                                                                    title="{{ $file->filename }}">{{ $file->filename }}
-                                                                                </p>
+                                                                                <div class="flex-1 min-w-0">
+                                                                                    <h4 class="text-sm font-bold text-slate-800 truncate" title="{{ $file->filename }}">{{ $file->filename }}</h4>
+                                                                                    <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mt-0.5">{{ $file->category }}</p>
+                                                                                </div>
                                                                             </div>
-                                                                            <p
-                                                                                class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-8">
-                                                                                {{ $file->category }}</p>
                                                                             @php
                                                                                 $existingRemark = isset($myFileRemarks[$file->id]) ? $myFileRemarks[$file->id]->remarks : '';
                                                                             @endphp
-                                                                            <textarea name="file_remarks[{{ $file->id }}]" rows="1"
-                                                                                placeholder="Add remarks for this document..."
-                                                                                class="w-full px-3 py-2 text-[11px] text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none shadow-sm resize-y bg-white">{{ $existingRemark }}</textarea>}</textarea>
+                                                                            <div class="relative">
+                                                                                <div class="absolute inset-y-0 left-0 pl-3 pt-3 pointer-events-none">
+                                                                                    <i class="fas fa-comment-dots text-slate-300"></i>
+                                                                                </div>
+                                                                                <textarea name="file_remarks[{{ $file->id }}]" rows="2"
+                                                                                    placeholder="Add specific remarks for this document..."
+                                                                                    class="w-full pl-10 pr-4 py-2.5 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400" style="min-height: 48px;">{{ $existingRemark }}</textarea>
+                                                                            </div>
                                                                         </div>
                                                                     @endforeach
                                                                 </div>
@@ -640,52 +641,52 @@
 
                                                                 <!-- Scientific Soundness -->
                                                                 <div>
-                                                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                                                                        <i class="fas fa-microscope text-indigo-400 mr-1"></i>
-                                                                        Scientific Soundness <span class="text-red-400">*</span>
+                                                                    <label class="block text-sm font-bold text-slate-800 mb-2">
+                                                                        <i class="fas fa-microscope text-indigo-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
+                                                                        Scientific Soundness <span class="text-red-500">*</span>
                                                                     </label>
                                                                     <textarea x-model="scientific_soundness"
                                                                         name="scientific_soundness" rows="3" required
                                                                         placeholder="Evaluate the scientific merit: research design, methodology, data analysis plan, sample size justification..."
-                                                                        class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm resize-none transition-all bg-white"></textarea>
+                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[80px] leading-relaxed"></textarea>
                                                                 </div>
 
                                                                 <!-- Ethical Issues -->
                                                                 <div>
-                                                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                                                                        <i class="fas fa-balance-scale text-amber-400 mr-1"></i>
-                                                                        Ethical Issues <span class="text-red-400">*</span>
+                                                                    <label class="block text-sm font-bold text-slate-800 mb-2">
+                                                                        <i class="fas fa-balance-scale text-amber-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
+                                                                        Ethical Issues <span class="text-red-500">*</span>
                                                                     </label>
                                                                     <textarea x-model="ethical_issues" name="ethical_issues"
                                                                         rows="3" required
                                                                         placeholder="Assess ethical considerations: risk-benefit ratio, privacy, confidentiality, vulnerable populations, potential harm..."
-                                                                        class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm resize-none transition-all bg-white"></textarea>
+                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[80px] leading-relaxed"></textarea>
                                                                 </div>
 
                                                                 <!-- ICF Issues -->
                                                                 <div>
-                                                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                                                                        <i class="fas fa-file-signature text-emerald-400 mr-1"></i>
+                                                                    <label class="block text-sm font-bold text-slate-800 mb-2">
+                                                                        <i class="fas fa-file-signature text-emerald-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
                                                                         Informed Consent Form (ICF) Issues <span
-                                                                            class="text-red-400">*</span>
+                                                                            class="text-red-500">*</span>
                                                                     </label>
                                                                     <textarea x-model="icf_issues" name="icf_issues" rows="3"
                                                                         required
                                                                         placeholder="Review the informed consent: clarity of language, voluntariness, adequate disclosure, comprehension, documentation process..."
-                                                                        class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm resize-none transition-all bg-white"></textarea>
+                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[80px] leading-relaxed"></textarea>
                                                                 </div>
 
                                                                 <!-- Summary of Issues and Resolutions -->
                                                                 <div>
-                                                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                                                                        <i class="fas fa-list-check text-rose-400 mr-1"></i> Summary
+                                                                    <label class="block text-sm font-bold text-slate-800 mb-2">
+                                                                        <i class="fas fa-list-check text-rose-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i> Summary
                                                                         of Issues and Resolutions <span
-                                                                            class="text-red-400">*</span>
+                                                                            class="text-red-500">*</span>
                                                                     </label>
                                                                     <textarea x-model="summary_of_issues" name="summary_of_issues"
                                                                         rows="3" required
                                                                         placeholder="Summarize: which issues were resolved, which remain unresolved, and your recommendations for unresolved issues..."
-                                                                        class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm resize-none transition-all bg-white"></textarea>
+                                                                        class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[100px] leading-relaxed"></textarea>
                                                                 </div>
                                                             </div>
 
@@ -773,9 +774,9 @@
                                                             </div>
 
                                                         </form>
-                                                    </div>
                                                 </div>
                                             </div>
+                                            </template>
                                         </div>
                                     @else
                                         <div x-data="{ showModal: false }" class="w-full">
@@ -785,6 +786,7 @@
                                             </button>
 
                                             <!-- Simple Single-Step Modal -->
+                                            <template x-teleport="body">
                                             <div x-show="showModal" style="display: none;"
                                                 class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title"
                                                 role="dialog" aria-modal="true">
@@ -875,6 +877,7 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            </template>
                                         </div>
                                     @endif
                                 @else

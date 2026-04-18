@@ -46,7 +46,7 @@ class ReviewerController extends Controller
         $userId = Auth::id();
 
         // Show all revision-related statuses so the reviewer can track the full cycle
-        $revisionStatuses = ['Revision Submitted', 'Reviewing Revisions'];
+        $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions'];
 
         $titles = Research_title::where(function ($q) use ($userId) {
             $q->whereHas('reviewers', function ($query) use ($userId) {

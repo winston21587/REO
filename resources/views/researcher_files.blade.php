@@ -683,143 +683,207 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         @foreach($activeFiles as $file)
                             @php
-                                // Check if a draft exists for this exact category
-                                $draftFile = $draftFiles->firstWhere('category', $file->category);
-                                $hasDraft = $draftFile !== null;
+                                $draftFilesForCategory = $draftFiles->where('category', $file->category)->values();
+                                // Pass the initial files to Alpine
+                                $initialFilesJson = $draftFilesForCategory->map(function($df) {
+                                    return [
+                                        'id' => $df->id,
+                                        'filename' => $df->filename,
+                                        'filetype' => collect(explode('.', $df->filename))->last(),
+                                        'category' => $df->category,
+                                        'isPdf' => strtolower(collect(explode('.', $df->filename))->last()) === 'pdf',
+                                        'deleteUrl' => route('delete.revision.document', $df->id),
+                                        'created_at' => $df->created_at->timezone('Asia/Manila')->format('F d, Y \a\t h:i A')
+                                    ];
+                                })->toJson();
                             @endphp
                             
-                            <div class="bg-white rounded-2xl border {{ $hasDraft ? 'border-emerald-300 ring-2 ring-emerald-50' : 'border-orange-200 border-dashed' }} p-5 relative overflow-hidden transition-all">
-                                <div class="flex items-center gap-3 mb-4">
-                                    <div class="w-10 h-10 rounded-lg {{ $hasDraft ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-500' }} flex items-center justify-center">
-                                        <i class="fas {{ $hasDraft ? 'fa-check' : 'fa-file-upload' }}"></i>
+                            <div x-data="revisionDropzone({ 
+                                category: '{{ $file->category }}', 
+                                uploadUrl: '{{ route('upload.revision.document', $researchTitle->id) }}',
+                                csrfToken: '{{ csrf_token() }}',
+                                initialFiles: {{ $initialFilesJson }}
+                            })" 
+                            class="bg-white rounded-2xl border p-5 relative transition-all duration-300"
+                            :class="[isDragging ? 'border-orange-400 bg-orange-50 ring-4 ring-orange-100 scale-[1.02]' : (files.length > 0 ? 'border-emerald-300 ring-2 ring-emerald-50' : 'border-orange-200 border-dashed')]"
+                            @dragover.prevent="isDragging = true"
+                            @dragleave.prevent="isDragging = false"
+                            @drop.prevent="handleDrop($event)">
+                                
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors border"
+                                            :class="files.length > 0 ? 'bg-emerald-100 text-emerald-600 border-emerald-200 shadow-inner' : 'bg-orange-100 text-orange-500 border-orange-200 shadow-inner'">
+                                            <i class="fas" :class="files.length > 0 ? 'fa-check' : 'fa-file-upload'"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-sm text-slate-800 leading-snug">{{ $file->category }}</h4>
+                                            <template x-if="files.length > 0">
+                                                <p class="text-[10px] text-slate-400 mt-0.5" x-text="'Last updated on ' + getLatestDate()"></p>
+                                            </template>
+                                        </div>
                                     </div>
-                                    <h4 class="font-bold text-sm text-slate-800 flex-1 leading-snug">{{ $file->category }}</h4>
+                                    <span x-show="files.length > 0" x-text="files.length + ' file(s)'" class="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 text-slate-500 shadow-sm border border-slate-200"></span>
                                 </div>
 
-                                @if($hasDraft)
-                                    <div class="bg-emerald-50 rounded-xl p-3 mb-3 border border-emerald-100">
-                                        <p class="text-xs font-bold text-emerald-800 truncate" title="{{ $draftFile->filename }}">
-                                            <i class="fas fa-file-pdf mr-1"></i> {{ $draftFile->filename }}
-                                        </p>
-                                    </div>
-                                    <form action="{{ route('delete.revision.document', $draftFile->id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="w-full py-2.5 rounded-xl bg-white border border-red-200 text-red-600 font-bold text-xs hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
-                                            <i class="fas fa-trash"></i> Remove Draft
-                                        </button>
-                                    </form>
-                                @else
-                                    <form action="{{ route('upload.revision.document', $researchTitle->id) }}" method="POST" enctype="multipart/form-data">
-                                        @csrf
-                                        <input type="hidden" name="category" value="{{ $file->category }}">
-                                        <label class="block cursor-pointer">
-                                            <div class="w-full py-3 rounded-xl border-2 border-dashed border-orange-200 hover:border-orange-400 hover:bg-orange-50 text-orange-600 text-xs font-bold text-center transition-all flex flex-col items-center justify-center gap-1 group">
-                                                <i class="fas fa-cloud-upload-alt text-lg group-hover:-translate-y-1 transition-transform"></i>
-                                                <span>Click to Upload Revised Document</span>
+                                <!-- Uploaded Files List -->
+                                <div class="space-y-2 mb-3" x-show="files.length > 0">
+                                    <template x-for="(f, index) in files" :key="f.id || index">
+                                        <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-200 flex items-center justify-between group shadow-sm transition-all animate-[fadeIn_0.2s_ease-out]">
+                                            <div class="flex items-center min-w-0 flex-1 gap-2">
+                                                <div class="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm border border-emerald-100 flex-shrink-0">
+                                                    <i class="fas text-emerald-600 text-sm" :class="f.isPdf ? 'fa-file-pdf' : 'fa-file'"></i> 
+                                                </div>
+                                                <p class="text-[11px] font-bold text-emerald-800 truncate" x-text="f.filename"></p>
                                             </div>
-                                            <input type="file" name="file" class="hidden" onchange="this.form.submit()" accept=".{{ strtolower($file->filetype) }}">
-                                        </label>
-                                    </form>
-                                @endif
+                                            <button type="button" @click.prevent="removeFile(f, index)" class="text-emerald-600/50 hover:text-red-500 p-1.5 bg-white rounded-lg opacity-0 group-hover:opacity-100 transition-all border border-transparent hover:border-red-200 shadow-sm hover:shadow active:scale-95">
+                                                <i class="fas fa-times text-xs"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                                
+                                <!-- Loading State -->
+                                <div x-show="isUploading" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3 shadow-inner">
+                                    <div class="w-8 h-8 bg-white border border-blue-100 shadow-sm rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-spinner fa-spin text-blue-500"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-bold text-blue-800">Uploading File(s)...</p>
+                                        <p class="text-[9px] text-blue-600 mt-0.5 font-medium">Please wait while transferring.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Drop/Browse action -->
+                                <label class="block cursor-pointer">
+                                    <div class="w-full py-4 rounded-xl border-2 border-dashed border-orange-200 hover:border-orange-400 hover:bg-orange-50 text-orange-600 font-bold text-center transition-all flex flex-col items-center justify-center gap-2 group shadow-sm bg-white hover:shadow-md">
+                                        <i class="fas fa-cloud-upload-alt text-2xl group-hover:-translate-y-1 transition-transform text-orange-400 group-hover:text-orange-600"></i>
+                                        <span class="text-xs">Click to Browse or Drag Files</span>
+                                        <span class="text-[9px] font-extrabold text-orange-500/80 bg-orange-100/50 px-2 rounded-full uppercase tracking-wider">Multiple Uploads Allowed</span>
+                                    </div>
+                                    <input type="file" class="hidden" multiple @change="handleFiles($event.target.files)" accept=".{{ strtolower($file->filetype) }}">
+                                </label>
                             </div>
                         @endforeach
             @endif
         </div>
         @endif
 
-        <!-- Title Activity Logs Section -->
-        <div class="mt-8 md:mt-12 bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm overflow-hidden mb-10">
-            <div class="px-5 py-5 md:px-8 md:py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h3 class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fas fa-history text-indigo-600"></i>
-                        Activity Log
-                    </h3>
-                    <p class="text-xs md:text-sm text-slate-500 mt-1">A complete history of status changes and updates for this submission.</p>
-                </div>
-                <div class="self-start sm:self-auto px-3 py-1.5 md:px-4 md:py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs md:text-sm font-bold border border-indigo-100 flex items-center gap-2">
-                    <i class="fas fa-list-ul"></i> {{ $researchTitle->titleLogs->count() }} Records
-                </div>
-            </div>
 
-            <div class="p-5 md:p-8">
-                @if($researchTitle->titleLogs->isEmpty())
-                    <div class="text-center py-10">
-                        <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                            <i class="fas fa-clipboard-list text-slate-300 text-xl md:text-2xl"></i>
-                        </div>
-                        <h4 class="text-sm md:text-base text-slate-700 font-bold mb-1">No Activity Yet</h4>
-                        <p class="text-slate-500 text-xs md:text-sm">Action logs will appear here once the submission is processed.</p>
-                    </div>
-                @else
-                    <div class="relative before:absolute before:inset-y-0 before:left-3 md:before:left-6 before:w-[2px] before:bg-slate-100 space-y-6 md:space-y-8 pl-1">
-                        @foreach($researchTitle->titleLogs as $log)
-                            @php
-                                $actionLower = strtolower($log->action);
-                                $isCreation = str_contains($actionLower, 'created') || str_contains($actionLower, 'submitted');
-                                $isStatus = str_contains($actionLower, 'status');
-                                
-                                if($isCreation) {
-                                    $icon = 'fa-plus';
-                                    $color = 'text-emerald-500';
-                                    $bg = 'bg-emerald-50';
-                                    $border = 'border-emerald-200';
-                                } elseif($isStatus) {
-                                    $icon = 'fa-sync-alt';
-                                    $color = 'text-blue-500';
-                                    $bg = 'bg-blue-50';
-                                    $border = 'border-blue-200';
-                                } else {
-                                    $icon = 'fa-pen';
-                                    $color = 'text-orange-500';
-                                    $bg = 'bg-orange-50';
-                                    $border = 'border-orange-200';
-                                }
-                            @endphp
-
-                            <div class="relative flex items-start group">
-                                <!-- Timeline Node -->
-                                <div class="absolute left-0 w-6 h-6 -ml-3 md:w-10 md:h-10 md:-ml-4 rounded-full border-2 md:border-4 border-white flex items-center justify-center {{ $bg }} {{ $color }} z-10 shadow-sm transition-transform group-hover:scale-110">
-                                    <i class="fas {{ $icon }} text-[10px] md:text-sm"></i>
-                                </div>
-                                
-                                <!-- Content Box -->
-                                <div class="ml-6 md:ml-12 focus:outline-none w-full mb-4 md:mb-6">
-                                    <div class="bg-white border hover:border-slate-300 {{ str_contains($log->action, 'Created') ? 'border-l-4 border-l-emerald-500' : 'border-slate-100' }} rounded-xl md:rounded-2xl p-4 md:p-5 shadow-sm transition-all hover:shadow-md">
-                                        <div class="flex flex-col gap-2 mb-3">
-                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                                <h4 class="text-slate-800 font-bold text-sm md:text-base m-0">{{ $log->action }}</h4>
-                                                <span class="text-[10px] md:text-xs font-bold text-slate-400 flex items-center gap-1.5 bg-slate-50 px-2 py-1 md:px-3 md:py-1.5 rounded-lg border border-slate-100 self-start sm:self-auto whitespace-nowrap">
-                                                    <i class="far fa-clock"></i>
-                                                    {{ $log->created_at->format('M d, Y • h:i A') }}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                @if($log->user)
-                                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
-                                                        <i class="fas fa-user-circle"></i>
-                                                        {{ $log->user->first_name }} {{ $log->user->last_name }}
-                                                    </span>
-                                                @else
-                                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">
-                                                        <i class="fas fa-robot text-slate-400"></i> System
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <p class="text-slate-600 text-xs md:text-sm leading-relaxed m-0 mt-2 font-medium">
-                                            {{ $log->description }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-        </div>
 
     </main>
     </div>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Async File Upload Alpine Component -->
+    <script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('revisionDropzone', (config) => ({
+            category: config.category,
+            uploadUrl: config.uploadUrl,
+            csrfToken: config.csrfToken,
+            files: config.initialFiles || [],
+            isDragging: false,
+            isUploading: false,
+            
+            getLatestDate() {
+                if (this.files.length === 0) return '';
+                const lastFile = this.files[this.files.length - 1];
+                return lastFile.created_at || 'just now';
+            },
+            
+            handleDrop(e) {
+                this.isDragging = false;
+                if (e.dataTransfer.files.length > 0) {
+                    this.handleFiles(e.dataTransfer.files);
+                }
+            },
+            
+            async handleFiles(fileList) {
+                this.isUploading = true;
+                const promises = [];
+                
+                for (let i = 0; i < fileList.length; i++) {
+                    promises.push(this.uploadFile(fileList[i]));
+                }
+                
+                await Promise.all(promises);
+                this.isUploading = false;
+            },
+            
+            async uploadFile(file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('category', this.category);
+                formData.append('_token', this.csrfToken);
+                
+                try {
+                    const response = await fetch(this.uploadUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        this.files.push(data.file);
+                    } else {
+                        alert('Upload failed: ' + (data.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Upload error.');
+                }
+            },
+            
+            async removeFile(fileObj, index) {
+                const result = await Swal.fire({
+                    title: 'Remove Document?',
+                    text: 'Are you sure you want to delete this draft file?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444', 
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Yes, remove it',
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        confirmButton: 'rounded-xl px-4 py-2 font-bold',
+                        cancelButton: 'rounded-xl px-4 py-2 font-bold'
+                    }
+                });
+
+                if (!result.isConfirmed) return;
+                
+                // Remove from UI optimistically
+                this.files.splice(index, 1);
+                
+                try {
+                    const response = await fetch(fileObj.deleteUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': this.csrfToken,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ _method: 'DELETE' })
+                    });
+                    
+                    const data = await response.json();
+                    if(!data.success) {
+                        // re-add if failed
+                        this.files.splice(index, 0, fileObj);
+                        alert('Failed to remove: ' + data.error);
+                    }
+                } catch (e) {
+                    this.files.splice(index, 0, fileObj);
+                    alert('Error removing file');
+                }
+            }
+        }));
+    });
+    </script>
 </x-user_layout>

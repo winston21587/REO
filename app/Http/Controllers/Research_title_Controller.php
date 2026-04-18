@@ -248,18 +248,10 @@ class Research_title_Controller extends Controller
 
         $researchTitle = Research_title::findOrFail($id);
         $user = Auth::user();
-        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id)
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
+            if ($request->expectsJson())
+                return response()->json(['error' => 'Unauthorized'], 403);
             abort(403);
-
-        // Replace existing draft in this category if it exists
-        $existingDraft = Researcher_files::where('research_title_id', $id)
-            ->where('revision_number', -1)
-            ->where('category', $request->category)
-            ->first();
-
-        if ($existingDraft) {
-            Storage::disk('public_uploads')->delete(str_replace('storage/', '', $existingDraft->filepath));
-            $existingDraft->delete();
         }
 
         $path = $request->file('file')->store('uploads/research_files', 'public_uploads');
@@ -275,6 +267,21 @@ class Research_title_Controller extends Controller
 
         $researchTitle->files()->attach($newFileRecord->id);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'file' => [
+                    'id' => $newFileRecord->id,
+                    'filename' => $newFileRecord->filename,
+                    'filetype' => collect(explode('.', $newFileRecord->filename))->last(), // Ensure accurate label
+                    'category' => $newFileRecord->category,
+                    'isPdf' => strtolower($newFileRecord->filetype) === 'pdf',
+                    'deleteUrl' => route('delete.revision.document', $newFileRecord->id),
+                    'created_at' => $newFileRecord->created_at ? $newFileRecord->created_at->timezone('Asia/Manila')->format('F d, Y \a\t h:i A') : 'just now'
+                ]
+            ]);
+        }
+
         return back()->with('success', 'Document added to draft workspace.');
     }
 
@@ -284,15 +291,24 @@ class Research_title_Controller extends Controller
         $user = Auth::user();
 
         $researchTitle = Research_title::findOrFail($file->research_title_id);
-        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id)
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
+            if (request()->expectsJson())
+                return response()->json(['error' => 'Unauthorized'], 403);
             abort(403);
+        }
 
         if ($file->revision_number != -1) {
+            if (request()->expectsJson())
+                return response()->json(['error' => 'Not a draft document'], 403);
             abort(403, 'Can only delete files from the active draft workspace.');
         }
 
         Storage::disk('public_uploads')->delete(str_replace('storage/', '', $file->filepath));
         $file->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return back()->with('success', 'Document removed from draft workspace.');
     }

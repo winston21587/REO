@@ -11,8 +11,8 @@
                 <!-- Controls -->
                 <div class="flex gap-4" x-data="{ expanded: false }">
                     <div class="relative flex-1">
-                        <input type="text" name="recent_search" id="recent_search_input" value="{{ request('recent_search') }}"
-                            placeholder="Search submissions..."
+                        <input type="text" name="recent_search" id="recent_search_input"
+                            value="{{ request('recent_search') }}" placeholder="Search submissions..."
                             class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-white">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
@@ -20,24 +20,32 @@
                         <button type="button" @click="expanded = !expanded" @click.outside="expanded = false"
                             class="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm transition-colors w-[150px] justify-between">
                             <span><i class="fas fa-filter mr-1 text-slate-400"></i> Filter</span>
-                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-180' : ''"></i>
+                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform"
+                                :class="expanded ? 'rotate-180' : ''"></i>
                         </button>
 
                         <!-- Advanced Dropdown -->
                         <div x-show="expanded" x-cloak x-transition.opacity.duration.200ms @click.stop
                             class="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
-                            
+
                             <!-- Sort Section -->
                             <div class="p-3 border-b border-slate-100 bg-slate-50/50">
-                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort By</label>
+                                <label
+                                    class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort
+                                    By</label>
                                 <div class="space-y-2">
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="recent_sort" value="created_at" class="recent-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('recent_sort', 'created_at') == 'created_at' ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Submission Date</span>
+                                        <input type="radio" name="recent_sort" value="created_at"
+                                            class="recent-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('recent_sort', 'created_at') == 'created_at' ? 'checked' : '' }}>
+                                        <span
+                                            class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Submission
+                                            Date</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="recent_sort" value="Title" class="recent-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('recent_sort') == 'Title' ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
+                                        <input type="radio" name="recent_sort" value="Title"
+                                            class="recent-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('recent_sort') == 'Title' ? 'checked' : '' }}>
+                                        <span
+                                            class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
                                     </label>
                                 </div>
                             </div>
@@ -60,8 +68,8 @@
 
                 <div class="flex gap-4" x-data="{ expanded: false }">
                     <div class="relative flex-1">
-                        <input type="text" name="incomplete_search" id="incomplete_search_input" value="{{ request('incomplete_search') }}"
-                            placeholder="Search submissions..."
+                        <input type="text" name="incomplete_search" id="incomplete_search_input"
+                            value="{{ request('incomplete_search') }}" placeholder="Search submissions..."
                             class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm bg-white">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
@@ -69,24 +77,32 @@
                         <button type="button" @click="expanded = !expanded" @click.outside="expanded = false"
                             class="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-sm transition-colors w-[150px] justify-between">
                             <span><i class="fas fa-filter mr-1 text-slate-400"></i> Filter</span>
-                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-180' : ''"></i>
+                            <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform"
+                                :class="expanded ? 'rotate-180' : ''"></i>
                         </button>
 
                         <!-- Advanced Dropdown -->
                         <div x-show="expanded" x-cloak x-transition.opacity.duration.200ms @click.stop
                             class="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-[60] overflow-hidden">
-                            
+
                             <!-- Sort Section -->
                             <div class="p-3 border-b border-slate-100 bg-slate-50/50">
-                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort By</label>
+                                <label
+                                    class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Sort
+                                    By</label>
                                 <div class="space-y-2">
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="incomplete_sort" value="created_at" class="incomplete-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('incomplete_sort', 'created_at') == 'created_at' ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Submission Date</span>
+                                        <input type="radio" name="incomplete_sort" value="created_at"
+                                            class="incomplete-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('incomplete_sort', 'created_at') == 'created_at' ? 'checked' : '' }}>
+                                        <span
+                                            class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Submission
+                                            Date</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="incomplete_sort" value="Title" class="incomplete-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('incomplete_sort') == 'Title' ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
+                                        <input type="radio" name="incomplete_sort" value="Title"
+                                            class="incomplete-filter-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('incomplete_sort') == 'Title' ? 'checked' : '' }}>
+                                        <span
+                                            class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
                                     </label>
                                 </div>
                             </div>
@@ -169,6 +185,64 @@
                                         revision.</span>
                                 </div>
                             </label>
+                        </div>
+                    </div>
+
+                    <!-- OR Verification Section -->
+                    <div id="orVerificationField" class="hidden transition-all duration-300">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Official
+                            Receipt Verification</label>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+                            <!-- OR Info Display -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                        <i class="fas fa-receipt"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Receipt
+                                            Number</p>
+                                        <p id="modalOrNumber" class="text-sm font-bold font-mono text-slate-800">—</p>
+                                    </div>
+                                </div>
+                                <a id="modalOrFileLink" href="#" target="_blank"
+                                    class="hidden w-8 h-8 bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center justify-center"
+                                    title="View Receipt">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+
+                            <!-- Verified Badge (read-only, shown if already verified) -->
+                            <div id="orAlreadyVerified" class="hidden">
+                                <div
+                                    class="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-xl">
+                                    <i class="fas fa-check-circle text-emerald-500"></i>
+                                    <span class="text-xs font-bold text-emerald-700">Already Verified</span>
+                                </div>
+                            </div>
+
+                            <div id="orVerifyCheckboxContainer" class="hidden">
+                                <label
+                                    class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors group">
+                                    <input type="checkbox" id="verifyOrCheckbox" name="verify_or" value="1"
+                                        onchange="handleOrVerifyChange(this)"
+                                        class="w-5 h-5 text-emerald-600 focus:ring-emerald-500 rounded border-slate-300">
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-700">Verify this receipt</span>
+                                        <p class="text-[11px] text-slate-500 mt-0.5">Receipt will be marked as verified
+                                            and logged to Revenue.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- No Receipt Warning -->
+                        <div id="orNoReceipt"
+                            class="hidden mt-3 flex items-start gap-2 p-3 bg-orange-50 border border-orange-200 rounded-xl">
+                            <i class="fas fa-exclamation-triangle text-orange-500 mt-0.5"></i>
+                            <p class="text-xs text-orange-700 font-medium">No Official Receipt was submitted with this
+                                application.</p>
                         </div>
                     </div>
 
@@ -311,7 +385,7 @@
 
         // Also clear the requirement list when the modal resets (when opening triage modal)
         const _origOpenTriage = window.openTriageModal;
-        window._triageModalClean = function() {
+        window._triageModalClean = function () {
             document.getElementById('requirementsList').innerHTML = '';
             const hint = document.getElementById('reqDuplicateHint');
             if (hint) hint.textContent = '';
@@ -383,7 +457,7 @@
             activeText.classList.add(`text-${activeColor}-700`);
         }
 
-        function openTriageModal(id, title) {
+        function openTriageModal(id, title, orNumber, orFilePath, isOrVerified) {
             const modal = document.getElementById('triageModal');
             const content = document.getElementById('modalContent');
             const titleEl = document.getElementById('modalTitle');
@@ -404,10 +478,51 @@
             // Clear requirements list and hints on every open
             if (window._triageModalClean) window._triageModalClean();
 
-            // Default to Complete
-            document.querySelector('input[value="Complete"]').checked = true;
-            toggleAppointment(true);
-            selectOption('Complete');
+            // --- Populate OR Verification Section ---
+            const orField = document.getElementById('orVerificationField');
+            const orNumEl = document.getElementById('modalOrNumber');
+            const orFileLink = document.getElementById('modalOrFileLink');
+            const orVerified = document.getElementById('orAlreadyVerified');
+            const orCheckbox = document.getElementById('orVerifyCheckboxContainer');
+            const orNoReceipt = document.getElementById('orNoReceipt');
+            const verifyCheckbox = document.getElementById('verifyOrCheckbox');
+
+            // Reset all
+            orField.classList.remove('hidden');
+            orVerified.classList.add('hidden');
+            orCheckbox.classList.add('hidden');
+            orNoReceipt.classList.add('hidden');
+            orFileLink.classList.add('hidden');
+
+            if (orNumber) {
+                orNumEl.textContent = '#' + orNumber;
+
+                if (orFilePath) {
+                    orFileLink.href = orFilePath;
+                    orFileLink.classList.remove('hidden');
+                }
+
+                if (isOrVerified) {
+                    orVerified.classList.remove('hidden');
+                    // Already verified — unlock Complete
+                    lockCompleteOption(false);
+                } else {
+                    orCheckbox.classList.remove('hidden');
+                    // Default unchecked — lock Complete until checked
+                    if (verifyCheckbox) verifyCheckbox.checked = false;
+                    lockCompleteOption(true);
+                }
+            } else {
+                orNumEl.textContent = '—';
+                orNoReceipt.classList.remove('hidden');
+                // No receipt — lock Complete
+                lockCompleteOption(true);
+            }
+
+            // Default to Incomplete
+            document.querySelector('input[value="Incomplete"]').checked = true;
+            toggleAppointment(false);
+            selectOption('Incomplete');
 
             modal.classList.remove('hidden');
             setTimeout(() => {
@@ -415,6 +530,44 @@
                 content.classList.remove('scale-95');
                 content.classList.add('scale-100');
             }, 10);
+        }
+
+
+
+        // Locks/unlocks the Complete radio option
+        function lockCompleteOption(locked) {
+            const completeRadio = document.querySelector('input[value="Complete"]');
+            const completeLabel = completeRadio ? completeRadio.closest('label') : null;
+
+            if (locked) {
+                // Force Incomplete if Complete is currently selected
+                if (completeRadio && completeRadio.checked) {
+                    const incompleteRadio = document.querySelector('input[value="Incomplete"]');
+                    if (incompleteRadio) {
+                        incompleteRadio.checked = true;
+                        toggleAppointment(false);
+                        selectOption('Incomplete');
+                    }
+                }
+                if (completeRadio) completeRadio.disabled = true;
+                if (completeLabel) {
+                    completeLabel.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+                }
+            } else {
+                if (completeRadio) completeRadio.disabled = false;
+                if (completeLabel) {
+                    completeLabel.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+                }
+            }
+        }
+
+        // Called when the verify OR checkbox is toggled
+        function handleOrVerifyChange(checkbox) {
+            if (checkbox.checked) {
+                lockCompleteOption(false);
+            } else {
+                lockCompleteOption(true);
+            }
         }
 
         function closeTriage() {
@@ -532,35 +685,35 @@
                 'recent_search_input', 'recent_sort_input',
                 'incomplete_search_input', 'incomplete_sort_input'
             ];
-            
+
             let debounceTimer;
 
             // Helper to fetch and update
             const fetchSubmissions = (params) => {
                 const url = `{{ request()->url() }}?${params.toString()}`;
-                
+
                 fetch(url, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
                     }
                 })
-                .then(response => response.json())
-                .then(data => {
-                    // Update Containers
-                    if (data.recent) {
-                      const recentContainer = document.getElementById('recent-submissions-wrapper');
-                      if (recentContainer) recentContainer.innerHTML = data.recent;
-                    }
-                    if (data.incomplete) {
-                      const incompleteContainer = document.getElementById('incomplete-submissions-wrapper');
-                      if (incompleteContainer) incompleteContainer.innerHTML = data.incomplete;
-                    }
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update Containers
+                        if (data.recent) {
+                            const recentContainer = document.getElementById('recent-submissions-wrapper');
+                            if (recentContainer) recentContainer.innerHTML = data.recent;
+                        }
+                        if (data.incomplete) {
+                            const incompleteContainer = document.getElementById('incomplete-submissions-wrapper');
+                            if (incompleteContainer) incompleteContainer.innerHTML = data.incomplete;
+                        }
 
-                    // Update URL
-                    window.history.pushState({}, '', url);
-                })
-                .catch(error => console.error('Error:', error));
+                        // Update URL
+                        window.history.pushState({}, '', url);
+                    })
+                    .catch(error => console.error('Error:', error));
             };
 
             // Event Listeners for Search Inputs
@@ -572,7 +725,7 @@
                     clearTimeout(debounceTimer);
                     debounceTimer = setTimeout(() => {
                         const params = new URLSearchParams(window.location.search);
-                        
+
                         if (id === 'recent_search_input') {
                             params.set('recent_search', e.target.value);
                             params.delete('pending_page'); // Reset pagination

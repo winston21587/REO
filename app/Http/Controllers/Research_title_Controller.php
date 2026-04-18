@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\DocumentRequirement;
 use App\Models\SubmissionFeedback;
+use App\Models\TitleLog;
 
 class Research_title_Controller extends Controller
 {
@@ -41,7 +42,7 @@ class Research_title_Controller extends Controller
         $requirements = DocumentRequirement::all();
         foreach ($requirements as $req) {
             $field = 'files.' . $req->id;
-            
+
             // Build Validation Rules
             $fileRules = ['file', 'max:25600']; // Max 25MB
 
@@ -50,8 +51,10 @@ class Research_title_Controller extends Controller
             $types = explode(',', $req->file_type);
             foreach ($types as $type) {
                 $type = trim($type);
-                if ($type === 'PDF') $mimes[] = 'pdf';
-                if ($type === 'Word') array_push($mimes, 'doc', 'docx');
+                if ($type === 'PDF')
+                    $mimes[] = 'pdf';
+                if ($type === 'Word')
+                    array_push($mimes, 'doc', 'docx');
             }
             if (!empty($mimes)) {
                 $fileRules[] = 'mimes:' . implode(',', $mimes);
@@ -100,8 +103,15 @@ class Research_title_Controller extends Controller
             'category_fee_at_submission' => $fee,
             'Created_by' => $user->first_name . ' ' . $user->last_name,
             'researcher_id' => $user->researcher->id,
-            'Official_Receipt_Number' => null, // Default to null, requires Admin input
             'Adviser' => $validated['Adviser'],
+        ]);
+
+        // Log OR upload
+        TitleLog::create([
+            'research_title_id' => $research->id,
+            'user_id' => Auth::id(),
+            'action' => 'Official Receipt Uploaded',
+            'description' => "Uploaded Official Receipt #{$validated['or_number']} at submission. Pending Admin verification.",
         ]);
 
         $uploadedFileIds = [];
@@ -109,10 +119,10 @@ class Research_title_Controller extends Controller
         // ✅ Store documents
         foreach ($requirements as $req) {
             $fieldKey = 'files.' . $req->id;
-            
+
             if ($request->hasFile($fieldKey)) {
                 $files = $request->file($fieldKey);
-                
+
                 // Unify to array for processing
                 if (!is_array($files)) {
                     $files = [$files];
@@ -238,13 +248,14 @@ class Research_title_Controller extends Controller
 
         $researchTitle = Research_title::findOrFail($id);
         $user = Auth::user();
-        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) abort(403);
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id)
+            abort(403);
 
         // Replace existing draft in this category if it exists
         $existingDraft = Researcher_files::where('research_title_id', $id)
-                            ->where('revision_number', -1)
-                            ->where('category', $request->category)
-                            ->first();
+            ->where('revision_number', -1)
+            ->where('category', $request->category)
+            ->first();
 
         if ($existingDraft) {
             Storage::disk('public_uploads')->delete(str_replace('storage/', '', $existingDraft->filepath));
@@ -271,9 +282,10 @@ class Research_title_Controller extends Controller
     {
         $file = Researcher_files::findOrFail($file_id);
         $user = Auth::user();
-        
+
         $researchTitle = Research_title::findOrFail($file->research_title_id);
-        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) abort(403);
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id)
+            abort(403);
 
         if ($file->revision_number != -1) {
             abort(403, 'Can only delete files from the active draft workspace.');
@@ -334,8 +346,8 @@ class Research_title_Controller extends Controller
             if (!$isIncomplete) {
                 // Check if any files have been uploaded into the draft workspace
                 $hasUpdatedFiles = Researcher_files::where('research_title_id', $id)
-                                    ->where('revision_number', -1)
-                                    ->exists();
+                    ->where('revision_number', -1)
+                    ->exists();
 
                 if (!$hasUpdatedFiles) {
                     return back()->with('error', 'You must upload at least one document to your Revision Workspace before submitting corrections.');
@@ -343,8 +355,8 @@ class Research_title_Controller extends Controller
 
                 // Group all draft workspace files into a formal new Revision Folder
                 $currentMax = Researcher_files::where('research_title_id', $id)
-                                ->where('revision_number', '>', 0)
-                                ->max('revision_number') ?? 0;
+                    ->where('revision_number', '>', 0)
+                    ->max('revision_number') ?? 0;
                 $newRevisionNumber = $currentMax + 1;
 
                 Researcher_files::where('research_title_id', $id)
@@ -371,7 +383,7 @@ class Research_title_Controller extends Controller
                     'message' => $request->revision_message,
                 ]);
             } else {
-                 \App\Models\RevisionLog::create([
+                \App\Models\RevisionLog::create([
                     'research_title_id' => $researchTitle->id,
                     'user_id' => $user->id,
                     'message' => 'Resubmitted without additional notes.',

@@ -48,17 +48,17 @@ Route::middleware('guest')->group(function () {
 
 Route::get('/legal/privacy-policy', function () {
     $contents = CmsContent::all()->pluck('value', 'key');
-    return view('legal.privacy', compact('contents')); 
+    return view('legal.privacy', compact('contents'));
 })->name('policy.privacy');
 
 Route::get('/legal/terms-of-service', function () {
     $contents = CmsContent::all()->pluck('value', 'key');
-    return view('legal.terms', compact('contents')); 
+    return view('legal.terms', compact('contents'));
 })->name('policy.terms');
 
 Route::get('/legal/accessibility', function () {
     $contents = CmsContent::all()->pluck('value', 'key');
-    return view('legal.accessibility', compact('contents')); 
+    return view('legal.accessibility', compact('contents'));
 })->name('policy.accessibility');
 
 Route::get('/download-mobile-app', function () {
@@ -113,7 +113,7 @@ Route::middleware(['auth'])->group(function () {
         $unreadCount = UserNotification::where('user_id', Auth::id())
             ->where('is_read', false)
             ->count();
-        
+
         $notifications = UserNotification::where('user_id', Auth::id())
             ->where('is_read', false)
             ->orderBy('created_at', 'desc')
@@ -129,7 +129,7 @@ Route::middleware(['auth'])->group(function () {
     // Route to view a specific notification and its related content
     Route::get('/notifications/{id}', function ($id) {
         $notification = UserNotification::findOrFail($id);
-        
+
         // Security check: ensure user owns the notification
         if ($notification->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
@@ -161,12 +161,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/resources', function () {
             $contents = CmsContent::all()->pluck('value', 'key');
             $downloadables = \App\Models\DownloadableResource::all();
-            return view('resources', compact('contents', 'downloadables')); 
+            return view('resources', compact('contents', 'downloadables'));
         })->name('resources');
 
         Route::get('/instructions', function () {
             $contents = CmsContent::all()->pluck('value', 'key');
-            return view('instructions', compact('contents')); 
+            return view('instructions', compact('contents'));
         })->name('instructions');
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
@@ -181,8 +181,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
         Route::get('/home/{id}/recommendation-letter', [Research_title_Controller::class, 'viewRecommendationLetter'])->name('recommendation.view');
 
-        // Official Receipt Upload Route for Researchers
-        Route::post('/researcher/submit-or/{id}', [\App\Http\Controllers\ORNumberController::class, 'researcherSubmitOR'])->name('researcher.submit_or');
+        // Official Receipt Upload Route for Researchers (DEPRECATED: OR is now required at submission time)
+        // Route::post('/researcher/submit-or/{id}', [\App\Http\Controllers\ORNumberController::class, 'researcherSubmitOR'])->name('researcher.submit_or');
 
         // Settings Routes
         Route::post('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.update_profile');
@@ -226,9 +226,9 @@ Route::middleware(['auth'])->group(function () {
         // CMS Routes (Moved from Admin)
         Route::controller(CmsController::class)->prefix('admin/cms')->name('admin.cms.')->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/content', 'content')->name('content');         
+            Route::get('/content', 'content')->name('content');
             Route::post('/content', 'updateContent')->name('content.update');
-            
+
             // Downloadable Resources
             Route::post('/downloadables', 'storeDownloadable')->name('downloadables.store');
             Route::put('/downloadables/{id}', 'updateDownloadable')->name('downloadables.update');
@@ -256,7 +256,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/admin', [AdminController::class, 'analytics'])->name('admin.analytics');
         Route::get('/admin/appointment', function () {
-            return view('admin.appointment'); })->name('admin.appointment');
+            return view('admin.appointment');
+        })->name('admin.appointment');
         Route::get('/admin/users', [AdminController::class, 'manageUsers'])->name('admin.manage_users');
         Route::post('/admin/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
         Route::post('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
@@ -275,7 +276,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/Review', [AdminController::class, 'GetReview'])->name('admin.Review');
         Route::get('/admin/Revision', [AdminController::class, 'GetRevision'])->name('admin.Revision');
         Route::get('/admin/file', function () {
-            return view('admin.view_asessment'); })->name('admin.file');
+            return view('admin.view_asessment');
+        })->name('admin.file');
 
         Route::get('/admin/applications', [AdminController::class, 'applications'])->name('admin.applications');
         Route::post('/admin/applications/{id}/assign-reviewers', [AdminController::class, 'assignReviewers'])->name('admin.assign_reviewers');
@@ -286,7 +288,7 @@ Route::middleware(['auth'])->group(function () {
         // Official Receipt Number Logging (Admin Access)
         Route::post('/admin/or-number/verify/{id}', [\App\Http\Controllers\ORNumberController::class, 'verifyOR'])->name('admin.or_number.verify');
         Route::post('/admin/or-number/reject/{id}', [\App\Http\Controllers\ORNumberController::class, 'rejectOR'])->name('admin.or_number.reject');
-        
+
         // AI Analysis Route for Modals
         Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol_type');
 
@@ -305,7 +307,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/recommendation-letter/finalize/{id}', [AdminController::class, 'finalizeReview'])->name('admin.recommendation.finalize');
         Route::get('/admin/recommendation-letter/view-saved/{id}', [AdminController::class, 'viewSavedRecommendationLetter'])->name('admin.recommendation.view_saved');
         Route::get('/admin/recommendation-letter/view-file/{fileId}', [AdminController::class, 'viewRecommendationLetterFile'])->name('admin.recommendation.view_file');
-                // Notify researcher that their official receipt is required
+        // Notify researcher that their official receipt is required
         Route::post('/admin/protocols/{id}/notify-receipt', [AdminController::class, 'notifyReceiptRequired'])->name('admin.notify_receipt_required');
 
     });

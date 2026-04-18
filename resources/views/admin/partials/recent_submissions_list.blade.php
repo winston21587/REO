@@ -11,11 +11,13 @@
                         </p>
                     </div>
                     @if($sub->Status === 'Revision Submitted')
-                        <span class="inline-flex items-center justify-center min-w-[70px] uppercase font-bold text-[10px] tracking-wider px-2 py-1 rounded bg-violet-50 text-violet-600 border border-violet-100 shrink-0">
+                        <span
+                            class="inline-flex items-center justify-center min-w-[70px] uppercase font-bold text-[10px] tracking-wider px-2 py-1 rounded bg-violet-50 text-violet-600 border border-violet-100 shrink-0">
                             Resubmitted
                         </span>
                     @else
-                        <span class="inline-flex items-center justify-center min-w-[70px] uppercase font-bold text-[10px] tracking-wider px-2 py-1 rounded bg-orange-50 text-orange-600 border border-orange-100 shrink-0">
+                        <span
+                            class="inline-flex items-center justify-center min-w-[70px] uppercase font-bold text-[10px] tracking-wider px-2 py-1 rounded bg-orange-50 text-orange-600 border border-orange-100 shrink-0">
                             Pending
                         </span>
                     @endif
@@ -37,8 +39,9 @@
                         class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-slate-300">
                         View Details
                     </a>
-                    
-                    <button onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')"
+
+                    <button
+                        onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}', '{{ $sub->Official_Receipt_Number ?? '' }}', '{{ $sub->or_file_path ? asset($sub->or_file_path) : '' }}', {{ $sub->is_or_verified ? 'true' : 'false' }})"
                         class="bg-[#8B0000] hover:bg-[#6d0000] text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
                         Action
                     </button>

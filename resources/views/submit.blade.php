@@ -1,7 +1,8 @@
 <x-user_layout>
     <x-skeleton-loader />
-    
-    <div id="page-content" style="display: none;" class="min-h-screen bg-surface-50 py-8 px-4 sm:px-6 lg:px-8" x-data="submissionForm()">
+
+    <div id="page-content" style="display: none;" class="min-h-screen bg-surface-50 py-8 px-4 sm:px-6 lg:px-8"
+        x-data="submissionForm()">
 
         <div class="max-w-7xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
 
@@ -83,11 +84,12 @@
 
                             <!-- Research Type -->
                             <div class="group">
-                                <label for="research_type"
-                                    class="block text-sm font-bold text-slate-700 mb-2">Research Type</label>
+                                <label for="research_type" class="block text-sm font-bold text-slate-700 mb-2">Research
+                                    Type</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <i class="fas fa-flask text-slate-400 group-focus-within:text-[#8B0000] transition-colors"></i>
+                                        <i
+                                            class="fas fa-flask text-slate-400 group-focus-within:text-[#8B0000] transition-colors"></i>
                                     </div>
                                     <select name="research_type" id="research_type"
                                         class="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200 appearance-none cursor-pointer"
@@ -139,14 +141,16 @@
                                     // Determine accept attribute based on file_type
                                     $accept = [];
                                     $types = explode(',', $requirement->file_type);
-                                    foreach($types as $type) {
+                                    foreach ($types as $type) {
                                         $type = trim($type);
-                                        if ($type === 'PDF') $accept[] = '.pdf';
-                                        if ($type === 'Word') $accept[] = '.doc,.docx';
+                                        if ($type === 'PDF')
+                                            $accept[] = '.pdf';
+                                        if ($type === 'Word')
+                                            $accept[] = '.doc,.docx';
                                         // 'Others' might not need a specific accept rule, or could be broad
                                     }
                                     $acceptStr = !empty($accept) ? implode(',', $accept) : '';
-                                    
+
                                     // Construct label
                                     $label = $requirement->name;
                                     if ($requirement->file_type) {
@@ -154,13 +158,11 @@
                                     }
                                 @endphp
 
-                                <x-file-upload-item 
+                                <x-file-upload-item
                                     name="files[{{ $requirement->id }}]{{ $requirement->is_multiple ? '[]' : '' }}"
-                                    label="{{ $label }}"
-                                    accept="{{ $acceptStr }}"
+                                    label="{{ $label }}" accept="{{ $acceptStr }}"
                                     required="{{ $requirement->is_required ? 'true' : 'false' }}"
-                                    multiple="{{ $requirement->is_multiple ? 'true' : 'false' }}" 
-                                />
+                                    multiple="{{ $requirement->is_multiple ? 'true' : 'false' }}" />
                             @endforeach
 
                         </div>
@@ -209,7 +211,7 @@
                                         <i class="fas fa-magic group-hover:animate-pulse"></i> Check with AI
                                     </button> -->
 
-                                    <!-- AI Loader & Results Removed (Moved to Modal) -->
+                                <!-- AI Loader & Results Removed (Moved to Modal) -->
                                 <!-- </div> -->
 
                                 <!-- Submit Button -->
@@ -364,20 +366,20 @@
 
                         Array.from(input.files).forEach(file => {
                             html += `
-                                <div class="group relative bg-slate-50 p-2.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex-1 min-w-0 mr-2">
-                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">${label}</p>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <i class="fas fa-file-alt text-[#8B0000] text-xs"></i>
-                                                <p class="text-xs font-bold text-slate-700 truncate" title="${file.name}">${file.name}</p>
+                                        <div class="group relative bg-slate-50 p-2.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex-1 min-w-0 mr-2">
+                                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">${label}</p>
+                                                    <div class="flex items-center gap-2 mt-1">
+                                                        <i class="fas fa-file-alt text-[#8B0000] text-xs"></i>
+                                                        <p class="text-xs font-bold text-slate-700 truncate" title="${file.name}">${file.name}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="shrink-0">
+                                                    <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="shrink-0">
-                                            <i class="fas fa-check-circle text-green-500 text-sm"></i>
-                                        </div>
-                                    </div>
-                                </div>`;
+                                        </div>`;
                         });
                     }
                 });

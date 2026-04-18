@@ -22,6 +22,7 @@ use App\Models\UserNotification;
 use App\Models\Meeting;
 use App\Models\AgendaItem;
 use Carbon\Carbon;
+use App\Models\TitleLog;
 
 
 use Illuminate\Support\Facades\Hash;
@@ -779,6 +780,19 @@ class AdminController extends Controller
                     'appointment_date' => $request->appointment_date,
                     'stage' => 'Hardcopy Submission',
                 ]);
+
+                // Auto-verify OR if admin checked the verify box
+                if ($request->has('verify_or') && $submission->Official_Receipt_Number && !$submission->is_or_verified) {
+                    $submission->is_or_verified = true;
+                    $submission->save();
+
+                    TitleLog::create([
+                        'research_title_id' => $submission->id,
+                        'user_id' => auth()->id(),
+                        'action' => 'Official Receipt Verified',
+                        'description' => "Admin verified Receipt #{$submission->Official_Receipt_Number} during Initial Intake.",
+                    ]);
+                }
 
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
                 $message = "Your submission \"{$submission->Study_Protocol_title}\" document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";

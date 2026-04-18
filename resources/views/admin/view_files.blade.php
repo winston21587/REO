@@ -320,6 +320,96 @@
                 </div>
                 @endif
 
+                <!-- ===== Reviewer Deliberation Reports (Feedback) ===== -->
+                @if($reviewerDecisions->count() > 0)
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fas fa-clipboard-check text-green-500"></i>
+                        Reviewer Deliberations
+                        <span class="ml-auto bg-green-100 text-green-700 text-[9px] font-black px-2 py-0.5 rounded-full">{{ $reviewerDecisions->count() }}</span>
+                    </p>
+
+                    <div class="space-y-4 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
+                        @foreach($reviewerDecisions as $decision)
+                        @php
+                            $user = $decision->user;
+                            $reviewerName = $user ? ($user->first_name . ' ' . $user->last_name) : 'Unknown Reviewer';
+                            $initial = $user ? strtoupper(substr($user->first_name, 0, 1)) : '?';
+                            
+                            $msg = $decision->message;
+                            
+                            // Parse structured deliberation
+                            $scientificSoundness = '';
+                            $ethicalIssues = '';
+                            $icfIssues = '';
+                            $summary = '';
+                            $finalDecisionStr = '';
+                            
+                            if (str_contains($msg, '=== DELIBERATION NOTES ===')) {
+                                preg_match('/Scientific Soundness:\s*(.*?)\n\nEthical Issues:/s', $msg, $matches);
+                                $scientificSoundness = $matches[1] ?? '';
+                                
+                                preg_match('/Ethical Issues:\s*(.*?)\n\nICF Issues:/s', $msg, $matches);
+                                $ethicalIssues = $matches[1] ?? '';
+                                
+                                preg_match('/ICF Issues:\s*(.*?)\n\nSummary of Issues & Resolutions:/s', $msg, $matches);
+                                $icfIssues = $matches[1] ?? '';
+                                
+                                preg_match('/Summary of Issues & Resolutions:\s*(.*?)\n\n=== FINAL DECISION ===/s', $msg, $matches);
+                                $summary = $matches[1] ?? '';
+                            }
+                            
+                            preg_match('/=== FINAL DECISION ===\n(.*)/s', $msg, $matches);
+                            $finalDecisionStr = $matches[1] ?? '';
+                        @endphp
+                        <div class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50">
+                            {{-- Reviewer header --}}
+                            <div class="flex items-center gap-2.5 px-3 py-2.5 bg-green-50 border-b border-green-100">
+                                <div class="w-7 h-7 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px] font-black flex-shrink-0">
+                                    {{ $initial }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-bold text-green-900 truncate">{{ $reviewerName }}</p>
+                                    <p class="text-[9px] text-green-600 font-medium">{{ $decision->updated_at->format('M d, Y • h:i A') }}</p>
+                                </div>
+                            </div>
+                            
+                            {{-- Parsed Deliberation Data --}}
+                            @if(str_contains($msg, '=== DELIBERATION NOTES ==='))
+                                <div class="p-3 space-y-3 bg-white text-left">
+                                    <div>
+                                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1"><i class="fas fa-microscope text-indigo-400 mr-1"></i> Scientific Soundness</p>
+                                        <p class="text-xs text-slate-700 leading-relaxed">{{ $scientificSoundness ?: 'N/A' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1"><i class="fas fa-balance-scale text-amber-400 mr-1"></i> Ethical Issues</p>
+                                        <p class="text-xs text-slate-700 leading-relaxed">{{ $ethicalIssues ?: 'N/A' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1"><i class="fas fa-file-signature text-emerald-400 mr-1"></i> ICF Issues</p>
+                                        <p class="text-xs text-slate-700 leading-relaxed">{{ $icfIssues ?: 'N/A' }}</p>
+                                    </div>
+                                    <div class="bg-slate-50 p-2 rounded border border-slate-100">
+                                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1"><i class="fas fa-list-check text-rose-400 mr-1"></i> Summary</p>
+                                        <p class="text-xs text-slate-700 leading-relaxed">{{ $summary ?: 'N/A' }}</p>
+                                    </div>
+                                    <div class="border-t border-slate-100 pt-2">
+                                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Final Action</p>
+                                        <p class="text-xs text-slate-800 font-medium whitespace-pre-wrap leading-relaxed">{{ trim($finalDecisionStr) ?: 'N/A' }}</p>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="p-3 bg-white text-left">
+                                    <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Final Action</p>
+                                    <p class="text-xs text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">{{ $msg }}</p>
+                                </div>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 <!-- Receipt & Payment Card -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
                     <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">

@@ -1140,40 +1140,7 @@ class AdminController extends Controller
                 }
 
                 // ==========================================
-                // AUTO-GENERATE REVISION LETTER HTML
-                // ==========================================
-                if ($request->filled('scientific_soundness')) {
-                    $letterData = [
-                        'scientific_soundness' => $request->input('scientific_soundness', 'No specific issues noted.'),
-                        'ethical_issues' => $request->input('ethical_issues', 'No specific issues noted.'),
-                        'icf_issues' => $request->input('icf_issues', 'No specific issues noted.'),
-                        'summary_of_issues' => $request->input('summary_of_issues', 'Please address the points above.'),
-                    ];
 
-                    try {
-                        // Render HTML
-                        $htmlContent = view('admin.letters.revision', ['submission' => $submission, 'data' => $letterData])->render();
-
-                        // Storage path
-                        $timestamp = now()->format('Ymd_His');
-                        $filename = "Revision_Letter_{$submission->id}_{$timestamp}.html";
-                        $path = "uploads/research_{$submission->id}/" . $filename;
-
-                        // Save physical file
-                        \Illuminate\Support\Facades\Storage::disk('public_uploads')->put($path, $htmlContent);
-
-                        // Add to systematic files
-                        \App\Models\researcher_files::create([
-                            'research_title_id' => $submission->id,
-                            'filename' => $filename,
-                            'filepath' => "storage/" . $path, // prepend storage/ for serveFile compatibility if needed
-                            'filetype' => 'Result of Review (Admin Generated)',
-                            // Note: Mapped to Result of Review so researcher sees it directly
-                        ]);
-                    } catch (\Exception $e) {
-                        \Log::error("Failed to generate Revision Letter: " . $e->getMessage());
-                    }
-                }
 
             } elseif ($action === 'Disapproved') {
                 $newStatus = 'Disapproved'; // Explicitly set just in case
@@ -1223,7 +1190,15 @@ class AdminController extends Controller
         ]);
 
         if ($request->ajax() || $request->wantsJson()) {
+            if (isset($action) && $action === 'Modifications Required') {
+                return response()->json(['success' => true, 'redirect' => route('admin.recommendation.form', $submission->id)]);
+            }
             return response()->json(['success' => true, 'message' => 'Status and Review Type updated successfully']);
+        }
+
+        if (isset($action) && $action === 'Modifications Required') {
+            return redirect()->route('admin.recommendation.form', $submission->id)
+                ->with('success', 'Deliberation saved. Proceeding to Recommendation Letter Generation.');
         }
 
         return redirect()->back()->with('success', 'Status updated successfully');

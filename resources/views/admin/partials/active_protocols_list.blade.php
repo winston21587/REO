@@ -242,59 +242,7 @@
                                                     </a>
                                                 @endif
 
-                                                <!-- Generate Recommendation Letter (Only when Reviewed) -->
-                                                @if($data->Status === 'Reviewed')
-                                                    @if($data->is_or_verified)
-                                                        <a href="{{ route('admin.recommendation.form', $data->id) }}"
-                                                            class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                            <i class="fas fa-file-signature w-4"></i> Generate Recommendation Letter
-                                                        </a>
-                                                    @else
-                                                        <div title="Official Receipt must be received and verified before generating a Recommendation Letter."
-                                                             class="flex items-center gap-3 px-4 py-3 rounded-lg select-none">
-                                                            <i class="fas fa-lock w-4 text-slate-300"></i>
-                                                            <span class="text-sm font-medium text-slate-300 flex-1 truncate">Generate Recommendation Letter</span>
-                                                            <span class="ml-auto text-[9px] font-bold bg-orange-50 text-orange-500 px-1.5 py-0.5 rounded-full border border-orange-200 leading-none whitespace-nowrap">
-                                                                OR Required
-                                                            </span>
-                                                        </div>
-                                                        @php
-                                                            $researcherUserId = optional(optional($data->researcher)->user)->id;
-                                                            $alreadyNotified = $researcherUserId && \App\Models\UserNotification::where('user_id', $researcherUserId)
-                                                                ->where('research_id', $data->id)
-                                                                ->where('type', 'receipt_reminder')
-                                                                ->where('is_read', false)
-                                                                ->where('created_at', '>=', \Carbon\Carbon::now()->subHours(24))
-                                                                ->exists();
-                                                        @endphp
-                                                        <button
-                                                            type="button"
-                                                            @if($alreadyNotified)
-                                                            disabled
-                                                            title="A receipt reminder has already been sent. Awaiting researcher response."
-                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 bg-slate-50 rounded-lg cursor-not-allowed select-none text-left"
-                                                            @else
-                                                            onclick="notifyReceiptRequired('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')"
-                                                            title="Send a notification reminding the researcher to submit their Official Receipt."
-                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-orange-600 hover:bg-orange-50 rounded-lg transition-colors text-left"
-                                                            @endif
-                                                        >
-                                                            @if($alreadyNotified)
-                                                                <i class="fas fa-clock w-4 text-slate-400"></i>
-                                                                <span>Awaiting Response</span>
-                                                                <span class="ml-auto text-[9px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full border border-slate-200 leading-none whitespace-nowrap">
-                                                                    Notified
-                                                                </span>
-                                                            @else
-                                                                <i class="fas fa-bell w-4"></i>
-                                                                <span>Notify Researcher</span>
-                                                                <span class="ml-auto text-[9px] font-bold bg-orange-50 text-orange-500 px-1.5 py-0.5 rounded-full border border-orange-200 leading-none">
-                                                                    OR Required
-                                                                </span>
-                                                            @endif
-                                                        </button>
                                                     @endif
-                                                @endif
 
                                                 <!-- Assign Reviewers (Only after Hardcopy Received) -->
                                                 @if(in_array($data->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review']))

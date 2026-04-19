@@ -201,10 +201,6 @@
                                                                 @endif
                                                             @endif
 
-                                                            <a href="{{ route('admin.recommendation.form', $data->id) }}"
-                                                                class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                                <i class="fas fa-file-signature w-4 text-center"></i> Generate Recommendation Letter
-                                                            </a>
                                                         </div>
                                                     </div>
                                                 </div>

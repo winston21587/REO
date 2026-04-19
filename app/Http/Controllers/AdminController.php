@@ -755,16 +755,47 @@ class AdminController extends Controller
     //     return response()->json(['success' => true]);
     public function getReviewerFeedback($id)
     {
+        // Fetch all feedback sorted newest first
         $feedbacks = \App\Models\SubmissionFeedback::where('research_title_id', $id)
-            ->where('type', 'reviewer_decision')
+            ->whereIn('type', ['reviewer_decision', 'admin_deliberation'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
-        $scientific = [];
-        $ethical = [];
-        $icf = [];
-        $summary = [];
+        $currentRound = [
+            'scientific' => [],
+            'ethical' => [],
+            'icf' => [],
+            'summary' => []
+        ];
+
+        $historicalRounds = [];
+        $tempHistoryRound = null;
+
+        $isInCurrentRound = true;
 
         foreach ($feedbacks as $fb) {
+            if ($fb->type === 'admin_deliberation') {
+                if ($isInCurrentRound) {
+                    $isInCurrentRound = false;
+                }
+
+                // Finalize previous history round before starting a new older one
+                if ($tempHistoryRound !== null && (count($tempHistoryRound['scientific']) > 0 || count($tempHistoryRound['ethical']) > 0 || count($tempHistoryRound['icf']) > 0 || count($tempHistoryRound['summary']) > 0)) {
+                    $historicalRounds[] = $tempHistoryRound;
+                }
+
+                // Start a fresh historical round bounded by this admin decision date
+                $tempHistoryRound = [
+                    'round_date' => $fb->created_at->format('M d, Y'),
+                    'scientific' => [],
+                    'ethical' => [],
+                    'icf' => [],
+                    'summary' => []
+                ];
+                continue;
+            }
+
+            // Parse reviewer_decision block
             $text = $fb->message;
             $sciPos = strpos($text, "Scientific Soundness: ");
             $ethPos = strpos($text, "Ethical Issues: ");
@@ -772,26 +803,80 @@ class AdminController extends Controller
             $sumPos = strpos($text, "Summary of Issues & Resolutions: ");
             $finPos = strpos($text, "=== FINAL DECISION ===");
 
+            $sciText = '';
+            $ethText = '';
+            $icfText = '';
+            $sumText = '';
+
             if ($sciPos !== false && $ethPos !== false) {
-                // Combine string, strip ends
-                $scientific[] = trim(substr($text, $sciPos + 22, $ethPos - ($sciPos + 22)));
+                $sciText = trim(substr($text, $sciPos + 22, $ethPos - ($sciPos + 22)));
             }
             if ($ethPos !== false && $icfPos !== false) {
-                $ethical[] = trim(substr($text, $ethPos + 16, $icfPos - ($ethPos + 16)));
+                $ethText = trim(substr($text, $ethPos + 16, $icfPos - ($ethPos + 16)));
             }
             if ($icfPos !== false && $sumPos !== false) {
-                $icf[] = trim(substr($text, $icfPos + 12, $sumPos - ($icfPos + 12)));
+                $icfText = trim(substr($text, $icfPos + 12, $sumPos - ($icfPos + 12)));
             }
             if ($sumPos !== false && $finPos !== false) {
-                $summary[] = trim(substr($text, $sumPos + 33, $finPos - ($sumPos + 33)));
+                $sumText = trim(substr($text, $sumPos + 33, $finPos - ($sumPos + 33)));
+            }
+
+            if ($isInCurrentRound) {
+                if ($sciText && $sciText !== 'N/A')
+                    $currentRound['scientific'][] = $sciText;
+                if ($ethText && $ethText !== 'N/A')
+                    $currentRound['ethical'][] = $ethText;
+                if ($icfText && $icfText !== 'N/A')
+                    $currentRound['icf'][] = $icfText;
+                if ($sumText && $sumText !== 'N/A')
+                    $currentRound['summary'][] = $sumText;
+            } else {
+                if ($tempHistoryRound === null) {
+                    $tempHistoryRound = [
+                        'round_date' => $fb->created_at->format('M d, Y'),
+                        'scientific' => [],
+                        'ethical' => [],
+                        'icf' => [],
+                        'summary' => []
+                    ];
+                }
+                if ($sciText && $sciText !== 'N/A')
+                    $tempHistoryRound['scientific'][] = $sciText;
+                if ($ethText && $ethText !== 'N/A')
+                    $tempHistoryRound['ethical'][] = $ethText;
+                if ($icfText && $icfText !== 'N/A')
+                    $tempHistoryRound['icf'][] = $icfText;
+                if ($sumText && $sumText !== 'N/A')
+                    $tempHistoryRound['summary'][] = $sumText;
             }
         }
 
+        // Flush the chronologically oldest history round if it has data
+        if ($tempHistoryRound !== null && (count($tempHistoryRound['scientific']) > 0 || count($tempHistoryRound['ethical']) > 0 || count($tempHistoryRound['icf']) > 0 || count($tempHistoryRound['summary']) > 0)) {
+            $historicalRounds[] = $tempHistoryRound;
+        }
+
+        $currentFormatted = [
+            'scientific_soundness' => implode("\n\n---\n\n", array_filter($currentRound['scientific'])),
+            'ethical_issues' => implode("\n\n---\n\n", array_filter($currentRound['ethical'])),
+            'icf_issues' => implode("\n\n---\n\n", array_filter($currentRound['icf'])),
+            'summary_of_issues' => implode("\n\n---\n\n", array_filter($currentRound['summary']))
+        ];
+
+        $historyFormatted = [];
+        foreach ($historicalRounds as $hr) {
+            $historyFormatted[] = [
+                'round_date' => $hr['round_date'],
+                'scientific_soundness' => implode("\n\n---\n\n", array_filter($hr['scientific'])),
+                'ethical_issues' => implode("\n\n---\n\n", array_filter($hr['ethical'])),
+                'icf_issues' => implode("\n\n---\n\n", array_filter($hr['icf'])),
+                'summary_of_issues' => implode("\n\n---\n\n", array_filter($hr['summary'])),
+            ];
+        }
+
         return response()->json([
-            'scientific_soundness' => implode("\n\n---\n\n", array_filter($scientific)),
-            'ethical_issues' => implode("\n\n---\n\n", array_filter($ethical)),
-            'icf_issues' => implode("\n\n---\n\n", array_filter($icf)),
-            'summary_of_issues' => implode("\n\n---\n\n", array_filter($summary))
+            'current' => $currentFormatted,
+            'history' => $historyFormatted
         ]);
     }
 

@@ -84,6 +84,36 @@
                             class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm bg-slate-50 text-slate-500 cursor-not-allowed shadow-none resize-none focus:outline-none"></textarea>
                     </div>
 
+                    <!-- =============================================
+                             HISTORICAL FEEDBACK ACCORDION 
+                             ============================================= -->
+                    <div id="historicalFeedbackContainer" class="hidden mt-6 mb-2">
+                        <details
+                            class="group bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-sm transition-all duration-300">
+                            <summary
+                                class="flex items-center justify-between cursor-pointer p-4 hover:bg-slate-100 transition-colors focus:outline-none">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-open:text-indigo-500 shadow-sm transition-colors">
+                                        <i class="fas fa-history text-xs"></i>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-700">View Previous Remarks</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-md text-[10px] font-bold"
+                                        id="historicalRoundCount">0</span>
+                                    <i
+                                        class="fas fa-chevron-down text-slate-400 text-xs transition-transform duration-300 group-open:rotate-180"></i>
+                                </div>
+                            </summary>
+                            <div class="p-4 bg-white border-t border-slate-200 space-y-4 max-h-[40vh] overflow-y-auto custom-scrollbar"
+                                id="historicalFeedbackContent">
+                                <!-- Dynamic Content Here -->
+                            </div>
+                        </details>
+                    </div>
+
                     <!-- Divider -->
                     <div class="flex items-center gap-3 pt-2">
                         <div class="h-px bg-slate-200 flex-1"></div>
@@ -248,10 +278,46 @@
         fetch(`/admin/reviewer-feedback/${id}`)
             .then(response => response.json())
             .then(data => {
-                document.getElementById('deliberation_scientific').value = data.scientific_soundness || '';
-                document.getElementById('deliberation_ethical').value = data.ethical_issues || '';
-                document.getElementById('deliberation_icf').value = data.icf_issues || '';
-                document.getElementById('deliberation_summary').value = data.summary_of_issues || '';
+                // Populate active fields using Current Round data
+                document.getElementById('deliberation_scientific').value = data.current?.scientific_soundness || '';
+                document.getElementById('deliberation_ethical').value = data.current?.ethical_issues || '';
+                document.getElementById('deliberation_icf').value = data.current?.icf_issues || '';
+                document.getElementById('deliberation_summary').value = data.current?.summary_of_issues || '';
+
+                // Handle Historical Data Rendering
+                const historyContainer = document.getElementById('historicalFeedbackContainer');
+                const historyContent = document.getElementById('historicalFeedbackContent');
+                const historyCount = document.getElementById('historicalRoundCount');
+
+                historyContent.innerHTML = ''; // Reset
+
+                if (data.history && data.history.length > 0) {
+                    historyContainer.classList.remove('hidden');
+                    historyCount.textContent = data.history.length + (data.history.length > 1 ? ' versions' : ' version');
+
+                    data.history.forEach((round, index) => {
+                        // Reverse chronological ID for display
+                        const roundLabel = `Version ${data.history.length - index}`;
+
+                        const roundHtml = `
+                            <div class="border border-slate-100 rounded-xl overflow-hidden bg-white shadow-sm mb-4 last:mb-0">
+                                <div class="bg-slate-50 px-4 py-2 border-b border-slate-100 flex justify-between items-center">
+                                    <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">${roundLabel}</span>
+                                    <span class="text-[11px] text-slate-400 font-medium flex items-center gap-1.5"><i class="far fa-clock"></i> ${round.round_date}</span>
+                                </div>
+                                <div class="p-4 space-y-4">
+                                    ${round.scientific_soundness ? `<div><h5 class="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest mb-1">Scientific Soundness</h5><p class="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed border-l-2 border-indigo-100 pl-3">${round.scientific_soundness}</p></div>` : ''}
+                                    ${round.ethical_issues ? `<div><h5 class="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest mb-1">Ethical Issues</h5><p class="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed border-l-2 border-amber-100 pl-3">${round.ethical_issues}</p></div>` : ''}
+                                    ${round.icf_issues ? `<div><h5 class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest mb-1">ICF Issues</h5><p class="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed border-l-2 border-emerald-100 pl-3">${round.icf_issues}</p></div>` : ''}
+                                    ${round.summary_of_issues ? `<div><h5 class="text-[10px] font-extrabold text-rose-400 uppercase tracking-widest mb-1">Summary</h5><p class="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed border-l-2 border-rose-100 pl-3">${round.summary_of_issues}</p></div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        historyContent.insertAdjacentHTML('beforeend', roundHtml);
+                    });
+                } else {
+                    historyContainer.classList.add('hidden');
+                }
             })
             .catch(err => {
                 console.error('Failed to fetch reviewer feedback', err);
@@ -259,6 +325,7 @@
                 document.getElementById('deliberation_ethical').value = '';
                 document.getElementById('deliberation_icf').value = '';
                 document.getElementById('deliberation_summary').value = '';
+                document.getElementById('historicalFeedbackContainer').classList.add('hidden');
             });
 
         // Reset Box Selection Visuals
@@ -343,7 +410,7 @@
                 if (result.errors) {
                     let errorMsg = 'Validation Error:\n';
                     for (const [key, messages] of Object.entries(result.errors)) {
-                        errorMsg += `- ${messages[0]}\n`;
+                        errorMsg += `- ${messages[0]} \n`;
                     }
                     alert(errorMsg);
                 } else {

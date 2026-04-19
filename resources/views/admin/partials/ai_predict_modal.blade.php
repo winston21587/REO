@@ -42,10 +42,10 @@
                         <input type="hidden" id="ai-predict-protocol-id" value="">
                         
                         <div class="flex gap-3">
-                            <button type="button" @click="$dispatch('close-ai-predict-modal')" class="flex-1 py-2.5 px-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all text-center">
+                            <button type="button" id="ai-predict-cancel-btn" @click="$dispatch('close-ai-predict-modal')" class="flex-1 py-2.5 px-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all text-center">
                                 Cancel
                             </button>
-                            <button type="button" onclick="saveAiPrediction()" id="ai-predict-save-btn" class="flex-1 py-2.5 px-4 bg-[#8B0000] text-white rounded-xl text-sm font-bold shadow-lg shadow-red-900/20 hover:bg-red-800 hover:-translate-y-0.5 transition-all text-center flex justify-center items-center gap-2">
+                            <button type="button" onclick="saveAiPrediction()" id="ai-predict-save-btn" class="flex-1 flex py-2.5 px-4 bg-[#8B0000] text-white rounded-xl text-sm font-bold shadow-lg shadow-red-900/20 hover:bg-red-800 hover:-translate-y-0.5 transition-all justify-center items-center gap-2">
                                 Save Prediction <i class="fas fa-save"></i>
                             </button>
                         </div>
@@ -76,6 +76,8 @@
         const loader = document.getElementById('ai-predict-loader');
         const resultContainer = document.getElementById('ai-predict-result');
         const errorContainer = document.getElementById('ai-predict-error');
+        const saveBtn = document.getElementById('ai-predict-save-btn');
+        const cancelBtn = document.getElementById('ai-predict-cancel-btn');
         
         loader.classList.remove('hidden');
         resultContainer.classList.add('hidden');
@@ -86,8 +88,19 @@
             loader.classList.add('hidden');
             resultContainer.classList.remove('hidden');
             document.getElementById('ai-predict-suggested-label').innerText = existingSuggestion;
+            
+            // Hide save button since it's already saved
+            saveBtn.classList.add('hidden');
+            saveBtn.classList.remove('flex');
+            cancelBtn.innerText = 'Close';
+            
             return;
         }
+
+        // Reset visibility for new fetches
+        saveBtn.classList.remove('hidden');
+        saveBtn.classList.add('flex');
+        cancelBtn.innerText = 'Cancel';
 
         fetch('/admin/predict', {
             method: 'POST',

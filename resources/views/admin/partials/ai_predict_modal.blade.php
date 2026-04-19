@@ -65,7 +65,7 @@
 </div>
 
 <script>
-    function openAiPredictModal(id, title) {
+    function openAiPredictModal(id, title, existingSuggestion = null) {
         document.getElementById('ai-predict-modal-title').textContent = title;
         document.getElementById('ai-predict-protocol-id').value = id;
         
@@ -80,6 +80,14 @@
         loader.classList.remove('hidden');
         resultContainer.classList.add('hidden');
         errorContainer.classList.add('hidden');
+
+        // Check if there is an existing prediction cached in the database
+        if (existingSuggestion && existingSuggestion !== 'null' && existingSuggestion !== '') {
+            loader.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            document.getElementById('ai-predict-suggested-label').innerText = existingSuggestion;
+            return;
+        }
 
         fetch('/admin/predict', {
             method: 'POST',

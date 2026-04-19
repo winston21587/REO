@@ -95,11 +95,11 @@ class Research_title extends Model
 
         if ($this->relationLoaded('files')) {
             $receipt = $this->files->where('category', 'Official Receipt (OR)')->first();
-            return $receipt ? 'storage/' . $receipt->filepath : null;
+            return $receipt ? $receipt->filepath : null;
         }
 
         $receipt = $this->files()->where('category', 'Official Receipt (OR)')->first();
-        return $receipt ? 'storage/' . $receipt->filepath : null;
+        return $receipt ? $receipt->filepath : null;
     }
 
     protected static function booted()

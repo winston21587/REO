@@ -41,7 +41,7 @@
                     </a>
 
                     <button
-                        onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}', '', '{{ $sub->files->where('category', 'Official Receipt (OR)')->first() ? asset('storage/' . $sub->files->where('category', 'Official Receipt (OR)')->first()->filepath) : '' }}', {{ $sub->is_or_verified ? 'true' : 'false' }})"
+                        onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}', '', '{{ $sub->or_file_path ? asset($sub->or_file_path) : '' }}', {{ $sub->is_or_verified ? 'true' : 'false' }})"
                         class="bg-[#8B0000] hover:bg-[#6d0000] text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
                         Action
                     </button>

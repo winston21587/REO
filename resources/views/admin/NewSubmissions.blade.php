@@ -495,7 +495,11 @@
             orFileLink.classList.add('hidden');
 
             if (orFilePath && orFilePath !== 'null' && orFilePath !== '') {
-                orNumEl.innerHTML = '<span class="text-emerald-600"><i class="fas fa-paperclip mr-1"></i>File Attached</span>';
+                const filename = orFilePath.split('/').pop();
+                orNumEl.innerHTML = `<span class="text-emerald-600 flex items-center gap-1.5 w-[200px]" title="${filename}">
+                                        <i class="fas fa-paperclip flex-shrink-0"></i>
+                                        <span class="truncate">${filename}</span>
+                                     </span>`;
 
                 orFileLink.href = orFilePath;
                 orFileLink.classList.remove('hidden');

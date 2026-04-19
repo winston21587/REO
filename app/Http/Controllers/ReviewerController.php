@@ -91,7 +91,7 @@ class ReviewerController extends Controller
         $backUrl = url()->previous(route('reviewer.dashboard'));
 
         try {
-            $myFileRemarks = \App\Models\ReviewerFileRemark::whereIn('researcher_file_id', function ($query) use ($id) {
+            $myFileRemarks = \App\Models\ReviewerFileRemark::whereIn('file_id', function ($query) use ($id) {
                 $query->select('id')
                     ->from('researcher_files')
                     ->where('research_title_id', $id);
@@ -201,7 +201,7 @@ class ReviewerController extends Controller
                 \App\Models\ReviewerFileRemark::updateOrCreate(
                     [
                         'reviewer_id' => Auth::id(),
-                        'researcher_file_id' => $fileId
+                        'file_id' => $fileId
                     ],
                     [
                         'remarks' => trim($remark),
@@ -303,11 +303,11 @@ class ReviewerController extends Controller
         if ($remark === '') {
             // Delete existing remark if cleared
             \App\Models\ReviewerFileRemark::where('reviewer_id', Auth::id())
-                ->where('researcher_file_id', $fileId)
+                ->where('file_id', $fileId)
                 ->delete();
         } else {
             \App\Models\ReviewerFileRemark::updateOrCreate(
-                ['reviewer_id' => Auth::id(), 'researcher_file_id' => $fileId],
+                ['reviewer_id' => Auth::id(), 'file_id' => $fileId],
                 ['remarks' => $remark, 'research_title_id' => $titleId]
             );
         }

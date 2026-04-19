@@ -1382,13 +1382,13 @@ class AdminController extends Controller
         // Load all reviewer file remarks for this title's files, grouped by researcher_file_id
         try {
             $allFileRemarks = \App\Models\ReviewerFileRemark::with('reviewer')
-                ->whereIn('researcher_file_id', function ($query) use ($id) {
+                ->whereIn('file_id', function ($query) use ($id) {
                     $query->select('id')
                         ->from('researcher_files')
                         ->where('research_title_id', $id);
                 })
                 ->get()
-                ->groupBy('researcher_file_id');
+                ->groupBy('file_id');
         } catch (\Exception $e) {
             $allFileRemarks = collect();
         }

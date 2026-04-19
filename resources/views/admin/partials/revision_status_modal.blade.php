@@ -38,11 +38,7 @@
                     <!-- =============================================
                              DELIBERATION NOTES (Required - Top Section)
                              ============================================= -->
-                    <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl">
-                        <p class="text-xs text-blue-700 leading-relaxed"><i class="fas fa-info-circle mr-1"></i>
-                            Transcribe the committee's deliberation notes below. All fields are required before
-                            selecting an Action.</p>
-                    </div>
+
 
                     <!-- Scientific Soundness -->
                     <div>
@@ -50,9 +46,9 @@
                             <i class="fas fa-microscope text-indigo-400 mr-1"></i> Scientific Soundness <span
                                 class="text-red-400">*</span>
                         </label>
-                        <textarea id="deliberation_scientific" name="scientific_soundness" rows="3" required
-                            placeholder="Document the committee's assessment of scientific merit, research design, methodology..."
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"></textarea>
+                        <textarea id="deliberation_scientific" name="scientific_soundness" rows="3" readonly
+                            placeholder="No feedback provided..."
+                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm bg-slate-50 text-slate-500 cursor-not-allowed shadow-none resize-none focus:outline-none"></textarea>
                     </div>
 
                     <!-- Ethical Issues -->
@@ -61,9 +57,9 @@
                             <i class="fas fa-balance-scale text-amber-400 mr-1"></i> Ethical Issues <span
                                 class="text-red-400">*</span>
                         </label>
-                        <textarea id="deliberation_ethical" name="ethical_issues" rows="3" required
-                            placeholder="Document ethical considerations discussed: risk-benefit ratio, privacy, confidentiality, vulnerable populations..."
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"></textarea>
+                        <textarea id="deliberation_ethical" name="ethical_issues" rows="3" readonly
+                            placeholder="No feedback provided..."
+                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm bg-slate-50 text-slate-500 cursor-not-allowed shadow-none resize-none focus:outline-none"></textarea>
                     </div>
 
                     <!-- ICF Issues -->
@@ -72,9 +68,9 @@
                             <i class="fas fa-file-signature text-emerald-400 mr-1"></i> Informed Consent Form (ICF)
                             Issues <span class="text-red-400">*</span>
                         </label>
-                        <textarea id="deliberation_icf" name="icf_issues" rows="3" required
-                            placeholder="Document ICF assessment: clarity of language, voluntariness, adequate disclosure, comprehension..."
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"></textarea>
+                        <textarea id="deliberation_icf" name="icf_issues" rows="3" readonly
+                            placeholder="No feedback provided..."
+                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm bg-slate-50 text-slate-500 cursor-not-allowed shadow-none resize-none focus:outline-none"></textarea>
                     </div>
 
                     <!-- Summary of Issues and Resolutions -->
@@ -83,9 +79,9 @@
                             <i class="fas fa-list-check text-rose-400 mr-1"></i> Summary of Issues and Resolutions <span
                                 class="text-red-400">*</span>
                         </label>
-                        <textarea id="deliberation_summary" name="summary_of_issues" rows="3" required
-                            placeholder="Summarize: which issues were resolved, which remain unresolved, and recommendations..."
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"></textarea>
+                        <textarea id="deliberation_summary" name="summary_of_issues" rows="3" readonly
+                            placeholder="No feedback provided..."
+                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm bg-slate-50 text-slate-500 cursor-not-allowed shadow-none resize-none focus:outline-none"></textarea>
                     </div>
 
                     <!-- Divider -->
@@ -207,16 +203,20 @@
 
         let activeClass = '';
         let activeText = '';
+        const submitBtn = document.getElementById('submitRevisionStatusBtn');
 
         if (status === 'Modifications Required') {
             activeClass = 'border-orange-400 bg-orange-50';
             activeText = 'text-orange-500';
+            submitBtn.innerHTML = '<span>Generate Letter</span> <i class="fas fa-file-invoice"></i>';
         } else if (status === 'Disapproved') {
             activeClass = 'border-red-400 bg-red-50';
             activeText = 'text-red-500';
+            submitBtn.innerHTML = '<span>Update & Notify</span> <i class="fas fa-paper-plane"></i>';
         } else if (status === 'Approved') {
             activeClass = 'border-green-400 bg-green-50';
             activeText = 'text-green-500';
+            submitBtn.innerHTML = '<span>Update & Notify</span> <i class="fas fa-paper-plane"></i>';
         }
 
         const classes = activeClass.split(' ');
@@ -309,16 +309,7 @@
     document.getElementById('revisionStatusForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        // Client-side Validation: Deliberation fields are required
-        const scientific = document.getElementById('deliberation_scientific').value.trim();
-        const ethical = document.getElementById('deliberation_ethical').value.trim();
-        const icf = document.getElementById('deliberation_icf').value.trim();
-        const summary = document.getElementById('deliberation_summary').value.trim();
 
-        if (!scientific || !ethical || !icf || !summary) {
-            alert('Please fill out all deliberation fields (Scientific Soundness, Ethical Issues, ICF Issues, Summary) before submitting.');
-            return;
-        }
 
         const statusAction = document.getElementById('revisionStatusActionInput').value;
 

@@ -407,6 +407,12 @@ class Research_title_Controller extends Controller
             }
 
             $researchTitle->Status = $newStatus;
+
+            // Reset all assigned reviewers back to Pending so the protocol appears on their dashboard
+            foreach ($researchTitle->reviewers as $reviewer) {
+                $researchTitle->reviewers()->updateExistingPivot($reviewer->id, ['status' => 'Pending']);
+            }
+
             $researchTitle->save();
 
             $successMsg = $isIncomplete ? 'Corrections submitted successfully! Document history synced.' : 'Revisions submitted successfully! Document history synced.';

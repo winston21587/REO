@@ -106,12 +106,14 @@ class Research_title_Controller extends Controller
             'Adviser' => $validated['Adviser'],
         ]);
 
-        // Log OR upload
+        // Log OR upload (OR Number might not be submitted if it's handled as a file requirement instead)
+        $orNumberText = isset($request->or_number) ? " #" . $request->or_number : "";
+        
         TitleLog::create([
             'research_title_id' => $research->id,
             'user_id' => Auth::id(),
             'action' => 'Official Receipt Uploaded',
-            'description' => "Uploaded Official Receipt #{$validated['or_number']} at submission. Pending Admin verification.",
+            'description' => "Uploaded Official Receipt{$orNumberText} at submission. Pending Admin verification.",
         ]);
 
         $uploadedFileIds = [];

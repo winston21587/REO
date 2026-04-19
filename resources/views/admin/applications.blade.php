@@ -172,6 +172,7 @@
 
     <!-- Include Status Update Modal -->
     @include('admin.partials.status_modal')
+    @include('admin.partials.ai_predict_modal')
 
     <!-- Assign Reviewer Modal -->
     @php

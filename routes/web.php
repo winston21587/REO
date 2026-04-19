@@ -292,6 +292,7 @@ Route::middleware(['auth'])->group(function () {
 
         // IRB Prediction API Route
         Route::post('/admin/predict', [\App\Http\Controllers\PredictController::class, 'predict'])->name('admin.predict');
+        Route::post('/admin/predict/save', [\App\Http\Controllers\PredictController::class, 'save'])->name('admin.predict.save');
 
         // AI Analysis Route for Modals
         Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol_type');

@@ -40,31 +40,9 @@
                     <div class="{{ request()->routeIs('admin.revisions') ? 'hidden' : '' }}">
                         <label class="block text-sm font-bold text-slate-700 mb-3">Review Classification</label>
                         <div class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
-                            <div class="flex flex-col relative w-full sm:w-auto">
-                                <div>
-                                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Current Review Type</span>
-                                    <span class="font-bold text-slate-800 text-sm" id="currentReviewTypeDisplay">Unassigned</span>
-                                </div>
-                                
-                                <!-- AI Prediction Container -->
-                                <div id="ai-prediction-container" class="hidden mt-3 sm:mt-2 bg-indigo-50/70 border border-indigo-100 rounded-lg p-2.5 shadow-sm min-w-[200px] transition-all opacity-0">
-                                    <div id="ai-loading" class="flex items-center gap-2 text-indigo-500">
-                                        <i class="fas fa-magic fa-pulse text-xs"></i>
-                                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-indigo-900 leading-tight">AI Analyzing...</span>
-                                    </div>
-                                    <div id="ai-result" class="hidden">
-                                        <div class="flex items-start gap-1.5 text-indigo-700 text-xs font-bold leading-tight mb-2">
-                                            <i class="fas fa-robot mt-0.5 opacity-80 text-[#8B0000]"></i>
-                                            <span id="ai-suggested-text" class="text-indigo-900 font-medium">Suggested: <br><strong class="text-xs text-[#8B0000]" id="ai-label-strong">Exempt Review</strong></span>
-                                        </div>
-                                        <button type="button" id="apply-ai-btn" class="text-[10px] font-bold bg-white text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-md hover:bg-indigo-600 hover:text-white hover:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 transition-all w-full shadow-sm">
-                                            Apply Prediction
-                                        </button>
-                                    </div>
-                                    <div id="ai-error" class="hidden text-[10px] text-red-500 font-medium flex items-center gap-1">
-                                        <i class="fas fa-exclamation-triangle"></i> API Offline
-                                    </div>
-                                </div>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Current Review Type</span>
+                                <span class="font-bold text-slate-800 text-sm" id="currentReviewTypeDisplay">Unassigned</span>
                             </div>
                             <div class="flex-1 w-full max-w-[240px]">
                                 <select name="review_type" id="reviewTypeSelect" class="hidden">
@@ -97,7 +75,6 @@
                                         }
                                     }" 
                                     @update-review-options.window="lockedType = $event.detail.locked === 'N/A' ? 'Unassigned' : ($event.detail.locked || 'Unassigned'); value = ''; if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; open = false;"
-                                    @apply-ai-prediction.window="selectOption($event.detail.prediction)"
                                     class="relative w-full">
 
                                    <button type="button" @click="open = !open" 
@@ -307,60 +284,6 @@
         
         // Broadcast custom event to sync with the Alpine UI dropdown
         window.dispatchEvent(new CustomEvent('update-review-options', { detail: { locked: currentReviewType || 'Unassigned' } }));
-
-        // AI PREDICTION LOGIC
-        const predictionContainer = document.getElementById('ai-prediction-container');
-        const aiLoading = document.getElementById('ai-loading');
-        const aiResult = document.getElementById('ai-result');
-        const aiError = document.getElementById('ai-error');
-        const applyAiBtn = document.getElementById('apply-ai-btn');
-
-        if (predictionContainer) {
-            // Only suggest if currently Unassigned or N/A
-            if (!currentReviewType || currentReviewType === 'Unassigned' || currentReviewType === 'N/A') {
-                predictionContainer.classList.remove('hidden');
-                setTimeout(() => predictionContainer.classList.remove('opacity-0'), 10);
-                aiLoading.classList.remove('hidden');
-                aiResult.classList.add('hidden');
-                aiError.classList.add('hidden');
-
-                // Async fetch prediction
-                fetch('/admin/predict', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ text: title })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    aiLoading.classList.add('hidden');
-                    if (data.success && data.prediction && data.prediction.predicted_label) {
-                        aiResult.classList.remove('hidden');
-                        let predLabel = data.prediction.predicted_label;
-                        if (!predLabel.includes('Review')) predLabel += ' Review'; // Normalize to Exempt Review, etc.
-                        document.getElementById('ai-label-strong').innerText = predLabel;
-
-                        applyAiBtn.onclick = () => {
-                            window.dispatchEvent(new CustomEvent('apply-ai-prediction', { detail: { prediction: predLabel } }));
-                        };
-                    } else {
-                        aiError.classList.remove('hidden');
-                        if (data.message) aiError.innerHTML = `<i class="fas fa-xs fa-exclamation-triangle"></i> ${data.message}`;
-                    }
-                })
-                .catch(err => {
-                    console.error('AI Predict Error:', err);
-                    aiLoading.classList.add('hidden');
-                    aiError.classList.remove('hidden');
-                });
-            } else {
-                predictionContainer.classList.add('hidden');
-                predictionContainer.classList.add('opacity-0');
-            }
-        }
 
         // Hide Panel Deliberation if not Full Board Review
         const panelDeliberationOption = document.querySelector('.status-option[onclick*="Panel Deliberation"]');

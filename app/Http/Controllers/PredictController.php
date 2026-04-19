@@ -47,4 +47,24 @@ class PredictController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Save the AI prediction to the database.
+     */
+    public function save(Request $request)
+    {
+        $request->validate([
+            'protocol_id' => 'required|integer|exists:research_titles,id',
+            'suggested_review_type' => 'required|string',
+        ]);
+
+        $protocol = \App\Models\Research_title::find($request->protocol_id);
+        $protocol->ai_suggested_review_type = $request->suggested_review_type;
+        $protocol->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Prediction saved successfully.'
+        ]);
+    }
 }

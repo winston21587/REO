@@ -1132,15 +1132,10 @@ class AdminController extends Controller
             }
 
             if ($action === 'Modifications Required') {
-                $newStatus = 'Waiting for Revision'; // Map to internal status
-
-                $message = "Your submission \"{$submission->Study_Protocol_title}\" requires modifications.";
-                if ($request->remarks) {
-                    $message .= "\n\nRemarks/Requirements: " . $request->remarks;
-                }
-
-                // ==========================================
-
+                // DO NOT update status or send notifications yet.
+                // The status will be formally updated to 'Waiting for Revision' 
+                // when the Recommendation Letter is actually generated and submitted.
+                $skipSaveAndNotify = true;
 
             } elseif ($action === 'Disapproved') {
                 $newStatus = 'Disapproved'; // Explicitly set just in case
@@ -1161,8 +1156,10 @@ class AdminController extends Controller
             }
 
             // Save the final status
-            $submission->Status = $newStatus;
-            $submission->save();
+            if (!isset($skipSaveAndNotify)) {
+                $submission->Status = $newStatus;
+                $submission->save();
+            }
 
         }
         // ---------------------------------------------------------
@@ -1180,14 +1177,16 @@ class AdminController extends Controller
         }
 
         // Notification Logic
-        UserNotification::create([
-            'user_id' => $user->user_id,
-            'research_id' => $submission->id,
-            'title' => 'Status Update: ' . $newStatus,
-            'message' => $message,
-            'type' => 'status_update',
-            'is_read' => false
-        ]);
+        if (!isset($skipSaveAndNotify)) {
+            UserNotification::create([
+                'user_id' => $user->user_id,
+                'research_id' => $submission->id,
+                'title' => 'Status Update: ' . $newStatus,
+                'message' => $message ?? "The status of your research \"{$submission->Study_Protocol_title}\" has been updated to: {$newStatus}.",
+                'type' => 'status_update',
+                'is_read' => false
+            ]);
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             if (isset($action) && $action === 'Modifications Required') {

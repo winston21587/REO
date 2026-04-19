@@ -405,7 +405,12 @@
 
             if (response.ok && result.success) {
                 closeRevisionStatusModal();
-                window.location.reload();
+
+                if (result.redirect) {
+                    window.location.href = result.redirect;
+                } else {
+                    window.location.reload();
+                }
             } else {
                 if (result.errors) {
                     let errorMsg = 'Validation Error:\n';

@@ -20,30 +20,43 @@ class PredictController extends Controller
         $apiUrl = env('PREDICT_API_URL', 'https://onnx-reo-ai.onrender.com/predict');
 
         try {
-            $response = Http::timeout(30)->post($apiUrl, [
+            Log::info('Attempting AI Prediction for: ' . $request->text);
+            Log::info('Target URL: ' . $apiUrl);
+            
+            // On local setups like Herd/XAMPP, SSL verification often fails without proper CA config.
+            // Using withoutVerifying() for local connectivity.
+            $response = Http::timeout(30)->withoutVerifying()->post($apiUrl, [
                 'text' => $request->text,
             ]);
 
             if ($response->successful()) {
+                $content = $response->json();
+                Log::info('AI Prediction Success Structure: ' . json_encode($content));
+                
+                // Normalize the response for the frontend
+                $label = $content['prediction'] ?? ($content['label'] ?? ($content['predicted_label'] ?? 'Unknown'));
+                
                 return response()->json([
                     'success' => true,
-                    'prediction' => $response->json()
+                    'label' => $label,
+                    'prediction' => $content
                 ]);
             }
 
-            Log::error('Predict API failed: ' . $response->body());
+            Log::error('Predict API failed with status ' . $response->status() . ': ' . $response->body());
             
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve prediction from the AI server.'
+                'message' => 'Failed to retrieve prediction from the AI server (Status: ' . $response->status() . ').'
             ], 500);
 
         } catch (\Exception $e) {
-            Log::error('Predict API connection error: ' . $e->getMessage());
+            Log::error('Predict API Connection Error: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to connect to the AI prediction service.'
+                'message' => 'Failed to connect to the AI prediction service: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -54,7 +67,7 @@ class PredictController extends Controller
     public function save(Request $request)
     {
         $request->validate([
-            'protocol_id' => 'required|integer|exists:research_titles,id',
+            'protocol_id' => 'required|integer|exists:research_title_information,id',
             'suggested_review_type' => 'required|string',
         ]);
 

@@ -93,9 +93,9 @@
         .then(res => res.json())
         .then(data => {
             loader.classList.add('hidden');
-            if (data.success && data.prediction && data.prediction.predicted_label) {
+            if (data.success && (data.label || (data.prediction && data.prediction.prediction))) {
                 resultContainer.classList.remove('hidden');
-                let predLabel = data.prediction.predicted_label;
+                let predLabel = data.label || data.prediction.prediction;
                 if (!predLabel.includes('Review')) predLabel += ' Review';
                 document.getElementById('ai-predict-suggested-label').innerText = predLabel;
             } else {

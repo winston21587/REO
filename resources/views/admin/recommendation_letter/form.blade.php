@@ -178,7 +178,7 @@
                                         10 => 'Extent of confidentiality',
                                         11 => 'Ensuring language is understood (Translation)',
                                         12 => 'Contact person',
-                                        13 => 'Include REOC contact details'
+                                        13 => 'Include REO contact details'
                                     ];
                                 @endphp
 

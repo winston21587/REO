@@ -147,7 +147,8 @@
                                             $accept[] = '.pdf';
                                         if ($type === 'Word')
                                             $accept[] = '.doc,.docx';
-                                        // 'Others' might not need a specific accept rule, or could be broad
+                                        if ($type === 'Others')
+                                            $accept[] = '.jpg,.jpeg,.png,.gif,.bmp,.webp';
                                     }
                                     $acceptStr = !empty($accept) ? implode(',', $accept) : '';
 
@@ -366,20 +367,20 @@
 
                         Array.from(input.files).forEach(file => {
                             html += `
-                                        <div class="group relative bg-slate-50 p-2.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all">
-                                            <div class="flex items-center justify-between">
-                                                <div class="flex-1 min-w-0 mr-2">
-                                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">${label}</p>
-                                                    <div class="flex items-center gap-2 mt-1">
-                                                        <i class="fas fa-file-alt text-[#8B0000] text-xs"></i>
-                                                        <p class="text-xs font-bold text-slate-700 truncate" title="${file.name}">${file.name}</p>
+                                            <div class="group relative bg-slate-50 p-2.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex-1 min-w-0 mr-2">
+                                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">${label}</p>
+                                                        <div class="flex items-center gap-2 mt-1">
+                                                            <i class="fas fa-file-alt text-[#8B0000] text-xs"></i>
+                                                            <p class="text-xs font-bold text-slate-700 truncate" title="${file.name}">${file.name}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="shrink-0">
+                                                        <i class="fas fa-check-circle text-green-500 text-sm"></i>
                                                     </div>
                                                 </div>
-                                                <div class="shrink-0">
-                                                    <i class="fas fa-check-circle text-green-500 text-sm"></i>
-                                                </div>
-                                            </div>
-                                        </div>`;
+                                            </div>`;
                         });
                     }
                 });

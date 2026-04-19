@@ -16,7 +16,9 @@
                         </p>
                     </div>
                     @if($hasNewFilesUploaded)
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 shadow-sm flex-shrink-0 ml-2 animate-pulse" title="Researcher has uploaded updated files. Please review.">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 shadow-sm flex-shrink-0 ml-2 animate-pulse"
+                            title="Researcher has uploaded updated files. Please review.">
                             <i class="fas fa-file-upload"></i> Files Updated
                         </span>
                     @endif
@@ -28,13 +30,14 @@
                         title="Undo Incomplete Status">
                         <i class="fas fa-undo"></i>
                     </button>
-                    
+
                     <a href="{{ route('admin.view_files', $sub->id) }}"
                         class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-slate-300">
                         View Details
                     </a>
 
-                    <button onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}')"
+                    <button
+                        onclick="openTriageModal('{{ $sub->id }}', '{{ addslashes($sub->Study_Protocol_title) }}', '', '{{ $sub->files->where('category', 'Official Receipt (OR)')->first() ? asset('storage/' . $sub->files->where('category', 'Official Receipt (OR)')->first()->filepath) : '' }}', {{ $sub->is_or_verified ? 'true' : 'false' }})"
                         class="bg-[#8B0000] hover:bg-[#6d0000] text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
                         Re-Check
                     </button>

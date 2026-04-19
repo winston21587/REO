@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Research_title extends Model
 {
     use HasFactory;
-        // Explicitly specify the table name
+    // Explicitly specify the table name
     protected $table = 'research_title_information';
 
     // Define fillable fields for mass assignment
@@ -45,32 +45,33 @@ class Research_title extends Model
     }
 
     // Relationship: each research title belongs to a researcher file
-public function files()
-{
-    return $this->belongsToMany(
+    public function files()
+    {
+        return $this->belongsToMany(
             researcher_files::class,
-                'research_title_files',
-      'research_title_id',
-      'researcher_file_id')
-    ->withTimestamps();
-}
+            'research_title_files',
+            'research_title_id',
+            'researcher_file_id'
+        )
+            ->withTimestamps();
+    }
 
-public function adminFiles()
-{
-    return $this->hasMany(researcher_files::class, 'research_title_id');
-}
+    public function adminFiles()
+    {
+        return $this->hasMany(researcher_files::class, 'research_title_id');
+    }
 
-public function reviewers()
-{
-    return $this->belongsToMany(User::class, 'title_reviewer_assignments', 'research_title_id', 'reviewer_id')
-                ->withPivot('role', 'status')
-                ->withTimestamps();
-}
+    public function reviewers()
+    {
+        return $this->belongsToMany(User::class, 'title_reviewer_assignments', 'research_title_id', 'reviewer_id')
+            ->withPivot('role', 'status')
+            ->withTimestamps();
+    }
 
-public function appointment()
-{
-    return $this->hasMany(Appointment::class, 'research_title_id');
-}
+    public function appointment()
+    {
+        return $this->hasMany(Appointment::class, 'research_title_id');
+    }
 
     public function revisionLogs()
     {
@@ -87,6 +88,20 @@ public function appointment()
         return $this->hasMany(TitleLog::class, 'research_title_id')->orderBy('created_at', 'desc');
     }
 
+    public function getOrFilePathAttribute($value)
+    {
+        if (!empty($value))
+            return $value;
+
+        if ($this->relationLoaded('files')) {
+            $receipt = $this->files->where('category', 'Official Receipt (OR)')->first();
+            return $receipt ? 'storage/' . $receipt->filepath : null;
+        }
+
+        $receipt = $this->files()->where('category', 'Official Receipt (OR)')->first();
+        return $receipt ? 'storage/' . $receipt->filepath : null;
+    }
+
     protected static function booted()
     {
         static::created(function ($researchTitle) {
@@ -100,14 +115,15 @@ public function appointment()
 
         static::updated(function ($researchTitle) {
             $changes = $researchTitle->getChanges();
-            
+
             // Ignore if only 'updated_at' changed
             if (count($changes) === 1 && isset($changes['updated_at'])) {
                 return;
             }
 
             foreach ($changes as $key => $newValue) {
-                if ($key === 'updated_at') continue;
+                if ($key === 'updated_at')
+                    continue;
 
                 $oldValue = $researchTitle->getOriginal($key);
 
@@ -117,8 +133,8 @@ public function appointment()
                     $action = 'Status Changed';
                 }
 
-                $oldString = is_array($oldValue) ? json_encode($oldValue) : (string)$oldValue;
-                $newString = is_array($newValue) ? json_encode($newValue) : (string)$newValue;
+                $oldString = is_array($oldValue) ? json_encode($oldValue) : (string) $oldValue;
+                $newString = is_array($newValue) ? json_encode($newValue) : (string) $newValue;
 
                 TitleLog::create([
                     'research_title_id' => $researchTitle->id,

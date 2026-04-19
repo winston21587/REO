@@ -55,6 +55,8 @@ class Research_title_Controller extends Controller
                     $mimes[] = 'pdf';
                 if ($type === 'Word')
                     array_push($mimes, 'doc', 'docx');
+                if ($type === 'Others')
+                    array_push($mimes, 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp');
             }
             if (!empty($mimes)) {
                 $fileRules[] = 'mimes:' . implode(',', $mimes);
@@ -108,7 +110,7 @@ class Research_title_Controller extends Controller
 
         // Log OR upload (OR Number might not be submitted if it's handled as a file requirement instead)
         $orNumberText = isset($request->or_number) ? " #" . $request->or_number : "";
-        
+
         TitleLog::create([
             'research_title_id' => $research->id,
             'user_id' => Auth::id(),

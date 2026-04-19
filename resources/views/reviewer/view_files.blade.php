@@ -201,6 +201,7 @@
                 },
                 isPdf(file) { return file && file.ext === 'pdf'; },
                 isOffice(file) { return file && ['doc','docx','ppt','pptx','xls','xlsx'].includes(file.ext); },
+                isImage(file) { return file && ['jpg','jpeg','png','gif','bmp','webp'].includes(file.ext); },
                 selectFile(file) {
                     this.activeFile = file;
                     this.currentRemark = file ? (this.remarksMap[file.id] || '') : '';
@@ -290,6 +291,12 @@
                     <template x-if="activeFile && isViewable(activeFile) && isOffice(activeFile)">
                         <iframe :src="getOfficeUrl(activeFile)" class="w-full h-full border-0 bg-white"
                             title="Office Viewer"></iframe>
+                    </template>
+                    <template x-if="activeFile && isViewable(activeFile) && isImage(activeFile)">
+                        <div class="absolute inset-0 flex items-center justify-center bg-slate-900 p-4 overflow-auto">
+                            <img :src="getUrl(activeFile)" :alt="activeFile.filename"
+                                class="max-w-full max-h-full object-contain rounded-lg shadow-lg" />
+                        </div>
                     </template>
                     <template x-if="activeFile && !isViewable(activeFile)">
                         <div class="absolute inset-0 flex items-center justify-center">
@@ -487,33 +494,33 @@
                                 @if($researchTitle->Status !== 'Reviewed')
                                     @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                                         <div x-data="{ 
-                                                                                            showModal: false, 
-                                                                                            step: 1,
-                                                                                            scientific_soundness: '',
-                                                                                            ethical_issues: '',
-                                                                                            icf_issues: '',
-                                                                                            summary_of_issues: '',
-                                                                                            stepOneValid() {
-                                                                                                return this.scientific_soundness.trim() !== '' 
-                                                                                                    && this.ethical_issues.trim() !== '' 
-                                                                                                    && this.icf_issues.trim() !== '' 
-                                                                                                    && this.summary_of_issues.trim() !== '';
-                                                                                            },
-                                                                                            proceedToStep2() {
-                                                                                                if (!this.stepOneValid()) {
-                                                                                                    alert('Please fill out all deliberation fields before proceeding.');
-                                                                                                    return;
-                                                                                                }
-                                                                                                this.step = 2;
-                                                                                            },
-                                                                                            resetWizard() {
-                                                                                                this.step = 1;
-                                                                                                this.scientific_soundness = '';
-                                                                                                this.ethical_issues = '';
-                                                                                                this.icf_issues = '';
-                                                                                                this.summary_of_issues = '';
-                                                                                            }
-                                                                                        }" class="w-full">
+                                                                                                        showModal: false, 
+                                                                                                        step: 1,
+                                                                                                        scientific_soundness: '',
+                                                                                                        ethical_issues: '',
+                                                                                                        icf_issues: '',
+                                                                                                        summary_of_issues: '',
+                                                                                                        stepOneValid() {
+                                                                                                            return this.scientific_soundness.trim() !== '' 
+                                                                                                                && this.ethical_issues.trim() !== '' 
+                                                                                                                && this.icf_issues.trim() !== '' 
+                                                                                                                && this.summary_of_issues.trim() !== '';
+                                                                                                        },
+                                                                                                        proceedToStep2() {
+                                                                                                            if (!this.stepOneValid()) {
+                                                                                                                alert('Please fill out all deliberation fields before proceeding.');
+                                                                                                                return;
+                                                                                                            }
+                                                                                                            this.step = 2;
+                                                                                                        },
+                                                                                                        resetWizard() {
+                                                                                                            this.step = 1;
+                                                                                                            this.scientific_soundness = '';
+                                                                                                            this.ethical_issues = '';
+                                                                                                            this.icf_issues = '';
+                                                                                                            this.summary_of_issues = '';
+                                                                                                        }
+                                                                                                    }" class="w-full">
                                             <button type="button" @click="resetWizard(); showModal = true"
                                                 class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
                                                 <i class="fas fa-check-circle"></i> Complete Review
@@ -521,10 +528,22 @@
 
                                             <!-- Embedded CSS for the custom thin scrollbar -->
                                             <style>
-                                                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-                                                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                                                .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
-                                                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+                                                .custom-scrollbar::-webkit-scrollbar {
+                                                    width: 6px;
+                                                }
+
+                                                .custom-scrollbar::-webkit-scrollbar-track {
+                                                    background: transparent;
+                                                }
+
+                                                .custom-scrollbar::-webkit-scrollbar-thumb {
+                                                    background-color: #cbd5e1;
+                                                    border-radius: 10px;
+                                                }
+
+                                                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                                                    background-color: #94a3b8;
+                                                }
                                             </style>
 
                                             <!-- Two-Step Wizard Modal -->

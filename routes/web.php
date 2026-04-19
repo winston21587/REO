@@ -290,6 +290,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/or-number/verify/{id}', [\App\Http\Controllers\ORNumberController::class, 'verifyOR'])->name('admin.or_number.verify');
         Route::post('/admin/or-number/reject/{id}', [\App\Http\Controllers\ORNumberController::class, 'rejectOR'])->name('admin.or_number.reject');
 
+        // IRB Prediction API Route
+        Route::post('/admin/predict', [\App\Http\Controllers\PredictController::class, 'predict'])->name('admin.predict');
+        Route::post('/admin/predict/save', [\App\Http\Controllers\PredictController::class, 'save'])->name('admin.predict.save');
+
         // AI Analysis Route for Modals
         Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol_type');
 

@@ -909,7 +909,7 @@ class AdminController extends Controller
                 ]);
 
                 // Auto-verify OR if admin checked the verify box
-                if ($request->has('verify_or') && $submission->Official_Receipt_Number && !$submission->is_or_verified) {
+                if ($request->has('verify_or') && !$submission->is_or_verified) {
                     $submission->is_or_verified = true;
                     $submission->save();
 
@@ -917,7 +917,7 @@ class AdminController extends Controller
                         'research_title_id' => $submission->id,
                         'user_id' => auth()->id(),
                         'action' => 'Official Receipt Verified',
-                        'description' => "Admin verified Receipt #{$submission->Official_Receipt_Number} during Initial Intake.",
+                        'description' => "Admin verified the Official Receipt file during Initial Intake.",
                     ]);
                 }
 

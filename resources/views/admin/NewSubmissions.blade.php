@@ -202,7 +202,7 @@
                                     </div>
                                     <div>
                                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Receipt
-                                            Number</p>
+                                            Status</p>
                                         <p id="modalOrNumber" class="text-sm font-bold font-mono text-slate-800">—</p>
                                     </div>
                                 </div>
@@ -494,13 +494,11 @@
             orNoReceipt.classList.add('hidden');
             orFileLink.classList.add('hidden');
 
-            if (orNumber) {
-                orNumEl.textContent = '#' + orNumber;
+            if (orFilePath && orFilePath !== 'null' && orFilePath !== '') {
+                orNumEl.innerHTML = '<span class="text-emerald-600"><i class="fas fa-paperclip mr-1"></i>File Attached</span>';
 
-                if (orFilePath) {
-                    orFileLink.href = orFilePath;
-                    orFileLink.classList.remove('hidden');
-                }
+                orFileLink.href = orFilePath;
+                orFileLink.classList.remove('hidden');
 
                 if (isOrVerified) {
                     orVerified.classList.remove('hidden');

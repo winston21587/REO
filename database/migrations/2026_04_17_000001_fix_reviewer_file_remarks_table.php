@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::table('reviewer_file_remarks', function (Blueprint $table) {
             if (!Schema::hasColumn('reviewer_file_remarks', 'file_id')) {
-                $table->unsignedBigInteger('file_id')->after('reviewer_id')->nullable();
+                $table->unsignedBigInteger('file_id')->nullable();
             }
             if (!Schema::hasColumn('reviewer_file_remarks', 'remarks')) {
-                $table->text('remarks')->nullable()->after('file_id');
+                $table->text('remarks')->nullable();
             }
         });
     }

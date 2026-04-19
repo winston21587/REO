@@ -753,6 +753,48 @@ class AdminController extends Controller
 //     }
 
     //     return response()->json(['success' => true]);
+    public function getReviewerFeedback($id)
+    {
+        $feedbacks = \App\Models\SubmissionFeedback::where('research_title_id', $id)
+            ->where('type', 'reviewer_decision')
+            ->get();
+
+        $scientific = [];
+        $ethical = [];
+        $icf = [];
+        $summary = [];
+
+        foreach ($feedbacks as $fb) {
+            $text = $fb->message;
+            $sciPos = strpos($text, "Scientific Soundness: ");
+            $ethPos = strpos($text, "Ethical Issues: ");
+            $icfPos = strpos($text, "ICF Issues: ");
+            $sumPos = strpos($text, "Summary of Issues & Resolutions: ");
+            $finPos = strpos($text, "=== FINAL DECISION ===");
+
+            if ($sciPos !== false && $ethPos !== false) {
+                // Combine string, strip ends
+                $scientific[] = trim(substr($text, $sciPos + 22, $ethPos - ($sciPos + 22)));
+            }
+            if ($ethPos !== false && $icfPos !== false) {
+                $ethical[] = trim(substr($text, $ethPos + 16, $icfPos - ($ethPos + 16)));
+            }
+            if ($icfPos !== false && $sumPos !== false) {
+                $icf[] = trim(substr($text, $icfPos + 12, $sumPos - ($icfPos + 12)));
+            }
+            if ($sumPos !== false && $finPos !== false) {
+                $summary[] = trim(substr($text, $sumPos + 33, $finPos - ($sumPos + 33)));
+            }
+        }
+
+        return response()->json([
+            'scientific_soundness' => implode("\n\n---\n\n", array_filter($scientific)),
+            'ethical_issues' => implode("\n\n---\n\n", array_filter($ethical)),
+            'icf_issues' => implode("\n\n---\n\n", array_filter($icf)),
+            'summary_of_issues' => implode("\n\n---\n\n", array_filter($summary))
+        ]);
+    }
+
     public function updateStatus(Request $request, $id)
     {
         $submission = Research_title::findOrFail($id);
@@ -996,7 +1038,7 @@ class AdminController extends Controller
                 $deliberationMsg .= "Summary of Issues & Resolutions: " . $request->input('summary_of_issues', 'N/A') . "\n\n";
                 $deliberationMsg .= "Action Taken: " . $action;
 
-                SubmissionFeedback::create([
+                \App\Models\SubmissionFeedback::create([
                     'research_title_id' => $submission->id,
                     'user_id' => auth()->id(),
                     'type' => 'admin_deliberation',
@@ -1011,6 +1053,43 @@ class AdminController extends Controller
                 if ($request->remarks) {
                     $message .= "\n\nRemarks/Requirements: " . $request->remarks;
                 }
+
+                // ==========================================
+                // AUTO-GENERATE REVISION LETTER HTML
+                // ==========================================
+                if ($request->filled('scientific_soundness')) {
+                    $letterData = [
+                        'scientific_soundness' => $request->input('scientific_soundness', 'No specific issues noted.'),
+                        'ethical_issues' => $request->input('ethical_issues', 'No specific issues noted.'),
+                        'icf_issues' => $request->input('icf_issues', 'No specific issues noted.'),
+                        'summary_of_issues' => $request->input('summary_of_issues', 'Please address the points above.'),
+                    ];
+
+                    try {
+                        // Render HTML
+                        $htmlContent = view('admin.letters.revision', ['submission' => $submission, 'data' => $letterData])->render();
+
+                        // Storage path
+                        $timestamp = now()->format('Ymd_His');
+                        $filename = "Revision_Letter_{$submission->id}_{$timestamp}.html";
+                        $path = "uploads/research_{$submission->id}/" . $filename;
+
+                        // Save physical file
+                        \Illuminate\Support\Facades\Storage::disk('public_uploads')->put($path, $htmlContent);
+
+                        // Add to systematic files
+                        \App\Models\researcher_files::create([
+                            'research_title_id' => $submission->id,
+                            'filename' => $filename,
+                            'filepath' => "storage/" . $path, // prepend storage/ for serveFile compatibility if needed
+                            'filetype' => 'Result of Review (Admin Generated)',
+                            // Note: Mapped to Result of Review so researcher sees it directly
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::error("Failed to generate Revision Letter: " . $e->getMessage());
+                    }
+                }
+
             } elseif ($action === 'Disapproved') {
                 $newStatus = 'Disapproved'; // Explicitly set just in case
 

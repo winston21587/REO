@@ -284,6 +284,7 @@ Route::middleware(['auth'])->group(function () {
 
         // The Main Update Logic (Covers Triage Modal)
         Route::post('/admin/update-status/{id}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
+        Route::get('/admin/reviewer-feedback/{id}', [AdminController::class, 'getReviewerFeedback'])->name('admin.reviewerFeedback');
 
         // Official Receipt Number Logging (Admin Access)
         Route::post('/admin/or-number/verify/{id}', [\App\Http\Controllers\ORNumberController::class, 'verifyOR'])->name('admin.or_number.verify');

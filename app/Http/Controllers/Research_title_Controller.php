@@ -394,7 +394,7 @@ class Research_title_Controller extends Controller
             }
 
             // Determine new status
-            $newStatus = $isIncomplete ? 'Pending' : 'Revision Submitted';
+            $newStatus = $isIncomplete ? 'Incomplete Resubmitted' : 'Revision Submitted';
             $logMessage = "Resubmitted corrections: " . $request->revision_message;
 
             // Create Submission Feedback (User Correction) & Revision Log for Admin View

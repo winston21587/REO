@@ -471,7 +471,7 @@
                                 <label
                                     class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Evaluation
                                     Document</label>
-                                <input type="file" name="file" required
+                                <input type="file" name="files[]" required multiple
                                     class="w-full text-[10px] text-slate-500 file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition-colors bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
                             </div>
                         </div>
@@ -494,33 +494,34 @@
                                 @if($researchTitle->Status !== 'Reviewed')
                                     @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                                         <div x-data="{ 
-                                                                                                        showModal: false, 
-                                                                                                        step: 1,
-                                                                                                        scientific_soundness: '',
-                                                                                                        ethical_issues: '',
-                                                                                                        icf_issues: '',
-                                                                                                        summary_of_issues: '',
-                                                                                                        stepOneValid() {
-                                                                                                            return this.scientific_soundness.trim() !== '' 
-                                                                                                                && this.ethical_issues.trim() !== '' 
-                                                                                                                && this.icf_issues.trim() !== '' 
-                                                                                                                && this.summary_of_issues.trim() !== '';
-                                                                                                        },
-                                                                                                        proceedToStep2() {
-                                                                                                            if (!this.stepOneValid()) {
-                                                                                                                alert('Please fill out all deliberation fields before proceeding.');
-                                                                                                                return;
-                                                                                                            }
-                                                                                                            this.step = 2;
-                                                                                                        },
-                                                                                                        resetWizard() {
-                                                                                                            this.step = 1;
-                                                                                                            this.scientific_soundness = '';
-                                                                                                            this.ethical_issues = '';
-                                                                                                            this.icf_issues = '';
-                                                                                                            this.summary_of_issues = '';
-                                                                                                        }
-                                                                                                    }" class="w-full">
+                                                                                                                                                        showModal: false, 
+                                                                                                                                                        step: 1,
+                                                                                                                                                        scientific_soundness: '',
+                                                                                                                                                        ethical_issues: '',
+                                                                                                                                                        icf_issues: '',
+                                                                                                                                                        summary_of_issues: '',
+                                                                                                                                                        stepOneValid() {
+                                                                                                                                                            return this.scientific_soundness.trim() !== '' 
+                                                                                                                                                                && this.ethical_issues.trim() !== '' 
+                                                                                                                                                                && this.icf_issues.trim() !== '' 
+                                                                                                                                                                && this.summary_of_issues.trim() !== '';
+                                                                                                                                                        },
+                                                                                                                                                        proceedToStep2() {
+                                                                                                                                                            if (!this.stepOneValid()) {
+                                                                                                                                                                alert('Please fill out all deliberation fields before proceeding.');
+                                                                                                                                                                return;
+                                                                                                                                                            }
+                                                                                                                                                            this.step = 2;
+                                                                                                                                                        },
+                                                                                                                                                        resetWizard() {
+                                                                                                                                                            this.step = 1;
+                                                                                                                                                            this.scientific_soundness = '';
+                                                                                                                                                            this.ethical_issues = '';
+                                                                                                                                                            this.icf_issues = '';
+                                                                                                                                                            this.summary_of_issues = '';
+                                                                                                                                                        }
+                                                                                                                                                    }"
+                                            class="w-full">
                                             <button type="button" @click="resetWizard(); showModal = true"
                                                 class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
                                                 <i class="fas fa-check-circle"></i> Complete Review
@@ -965,7 +966,7 @@
                             </div>
                             <div class="grid grid-cols-1 gap-2">
                                 @foreach($reviewerUploads as $upload)
-                                    <div
+                                    <div x-data="{ removing: false, deleted: false }" x-show="!deleted" x-transition.opacity
                                         class="flex items-center justify-between p-2 rounded-xl bg-slate-50/80 border border-slate-100 hover:border-slate-300 transition-all group">
                                         <div class="flex items-center gap-2 overflow-hidden">
                                             <div
@@ -980,10 +981,31 @@
                                                 </p>
                                             </div>
                                         </div>
-                                        <a href="{{ route('reviewer.serve_file', $upload->id) }}" target="_blank"
-                                            class="w-7 h-7 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 flex flex-shrink-0 items-center justify-center transition-all opacity-0 group-hover:opacity-100">
-                                            <i class="fas fa-external-link-alt text-xs"></i>
-                                        </a>
+                                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                            @if($researchTitle->Status !== 'Reviewed')
+                                                <!-- Delete Button -->
+                                                <button @click="if(!confirm('Are you sure you want to remove this evaluation?')) return;
+                                                                                                removing = true; 
+                                                                                                fetch('{{ route('reviewer.file.delete', $upload->id) }}', { 
+                                                                                                    method: 'DELETE', 
+                                                                                                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } 
+                                                                                                }).then(res => { 
+                                                                                                    if(res.ok) deleted = true; 
+                                                                                                    else { removing = false; Swal.fire('Error', 'Failed to remove file', 'error'); } 
+                                                                                                });" :disabled="removing"
+                                                    class="w-7 h-7 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 flex flex-shrink-0 items-center justify-center transition-colors disabled:opacity-50">
+                                                    <i class="fas fa-times text-xs" x-show="!removing"></i>
+                                                    <i class="fas fa-circle-notch fa-spin text-xs" x-show="removing"
+                                                        style="display:none;"></i>
+                                                </button>
+                                            @endif
+
+                                            <!-- View Button -->
+                                            <a href="{{ route('reviewer.serve_file', $upload->id) }}" target="_blank"
+                                                class="w-7 h-7 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 flex flex-shrink-0 items-center justify-center transition-all">
+                                                <i class="fas fa-external-link-alt text-xs"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>

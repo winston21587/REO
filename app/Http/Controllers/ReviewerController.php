@@ -138,29 +138,55 @@ class ReviewerController extends Controller
     {
         $request->validate([
             'category' => 'required|string',
-            'file' => 'required|file|max:20480'
+            'files' => 'required|array',
+            'files.*' => 'file|max:20480'
         ]);
 
-        $file = $request->file('file');
+        foreach ($request->file('files') as $file) {
+            $originalExt = $file->getClientOriginalExtension();
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $modifiedName = $originalName . '_reviewer.' . $originalExt;
 
-        $originalExt = $file->getClientOriginalExtension();
-        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $modifiedName = $originalName . '_reviewer.' . $originalExt;
+            // Ensure consistent path usage with Admin logic
+            $path = $file->storeAs('uploads/research_files', time() . '_' . $modifiedName, 'public_uploads');
 
-        // Ensure consistent path usage with Admin logic
-        $path = $file->storeAs('uploads/research_files', time() . '_' . $modifiedName, 'public_uploads');
+            researcher_files::create([
+                'research_title_id' => $id,
+                'filename' => $modifiedName,
+                'filepath' => 'uploads/research_files/' . basename($path),
+                'filetype' => $originalExt,
+                'uploaded_by' => Auth::id(),
+                'category' => 'Reviewer Uploads - ' . $request->input('category'),
+                'revision_number' => 0
+            ]);
+        }
 
-        researcher_files::create([
-            'research_title_id' => $id,
-            'filename' => $modifiedName,
-            'filepath' => 'uploads/research_files/' . basename($path),
-            'filetype' => $originalExt,
-            'uploaded_by' => Auth::id(),
-            'category' => 'Reviewer Uploads - ' . $request->input('category'),
-            'revision_number' => 0
-        ]);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Evaluation Documents Uploaded Successfully',
+            ]);
+        }
 
-        return back()->with('success', 'Evaluation Document Uploaded Successfully');
+        return back()->with('success', 'Evaluation Documents Uploaded Successfully');
+    }
+
+    public function deleteFile($id)
+    {
+        $file = researcher_files::findOrFail($id);
+
+        if ($file->uploaded_by !== Auth::id() && !str_starts_with($file->category, 'Reviewer Uploads')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized deletion.'], 403);
+        }
+
+        // Standardize file path by removing 'storage/' if somehow saved that way
+        $path = str_replace('uploads/research_files/', '', $file->filepath);
+        $path = str_replace('storage/', '', $path);
+
+        Storage::disk('public_uploads')->delete($path);
+        $file->delete();
+
+        return response()->json(['success' => true]);
     }
 
     public function completeReview(Request $request, $id)

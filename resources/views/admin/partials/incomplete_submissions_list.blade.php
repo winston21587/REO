@@ -2,9 +2,7 @@
     <div class="space-y-4 flex-1">
         @forelse($incompleteSubmissions as $sub)
             @php
-                // Check if any researcher file was uploaded AFTER this title was last updated (i.e., after status was set to Incomplete)
-                $latestFileUpload = $sub->files->max('pivot.created_at') ?? $sub->files->max('created_at');
-                $hasNewFilesUploaded = $latestFileUpload && \Carbon\Carbon::parse($latestFileUpload)->gt($sub->updated_at);
+                $hasNewFilesUploaded = $sub->Status === 'Incomplete Resubmitted';
             @endphp
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group">
                 <div class="flex justify-between items-start mb-3">

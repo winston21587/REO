@@ -687,7 +687,7 @@ class AdminController extends Controller
 
 
         // 3. Fetch Incomplete Submissions
-        $incompleteQuery = Research_title::with('files')->whereIn('Status', ['Incomplete', 'Rejected']);
+        $incompleteQuery = Research_title::with('files')->whereIn('Status', ['Incomplete', 'Incomplete Resubmitted', 'Rejected']);
 
         // Search Filter
         if ($request->filled('incomplete_search')) {

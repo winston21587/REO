@@ -65,7 +65,7 @@
                                                 {{ $category->name }} - ₱ {{ number_format($category->fee, 2) }}
                                             </option>
                                         @endforeach
-                                        <option value="Other">Other</option>
+                                        <!-- <option value="Other">Other</option> -->
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                                         <i class="fas fa-chevron-down text-slate-400"></i>

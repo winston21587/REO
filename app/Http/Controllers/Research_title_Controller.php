@@ -187,6 +187,11 @@ class Research_title_Controller extends Controller
             'file_id' => 'required|integer',
         ]);
 
+        $research = Research_title::findOrFail($id);
+        if (!in_array($research->Status, ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
+            abort(403, 'You can only update files when the protocol status is Incomplete or Pending.');
+        }
+
         $oldResearchFile = Researcher_files::findOrFail($request->file_id);
 
         // Store new file
@@ -225,6 +230,10 @@ class Research_title_Controller extends Controller
         $user = Auth::user();
         if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
             abort(403);
+        }
+
+        if (!in_array($researchTitle->Status, ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
+            abort(403, 'You can only upload missing files when the protocol status is Incomplete or Pending.');
         }
 
         $path = $request->file('file')->store('uploads/research_files', 'public_uploads');

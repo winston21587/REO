@@ -28,7 +28,7 @@
                     <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="open" style="display: none;" x-transition>
-                    <div class="p-6 space-y-6 border-t border-slate-100 bg-white">
+                    <div class="p-6 space-y-6 border-t border-slate-100 bg-white max-h-[400px] overflow-y-auto custom-scrollbar">
                         @foreach($researchTitle->revisionLogs as $log)
                             <div class="flex gap-4">
                                 <div class="w-10 h-10 rounded-full {{ $log->user->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">

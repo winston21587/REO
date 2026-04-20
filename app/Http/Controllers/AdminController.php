@@ -507,6 +507,142 @@ class AdminController extends Controller
         return view('super_admin.analytics', $view->getData());
     }
 
+    public function exportCsv(Request $request)
+    {
+        // Date Filter Logic
+        $selectedYear = $request->filled('year') ? $request->input('year') : date('Y');
+        $selectedMonth = $request->filled('month') ? $request->input('month') : date('m');
+
+        // New Filter Logic
+        $selectedStatus = $request->input('status', null);
+        $selectedReviewType = $request->input('review_type', null);
+        $selectedThesisType = $request->input('thesis_type', null);
+        $selectedCategory = $request->input('category', null);
+        $selectedAffiliation = $request->input('affiliation', null);
+        $selectedCollege = $request->input('college', null);
+
+        // Build base query with filters
+        $baseQuery = Research_title::query()->with('researcher.user');
+
+        // Apply date filters to base query
+        if ($selectedYear !== 'all') {
+            $baseQuery->whereYear('research_title_information.created_at', $selectedYear);
+        }
+        if ($selectedMonth !== 'all') {
+            $baseQuery->whereMonth('research_title_information.created_at', $selectedMonth);
+        }
+
+        // Apply specific criteria filters
+        if ($selectedStatus) {
+            $baseQuery->where('Status', $selectedStatus);
+        }
+        if ($selectedReviewType) {
+            $baseQuery->where('Review_Type', $selectedReviewType);
+        }
+        if ($selectedThesisType) {
+            $baseQuery->where('thesis_type', $selectedThesisType);
+        }
+        if ($selectedCategory) {
+            $baseQuery->where('Research_Category', $selectedCategory);
+        }
+        if ($selectedAffiliation) {
+            $baseQuery->whereHas('researcher', function ($q) use ($selectedAffiliation) {
+                if ($selectedAffiliation == 'Internal') {
+                    $q->where('external_user', false);
+                } elseif ($selectedAffiliation == 'External') {
+                    $q->where('external_user', true);
+                }
+            });
+        }
+        if ($selectedCollege && $selectedAffiliation !== 'External') {
+            $baseQuery->whereHas('researcher', function ($q) use ($selectedCollege) {
+                $q->where('college', $selectedCollege);
+            });
+        }
+
+        $records = $baseQuery->get();
+
+        $filename = "analytics_export_" . date('Y-m-d') . ".csv";
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=\"$filename\"",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+        
+        $columns = [
+            'REC',
+            'Protocol Code',
+            'Protocol Title',
+            'Names of Researcher(s)/Investigator(s)',
+            'Funding',
+            'Research Type',
+            'Date Received',
+            'Review Type',
+            'Date of Meeting where Protocol is First Discussed(if full review)',
+            'Name of Primary Reviewer',
+            'Decision',
+            'Date of First Decision Letter to the PI / Researcher',
+            'Status'
+        ];
+
+        $callback = function() use($records, $columns) {
+            $file = fopen('php://output', 'w');
+            // Adding BOM for UTF-8 compatibility in Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($file, $columns);
+            
+            foreach ($records as $record) {
+                $researchType = $record->Research_Category;
+                $reviewTypeRaw = $record->Review_Type;
+                $reviewType = '';
+                if ($reviewTypeRaw === 'Full Review') {
+                    $reviewType = 'FR';
+                } elseif ($reviewTypeRaw === 'Expedited Review') {
+                    $reviewType = 'ER';
+                } elseif ($reviewTypeRaw === 'Exempted' || $reviewTypeRaw === 'Exempt from Review') {
+                    $reviewType = 'EX';
+                }
+
+                $statusMap = '';
+                $systemStatus = $record->Status;
+                if ($systemStatus === 'Approved') {
+                    $statusMap = 'A';
+                } elseif (in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) {
+                    $statusMap = 'C';
+                } elseif (in_array($systemStatus, ['Disapproved'])) {
+                    $statusMap = 'D'; // User asked to match system progress, maybe D for Disapproved
+                } elseif (in_array($systemStatus, ['Withdrawn'])) {
+                    $statusMap = 'W';
+                } else {
+                    $statusMap = 'OR';
+                }
+                
+                $protocolCode = $record->protocol_code ?? $record->id;
+
+                fputcsv($file, [
+                    '', // REC
+                    $protocolCode,
+                    $record->Study_Protocol_title,
+                    '', // ignore Names of Researchers
+                    '', // ignore Funding
+                    $researchType,
+                    \Carbon\Carbon::parse($record->created_at)->format('m/d/Y'), // Date Received
+                    $reviewType,
+                    '', // ignore Date of Meeting
+                    '', // ignore Name of Primary Reviewer
+                    '', // ignore Decision
+                    '', // ignore Date of First Decision Letter
+                    $statusMap
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function index($request)
     {
         return view('admin.Analytics');

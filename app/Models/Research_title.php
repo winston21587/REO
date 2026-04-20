@@ -30,10 +30,14 @@ class Research_title extends Model
         'category_fee_at_submission',
         'project_type',   // 'Funded Research' or 'Course Requirement'
         'course_type',    // 'Undergraduate Thesis', 'MA (Graduate Thesis)', 'Dissertation'
+        'is_cv_verified',
+        'cv_verification_status',
+        'cv_rejection_remarks',
     ];
 
     protected $casts = [
         'assigned_reviewers' => 'array',
+        'is_cv_verified'     => 'boolean',
     ];
     // Relationship: each research title belongs to a researcher
     public function researcher()

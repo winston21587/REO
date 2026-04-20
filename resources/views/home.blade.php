@@ -199,6 +199,21 @@
                                             <i class="fas fa-comment-alt"></i> Feedback
                                         </button>
                                     @endif
+
+                                    {{-- CV Alert (Mobile) --}}
+                                    @if($title->cv_verification_status === 'Invalid')
+                                        <div class="col-span-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+                                            <p class="text-xs font-bold text-red-700 flex items-center gap-1 mb-1.5"><i class="fas fa-id-card"></i> CV Mismatch</p>
+                                            <button onclick="document.getElementById('cv-correct-modal-{{ $title->id }}').showModal()"
+                                                class="w-full py-1.5 text-xs font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5">
+                                                <i class="fas fa-edit"></i> Correct Project Type
+                                            </button>
+                                        </div>
+                                    @elseif($title->cv_verification_status === 'Valid')
+                                        <div class="col-span-2 w-full py-2.5 px-4 bg-violet-50 border border-violet-200 text-violet-700 rounded-xl font-bold flex items-center justify-center gap-2 text-xs">
+                                            <i class="fas fa-check-circle text-violet-500"></i> CV Verified
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
 
@@ -331,7 +346,25 @@
                                             <i class="fas fa-comment-alt"></i> View Feedback
                                         </button>
                                     @endif
-                                </div>
+
+                                    {{-- CV Classification Invalid Alert --}}
+                                    @if($title->cv_verification_status === 'Invalid')
+                                        <div class="w-full px-4 py-3 bg-red-50 border-2 border-red-200 rounded-xl">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <i class="fas fa-id-card text-red-500 text-sm"></i>
+                                                <span class="text-sm font-bold text-red-800">CV Mismatch Detected</span>
+                                            </div>
+                                            <p class="text-xs text-red-700 mb-3 leading-relaxed">{{ Str::limit($title->cv_rejection_remarks, 80) }}</p>
+                                            <button onclick="document.getElementById('cv-correct-modal-{{ $title->id }}').showModal()"
+                                                class="w-full py-2 px-3 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+                                                <i class="fas fa-edit"></i> Correct Project Type
+                                            </button>
+                                        </div>
+                                    @elseif($title->cv_verification_status === 'Valid')
+                                        <div class="w-full py-3 px-6 bg-gradient-to-r from-violet-50 to-violet-100 text-violet-700 rounded-xl font-bold flex items-center justify-center gap-2 border border-violet-200 shadow-sm cursor-default">
+                                            <i class="fas fa-check-circle text-violet-500"></i> CV Verified
+                                        </div>
+                                    @endif
                             </div>
 
                             <!-- Desktop Tracker -->
@@ -597,6 +630,101 @@
                                 </div>
                             </dialog>
 
+
+                    {{-- CV Correction Modal (per title) --}}
+                    @if($title->cv_verification_status === 'Invalid')
+                    @php
+                        $cvFunded = \App\Models\ResearchCategory::where('classification', 'Funded Research')->get();
+                        $cvCourse = \App\Models\ResearchCategory::where('classification', 'Course Requirement')->get();
+                    @endphp
+                    <dialog id="cv-correct-modal-{{ $title->id }}"
+                        class="m-auto rounded-2xl p-0 backdrop:bg-slate-900/60 w-full max-w-lg border border-slate-200 shadow-2xl overflow-hidden"
+                        x-data="{ cvProjectType: '{{ $title->project_type }}', cvSubType: '' }">
+                        <form method="POST" action="{{ route('researcher.cv.correct', $title->id) }}">
+                            @csrf
+                            <div class="bg-[#0f172a] px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                    <i class="fas fa-edit text-amber-400"></i> Correct Project Type
+                                </h3>
+                                <button type="button"
+                                    onclick="document.getElementById('cv-correct-modal-{{ $title->id }}').close()"
+                                    class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="p-6 bg-white space-y-5">
+                                <div class="p-3 bg-red-50 border border-red-200 rounded-xl">
+                                    <p class="text-xs text-red-800 font-bold flex items-center gap-1.5 mb-1"><i class="fas fa-exclamation-triangle"></i> Admin Remarks</p>
+                                    <p class="text-xs text-red-700 leading-relaxed">{{ $title->cv_rejection_remarks }}</p>
+                                </div>
+
+                                <div>
+                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Project Type <span class="text-red-500">*</span></label>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" @click="cvProjectType = 'Funded Research'; cvSubType = ''"
+                                            :class="cvProjectType === 'Funded Research' ? 'ring-2 ring-[#8B0000] bg-red-50 text-red-800' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                            class="py-3 rounded-xl text-xs font-bold border border-slate-200 flex flex-col items-center gap-1.5 transition-all">
+                                            <i class="fas fa-money-bill-wave text-base"></i> Funded Research
+                                        </button>
+                                        <button type="button" @click="cvProjectType = 'Course Requirement'; cvSubType = ''"
+                                            :class="cvProjectType === 'Course Requirement' ? 'ring-2 ring-amber-500 bg-amber-50 text-amber-800' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                            class="py-3 rounded-xl text-xs font-bold border border-slate-200 flex flex-col items-center gap-1.5 transition-all">
+                                            <i class="fas fa-graduation-cap text-base"></i> Course Requirement
+                                        </button>
+                                    </div>
+                                    <input type="hidden" name="project_type" :value="cvProjectType">
+                                </div>
+
+                                <div x-show="cvProjectType === 'Funded Research'" x-transition style="display:none;">
+                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Specific Type <span class="text-red-500">*</span></label>
+                                    <div class="space-y-1.5">
+                                        @foreach($cvFunded as $cat)
+                                        <button type="button" @click="cvSubType = '{{ $cat->name }}'"
+                                            :class="cvSubType === '{{ $cat->name }}' ? 'ring-2 ring-[#8B0000] bg-red-50 font-bold' : 'bg-slate-50 hover:bg-slate-100'"
+                                            class="w-full text-left px-3 py-2 rounded-lg text-sm border border-slate-200 transition-all">
+                                            {{ $cat->name }}
+                                        </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <div x-show="cvProjectType === 'Course Requirement'" x-transition style="display:none;">
+                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Specific Type <span class="text-red-500">*</span></label>
+                                    <div class="space-y-1.5">
+                                        @foreach($cvCourse as $cat)
+                                        <button type="button" @click="cvSubType = '{{ $cat->name }}'"
+                                            :class="cvSubType === '{{ $cat->name }}' ? 'ring-2 ring-amber-500 bg-amber-50 font-bold' : 'bg-slate-50 hover:bg-slate-100'"
+                                            class="w-full text-left px-3 py-2 rounded-lg text-sm border border-slate-200 transition-all">
+                                            {{ $cat->name }}
+                                        </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <input type="hidden" name="sub_type" :value="cvSubType">
+
+                                <div x-show="cvProjectType === 'Course Requirement'" x-transition style="display:none;">
+                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Adviser Name <span class="text-red-500">*</span></label>
+                                    <input type="text" name="Adviser"
+                                        :required="cvProjectType === 'Course Requirement'"
+                                        value="{{ $title->Adviser }}"
+                                        class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                                        placeholder="Enter your adviser's full name">
+                                </div>
+
+                                <div class="flex justify-end gap-2 pt-2">
+                                    <button type="button"
+                                        onclick="document.getElementById('cv-correct-modal-{{ $title->id }}').close()"
+                                        class="px-4 py-2 text-sm bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit"
+                                        class="px-5 py-2 text-sm bg-[#8B0000] text-white font-bold rounded-lg hover:bg-red-800 transition-colors shadow-sm shadow-red-900/20 flex items-center gap-2">
+                                        <i class="fas fa-save text-xs"></i> Save Correction
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </dialog>
+                    @endif
 
                  @endforeach
 

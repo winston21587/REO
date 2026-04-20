@@ -184,6 +184,9 @@ Route::middleware(['auth'])->group(function () {
         // Official Receipt Upload Route for Researchers (DEPRECATED: OR is now required at submission time)
         // Route::post('/researcher/submit-or/{id}', [\App\Http\Controllers\ORNumberController::class, 'researcherSubmitOR'])->name('researcher.submit_or');
 
+        // CV Classification Correction (only allowed after admin marks CV as Invalid)
+        Route::post('/researcher/cv-correct/{id}', [\App\Http\Controllers\CVVerificationController::class, 'researcherCorrectProjectType'])->name('researcher.cv.correct');
+
         // Settings Routes
         Route::post('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.update_profile');
         Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.update_password');
@@ -293,6 +296,10 @@ Route::middleware(['auth'])->group(function () {
         // Official Receipt Number Logging (Admin Access)
         Route::post('/admin/or-number/verify/{id}', [\App\Http\Controllers\ORNumberController::class, 'verifyOR'])->name('admin.or_number.verify');
         Route::post('/admin/or-number/reject/{id}', [\App\Http\Controllers\ORNumberController::class, 'rejectOR'])->name('admin.or_number.reject');
+
+        // CV Classification Verification (Admin Access)
+        Route::post('/admin/cv-verify/{id}', [\App\Http\Controllers\CVVerificationController::class, 'verifyCv'])->name('admin.cv.verify');
+        Route::post('/admin/cv-invalidate/{id}', [\App\Http\Controllers\CVVerificationController::class, 'invalidateCv'])->name('admin.cv.invalidate');
 
         // IRB Prediction API Route
         Route::post('/admin/predict', [\App\Http\Controllers\PredictController::class, 'predict'])->name('admin.predict');

@@ -596,23 +596,52 @@ class AdminController extends Controller
             foreach ($records as $record) {
                 $researchType = $record->Research_Category;
                 $reviewTypeRaw = $record->Review_Type;
+                $systemStatus = $record->Status;
+                
                 $reviewType = '';
-                if ($reviewTypeRaw === 'Full Review') {
-                    $reviewType = 'FR';
-                } elseif ($reviewTypeRaw === 'Expedited Review') {
-                    $reviewType = 'ER';
-                } elseif ($reviewTypeRaw === 'Exempted' || $reviewTypeRaw === 'Exempt from Review') {
-                    $reviewType = 'EX';
+                $decisionMap = '';
+
+                // Only show review type and decision if it passed initial stages
+                $passedReviewStages = [
+                    'Waiting for Revision', 
+                    'Revision Submitted', 
+                    'Approved', 
+                    'Disapproved', 
+                    'Complete - Awaiting Hardcopy', 
+                    'Completed', 
+                    'Reviewed'
+                ];
+
+                if (in_array($systemStatus, $passedReviewStages)) {
+                    // Map Review Type
+                    if (stripos($reviewTypeRaw, 'full') !== false) {
+                        $reviewType = 'FR';
+                    } elseif (stripos($reviewTypeRaw, 'expedited') !== false) {
+                        $reviewType = 'ER';
+                    } elseif (stripos($reviewTypeRaw, 'exempt') !== false) {
+                        $reviewType = 'EX';
+                    }
+
+                    // Map Decision
+                    $decisionRaw = $record->reviewer_decision ?? '';
+                    if (stripos($decisionRaw, 'Minor') !== false) {
+                        $decisionMap = 'MN';
+                    } elseif (stripos($decisionRaw, 'Major') !== false) {
+                        $decisionMap = 'MJ';
+                    } elseif (stripos($decisionRaw, 'Disapproved') !== false || $systemStatus === 'Disapproved') {
+                        $decisionMap = 'D';
+                    } elseif (stripos($decisionRaw, 'Approved') !== false || $systemStatus === 'Approved' || in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) {
+                        $decisionMap = 'A';
+                    }
                 }
 
                 $statusMap = '';
-                $systemStatus = $record->Status;
                 if ($systemStatus === 'Approved') {
                     $statusMap = 'A';
                 } elseif (in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) {
                     $statusMap = 'C';
                 } elseif (in_array($systemStatus, ['Disapproved'])) {
-                    $statusMap = 'D'; // User asked to match system progress, maybe D for Disapproved
+                    $statusMap = 'D'; 
                 } elseif (in_array($systemStatus, ['Withdrawn'])) {
                     $statusMap = 'W';
                 } else {
@@ -632,7 +661,7 @@ class AdminController extends Controller
                     $reviewType,
                     '', // ignore Date of Meeting
                     '', // ignore Name of Primary Reviewer
-                    '', // ignore Decision
+                    $decisionMap, // Decision mapped
                     '', // ignore Date of First Decision Letter
                     $statusMap
                 ]);

@@ -190,10 +190,6 @@
                 <h2 class="text-3xl font-bold mb-2 line-clamp-1">{{ $nextAppointment->research->Study_Protocol_title ?? 'Unknown Protocol' }}</h2>
                 <div class="flex items-center gap-4 text-white/90">
                     <div class="flex items-center gap-2">
-                        <i class="fa-regular fa-clock"></i>
-                        <span>{{ \Carbon\Carbon::parse($nextAppointment->appointment_date)->format('h:i A') }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
                         <i class="fa-solid fa-location-dot"></i>
                         <span>{{ $nextAppointment->stage === 'Certificate Pickup' ? 'REO Office' : 'Conference Room' }}</span>
                     </div>
@@ -286,7 +282,7 @@
                                     <i class="fas {{ $icon }} text-[10px]"></i> {{ $appointment->stage }}
                                 </span>
                                 <span>•</span>
-                                <span>{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('h:i A') }}</span>
+                                <span class="font-medium text-slate-400 capitalize">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('l') }}</span>
                             </div>
                         </div>
                     </div>

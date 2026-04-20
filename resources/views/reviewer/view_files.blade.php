@@ -115,10 +115,15 @@
                 ];
             };
 
-            $groupFiles = function ($collection, $groupLabel) use ($enrichFile) {
+            $groupFiles = function ($collection, $groupLabel) use ($enrichFile, $requirementsMap) {
                 $grouped = [];
                 foreach ($collection as $f) {
                     $cat = $f->category ?? 'Uncategorized';
+                    // Skip files that are not viewable for reviewers
+                    $req = $requirementsMap[$cat] ?? null;
+                    if ($req && !($req['is_viewable_for_reviewer'] == 1 || $req['is_viewable_for_reviewer'] === true)) {
+                        continue;
+                    }
                     if (!isset($grouped[$cat])) {
                         $grouped[$cat] = [];
                     }

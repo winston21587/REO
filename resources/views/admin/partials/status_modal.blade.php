@@ -52,11 +52,11 @@
                                     <option value="Expedited Review">Expedited Review</option>
                                     <option value="Full Board Review">Full Board Review</option>
                                 </select>
-                                
-                                <div x-data="{ 
+                                                                <div x-data="{ 
                                         open: false,
                                         value: '',
                                         lockedType: 'Unassigned',
+                                        aiSuggested: '',
                                         get displayValue() {
                                             const map = {
                                                 'Unassigned': 'Unassigned',
@@ -74,7 +74,18 @@
                                             this.open = false;
                                         }
                                     }" 
-                                    @update-review-options.window="lockedType = $event.detail.locked === 'N/A' ? 'Unassigned' : ($event.detail.locked || 'Unassigned'); value = ''; if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; open = false;"
+                                    @update-review-options.window="
+                                        lockedType = $event.detail.locked === 'N/A' ? 'Unassigned' : ($event.detail.locked || 'Unassigned'); 
+                                        let rawAi = $event.detail.aiSuggested || '';
+                                        // Normalize AI suggestion to match dropdown values
+                                        if (rawAi.includes('Full')) aiSuggested = 'Full Board Review';
+                                        else if (rawAi.includes('Expedited')) aiSuggested = 'Expedited Review';
+                                        else if (rawAi.includes('Exempt')) aiSuggested = 'Exempt Review';
+                                        else aiSuggested = rawAi;
+                                        value = ''; 
+                                        if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; 
+                                        open = false;
+                                    "
                                     class="relative w-full">
 
                                    <button type="button" @click="open = !open" 
@@ -96,25 +107,28 @@
 
                                        <!-- Option: Exempt Review -->
                                        <button type="button" @click="selectOption('Exempt Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Exempt Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Exempt Review' && value !== 'Exempt Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Exempt Review' && lockedType !== 'Exempt Review' }"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Exempt Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Exempt Review' && value !== 'Exempt Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Exempt Review' && lockedType !== 'Exempt Review', 'ring-2 ring-inset ring-purple-300 bg-purple-50': aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
-                                           <span class="text-left w-full" x-text="lockedType === 'Exempt Review' ? 'Exempt Review (Current)' : 'Exempt Review'"></span>
+                                           <span class="text-left flex-1" x-text="lockedType === 'Exempt Review' ? 'Exempt Review (Current)' : 'Exempt Review'"></span>
+                                           <span x-show="aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
                                            <i x-show="lockedType === 'Exempt Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
                                        </button>
 
                                        <!-- Option: Expedited Review -->
                                        <button type="button" @click="selectOption('Expedited Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Expedited Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Expedited Review' && value !== 'Expedited Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Expedited Review' && lockedType !== 'Expedited Review' }"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Expedited Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Expedited Review' && value !== 'Expedited Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Expedited Review' && lockedType !== 'Expedited Review', 'ring-2 ring-inset ring-purple-300 bg-purple-50': aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
-                                           <span class="text-left w-full" x-text="lockedType === 'Expedited Review' ? 'Expedited Review (Current)' : 'Expedited Review'"></span>
+                                           <span class="text-left flex-1" x-text="lockedType === 'Expedited Review' ? 'Expedited Review (Current)' : 'Expedited Review'"></span>
+                                           <span x-show="aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
                                            <i x-show="lockedType === 'Expedited Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
                                        </button>
 
                                        <!-- Option: Full Board Review -->
                                        <button type="button" @click="selectOption('Full Board Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Full Board Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Full Board Review' && value !== 'Full Board Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Full Board Review' && lockedType !== 'Full Board Review' }"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Full Board Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Full Board Review' && value !== 'Full Board Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Full Board Review' && lockedType !== 'Full Board Review', 'ring-2 ring-inset ring-purple-300 bg-purple-50': aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
-                                           <span class="text-left w-full" x-text="lockedType === 'Full Board Review' ? 'Full Board Review (Current)' : 'Full Board Review'"></span>
+                                           <span class="text-left flex-1" x-text="lockedType === 'Full Board Review' ? 'Full Board Review (Current)' : 'Full Board Review'"></span>
+                                           <span x-show="aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
                                            <i x-show="lockedType === 'Full Board Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
                                        </button>
 
@@ -258,7 +272,7 @@
         element.querySelector('.icon-box').classList.add(activeText);
     }
 
-    async function openStatusModal(id, title, currentStatus = null, currentReviewType = null) {
+    async function openStatusModal(id, title, currentStatus = null, currentReviewType = null, aiSuggestedType = null) {
         document.getElementById('statusModalTitle').textContent = title;
         const form = document.getElementById('statusForm');
         form.action = `/admin/update-status/${id}`;
@@ -283,7 +297,7 @@
         });
         
         // Broadcast custom event to sync with the Alpine UI dropdown
-        window.dispatchEvent(new CustomEvent('update-review-options', { detail: { locked: currentReviewType || 'Unassigned' } }));
+        window.dispatchEvent(new CustomEvent('update-review-options', { detail: { locked: currentReviewType || 'Unassigned', aiSuggested: aiSuggestedType || '' } }));
 
         // Hide Panel Deliberation if not Full Board Review
         const panelDeliberationOption = document.querySelector('.status-option[onclick*="Panel Deliberation"]');

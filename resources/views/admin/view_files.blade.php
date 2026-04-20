@@ -378,6 +378,34 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Researcher Classification Badge --}}
+                    @if($researchTitle->project_type)
+                        <div class="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                            <div class="flex items-center gap-2">
+                                @php
+                                    $isFunded = $researchTitle->project_type === 'Funded Research';
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
+                                    {{ $isFunded ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
+                                    <i class="fas {{ $isFunded ? 'fa-money-bill-wave' : 'fa-graduation-cap' }}"></i>
+                                    {{ $researchTitle->project_type }}
+                                </span>
+                                @if($researchTitle->funding_type || $researchTitle->course_type)
+                                    <span class="text-[10px] text-slate-400 font-semibold">
+                                        {{ $researchTitle->funding_type ?? $researchTitle->course_type }}
+                                    </span>
+                                @endif
+                            </div>
+                            @if($researchTitle->Adviser)
+                                <div class="flex items-center gap-2 text-xs text-slate-600">
+                                    <i class="fas fa-user-tie text-slate-400 w-3"></i>
+                                    <span class="font-semibold">Adviser:</span>
+                                    <span>{{ $researchTitle->Adviser }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
             </div>

@@ -32,11 +32,20 @@ class Research_title_Controller extends Controller
         // 1. Base Validation
         $rules = [
             'Study_Protocol_title' => 'required|string|max:255',
-            'Research_Category' => 'required|string|max:255',
-            'research_type' => 'required|string|max:255',
-            'other_category' => 'nullable|string|max:255',
-            'Adviser' => 'required|string|max:255',
+            'Research_Category'    => 'required|string|max:255',
+            'research_type'        => 'required|string|max:255',
+            'other_category'       => 'nullable|string|max:255',
+            'project_type'         => 'required|in:Funded Research,Course Requirement',
+            'funding_type'         => 'nullable|string|max:255',
+            'course_type'          => 'nullable|string|max:255',
         ];
+
+        // Adviser is mandatory only for Course Requirement
+        if ($request->input('project_type') === 'Course Requirement') {
+            $rules['Adviser'] = 'required|string|max:255';
+        } else {
+            $rules['Adviser'] = 'nullable|string|max:255';
+        }
 
         // 2. Dynamic Validation for Files
         $requirements = DocumentRequirement::all();
@@ -99,13 +108,16 @@ class Research_title_Controller extends Controller
 
         // ✅ Create research title
         $research = Research_title::create([
-            'Study_Protocol_title' => $validated['Study_Protocol_title'],
-            'Research_Category' => $finalCategory,
-            'research_type' => $validated['research_type'],
-            'category_fee_at_submission' => $fee,
-            'Created_by' => $user->first_name . ' ' . $user->last_name,
-            'researcher_id' => $user->researcher->id,
-            'Adviser' => $validated['Adviser'],
+            'Study_Protocol_title'        => $validated['Study_Protocol_title'],
+            'Research_Category'           => $finalCategory,
+            'research_type'               => $validated['research_type'],
+            'category_fee_at_submission'  => $fee,
+            'Created_by'                  => $user->first_name . ' ' . $user->last_name,
+            'researcher_id'               => $user->researcher->id,
+            'project_type'                => $validated['project_type'],
+            'funding_type'                => $validated['funding_type'] ?? null,
+            'course_type'                 => $validated['course_type'] ?? null,
+            'Adviser'                     => $validated['Adviser'] ?? null,
         ]);
 
         // Log OR upload (OR Number might not be submitted if it's handled as a file requirement instead)

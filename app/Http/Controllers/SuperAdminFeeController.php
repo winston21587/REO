@@ -19,11 +19,13 @@ class SuperAdminFeeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'fee' => 'required|numeric|min:0',
+            'classification' => 'required|in:Funded Research,Course Requirement,Other',
         ]);
 
         ResearchCategory::create([
             'name' => $request->name,
             'fee' => $request->fee,
+            'classification' => $request->classification,
             'active' => 1
         ]);
 
@@ -35,12 +37,14 @@ class SuperAdminFeeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'fee' => 'required|numeric|min:0',
+            'classification' => 'required|in:Funded Research,Course Requirement,Other',
         ]);
 
         $category = ResearchCategory::findOrFail($id);
         $category->update([
             'name' => $request->name,
             'fee' => $request->fee,
+            'classification' => $request->classification,
             'active' => $request->has('active') ? 1 : 0
         ]);
 

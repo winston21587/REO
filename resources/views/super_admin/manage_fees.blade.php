@@ -36,6 +36,7 @@
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
                             <th class="p-6">Category Name</th>
+                            <th class="p-6">Classification</th>
                             <th class="p-6">Current Fee</th>
                             <th class="p-6">Status</th>
                             <th class="p-6 text-right">Actions</th>
@@ -46,6 +47,11 @@
                             <tr class="hover:bg-slate-50/80 transition-colors group">
                                 <td class="p-6">
                                     <p class="font-bold text-slate-800">{{ $category->name }}</p>
+                                </td>
+                                <td class="p-6">
+                                    <span class="px-3 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                        {{ $category->classification ?? 'Other' }}
+                                    </span>
                                 </td>
                                 <td class="p-6">
                                     <span class="font-bold text-[#8B0000] bg-red-50 px-3 py-1 rounded-lg">
@@ -60,7 +66,7 @@
                                     @endif
                                 </td>
                                 <td class="p-6 text-right">
-                                    <button onclick="openEditModal({{ $category->id }}, '{{ addslashes($category->name) }}', {{ $category->fee }}, {{ $category->active }})" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                                    <button onclick="openEditModal({{ $category->id }}, '{{ addslashes($category->name) }}', {{ $category->fee }}, {{ $category->active }}, '{{ $category->classification ?? 'Other' }}')" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form action="{{ route('super_admin.fees.destroy', $category->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this category? This will not affect past submissions.');">
@@ -107,6 +113,14 @@
                                     <label class="block text-sm font-bold text-slate-700 mb-2">Submission Fee (₱)</label>
                                     <input type="number" step="0.01" name="fee" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/20" required placeholder="0.00">
                                 </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Classification</label>
+                                    <select name="classification" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/20" required>
+                                        <option value="Funded Research">Funded Research</option>
+                                        <option value="Course Requirement">Course Requirement</option>
+                                        <option value="Other" selected>Other (None)</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2 border-t border-slate-100">
@@ -146,6 +160,14 @@
                                     <input type="number" step="0.01" name="fee" id="edit_fee" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/20" required>
                                 </div>
                                 <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Classification</label>
+                                    <select name="classification" id="edit_classification" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/20" required>
+                                        <option value="Funded Research">Funded Research</option>
+                                        <option value="Course Requirement">Course Requirement</option>
+                                        <option value="Other">Other (None)</option>
+                                    </select>
+                                </div>
+                                <div>
                                     <label class="flex items-center gap-2 cursor-pointer mt-4">
                                         <input type="checkbox" name="active" id="edit_active" value="1" class="rounded text-[#8B0000] focus:ring-[#8B0000] w-5 h-5">
                                         <span class="text-sm font-medium text-slate-700">Active (Visible to Researchers)</span>
@@ -168,10 +190,11 @@
     </div>
 
     <script>
-        function openEditModal(id, name, fee, active) {
+        function openEditModal(id, name, fee, active, classification) {
             document.getElementById('edit_name').value = name;
             document.getElementById('edit_fee').value = fee;
             document.getElementById('edit_active').checked = active == 1 ? true : false;
+            document.getElementById('edit_classification').value = classification;
             
             // Set form action dynamically
             document.getElementById('editFeeForm').action = "/super-admin/manage-fees/" + id;

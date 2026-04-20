@@ -187,6 +187,19 @@
         @endif
 
         @php
+            $missingDocs = [];
+            if (in_array($researchTitle->Status ?? '', ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
+                $latestDeficiency = \App\Models\SubmissionFeedback::where('research_title_id', $researchTitle->id)
+                    ->where('type', 'admin_deficiency')
+                    ->latest()
+                    ->first();
+                if ($latestDeficiency && !empty($latestDeficiency->missing_requirements)) {
+                    $missingDocs = is_array($latestDeficiency->missing_requirements) 
+                        ? $latestDeficiency->missing_requirements 
+                        : (json_decode($latestDeficiency->missing_requirements, true) ?? []);
+                }
+            }
+
             $allFiles = $researchTitle->files->merge($researchTitle->adminFiles ?? collect());
 
             $letters = $allFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->sortByDesc('created_at');
@@ -413,8 +426,14 @@
                                                     class="fas {{ $categoryFiles->isNotEmpty() ? 'fa-folder-open' : 'fa-exclamation-triangle' }}"></i>
                                             </div>
                                             <div>
-                                                <h4 class="text-sm font-extrabold text-slate-800 uppercase tracking-widest">
-                                                    {{ $req->name }}</h4>
+                                                <h4 class="text-sm font-extrabold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                                    {{ $req->name }}
+                                                    @if(in_array($req->name, $missingDocs))
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 tracking-normal normal-case border border-amber-200" title="The Admin requested you to re-upload or fix this document">
+                                                            <i class="fas fa-exclamation-circle text-[8px]"></i> Reupload Needed
+                                                        </span>
+                                                    @endif
+                                                </h4>
                                                 @if($categoryFiles->isNotEmpty())
                                                     <p class="text-[10px] font-bold text-slate-400">{{ $categoryFiles->count() }} doc(s)
                                                         submitted</p>
@@ -502,7 +521,12 @@
                                                         <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center mb-3">
                                                             <i class="fas fa-plus text-xl text-slate-400 group-hover:scale-110 transition-transform"></i>
                                                         </div>
-                                                        <h4 class="font-bold text-slate-700 text-xs mb-1">{{ $req->name }}</h4>
+                                                        <h4 class="font-bold text-slate-700 text-xs mb-1 flex items-center justify-center gap-1">
+                                                            {{ $req->name }}
+                                                            @if(in_array($req->name, $missingDocs))
+                                                                <i class="fas fa-exclamation-circle text-amber-500" title="Reupload Needed"></i>
+                                                            @endif
+                                                        </h4>
                                                         <span class="text-xs text-slate-500 mb-4 block">Add Another Document</span>
 
                                                         <label class="block cursor-pointer w-full">
@@ -585,7 +609,12 @@
                                                             <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center mb-3">
                                                                 <i class="fas fa-file-upload text-xl text-slate-400 group-hover:scale-110 transition-transform"></i>
                                                             </div>
-                                                            <h4 class="font-bold text-slate-700 text-xs mb-1">{{ $req->name }}</h4>
+                                                            <h4 class="font-bold text-slate-700 text-xs mb-1 flex items-center justify-center gap-1">
+                                                                {{ $req->name }}
+                                                                @if(in_array($req->name, $missingDocs))
+                                                                    <i class="fas fa-exclamation-circle text-amber-500" title="Reupload Needed"></i>
+                                                                @endif
+                                                            </h4>
                                                             <span class="text-[10px] text-slate-500 mb-4 block">{{ $req->is_required ? 'Required Document' : 'Optional Document' }} (Not Submitted)</span>
 
                                                             <label class="block cursor-pointer w-full">

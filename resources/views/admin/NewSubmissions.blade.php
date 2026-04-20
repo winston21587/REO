@@ -269,20 +269,18 @@
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Missing
                                 Requirements / Specific Issues</label>
 
-                            <div class="flex gap-2 mb-3">
+                            <div class="relative mb-3">
                                 <input type="text" id="reqInput" list="requirementsOptions"
-                                    class="flex-1 p-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                                    class="w-full p-2.5 pr-10 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all"
                                     placeholder="Select or type missing document...">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-search text-slate-400"></i>
+                                </div>
                                 <datalist id="requirementsOptions">
                                     @foreach($requirements as $req)
                                         <option value="{{ $req->name }}">
                                     @endforeach
                                 </datalist>
-
-                                <button type="button" onclick="addRequirement()"
-                                    class="bg-slate-800 text-white px-4 rounded-lg hover:bg-slate-700 transition-colors shadow-sm active:transform active:scale-95">
-                                    <i class="fas fa-plus"></i>
-                                </button>
                             </div>
 
                             <div id="requirementsList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
@@ -375,10 +373,20 @@
             }
         }
 
-        // Allow "Enter" key to add item
+        // Allow "Enter" key to add item manually
         document.getElementById('reqInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
+                addRequirement();
+            }
+        });
+
+        // Auto-add when a datalist option is selected
+        document.getElementById('reqInput').addEventListener('input', function (e) {
+            const val = this.value.trim();
+            const options = Array.from(document.querySelectorAll('#requirementsOptions option')).map(o => o.value);
+            // If the value exactly matches a datalist option, instantly add it
+            if (options.includes(val)) {
                 addRequirement();
             }
         });

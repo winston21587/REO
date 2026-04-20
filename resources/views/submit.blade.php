@@ -31,7 +31,90 @@
                         </div>
 
                         <div class="p-6 space-y-6">
-                            <!-- Study Protocol Title -->
+
+                            {{-- ===== Project Classification ===== --}}
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-3">Project Type <span class="text-red-500">*</span></label>
+                                <input type="hidden" name="project_type" id="project_type_input" x-bind:value="projectType" required>
+                                <div class="grid grid-cols-2 gap-4">
+
+                                    {{-- Funded Research Button --}}
+                                    <button type="button"
+                                        @click="projectType = 'Funded Research'; courseSubType = ''; fundingSubType = ''"
+                                        :class="projectType === 'Funded Research'
+                                            ? 'border-[#8B0000] bg-red-50 text-[#8B0000] shadow-sm shadow-red-100'
+                                            : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-[#8B0000] hover:text-[#8B0000]'"
+                                        class="flex flex-col items-center justify-center gap-2 p-5 border-2 rounded-2xl transition-all duration-200 font-bold text-sm cursor-pointer">
+                                        <div :class="projectType === 'Funded Research' ? 'bg-[#8B0000] text-white' : 'bg-slate-200 text-slate-600'"
+                                            class="w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                                            <i class="fas fa-money-bill-wave text-base"></i>
+                                        </div>
+                                        Funded Research
+                                        <p class="text-xs font-normal text-slate-400 text-center leading-tight">Institutional or External Funding</p>
+                                    </button>
+
+                                    {{-- Course Requirement Button --}}
+                                    <button type="button"
+                                        @click="projectType = 'Course Requirement'; fundingSubType = ''"
+                                        :class="projectType === 'Course Requirement'
+                                            ? 'border-[#8B0000] bg-red-50 text-[#8B0000] shadow-sm shadow-red-100'
+                                            : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-[#8B0000] hover:text-[#8B0000]'"
+                                        class="flex flex-col items-center justify-center gap-2 p-5 border-2 rounded-2xl transition-all duration-200 font-bold text-sm cursor-pointer">
+                                        <div :class="projectType === 'Course Requirement' ? 'bg-[#8B0000] text-white' : 'bg-slate-200 text-slate-600'"
+                                            class="w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                                            <i class="fas fa-graduation-cap text-base"></i>
+                                        </div>
+                                        Course Requirement
+                                        <p class="text-xs font-normal text-slate-400 text-center leading-tight">Thesis, Dissertation, or Graduate Study</p>
+                                    </button>
+                                </div>
+
+                                @php
+                                    $getIcon = function($name) {
+                                        $n = strtolower($name);
+                                        if (strpos($n, 'undergrad') !== false) return 'fa-book';
+                                        if (strpos($n, 'master') !== false || strpos($n, 'graduate') !== false) return 'fa-user-graduate';
+                                        if (strpos($n, 'dissertation') !== false) return 'fa-scroll';
+                                        if (strpos($n, 'institution') !== false) return 'fa-university';
+                                        if (strpos($n, 'external') !== false) return 'fa-globe';
+                                        return 'fa-tag';
+                                    };
+                                @endphp
+
+                                {{-- Funded Research Sub-options --}}
+                                <div x-show="projectType === 'Funded Research'" x-transition style="display:none;" class="mt-4">
+                                    <input type="hidden" name="funding_type" x-bind:value="fundingSubType">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Funding Source <span class="text-red-500">*</span></label>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        @foreach($categories->where('classification', 'Funded Research') as $cat)
+                                        <button type="button" @click="fundingSubType = '{{ addslashes($cat->name) }}'; syncFee('{{ addslashes($cat->name) }}')"
+                                            :class="fundingSubType === '{{ addslashes($cat->name) }}' ? 'border-[#8B0000] bg-red-50 text-[#8B0000]' : 'border-slate-200 text-slate-600 hover:border-slate-400'"
+                                            class="py-2.5 px-4 border-2 rounded-xl text-sm font-semibold transition-all">
+                                            <i class="fas {{ $getIcon($cat->name) }} mr-2"></i>{{ $cat->name }}
+                                        </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                {{-- Course Requirement Sub-options --}}
+                                <div x-show="projectType === 'Course Requirement'" x-transition style="display:none;" class="mt-4">
+                                    <input type="hidden" name="course_type" x-bind:value="courseSubType">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Type of Course Requirement <span class="text-red-500">*</span></label>
+                                    <div class="grid grid-cols-3 gap-3">
+                                        @foreach($categories->where('classification', 'Course Requirement') as $cat)
+                                        <button type="button" @click="courseSubType = '{{ addslashes($cat->name) }}'; syncFee('{{ addslashes($cat->name) }}')"
+                                            :class="courseSubType === '{{ addslashes($cat->name) }}' ? 'border-[#8B0000] bg-red-50 text-[#8B0000]' : 'border-slate-200 text-slate-600 hover:border-slate-400'"
+                                            class="py-2.5 px-3 border-2 rounded-xl text-xs font-semibold transition-all text-center">
+                                            <i class="fas {{ $getIcon($cat->name) }} mb-1 block text-base"></i>{{ $cat->name }}
+                                        </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <p x-show="!projectType" class="mt-2 text-xs text-slate-400 italic" style="display:none;">Please select a project type to continue.</p>
+                            </div>
+
+                            {{-- ===== Study Protocol Title ===== --}}
                             <div class="group">
                                 <label for="Study_Protocol_title"
                                     class="block text-sm font-bold text-slate-700 mb-2">Study Protocol Title</label>
@@ -57,15 +140,14 @@
                                     </div>
                                     <select name="Research_Category" id="Research_Category"
                                         onchange="toggleOtherCategory(this)"
-                                        class="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200 appearance-none cursor-pointer"
-                                        required>
+                                        class="w-full pl-11 pr-10 py-3 bg-slate-100/80 border border-slate-200 rounded-xl text-slate-600 focus:outline-none transition-all duration-200 appearance-none pointer-events-none cursor-not-allowed"
+                                        required tabindex="-1">
                                         <option value="" disabled selected>Select Review Fees</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->name }}">
                                                 {{ $category->name }} - ₱ {{ number_format($category->fee, 2) }}
                                             </option>
                                         @endforeach
-                                        <!-- <option value="Other">Other</option> -->
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                                         <i class="fas fa-chevron-down text-slate-400"></i>
@@ -107,10 +189,12 @@
                                 </div>
                             </div>
 
-                            <!-- Name of Adviser -->
-                            <div class="group">
-                                <label for="Adviser" class="block text-sm font-bold text-slate-700 mb-2">Name of
-                                    Adviser</label>
+                            <!-- Name of Adviser (mandatory for Course Requirement, hidden for Funded Research) -->
+                            <div class="group" x-show="projectType === 'Course Requirement'" x-transition style="display:none;">
+                                <label for="Adviser" class="block text-sm font-bold text-slate-700 mb-2">
+                                    Name of Adviser <span class="text-red-500">*</span>
+                                    <span class="ml-2 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">Required for Students</span>
+                                </label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <i
@@ -118,11 +202,12 @@
                                     </div>
                                     <input type="text" name="Adviser" id="Adviser"
                                         class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200"
-                                        placeholder="Enter Adviser Name" required>
+                                        placeholder="Enter Adviser Full Name"
+                                        :required="projectType === 'Course Requirement'">
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </div> <!-- End of content div -->
+                    </div> <!-- End of Step 1 container div (FIXED LAYOUT) -->
 
                     <!-- Step 2: Required Documents -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -316,7 +401,17 @@
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('submissionForm', () => ({
-                    // Logic for file inputs can go here if needed
+                    projectType: '',       // 'Funded Research' or 'Course Requirement'
+                    fundingSubType: '',    // 'Institutionally Funded' or 'Externally Funded'
+                    courseSubType: '',     // 'Undergraduate Thesis', 'MA Graduate Thesis', 'Dissertation'
+                    syncFee(categoryName) {
+                        const select = document.getElementById('Research_Category');
+                        if (select) {
+                            select.value = categoryName;
+                            // Trigger the onchange logic (like revealing 'Other' or updating fee display)
+                            select.dispatchEvent(new Event('change'));
+                        }
+                    }
                 }));
             });
 

@@ -28,6 +28,8 @@ class Research_title extends Model
         'Adviser',
         'assigned_reviewers',
         'category_fee_at_submission',
+        'project_type',   // 'Funded Research' or 'Course Requirement'
+        'course_type',    // 'Undergraduate Thesis', 'MA (Graduate Thesis)', 'Dissertation'
     ];
 
     protected $casts = [

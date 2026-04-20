@@ -141,6 +141,162 @@ class AdminController extends Controller
         return view('admin.manage_users', compact('users', 'colleges'));
     }
 
+    public function analyticsDetails(Request $request)
+    {
+        $type = $request->input('type');
+
+        // --- Reuse Filter Logic ---
+        $startYear = $request->input('start_year', 'all');
+        $endYear = $request->input('end_year', 'all');
+        $startMonth = $request->input('start_month', 1);
+        if ($startMonth === 'all')
+            $startMonth = 1;
+        $endMonth = $request->input('end_month', 12);
+        if ($endMonth === 'all')
+            $endMonth = 12;
+
+        $exactStart = $request->input('exact_start');
+        $exactEnd = $request->input('exact_end');
+        $hasExactDates = !empty($exactStart) && !empty($exactEnd);
+
+        $selectedStatus = $request->input('status', null);
+        $selectedReviewType = $request->input('review_type', null);
+        $selectedThesisType = $request->input('thesis_type', null);
+        $selectedCategory = $request->input('category', null);
+        $selectedAffiliation = $request->input('affiliation', null);
+        $selectedCollege = $request->input('college', null);
+
+        $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        if ($type === 'researchers') {
+            $query = User::where('role', 'researcher')->with('researcher');
+            // Apply researchers-specific filter logic if needed (matching manageUsers)
+            if ($selectedAffiliation) {
+                $query->whereHas('researcher', function ($q) use ($selectedAffiliation) {
+                    if ($selectedAffiliation == 'Internal')
+                        $q->where('external_user', false);
+                    elseif ($selectedAffiliation == 'External')
+                        $q->where('external_user', true);
+                });
+            }
+            if ($selectedCollege && $selectedAffiliation !== 'External') {
+                $query->whereHas('researcher', function ($q) use ($selectedCollege) {
+                    $q->where('college', $selectedCollege);
+                });
+            }
+
+            $data = $query->get()->map(function ($user) {
+                return [
+                    'name' => $user->first_name . ' ' . $user->last_name,
+                    'email' => $user->email,
+                    'college' => $user->researcher->college ?? 'N/A',
+                    'affiliation' => $user->researcher->external_user ? 'External' : 'Internal',
+                ];
+            });
+            return response()->json($data);
+        }
+
+        // --- Submissions Logic ---
+        $baseQuery = Research_title::with(['researcher.user', 'revisionLogs']);
+
+        if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
+            if ($hasExactDates) {
+                $startDate = Carbon::parse($exactStart)->startOfDay();
+                $endDate = Carbon::parse($exactEnd)->endOfDay();
+            } else {
+                $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
+                $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
+                $realStartMonth = $startMonth;
+                $realEndMonth = $endMonth;
+                $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
+                $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+            }
+            if ($startDate->greaterThan($endDate)) {
+                $temp = $startDate;
+                $startDate = $endDate;
+                $endDate = $temp;
+            }
+            $baseQuery->whereBetween('research_title_information.created_at', [$startDate, $endDate]);
+        }
+
+        if ($selectedStatus)
+            $baseQuery->where('Status', $selectedStatus);
+        if ($selectedReviewType)
+            $baseQuery->where('Review_Type', $selectedReviewType);
+        if ($selectedThesisType)
+            $baseQuery->where('thesis_type', $selectedThesisType);
+        if ($selectedCategory)
+            $baseQuery->where('Research_Category', $selectedCategory);
+        if ($selectedAffiliation) {
+            $baseQuery->whereHas('researcher', function ($q) use ($selectedAffiliation) {
+                if ($selectedAffiliation == 'Internal')
+                    $q->where('external_user', false);
+                elseif ($selectedAffiliation == 'External')
+                    $q->where('external_user', true);
+            });
+        }
+        if ($selectedCollege && $selectedAffiliation !== 'External') {
+            $baseQuery->whereHas('researcher', function ($q) use ($selectedCollege) {
+                $q->where('college', $selectedCollege);
+            });
+        }
+
+        if ($type === 'approved') {
+            $baseQuery->where('Status', 'Approved');
+        } elseif ($type === 'revisions') {
+            $baseQuery->where(function ($query) {
+                $query->whereIn('Status', [
+                    'Incomplete',
+                    'Incomplete - Awaiting Hardcopy',
+                    'Incomplete Hardcopy',
+                    'Waiting for Revision',
+                    'Revision Submitted'
+                ])
+                    ->orWhereHas('feedbacks')
+                    ->orWhereHas('revisionLogs');
+            });
+        } elseif ($type === 'college_specific') {
+            $collegeName = $request->input('college_name');
+            if ($collegeName) {
+                $baseQuery->whereHas('researcher', function ($q) use ($collegeName) {
+                    $q->where(function ($query) use ($collegeName) {
+                        $query->where('college', $collegeName)
+                              ->orWhere('department', $collegeName);
+                    });
+                });
+            }
+        } elseif ($type === 'pipeline') {
+            $stage = $request->input('pipeline_stage');
+            if ($stage === 'Pending Intake') {
+                $baseQuery->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy']);
+            } elseif ($stage === 'Under Review') {
+                $baseQuery->whereIn('Status', ['For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review']);
+            } elseif ($stage === 'Waiting for Revisions') {
+                $baseQuery->whereIn('Status', ['Waiting for Revision']);
+            } elseif ($stage === 'Final Verification') {
+                $baseQuery->whereIn('Status', ['Complete - Awaiting Hardcopy']);
+            }
+        }
+
+        $records = $baseQuery->get();
+
+        $data = $records->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'title' => $item->Study_Protocol_title,
+                'researcher' => $item->researcher && $item->researcher->user ? $item->researcher->user->first_name . ' ' . $item->researcher->user->last_name : 'Unknown',
+                'status' => $item->Status,
+                'date' => $item->created_at->format('M d, Y'),
+                'revisions' => $item->revisionLogs->count(),
+            ];
+        });
+
+        return response()->json($data);
+    }
+
     public function analytics(Request $request)
     {
         // Date Filter Logic (Dual Range)

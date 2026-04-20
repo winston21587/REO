@@ -83,7 +83,7 @@
         <!-- Key Metrics Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Metric Card 1 -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
+            <div onclick="openDetailsModal('submissions', 'Total Submissions')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:shadow-md hover:border-slate-300 transition-all">
                 <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                     <i class="fas fa-file-alt text-6xl text-[#8B0000]"></i>
                 </div>
@@ -101,7 +101,7 @@
             </div>
             
             <!-- Metric Card 2 -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
+            <div onclick="openDetailsModal('approved', 'Approved Submissions')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:shadow-md hover:border-slate-300 transition-all">
                 <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                     <i class="fas fa-check-circle text-6xl text-green-600"></i>
                 </div>
@@ -113,7 +113,7 @@
             </div>
 
             <!-- Metric Card 3 -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
+            <div onclick="openDetailsModal('revisions', 'Submissions Requiring Revisions')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:shadow-md hover:border-slate-300 transition-all">
                 <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                     <i class="fas fa-exclamation-triangle text-6xl text-orange-500"></i>
                 </div>
@@ -125,7 +125,7 @@
             </div>
 
             <!-- Metric Card 4 -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
+            <div onclick="openDetailsModal('researchers', 'Active Researchers')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:shadow-md hover:border-slate-300 transition-all">
                 <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                     <i class="fas fa-users text-6xl text-blue-600"></i>
                 </div>
@@ -179,9 +179,9 @@
                     <div class="space-y-4">
                         @forelse($topSubmitters as $index => $item)
                         <div>
-                            <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-sm font-semibold text-slate-700 truncate pr-3">{{ $item->name ?? 'Unspecified' }}</span>
-                                <span class="text-sm font-extrabold text-slate-800">{{ $item->count }}</span>
+                            <div class="flex justify-between items-center mb-1.5 cursor-pointer group hover:text-[#8B0000]" onclick="openDetailsModal('college_specific', '{{ addslashes($item->name ?? 'Unspecified') }}', { college_name: '{{ addslashes($item->name ?? 'Unspecified') }}' })">
+                                <span class="text-sm font-semibold text-slate-700 truncate pr-3 group-hover:text-[#8B0000] transition-colors">{{ $item->name ?? 'Unspecified' }}</span>
+                                <span class="text-sm font-extrabold text-slate-800 group-hover:text-[#8B0000] transition-colors">{{ $item->count }}</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-1.5">
                                 <div class="bg-[#8B0000] h-1.5 rounded-full transition-all duration-500" style="width: {{ round(($item->count / $topSubmittersMax) * 100) }}%"></div>
@@ -199,8 +199,8 @@
                     <div class="space-y-4">
                         @foreach($pipelineStages as $stage)
                         <div>
-                            <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-xs font-semibold text-slate-600">{{ $stage['label'] }}</span>
+                            <div class="flex justify-between items-center mb-1.5 cursor-pointer group hover:opacity-80 transition-opacity" onclick="openDetailsModal('pipeline', '{{ addslashes($stage['label']) }}', { pipeline_stage: '{{ addslashes($stage['label']) }}' })">
+                                <span class="text-xs font-semibold text-slate-600 group-hover:text-[#8B0000] transition-colors">{{ $stage['label'] }}</span>
                                 @php
                                     $colorMap = ['slate' => 'bg-slate-200 text-slate-700', 'blue' => 'bg-blue-100 text-blue-700', 'amber' => 'bg-amber-100 text-amber-700', 'emerald' => 'bg-emerald-100 text-emerald-700'];
                                     $barMap = ['slate' => 'bg-slate-400', 'blue' => 'bg-blue-500', 'amber' => 'bg-amber-500', 'emerald' => 'bg-emerald-500'];
@@ -344,6 +344,34 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const label = dayLabels[index];
+                                let extraParams = {};
+                                const year = "{{ $startYear === 'all' && $endYear === 'all' ? '' : ($startYear !== 'all' ? $startYear : date('Y')) }}";
+                                const month = "{{ $startMonth !== 'all' ? $startMonth : '' }}";
+                                
+                                if (label.includes(' ')) {
+                                   const tempDate = new Date(label + " 1");
+                                   extraParams.exact_start = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-01';
+                                   extraParams.exact_end = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-' + new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
+                                } else if (isNaN(label)) {
+                                   const tempDate = new Date(label + " 1, " + (year ? year : new Date().getFullYear()));
+                                   extraParams.exact_start = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-01';
+                                   extraParams.exact_end = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-' + new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
+                                } else {
+                                   const currentYear = year ? year : new Date().getFullYear();
+                                   const currentMonth = month ? month : new Date().getMonth() + 1;
+                                   const formattedMonth = String(currentMonth).padStart(2, '0');
+                                   const formattedDay = String(label).padStart(2, '0');
+                                   extraParams.exact_start = currentYear + '-' + formattedMonth + '-' + formattedDay;
+                                   extraParams.exact_end = currentYear + '-' + formattedMonth + '-' + formattedDay;
+                                }
+
+                                openDetailsModal('submissions', 'Submissions - ' + label, extraParams);
+                            }
+                        },
                         plugins: { legend: { display: false } },
                         scales: {
                             y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0 } },
@@ -631,10 +659,10 @@
                 @foreach($allSubmitters as $index => $item)
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-bold text-slate-400 w-5 text-right">{{ $index + 1 }}</span>
-                    <div class="flex-1">
+                    <div class="flex-1 cursor-pointer group hover:text-[#8B0000]" onclick="openDetailsModal('college_specific', '{{ addslashes($item->name ?? 'Unspecified') }}', { college_name: '{{ addslashes($item->name ?? 'Unspecified') }}' })">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-sm font-semibold text-slate-700 truncate pr-3">{{ $item->name ?? 'Unspecified' }}</span>
-                            <span class="text-sm font-extrabold text-slate-800">{{ $item->count }}</span>
+                            <span class="text-sm font-semibold text-slate-700 truncate pr-3 group-hover:text-[#8B0000] transition-colors">{{ $item->name ?? 'Unspecified' }}</span>
+                            <span class="text-sm font-extrabold text-slate-800 group-hover:text-[#8B0000] transition-colors">{{ $item->count }}</span>
                         </div>
                         <div class="w-full bg-slate-100 rounded-full h-1.5">
                             <div class="bg-[#8B0000] h-1.5 rounded-full transition-all duration-500" style="width: {{ round(($item->count / $allSubmittersMax) * 100) }}%"></div>
@@ -646,7 +674,119 @@
         </div>
     </div>
 
+    <!-- Details Modal -->
+    <div id="detailsModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0 duration-300" onclick="if(event.target===this) closeDetailsModal()">
+        <div class="bg-white shadow-2xl rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden transform transition-transform scale-95 duration-300 flex flex-col" id="detailsModalPanel">
+            <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
+                <h3 id="detailsModalTitle" class="text-xl font-bold text-slate-800 flex items-center gap-2"></h3>
+                <button type="button" onclick="closeDetailsModal()" class="text-slate-400 hover:text-[#8B0000] focus:outline-none transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 h-full min-h-[300px]" id="detailsModalContent">
+                <div class="flex items-center justify-center py-20">
+                    <i class="fas fa-spinner fa-spin text-4xl text-[#8B0000]"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function openDetailsModal(type, title, extraParams = {}) {
+            const modal = document.getElementById('detailsModal');
+            const panel = document.getElementById('detailsModalPanel');
+            const titleElem = document.getElementById('detailsModalTitle');
+            const contentElem = document.getElementById('detailsModalContent');
+
+            titleElem.innerText = title;
+            contentElem.innerHTML = '<div class="flex items-center justify-center py-20"><i class="fas fa-spinner fa-spin text-4xl text-[#8B0000]"></i></div>';
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                panel.classList.remove('scale-95');
+                panel.classList.add('scale-100');
+            }, 10);
+
+            // Fetch data
+            const params = new URLSearchParams(window.location.search);
+            params.set('type', type);
+            Object.entries(extraParams).forEach(([key, value]) => params.set(key, value));
+            
+            fetch(`{{ route('admin.analytics.details') }}?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        contentElem.innerHTML = '<div class="text-center py-20 text-slate-400">No data available for this category.</div>';
+                        return;
+                    }
+
+                    let html = '<table class="w-full text-left border-collapse">';
+                    if (type === 'researchers') {
+                        html += `
+                            <thead>
+                                <tr class="text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="px-4 py-3">Name</th>
+                                    <th class="px-4 py-3">Email</th>
+                                    <th class="px-4 py-3">Affiliation</th>
+                                    <th class="px-4 py-3">College</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                        `;
+                        data.forEach(item => {
+                            html += `
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-4 py-3 text-sm font-semibold text-slate-700">${item.name}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-600">${item.email}</td>
+                                    <td class="px-4 py-3 text-sm"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${item.affiliation === 'Internal' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}">${item.affiliation}</span></td>
+                                    <td class="px-4 py-3 text-sm text-slate-500">${item.college}</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        html += `
+                            <thead>
+                                <tr class="text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="px-4 py-3">Protocol Title</th>
+                                    <th class="px-4 py-3">Researcher</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3">Date</th>
+                                    ${type === 'revisions' ? '<th class="px-4 py-3 text-center">Revision #</th>' : ''}
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                        `;
+                        data.forEach(item => {
+                            html += `
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-xs truncate" title="${item.title}">${item.title}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-600">${item.researcher}</td>
+                                    <td class="px-4 py-3 text-sm"><span class="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">${item.status}</span></td>
+                                    <td class="px-4 py-3 text-sm text-slate-500">${item.date}</td>
+                                    ${type === 'revisions' ? `<td class="px-4 py-3 text-sm text-center font-bold text-[#8B0000]">${item.revisions}</td>` : ''}
+                                </tr>
+                            `;
+                        });
+                    }
+                    html += '</tbody></table>';
+                    contentElem.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error fetching details:', error);
+                    contentElem.innerHTML = '<div class="text-center py-20 text-red-500">Failed to load data. Please try again.</div>';
+                });
+        }
+
+        function closeDetailsModal() {
+            const modal = document.getElementById('detailsModal');
+            const panel = document.getElementById('detailsModalPanel');
+            modal.classList.add('opacity-0');
+            panel.classList.remove('scale-100');
+            panel.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
         function openSeeAllModal() {
             const modal = document.getElementById('seeAllModal');
             const panel = document.getElementById('seeAllModalPanel');
@@ -670,8 +810,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             const filterModal = document.getElementById('filterModal');
             const seeAllModal = document.getElementById('seeAllModal');
+            const detailsModal = document.getElementById('detailsModal');
             if (filterModal) document.body.appendChild(filterModal);
             if (seeAllModal) document.body.appendChild(seeAllModal);
+            if (detailsModal) document.body.appendChild(detailsModal);
         });
     </script>
 </x-admin_layout>

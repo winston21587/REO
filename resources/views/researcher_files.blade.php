@@ -387,7 +387,7 @@
                                         <x-researcher-file-card :file="$file" :researchTitle="$researchTitle" />
                                     @endforeach
                                     
-                                    @if($researchTitle->Status === 'Incomplete' && $req->is_multiple)
+                                    @if(in_array($researchTitle->Status ?? 'Pending', ['Incomplete', 'Pending', 'Pending (Initial Intake)']) && $req->is_multiple)
                                         <div class="group bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors shadow-sm">
                                             <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center mb-3">
                                                 <i class="fas fa-plus text-xl text-slate-400"></i>
@@ -415,7 +415,7 @@
                                         </div>
                                     @endif
                                 @else
-                                    @if($researchTitle->Status === 'Incomplete')
+                                    @if(in_array($researchTitle->Status ?? 'Pending', ['Incomplete', 'Pending', 'Pending (Initial Intake)']))
                                         <div class="group bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors shadow-sm">
                                             <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center mb-3">
                                                 <i class="fas fa-file-upload text-xl text-slate-400"></i>

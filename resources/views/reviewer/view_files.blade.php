@@ -3,66 +3,70 @@
 
         <!-- Top Navigation & Header -->
         <div
-            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6 p-6 bg-gradient-to-r from-white to-slate-50 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group">
+            class="flex items-center mb-6 gap-4 p-4 bg-gradient-to-r from-white to-slate-50 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
             <div
                 class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 pointer-events-none">
             </div>
-            <div class="flex items-center gap-5 relative z-10">
+            <div class="flex items-center gap-4 relative z-10 w-full">
                 <a href="{{ $backUrl }}"
-                    class="group flex items-center justify-center w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:border-[#8B0000] hover:text-[#8B0000] hover:shadow-md hover:-translate-x-1 transition-all duration-300">
-                    <i class="fas fa-arrow-left text-lg"></i>
+                    class="flex items-center justify-center w-12 h-12 rounded-xl bg-white border border-slate-200 text-slate-400 hover:border-[#8B0000] hover:text-[#8B0000] hover:shadow-md transition-all duration-300 flex-shrink-0">
+                    <i class="fas fa-arrow-left"></i>
                 </a>
-                <div>
-                    <div class="flex items-center gap-3 mb-2">
+                <div class="flex flex-col min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
                         <span
-                            class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-extrabold uppercase tracking-widest border border-slate-200 shadow-sm">
-                            {{ $researchTitle->reoc_code ?? 'PENDING-ID' }}
-                        </span>
+                            class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-extrabold uppercase tracking-widest border border-slate-200 shadow-sm">{{ $researchTitle->reoc_code ?? 'PENDING-ID' }}</span>
                         <span
-                            class="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-extrabold uppercase tracking-widest border border-amber-100 flex items-center gap-1.5 shadow-sm">
-                            <i class="fas fa-clock text-[10px]"></i> {{ $researchTitle->Status }}
-                        </span>
+                            class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-extrabold uppercase tracking-widest border border-amber-100 flex items-center gap-1 shadow-sm"><i
+                                class="fas fa-clock text-[10px]"></i> {{ $researchTitle->Status }}</span>
                     </div>
-                    <h1 class="text-xl font-bold text-slate-900 font-heading leading-tight tracking-tight max-w-4xl truncate"
-                        title="{{ $researchTitle->Study_Protocol_title }}">
-                        {{ $researchTitle->Study_Protocol_title }}
+                    <h1 class="text-xl font-black text-slate-900 font-heading leading-tight tracking-tight truncate"
+                        title="{{ $researchTitle->Study_Protocol_title }}">{{ $researchTitle->Study_Protocol_title }}
                     </h1>
                 </div>
             </div>
         </div>
 
         @if($researchTitle->revisionLogs->isNotEmpty())
-            <details
-                class="mb-8 group bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden cursor-pointer">
-                <summary
-                    class="px-6 py-4 flex items-center justify-between outline-none bg-slate-50 hover:bg-slate-100 transition-colors">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                        <i class="fas fa-history text-blue-400"></i> Revision History Feedback
-                    </span>
-                    <i class="fas fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform"></i>
-                </summary>
-                <div class="p-6 space-y-4 border-t border-slate-100 max-h-96 overflow-y-auto">
-                    @foreach($researchTitle->revisionLogs as $log)
-                        <div class="flex gap-4">
-                            <div
-                                class="w-10 h-10 rounded-full {{ $log->user->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">
-                                <i class="fas {{ $log->user->role === 'admin' ? 'fa-user-shield' : 'fa-user' }} text-sm"></i>
-                            </div>
-                            <div class="flex-1">
-                                <p class="text-sm font-bold text-slate-800">{{ $log->user->first_name }}
-                                    {{ $log->user->last_name }}
-                                    <span class="text-xs font-normal text-slate-500">({{ ucfirst($log->user->role) }})</span>
-                                </p>
-                                <p class="text-xs text-slate-400 mb-2">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
-                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                                    <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}
+            <div class="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+                x-data="{ open: false }">
+                <button @click="open = !open"
+                    class="w-full px-6 py-4 flex justify-between items-center bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-history text-blue-500"></i>
+                        <span class="text-xs font-extrabold text-blue-600 uppercase tracking-widest">Revision History
+                            Feedback</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300"
+                        :class="open ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="open" style="display: none;" x-transition>
+                    <div
+                        class="p-6 space-y-6 border-t border-slate-100 bg-white max-h-[400px] overflow-y-auto custom-scrollbar">
+                        @foreach($researchTitle->revisionLogs as $log)
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-10 h-10 rounded-full {{ $log->user->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">
+                                    <i
+                                        class="fas {{ $log->user->role === 'admin' ? 'fa-user-shield' : 'fa-user' }} text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-800">{{ $log->user->first_name }}
+                                        {{ $log->user->last_name }} <span
+                                            class="text-xs font-normal text-slate-500">({{ ucfirst($log->user->role) }})</span>
                                     </p>
+                                    <p class="text-xs text-slate-400 mb-2">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                                        <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                            {{ $log->message }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
-            </details>
+            </div>
         @endif
 
         @php
@@ -296,7 +300,7 @@
 
                 <!-- Viewer pane -->
                 <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative"
-                    style="height: 50vh; min-height: 380px;">
+                    style="height: 70vh; min-height: 480px;">
                     <template x-if="activeFile && isViewable(activeFile) && isPdf(activeFile)">
                         <iframe :src="getUrl(activeFile)" class="w-full h-full border-0 bg-white"
                             title="PDF Viewer"></iframe>
@@ -338,93 +342,120 @@
 
 
 
-                <!-- Historical Log Flex -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                    <!-- Submission Meta -->
-                    <details
-                        class="group bg-white rounded-2xl shadow-sm border border-slate-200 flex-shrink-0 cursor-pointer overflow-hidden">
-                        <summary
-                            class="px-5 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest outline-none flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors">
-                            Submission Details <i
-                                class="fas fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform"></i>
-                        </summary>
-                        <div class="p-5 border-t border-slate-100">
-                            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">
-                                Submission
-                                Details</p>
-                            <div class="space-y-2.5">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i
-                                            class="fas fa-tag text-blue-400 w-3"></i> Category</span>
-                                    <span
-                                        class="text-xs font-bold text-slate-800 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">{{ $researchTitle->Research_Category }}</span>
+                <!-- Below Viewer Details -->
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4" x-data="{ subOpen: false, actOpen: false }">
+                    <!-- Submission Details Accordion -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 flex flex-col justify-start">
+                        <button @click="subOpen = !subOpen"
+                            class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-info-circle text-blue-400"></i>
+                                <span
+                                    class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Submission
+                                    Details</span>
+                            </div>
+                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300"
+                                :class="subOpen ? '' : 'rotate-180'"></i>
+                        </button>
+                        <div x-show="subOpen" x-transition>
+                            <div class="p-5 border-t border-slate-100 space-y-4 bg-white">
+                                <div class="flex justify-between items-start gap-3">
+                                    <div class="flex items-center gap-2 text-blue-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-tag w-4 text-center"></i> Category
+                                    </div>
+                                    <div
+                                        class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 text-right text-xs font-bold text-slate-700">
+                                        {{ $researchTitle->Research_Category ?? 'N/A' }}
+                                    </div>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i
-                                            class="fas fa-calendar text-purple-400 w-3"></i> Submitted</span>
-                                    <span
-                                        class="text-xs font-bold text-slate-800">{{ $researchTitle->created_at->format('M d, Y') }}</span>
+                                <div class="flex justify-between items-start gap-3">
+                                    <div
+                                        class="flex items-center gap-2 text-emerald-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-flask w-4 text-center"></i> Type
+                                    </div>
+                                    <div
+                                        class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 text-right text-xs font-bold text-slate-700">
+                                        {{ $researchTitle->research_type ?? 'N/A' }}
+                                    </div>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i
-                                            class="fas fa-code-branch text-indigo-400 w-3"></i> Revisions</span>
-                                    <span
-                                        class="text-xs font-bold {{ $hasRevisions ? 'text-indigo-600' : 'text-slate-500' }} bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100">
+                                <div class="flex justify-between items-center gap-3">
+                                    <div
+                                        class="flex items-center gap-2 text-purple-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-calendar-alt w-4 text-center"></i> Submitted
+                                    </div>
+                                    <div class="text-xs font-bold text-slate-800">
+                                        {{ $researchTitle->created_at->format('M d, Y') }}
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center gap-3">
+                                    <div
+                                        class="flex items-center gap-2 text-indigo-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-code-branch w-4 text-center"></i> Revisions
+                                    </div>
+                                    <div
+                                        class="bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 text-indigo-700 text-xs font-bold">
                                         {{ $revisionFolders->count() }} submitted
-                                    </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </details>
-                    <!-- Activity Log -->
-                    @if($researchTitle->titleLogs && $researchTitle->titleLogs->isNotEmpty())
-                        <details
-                            class="group bg-white rounded-2xl shadow-sm border border-slate-200 flex-shrink-0 cursor-pointer overflow-hidden">
-                            <summary
-                                class="px-5 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest outline-none flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors">
-                                <span class="flex items-center gap-2"><i class="fas fa-history text-blue-400"></i> Activity
-                                    Log</span> <i
-                                    class="fas fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform"></i>
-                            </summary>
-                            <div class="p-5 pt-2 border-t border-slate-100">
-                                <p
-                                    class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <i class="fas fa-history text-blue-400"></i> Activity Log
-                                </p>
-                                <div class="relative pl-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                                    <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100"></div>
+                    </div>
+
+                    <!-- Activity Log Accordion -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 flex flex-col justify-start">
+                        <button @click="actOpen = !actOpen"
+                            class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-history text-indigo-400"></i>
+                                <span
+                                    class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Activity
+                                    Log</span>
+                            </div>
+                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300"
+                                :class="actOpen ? '' : 'rotate-180'"></i>
+                        </button>
+                        <div x-show="actOpen" x-transition>
+                            <div class="p-5 border-t border-slate-100 bg-white">
+                                <div class="relative pl-3 max-h-[420px] overflow-y-auto custom-scrollbar">
+                                    <div class="absolute left-3 top-1 bottom-1 w-0.5 bg-slate-100"></div>
                                     <div class="space-y-4">
-                                        @foreach($researchTitle->titleLogs as $log)
-                                            <div class="flex gap-3 relative z-10">
+                                        @forelse($researchTitle->titleLogs as $log)
+                                            <div class="flex gap-4 relative">
                                                 <div
-                                                    class="w-6 h-6 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center flex-shrink-0 -ml-3 mt-0.5">
-                                                    <i class="fas fa-circle text-slate-400" style="font-size: 6px;"></i>
+                                                    class="w-6 h-6 rounded-full bg-slate-100 border-4 border-white flex-shrink-0 z-10 -ml-[11px] flex items-center justify-center">
+                                                    <div class="w-2 h-2 rounded-full bg-indigo-300"></div>
                                                 </div>
-                                                <div>
-                                                    <p class="text-xs font-bold text-slate-700 leading-tight">{{ $log->action }}
+                                                <div class="pb-1">
+                                                    <p class="text-sm font-bold text-slate-800 leading-tight block">
+                                                        {{ $log->action }}
                                                     </p>
-                                                    <p class="text-[10px] text-slate-500 mt-0.5">{{ $log->description }}</p>
-                                                    <p class="text-[9px] text-slate-400 mt-1">
+                                                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                                                        {{ $log->description }}
+                                                    </p>
+                                                    <p
+                                                        class="text-[9px] font-bold text-slate-400 mt-1.5 uppercase tracking-wider">
                                                         {{ $log->created_at->format('M d, Y • h:i A') }}
                                                     </p>
                                                 </div>
                                             </div>
-                                        @endforeach
+                                        @empty
+                                            <p class="text-xs text-slate-400 italic ml-4">No activity logs recorded.</p>
+                                        @endforelse
                                     </div>
                                 </div>
                             </div>
-                        </details>
-
-                    @endif
+                        </div>
+                    </div>
                 </div>
             </div>{{-- end left col lg:col-span-8 --}}
 
             <!-- ===== RIGHT — Sidebar ===== -->
-            <div class="lg:col-span-6 grid grid-cols-1 gap-4 pb-8 items-start"
-                style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);">
+            <div class="lg:col-span-6 flex flex-col gap-6 pb-8 items-start">
 
-                <!-- Column 1 -->
-                <div class="w-full">
+                <!-- Column 1 (Now visually below due to order-2) -->
+                <div class="w-full order-2">
                     <!-- Tabbed File Picker -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0">
                         <!-- Tab bar -->
@@ -659,8 +690,8 @@
                     </div>{{-- end tabbed picker --}}
                 </div><!-- End Column 1 -->
 
-                <!-- Column 2 -->
-                <div class="flex flex-col w-full gap-4">
+                <!-- Column 2 (Now visually above due to order-1) -->
+                <div class="flex flex-col w-full gap-4 order-1">
 
 
 
@@ -710,33 +741,33 @@
                                         @if($researchTitle->Status !== 'Reviewed')
                                             @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                                                 <div x-data="{ 
-                                                                                                                                                                                                                                showModal: false, 
-                                                                                                                                                                                                                                step: 1,
-                                                                                                                                                                                                                                scientific_soundness: '',
-                                                                                                                                                                                                                                ethical_issues: '',
-                                                                                                                                                                                                                                icf_issues: '',
-                                                                                                                                                                                                                                summary_of_issues: '',
-                                                                                                                                                                                                                                stepOneValid() {
-                                                                                                                                                                                                                                    return this.scientific_soundness.trim() !== '' 
-                                                                                                                                                                                                                                        && this.ethical_issues.trim() !== '' 
-                                                                                                                                                                                                                                        && this.icf_issues.trim() !== '' 
-                                                                                                                                                                                                                                        && this.summary_of_issues.trim() !== '';
-                                                                                                                                                                                                                                },
-                                                                                                                                                                                                                                proceedToStep2() {
-                                                                                                                                                                                                                                    if (!this.stepOneValid()) {
-                                                                                                                                                                                                                                        alert('Please fill out all deliberation fields before proceeding.');
-                                                                                                                                                                                                                                        return;
-                                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                                    this.step = 2;
-                                                                                                                                                                                                                                },
-                                                                                                                                                                                                                                resetWizard() {
-                                                                                                                                                                                                                                    this.step = 1;
-                                                                                                                                                                                                                                    this.scientific_soundness = '';
-                                                                                                                                                                                                                                    this.ethical_issues = '';
-                                                                                                                                                                                                                                    this.icf_issues = '';
-                                                                                                                                                                                                                                    this.summary_of_issues = '';
-                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                            }"
+                                                                                                                                                                                                                                                                                                                                showModal: false, 
+                                                                                                                                                                                                                                                                                                                                step: 1,
+                                                                                                                                                                                                                                                                                                                                scientific_soundness: '',
+                                                                                                                                                                                                                                                                                                                                ethical_issues: '',
+                                                                                                                                                                                                                                                                                                                                icf_issues: '',
+                                                                                                                                                                                                                                                                                                                                summary_of_issues: '',
+                                                                                                                                                                                                                                                                                                                                stepOneValid() {
+                                                                                                                                                                                                                                                                                                                                    return this.scientific_soundness.trim() !== '' 
+                                                                                                                                                                                                                                                                                                                                        && this.ethical_issues.trim() !== '' 
+                                                                                                                                                                                                                                                                                                                                        && this.icf_issues.trim() !== '' 
+                                                                                                                                                                                                                                                                                                                                        && this.summary_of_issues.trim() !== '';
+                                                                                                                                                                                                                                                                                                                                },
+                                                                                                                                                                                                                                                                                                                                proceedToStep2() {
+                                                                                                                                                                                                                                                                                                                                    if (!this.stepOneValid()) {
+                                                                                                                                                                                                                                                                                                                                        alert('Please fill out all deliberation fields before proceeding.');
+                                                                                                                                                                                                                                                                                                                                        return;
+                                                                                                                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                                                                                                                    this.step = 2;
+                                                                                                                                                                                                                                                                                                                                },
+                                                                                                                                                                                                                                                                                                                                resetWizard() {
+                                                                                                                                                                                                                                                                                                                                    this.step = 1;
+                                                                                                                                                                                                                                                                                                                                    this.scientific_soundness = '';
+                                                                                                                                                                                                                                                                                                                                    this.ethical_issues = '';
+                                                                                                                                                                                                                                                                                                                                    this.icf_issues = '';
+                                                                                                                                                                                                                                                                                                                                    this.summary_of_issues = '';
+                                                                                                                                                                                                                                                                                                                                }
+                                                                                                                                                                                                                                                                                                                            }"
                                                     class="w-full">
                                                     <button type="button" @click="resetWizard(); showModal = true"
                                                         class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
@@ -1284,54 +1315,67 @@
                                 </div>
                             @endif
                         </div>
-                        <!-- The Timeline Wrapper should only render if it has revisions natively -->
-                        <!-- Version Timeline -->
+                        <!-- Version Timeline Accordion -->
                         @if($hasRevisions)
-                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
-                                <p
-                                    class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <i class="fas fa-code-branch text-indigo-400"></i> Version Timeline
-                                </p>
-                                <div class="relative pl-4 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-                                    <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100"></div>
-                                    <div class="space-y-3">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-8 h-8 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center flex-shrink-0 z-10 -ml-4">
-                                                <i class="fas fa-box-archive text-slate-500 text-xs"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-xs font-bold text-slate-700">Original Submission</p>
-                                                <p class="text-[10px] text-slate-400">
-                                                    {{ $originalFiles->first()?->created_at?->format('M d, Y') ?? '—' }} ·
-                                                    {{ $originalFiles->count() }} doc(s)
-                                                </p>
+                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 cursor-pointer"
+                                x-data="{ timelineOpen: false }">
+                                <button @click="timelineOpen = !timelineOpen"
+                                    class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-code-branch text-indigo-400"></i>
+                                        <span
+                                            class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Version
+                                            Timeline</span>
+                                    </div>
+                                    <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300"
+                                        :class="timelineOpen ? '' : 'rotate-180'"></i>
+                                </button>
+                                <div x-show="timelineOpen" x-transition>
+                                    <div class="p-5 border-t border-slate-100 bg-white">
+                                        <div class="relative pl-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                                            <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100"></div>
+                                            <div class="space-y-3">
+                                                <div class="flex items-center gap-3">
+                                                    <div
+                                                        class="w-8 h-8 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center flex-shrink-0 z-10 -ml-4">
+                                                        <i class="fas fa-box-archive text-slate-500 text-xs"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-xs font-bold text-slate-700">Original Submission</p>
+                                                        <p class="text-[10px] text-slate-400">
+                                                            {{ $originalFiles->first()?->created_at?->format('M d, Y') ?? '—' }}
+                                                            ·
+                                                            {{ $originalFiles->count() }} doc(s)
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                @foreach($revisionFolders->sortKeys() as $revNum => $files)
+                                                    <div class="flex items-center gap-3">
+                                                        <div
+                                                            class="w-8 h-8 rounded-full bg-indigo-50 border-2 border-indigo-300 flex items-center justify-center flex-shrink-0 z-10 -ml-4">
+                                                            <span
+                                                                class="text-[10px] font-black text-indigo-600">{{ $revNum }}</span>
+                                                        </div>
+                                                        <div>
+                                                            <p class="text-xs font-bold text-slate-700">Revision {{ $revNum }}
+                                                            </p>
+                                                            <p class="text-[10px] text-slate-400">
+                                                                {{ $files->first()?->created_at?->format('M d, Y') ?? '—' }} ·
+                                                                {{ $files->count() }} doc(s)
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
                                             </div>
                                         </div>
-                                        @foreach($revisionFolders->sortKeys() as $revNum => $files)
-                                            <div class="flex items-center gap-3">
-                                                <div
-                                                    class="w-8 h-8 rounded-full bg-indigo-50 border-2 border-indigo-300 flex items-center justify-center flex-shrink-0 z-10 -ml-4">
-                                                    <span class="text-[10px] font-black text-indigo-600">{{ $revNum }}</span>
-                                                </div>
-                                                <div>
-                                                    <p class="text-xs font-bold text-slate-700">Revision {{ $revNum }}</p>
-                                                    <p class="text-[10px] text-slate-400">
-                                                        {{ $files->first()?->created_at?->format('M d, Y') ?? '—' }} ·
-                                                        {{ $files->count() }} doc(s)
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        @endforeach
                                     </div>
                                 </div>
                             </div>
                         @endif
-                    </div>
 
 
-                </div><!-- End Column 2 -->
-            </div>{{-- end sidebar --}}
-        </div>{{-- end grid --}}
-    </div>
+                    </div><!-- End Column 2 -->
+                </div>{{-- end sidebar --}}
+            </div>{{-- end grid --}}
+        </div>
 </x-reviewer_layout>

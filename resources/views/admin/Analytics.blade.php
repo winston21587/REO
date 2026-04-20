@@ -27,12 +27,16 @@
         <div class="flex flex-wrap gap-2 -mt-4 mb-2">
             <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
                 <i class="fas fa-calendar-alt text-slate-400"></i>
-                @if($selectedMonth === 'all' && $selectedYear === 'all')
+                @if($startMonth === 'all' && $endMonth === 'all' && $startYear === 'all' && $endYear === 'all')
                     All Time
                 @else
-                    {{ $selectedMonth === 'all' ? 'All Months' : DateTime::createFromFormat('!m', $selectedMonth)->format('M') }} {{ $selectedYear === 'all' ? 'All Years' : $selectedYear }}
+                    {{ $startMonth === 'all' ? 'Jan' : DateTime::createFromFormat('!m', $startMonth)->format('M') }}
+                    {{ $startYear === 'all' ? 'All' : $startYear }}
+                    - 
+                    {{ $endMonth === 'all' ? 'Dec' : DateTime::createFromFormat('!m', $endMonth)->format('M') }}
+                    {{ $endYear === 'all' ? 'All' : $endYear }}
                 @endif
-                @if($selectedMonth !== 'all' || $selectedYear !== 'all')
+                @if($startMonth !== 'all' || $endMonth !== 'all' || $startYear !== 'all' || $endYear !== 'all')
                     <button type="button" onclick="clearFilter('date')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
                 @endif
             </div>
@@ -142,8 +146,16 @@
                 <div class="relative z-10 flex flex-col flex-1 w-full h-full">
                     <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1">Submission Trends</h2>
                     <div class="flex items-end gap-4 mb-8">
-                        <p class="text-3xl font-extrabold text-slate-900">{{ $selectedMonth === 'all' ? 'Monthly Overview' : 'Daily Overview' }}</p>
-                        <p class="text-sm text-slate-500 font-medium mb-1.5">{{ $selectedMonth === 'all' ? 'All Months' : DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} {{ $selectedYear === 'all' ? 'All Years' : $selectedYear }}</p>
+                        <p class="text-3xl font-extrabold text-slate-900">{{ ($startYear === 'all' && $endYear === 'all') ? 'Yearly Overview' : (($startMonth === $endMonth && $startMonth !== 'all') ? 'Daily Overview' : 'Monthly Overview') }}</p>
+                        <p class="text-sm text-slate-500 font-medium mb-1.5">
+                            @if($startMonth === 'all' && $endMonth === 'all' && $startYear === 'all' && $endYear === 'all')
+                                All Years
+                            @else
+                                {{ $startMonth === 'all' ? 'January' : DateTime::createFromFormat('!m', $startMonth)->format('F') }} {{ $startYear === 'all' ? 'All' : $startYear }}
+                                to 
+                                {{ $endMonth === 'all' ? 'December' : DateTime::createFromFormat('!m', $endMonth)->format('F') }} {{ $endYear === 'all' ? 'All' : $endYear }}
+                            @endif
+                        </p>
                     </div>
 
                     <div class="flex-1 w-full relative min-h-[320px]">
@@ -263,14 +275,10 @@
             }
 
             function resetFilters() {
-                document.getElementById('filter_month').value = '{{ date("n") }}';
-                
-                const yearSelect = document.getElementById('filter_year');
-                const currentYear = '{{ date("Y") }}';
-                let hasYear = Array.from(yearSelect.options).some(opt => opt.value === currentYear);
-                if (hasYear) {
-                    yearSelect.value = currentYear;
-                }
+                document.getElementById('filter_start_month').value = 'all';
+                document.getElementById('filter_end_month').value = 'all';
+                document.getElementById('filter_start_year').value = 'all';
+                document.getElementById('filter_end_year').value = 'all';
                 
                 document.getElementById('filter_status').value = '';
                 document.getElementById('filter_review_type').value = '';
@@ -285,8 +293,10 @@
 
             function clearFilter(filterType) {
                 if (filterType === 'date') {
-                    document.getElementById('filter_month').value = 'all';
-                    document.getElementById('filter_year').value = 'all';
+                    document.getElementById('filter_start_month').value = 'all';
+                    document.getElementById('filter_end_month').value = 'all';
+                    document.getElementById('filter_start_year').value = 'all';
+                    document.getElementById('filter_end_year').value = 'all';
                 } else {
                     const input = document.getElementById('filter_' + filterType);
                     if (input) input.value = '';
@@ -404,37 +414,64 @@
                             <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Time & Status</h4>
                             <div class="grid grid-cols-1 gap-5">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Month</label>
-                                    <div class="relative">
-                                        <select name="month" id="filter_month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                                            <option value="all" {{ $selectedMonth === 'all' ? 'selected' : '' }}>All Months</option>
-                                            @foreach(range(1, 12) as $m)
-                                                <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
-                                                    {{ DateTime::createFromFormat('!m', $m)->format('F') }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
-                                            <i class="fas fa-chevron-down text-xs"></i>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Month Range <span class="text-[10px] text-slate-400 font-normal">(Start to End)</span></label>
+                                    <div class="flex items-center gap-2">
+                                        <div class="relative flex-1">
+                                            <select name="start_month" id="filter_start_month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                                <option value="all" {{ $startMonth === 'all' ? 'selected' : '' }}>January (Start)</option>
+                                                @foreach(range(1, 12) as $m)
+                                                    <option value="{{ $m }}" {{ $startMonth == $m ? 'selected' : '' }}>
+                                                        {{ DateTime::createFromFormat('!m', $m)->format('M') }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                                                <i class="fas fa-chevron-down text-xs"></i>
+                                            </div>
+                                        </div>
+                                        <span class="text-slate-400 font-bold">-</span>
+                                        <div class="relative flex-1">
+                                            <select name="end_month" id="filter_end_month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                                <option value="all" {{ $endMonth === 'all' ? 'selected' : '' }}>December (End)</option>
+                                                @foreach(range(1, 12) as $m)
+                                                    <option value="{{ $m }}" {{ $endMonth == $m ? 'selected' : '' }}>
+                                                        {{ DateTime::createFromFormat('!m', $m)->format('M') }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                                                <i class="fas fa-chevron-down text-xs"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Year</label>
-                                    <div class="relative">
-                                        <select name="year" id="filter_year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                                            <option value="all" {{ $selectedYear === 'all' ? 'selected' : '' }}>All Years</option>
-                                            @foreach($availableYears as $year)
-                                                <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
-                                                    {{ $year }}
-                                                </option>
-                                            @endforeach
-                                            @if(!in_array(date('Y'), $availableYears->toArray()))
-                                                 <option value="{{ date('Y') }}" {{ $selectedYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
-                                            @endif
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
-                                            <i class="fas fa-chevron-down text-xs"></i>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Year Range <span class="text-[10px] text-slate-400 font-normal">(Start to End)</span></label>
+                                    <div class="flex items-center gap-2">
+                                        <div class="relative flex-1">
+                                            <select name="start_year" id="filter_start_year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                                <option value="all" {{ $startYear === 'all' ? 'selected' : '' }}>Earliest</option>
+                                                @foreach($availableYears as $year)
+                                                    <option value="{{ $year }}" {{ $startYear == $year ? 'selected' : '' }}>{{ $year }}</option>
+                                                @endforeach
+                                                @if(!in_array(date('Y'), $availableYears->toArray()))
+                                                    <option value="{{ date('Y') }}" {{ $startYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
+                                                @endif
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                        </div>
+                                        <span class="text-slate-400 font-bold">-</span>
+                                        <div class="relative flex-1">
+                                            <select name="end_year" id="filter_end_year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                                <option value="all" {{ $endYear === 'all' ? 'selected' : '' }}>Latest</option>
+                                                @foreach($availableYears as $year)
+                                                    <option value="{{ $year }}" {{ $endYear == $year ? 'selected' : '' }}>{{ $year }}</option>
+                                                @endforeach
+                                                @if(!in_array(date('Y'), $availableYears->toArray()))
+                                                    <option value="{{ date('Y') }}" {{ $endYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
+                                                @endif
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
                                         </div>
                                     </div>
                                 </div>

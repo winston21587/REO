@@ -183,12 +183,14 @@ class Research_title_Controller extends Controller
     public function updateFile(Request $request, $id)
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf,doc,docx|max:5120',
+            'file' => 'required|file|max:25600',
             'file_id' => 'required|integer',
         ]);
 
         $research = Research_title::findOrFail($id);
         if (!in_array($research->Status, ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
+            if ($request->expectsJson())
+                return response()->json(['error' => 'You can only update files when the protocol status is Incomplete or Pending.'], 403);
             abort(403, 'You can only update files when the protocol status is Incomplete or Pending.');
         }
 
@@ -216,6 +218,20 @@ class Research_title_Controller extends Controller
         $research = Research_title::findOrFail($id);
         $research->files()->attach($newFileRecord->id);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'file' => [
+                    'id' => $newFileRecord->id,
+                    'filename' => $newFileRecord->filename,
+                    'filepath' => asset($newFileRecord->filepath),
+                    'filetype' => $newFileRecord->filetype,
+                    'created_at' => $newFileRecord->created_at ? $newFileRecord->created_at->timezone('Asia/Manila')->format('F d, Y \a\t h:i A') : 'just now',
+                    'updated_at' => $newFileRecord->updated_at ? $newFileRecord->updated_at->timezone('Asia/Manila')->format('F d, Y \a\t h:i A') : 'just now'
+                ]
+            ]);
+        }
+
         return redirect()->back()->with('success', 'File updated successfully!');
     }
 
@@ -229,10 +245,14 @@ class Research_title_Controller extends Controller
         $researchTitle = Research_title::findOrFail($id);
         $user = Auth::user();
         if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
+            if ($request->expectsJson())
+                return response()->json(['error' => 'Unauthorized'], 403);
             abort(403);
         }
 
         if (!in_array($researchTitle->Status, ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
+            if ($request->expectsJson())
+                return response()->json(['error' => 'You can only upload missing files when the protocol status is Incomplete or Pending.'], 403);
             abort(403, 'You can only upload missing files when the protocol status is Incomplete or Pending.');
         }
 
@@ -248,6 +268,20 @@ class Research_title_Controller extends Controller
         ]);
 
         $researchTitle->files()->attach($newFileRecord->id);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'file' => [
+                    'id' => $newFileRecord->id,
+                    'filename' => $newFileRecord->filename,
+                    'filepath' => asset($newFileRecord->filepath),
+                    'filetype' => $newFileRecord->filetype,
+                    'created_at' => $newFileRecord->created_at ? $newFileRecord->created_at->timezone('Asia/Manila')->format('F d, Y \a\t h:i A') : 'just now',
+                    'updated_at' => $newFileRecord->updated_at ? $newFileRecord->updated_at->timezone('Asia/Manila')->format('F d, Y \a\t h:i A') : 'just now'
+                ]
+            ]);
+        }
 
         return back()->with('success', 'Document added successfully!');
     }

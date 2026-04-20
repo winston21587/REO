@@ -494,33 +494,33 @@
                                 @if($researchTitle->Status !== 'Reviewed')
                                     @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                                         <div x-data="{ 
-                                                                                                                                                        showModal: false, 
-                                                                                                                                                        step: 1,
-                                                                                                                                                        scientific_soundness: '',
-                                                                                                                                                        ethical_issues: '',
-                                                                                                                                                        icf_issues: '',
-                                                                                                                                                        summary_of_issues: '',
-                                                                                                                                                        stepOneValid() {
-                                                                                                                                                            return this.scientific_soundness.trim() !== '' 
-                                                                                                                                                                && this.ethical_issues.trim() !== '' 
-                                                                                                                                                                && this.icf_issues.trim() !== '' 
-                                                                                                                                                                && this.summary_of_issues.trim() !== '';
-                                                                                                                                                        },
-                                                                                                                                                        proceedToStep2() {
-                                                                                                                                                            if (!this.stepOneValid()) {
-                                                                                                                                                                alert('Please fill out all deliberation fields before proceeding.');
-                                                                                                                                                                return;
-                                                                                                                                                            }
-                                                                                                                                                            this.step = 2;
-                                                                                                                                                        },
-                                                                                                                                                        resetWizard() {
-                                                                                                                                                            this.step = 1;
-                                                                                                                                                            this.scientific_soundness = '';
-                                                                                                                                                            this.ethical_issues = '';
-                                                                                                                                                            this.icf_issues = '';
-                                                                                                                                                            this.summary_of_issues = '';
-                                                                                                                                                        }
-                                                                                                                                                    }"
+                                                                                                                                                                                showModal: false, 
+                                                                                                                                                                                step: 1,
+                                                                                                                                                                                scientific_soundness: '',
+                                                                                                                                                                                ethical_issues: '',
+                                                                                                                                                                                icf_issues: '',
+                                                                                                                                                                                summary_of_issues: '',
+                                                                                                                                                                                stepOneValid() {
+                                                                                                                                                                                    return this.scientific_soundness.trim() !== '' 
+                                                                                                                                                                                        && this.ethical_issues.trim() !== '' 
+                                                                                                                                                                                        && this.icf_issues.trim() !== '' 
+                                                                                                                                                                                        && this.summary_of_issues.trim() !== '';
+                                                                                                                                                                                },
+                                                                                                                                                                                proceedToStep2() {
+                                                                                                                                                                                    if (!this.stepOneValid()) {
+                                                                                                                                                                                        alert('Please fill out all deliberation fields before proceeding.');
+                                                                                                                                                                                        return;
+                                                                                                                                                                                    }
+                                                                                                                                                                                    this.step = 2;
+                                                                                                                                                                                },
+                                                                                                                                                                                resetWizard() {
+                                                                                                                                                                                    this.step = 1;
+                                                                                                                                                                                    this.scientific_soundness = '';
+                                                                                                                                                                                    this.ethical_issues = '';
+                                                                                                                                                                                    this.icf_issues = '';
+                                                                                                                                                                                    this.summary_of_issues = '';
+                                                                                                                                                                                }
+                                                                                                                                                                            }"
                                             class="w-full">
                                             <button type="button" @click="resetWizard(); showModal = true"
                                                 class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
@@ -984,20 +984,16 @@
                                         <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                                             @if($researchTitle->Status !== 'Reviewed')
                                                 <!-- Delete Button -->
-                                                <button @click="if(!confirm('Are you sure you want to remove this evaluation?')) return;
-                                                                                                removing = true; 
-                                                                                                fetch('{{ route('reviewer.file.delete', $upload->id) }}', { 
-                                                                                                    method: 'DELETE', 
-                                                                                                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } 
-                                                                                                }).then(res => { 
-                                                                                                    if(res.ok) deleted = true; 
-                                                                                                    else { removing = false; Swal.fire('Error', 'Failed to remove file', 'error'); } 
-                                                                                                });" :disabled="removing"
-                                                    class="w-7 h-7 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 flex flex-shrink-0 items-center justify-center transition-colors disabled:opacity-50">
-                                                    <i class="fas fa-times text-xs" x-show="!removing"></i>
-                                                    <i class="fas fa-circle-notch fa-spin text-xs" x-show="removing"
-                                                        style="display:none;"></i>
-                                                </button>
+                                                <form action="{{ route('reviewer.file.delete', $upload->id) }}" method="POST"
+                                                    class="m-0 p-0 inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button"
+                                                        onclick="Swal.fire({ title: 'Remove Evaluation?', text: 'Are you sure you want to remove this evaluation?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8', confirmButtonText: 'Yes, remove it!' }).then((result) => { if (result.isConfirmed) { this.closest('form').submit(); } });"
+                                                        class="w-7 h-7 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 flex flex-shrink-0 items-center justify-center transition-colors">
+                                                        <i class="fas fa-times text-xs"></i>
+                                                    </button>
+                                                </form>
                                             @endif
 
                                             <!-- View Button -->

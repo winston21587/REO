@@ -394,7 +394,7 @@ class Research_title_Controller extends Controller
             }
 
             // Determine new status
-            $newStatus = 'Revision Submitted';
+            $newStatus = $isIncomplete ? 'Pending' : 'Revision Submitted';
             $logMessage = "Resubmitted corrections: " . $request->revision_message;
 
             // Create Submission Feedback (User Correction) & Revision Log for Admin View
@@ -415,15 +415,17 @@ class Research_title_Controller extends Controller
                 \App\Models\RevisionLog::create([
                     'research_title_id' => $researchTitle->id,
                     'user_id' => $user->id,
-                    'message' => 'Resubmitted without additional notes.',
+                    'message' => $isIncomplete ? 'Resubmitted initial intake files without additional notes.' : 'Resubmitted without additional notes.',
                 ]);
             }
 
             $researchTitle->Status = $newStatus;
 
             // Reset all assigned reviewers back to Pending so the protocol appears on their dashboard
-            foreach ($researchTitle->reviewers as $reviewer) {
-                $researchTitle->reviewers()->updateExistingPivot($reviewer->id, ['status' => 'Pending']);
+            if (!$isIncomplete) {
+                foreach ($researchTitle->reviewers as $reviewer) {
+                    $researchTitle->reviewers()->updateExistingPivot($reviewer->id, ['status' => 'Pending']);
+                }
             }
 
             $researchTitle->save();

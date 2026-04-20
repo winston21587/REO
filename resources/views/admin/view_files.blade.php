@@ -304,6 +304,19 @@
                     </div>
                 </div>
 
+                <!-- AI Prediction Card -->
+                @if($researchTitle->ai_suggested_review_type)
+                    <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-2xl shadow-sm text-center flex-shrink-0 relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 text-indigo-100/50 transform rotate-12 transition-transform group-hover:rotate-18 duration-500 pointer-events-none">
+                            <i class="fas fa-robot text-7xl"></i>
+                        </div>
+                        <div class="relative z-10 text-left">
+                            <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5"><i class="fas fa-magic"></i> AI Predict Result</p>
+                            <h4 class="text-lg font-black text-indigo-900 leading-tight">{{ $researchTitle->ai_suggested_review_type }}</h4>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- ===== Reviewer File Remarks ===== -->
                 @php
                     $totalRemarks = $allFileRemarks->flatten()->count();

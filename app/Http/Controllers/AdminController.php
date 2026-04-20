@@ -143,9 +143,11 @@ class AdminController extends Controller
 
     public function analytics(Request $request)
     {
-        // Date Filter Logic
-        $selectedYear = $request->filled('year') ? $request->input('year') : date('Y');
-        $selectedMonth = $request->filled('month') ? $request->input('month') : date('m');
+        // Date Filter Logic (Dual Range)
+        $startYear = $request->input('start_year', 'all');
+        $endYear = $request->input('end_year', 'all');
+        $startMonth = $request->input('start_month', 'all');
+        $endMonth = $request->input('end_month', 'all');
 
         // New Filter Logic
         $selectedStatus = $request->input('status', null);
@@ -163,12 +165,18 @@ class AdminController extends Controller
         // Build base query with filters
         $baseQuery = Research_title::query();
 
-        // Apply date filters to base query
-        if ($selectedYear !== 'all') {
-            $baseQuery->whereYear('research_title_information.created_at', $selectedYear);
-        }
-        if ($selectedMonth !== 'all') {
-            $baseQuery->whereMonth('research_title_information.created_at', $selectedMonth);
+        // Apply date range filters
+        if ($startYear !== 'all' || $endYear !== 'all') {
+            $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
+            $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
+
+            $realStartMonth = $startMonth === 'all' ? 1 : $startMonth;
+            $realEndMonth = $endMonth === 'all' ? 12 : $endMonth;
+
+            $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
+            $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+
+            $baseQuery->whereBetween('research_title_information.created_at', [$startDate, $endDate]);
         }
 
         // Apply specific criteria filters
@@ -230,16 +238,21 @@ class AdminController extends Controller
 
         $currentCountForTrend = $totalSubmissions;
 
-        if ($selectedYear !== 'all' && $selectedMonth !== 'all') {
-            $prevMonth = $selectedMonth - 1;
-            $prevYear = $selectedYear;
-            if ($prevMonth == 0) {
-                $prevMonth = 12;
-                $prevYear--;
-            }
-            $previousPeriodQuery->whereYear('created_at', $prevYear)->whereMonth('created_at', $prevMonth);
-        } elseif ($selectedYear !== 'all') {
-            $previousPeriodQuery->whereYear('created_at', $selectedYear - 1);
+        if ($startYear !== 'all' || $endYear !== 'all') {
+            // Compare vs identical length past period
+            $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
+            $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
+            $realStartMonth = $startMonth === 'all' ? 1 : $startMonth;
+            $realEndMonth = $endMonth === 'all' ? 12 : $endMonth;
+
+            $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
+            $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+
+            $daysDiff = $startDate->diffInDays($endDate);
+            $prevEndDate = $startDate->copy()->subDay()->endOfDay();
+            $prevStartDate = $prevEndDate->copy()->subDays($daysDiff)->startOfDay();
+
+            $previousPeriodQuery->whereBetween('created_at', [$prevStartDate, $prevEndDate]);
         } else {
             // Trend defaults to Current vs Previous Month when viewing "All Time"
             $currentMonthQuery = clone $previousPeriodQuery;
@@ -287,7 +300,7 @@ class AdminController extends Controller
         $dailyData = [];
         $dayLabels = [];
 
-        if ($selectedYear === 'all' && $selectedMonth === 'all') {
+        if ($startYear === 'all' && $endYear === 'all') {
             // Group by year
             $yearlyStats = (clone $baseQuery)
                 ->selectRaw('YEAR(created_at) as year, COUNT(*) as count')
@@ -306,35 +319,67 @@ class AdminController extends Controller
                 $dailyData = [0];
                 $dayLabels = [date('Y')];
             }
-        } elseif ($selectedMonth === 'all') {
-            // Group by month
+        } elseif ($startYear !== $endYear || $startYear === 'all' || $endYear === 'all') {
+            // Multiple years involved -> Group by Month/Year
             $query = clone $baseQuery;
             $monthlyStats = $query
-                ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-                ->groupBy('month')
-                ->pluck('count', 'month')
-                ->toArray();
+                ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count')
+                ->groupBy('year', 'month')
+                ->orderBy('year', 'asc')
+                ->orderBy('month', 'asc')
+                ->get();
 
-            for ($i = 1; $i <= 12; $i++) {
-                $dailyData[] = $monthlyStats[$i] ?? 0;
-                $dayLabels[] = date('M', mktime(0, 0, 0, $i, 10)); // Jan, Feb...
+            foreach ($monthlyStats as $stat) {
+                $dailyData[] = $stat->count;
+                $dayLabels[] = date('M Y', mktime(0, 0, 0, $stat->month, 10, $stat->year));
+            }
+            if (empty($dailyData)) {
+                $dailyData = [0];
+                $dayLabels = [date('M Y')];
             }
         } else {
-            // Group by day for specific month and year
-            $safeYear = $selectedYear === 'all' ? date('Y') : $selectedYear;
-            $daysInMonth = \Carbon\Carbon::createFromDate($safeYear, $selectedMonth, 1)->daysInMonth;
+            // Single Year but multiple months: Group by Month.
+            if ($startMonth !== $endMonth) {
+                $query = clone $baseQuery;
+                $monthlyStats = $query
+                    ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+                    ->groupBy('month')
+                    ->pluck('count', 'month')
+                    ->toArray();
 
-            $query = clone $baseQuery;
+                $mStart = $startMonth === 'all' ? 1 : $startMonth;
+                $mEnd = $endMonth === 'all' ? 12 : $endMonth;
 
-            $dailyStats = $query
-                ->selectRaw('DAY(created_at) as day, COUNT(*) as count')
-                ->groupBy('day')
-                ->pluck('count', 'day')
-                ->toArray();
+                for ($i = $mStart; $i <= $mEnd; $i++) {
+                    $dailyData[] = $monthlyStats[$i] ?? 0;
+                    $dayLabels[] = date('M', mktime(0, 0, 0, $i, 10)); // Jan, Feb...
+                }
+                if (empty($dailyData)) {
+                    $dailyData = [0];
+                    $dayLabels = [date('M')];
+                }
+            } else {
+                // Group by day for specific single month
+                $safeYear = $startYear;
+                $safeMonth = $startMonth === 'all' ? date('m') : $startMonth;
+                $daysInMonth = Carbon::createFromDate($safeYear, $safeMonth, 1)->daysInMonth;
 
-            for ($i = 1; $i <= $daysInMonth; $i++) {
-                $dailyData[] = $dailyStats[$i] ?? 0;
-                $dayLabels[] = (string) $i;
+                $query = clone $baseQuery;
+
+                $dailyStats = $query
+                    ->selectRaw('DAY(created_at) as day, COUNT(*) as count')
+                    ->groupBy('day')
+                    ->pluck('count', 'day')
+                    ->toArray();
+
+                for ($i = 1; $i <= $daysInMonth; $i++) {
+                    $dailyData[] = $dailyStats[$i] ?? 0;
+                    $dayLabels[] = (string) $i;
+                }
+                if (empty($dailyData)) {
+                    $dailyData = [0];
+                    $dayLabels = ['1'];
+                }
             }
         }
 
@@ -484,8 +529,10 @@ class AdminController extends Controller
             'completionRate',
             'avgAiScore',
             'humanVerifiedRate',
-            'selectedYear',
-            'selectedMonth',
+            'startYear',
+            'endYear',
+            'startMonth',
+            'endMonth',
             'selectedStatus',
             'selectedReviewType',
             'selectedThesisType',
@@ -509,9 +556,11 @@ class AdminController extends Controller
 
     public function exportCsv(Request $request)
     {
-        // Date Filter Logic
-        $selectedYear = $request->filled('year') ? $request->input('year') : date('Y');
-        $selectedMonth = $request->filled('month') ? $request->input('month') : date('m');
+        // Date Filter Logic (Dual Range)
+        $startYear = $request->input('start_year', 'all');
+        $endYear = $request->input('end_year', 'all');
+        $startMonth = $request->input('start_month', 'all');
+        $endMonth = $request->input('end_month', 'all');
 
         // New Filter Logic
         $selectedStatus = $request->input('status', null);
@@ -524,12 +573,23 @@ class AdminController extends Controller
         // Build base query with filters
         $baseQuery = Research_title::query()->with('researcher.user');
 
-        // Apply date filters to base query
-        if ($selectedYear !== 'all') {
-            $baseQuery->whereYear('research_title_information.created_at', $selectedYear);
-        }
-        if ($selectedMonth !== 'all') {
-            $baseQuery->whereMonth('research_title_information.created_at', $selectedMonth);
+        // Apply date range filters
+        if ($startYear !== 'all' || $endYear !== 'all') {
+            $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
+                ->distinct()
+                ->orderBy('year', 'desc')
+                ->pluck('year');
+
+            $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
+            $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
+
+            $realStartMonth = $startMonth === 'all' ? 1 : $startMonth;
+            $realEndMonth = $endMonth === 'all' ? 12 : $endMonth;
+
+            $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
+            $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+
+            $baseQuery->whereBetween('research_title_information.created_at', [$startDate, $endDate]);
         }
 
         // Apply specific criteria filters
@@ -564,13 +624,13 @@ class AdminController extends Controller
 
         $filename = "analytics_export_" . date('Y-m-d') . ".csv";
         $headers = [
-            "Content-type"        => "text/csv",
+            "Content-type" => "text/csv",
             "Content-Disposition" => "attachment; filename=\"$filename\"",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
         ];
-        
+
         $columns = [
             'REC',
             'Protocol Code',
@@ -587,28 +647,28 @@ class AdminController extends Controller
             'Status'
         ];
 
-        $callback = function() use($records, $columns) {
+        $callback = function () use ($records, $columns) {
             $file = fopen('php://output', 'w');
             // Adding BOM for UTF-8 compatibility in Excel
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
             fputcsv($file, $columns);
-            
+
             foreach ($records as $record) {
                 $researchType = $record->Research_Category;
                 $reviewTypeRaw = $record->Review_Type;
                 $systemStatus = $record->Status;
-                
+
                 $reviewType = '';
                 $decisionMap = '';
 
                 // Only show review type and decision if it passed initial stages
                 $passedReviewStages = [
-                    'Waiting for Revision', 
-                    'Revision Submitted', 
-                    'Approved', 
-                    'Disapproved', 
-                    'Complete - Awaiting Hardcopy', 
-                    'Completed', 
+                    'Waiting for Revision',
+                    'Revision Submitted',
+                    'Approved',
+                    'Disapproved',
+                    'Complete - Awaiting Hardcopy',
+                    'Completed',
                     'Reviewed'
                 ];
 
@@ -641,13 +701,13 @@ class AdminController extends Controller
                 } elseif (in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) {
                     $statusMap = 'C';
                 } elseif (in_array($systemStatus, ['Disapproved'])) {
-                    $statusMap = 'D'; 
+                    $statusMap = 'D';
                 } elseif (in_array($systemStatus, ['Withdrawn'])) {
                     $statusMap = 'W';
                 } else {
                     $statusMap = 'OR';
                 }
-                
+
                 $protocolCode = $record->protocol_code ?? $record->id;
 
                 fputcsv($file, [

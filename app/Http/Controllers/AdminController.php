@@ -146,8 +146,13 @@ class AdminController extends Controller
         // Date Filter Logic (Dual Range)
         $startYear = $request->input('start_year', 'all');
         $endYear = $request->input('end_year', 'all');
-        $startMonth = $request->input('start_month', 'all');
-        $endMonth = $request->input('end_month', 'all');
+        $startMonth = $request->input('start_month', 1);
+        if ($startMonth === 'all')
+            $startMonth = 1;
+
+        $endMonth = $request->input('end_month', 12);
+        if ($endMonth === 'all')
+            $endMonth = 12;
 
         // New Filter Logic
         $selectedStatus = $request->input('status', null);
@@ -166,12 +171,12 @@ class AdminController extends Controller
         $baseQuery = Research_title::query();
 
         // Apply date range filters
-        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth !== 'all' || $endMonth !== 'all') {
+        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
             $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
             $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
 
-            $realStartMonth = $startMonth === 'all' ? 1 : $startMonth;
-            $realEndMonth = $endMonth === 'all' ? 12 : $endMonth;
+            $realStartMonth = $startMonth;
+            $realEndMonth = $endMonth;
 
             $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
             $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
@@ -245,12 +250,12 @@ class AdminController extends Controller
 
         $currentCountForTrend = $totalSubmissions;
 
-        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth !== 'all' || $endMonth !== 'all') {
+        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
             // Compare vs identical length past period
             $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
             $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
-            $realStartMonth = $startMonth === 'all' ? 1 : $startMonth;
-            $realEndMonth = $endMonth === 'all' ? 12 : $endMonth;
+            $realStartMonth = $startMonth;
+            $realEndMonth = $endMonth;
 
             $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
             $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
@@ -313,7 +318,7 @@ class AdminController extends Controller
         $dailyData = [];
         $dayLabels = [];
 
-        if ($startYear === 'all' && $endYear === 'all' && $startMonth === 'all' && $endMonth === 'all') {
+        if ($startYear === 'all' && $endYear === 'all' && $startMonth == 1 && $endMonth == 12) {
             // Group by year
             $yearlyStats = (clone $baseQuery)
                 ->selectRaw('YEAR(created_at) as year, COUNT(*) as count')
@@ -360,8 +365,8 @@ class AdminController extends Controller
                     ->pluck('count', 'month')
                     ->toArray();
 
-                $mStart = $startMonth === 'all' ? 1 : $startMonth;
-                $mEnd = $endMonth === 'all' ? 12 : $endMonth;
+                $mStart = $startMonth;
+                $mEnd = $endMonth;
 
                 for ($i = $mStart; $i <= $mEnd; $i++) {
                     $dailyData[] = $monthlyStats[$i] ?? 0;
@@ -374,7 +379,7 @@ class AdminController extends Controller
             } else {
                 // Group by day for specific single month
                 $safeYear = $startYear;
-                $safeMonth = $startMonth === 'all' ? date('m') : $startMonth;
+                $safeMonth = $startMonth;
                 $daysInMonth = Carbon::createFromDate($safeYear, $safeMonth, 1)->daysInMonth;
 
                 $query = clone $baseQuery;
@@ -572,8 +577,12 @@ class AdminController extends Controller
         // Date Filter Logic (Dual Range)
         $startYear = $request->input('start_year', 'all');
         $endYear = $request->input('end_year', 'all');
-        $startMonth = $request->input('start_month', 'all');
-        $endMonth = $request->input('end_month', 'all');
+        $startMonth = $request->input('start_month', 1);
+        if ($startMonth === 'all')
+            $startMonth = 1;
+        $endMonth = $request->input('end_month', 12);
+        if ($endMonth === 'all')
+            $endMonth = 12;
 
         // New Filter Logic
         $selectedStatus = $request->input('status', null);
@@ -587,7 +596,7 @@ class AdminController extends Controller
         $baseQuery = Research_title::query()->with('researcher.user');
 
         // Apply date range filters
-        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth !== 'all' || $endMonth !== 'all') {
+        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
             $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
                 ->distinct()
                 ->orderBy('year', 'desc')
@@ -596,8 +605,8 @@ class AdminController extends Controller
             $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
             $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
 
-            $realStartMonth = $startMonth === 'all' ? 1 : $startMonth;
-            $realEndMonth = $endMonth === 'all' ? 12 : $endMonth;
+            $realStartMonth = $startMonth;
+            $realEndMonth = $endMonth;
 
             $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
             $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();

@@ -418,7 +418,6 @@
                                     <div class="flex items-center gap-2">
                                         <div class="relative flex-1">
                                             <select name="start_month" id="filter_start_month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                                                <option value="all" {{ $startMonth === 'all' ? 'selected' : '' }}>January (Start)</option>
                                                 @foreach(range(1, 12) as $m)
                                                     <option value="{{ $m }}" {{ $startMonth == $m ? 'selected' : '' }}>
                                                         {{ DateTime::createFromFormat('!m', $m)->format('M') }}
@@ -432,7 +431,6 @@
                                         <span class="text-slate-400 font-bold">-</span>
                                         <div class="relative flex-1">
                                             <select name="end_month" id="filter_end_month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                                                <option value="all" {{ $endMonth === 'all' ? 'selected' : '' }}>December (End)</option>
                                                 @foreach(range(1, 12) as $m)
                                                     <option value="{{ $m }}" {{ $endMonth == $m ? 'selected' : '' }}>
                                                         {{ DateTime::createFromFormat('!m', $m)->format('M') }}

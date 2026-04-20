@@ -16,6 +16,10 @@
                 <button id="exportPdfBtn" onclick="exportToPdf()" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
                     <i class="fas fa-download"></i> Export PDF
                 </button>
+
+                <a href="{{ route('admin.analytics.export', request()->query()) }}" id="exportCsvBtn" class="px-4 py-2 bg-white border border-slate-200 text-[#8B0000] rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </a>
             </div>
         </div>
         

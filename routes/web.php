@@ -197,6 +197,8 @@ Route::middleware(['auth'])->group(function () {
     // ====================================================
     Route::middleware(['super_admin'])->group(function () {
         Route::get('/super-admin', [AdminController::class, 'superAdminAnalytics'])->name('super_admin.analytics');
+        Route::get('/super-admin/analytics/export', [AdminController::class, 'exportCsv'])->name('super_admin.analytics.export');
+
 
         // Manage Admins
         Route::get('/super-admin/admins', [\App\Http\Controllers\SuperAdminController::class, 'manageAdmins'])->name('super_admin.manage_admins');
@@ -255,6 +257,8 @@ Route::middleware(['auth'])->group(function () {
     // ====================================================
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/admin', [AdminController::class, 'analytics'])->name('admin.analytics');
+        Route::get('/admin/analytics/export', [AdminController::class, 'exportCsv'])->name('admin.analytics.export');
+
         Route::get('/admin/appointment', function () {
             return view('admin.appointment');
         })->name('admin.appointment');

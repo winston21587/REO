@@ -275,10 +275,12 @@
             }
 
             function resetFilters() {
-                document.getElementById('filter_start_month').value = 'all';
-                document.getElementById('filter_end_month').value = 'all';
+                document.getElementById('filter_start_month').value = '1';
+                document.getElementById('filter_end_month').value = '12';
                 document.getElementById('filter_start_year').value = 'all';
                 document.getElementById('filter_end_year').value = 'all';
+                document.getElementById('filter_exact_start').value = '';
+                document.getElementById('filter_exact_end').value = '';
                 
                 document.getElementById('filter_status').value = '';
                 document.getElementById('filter_review_type').value = '';
@@ -293,10 +295,12 @@
 
             function clearFilter(filterType) {
                 if (filterType === 'date') {
-                    document.getElementById('filter_start_month').value = 'all';
-                    document.getElementById('filter_end_month').value = 'all';
+                    document.getElementById('filter_start_month').value = '1';
+                    document.getElementById('filter_end_month').value = '12';
                     document.getElementById('filter_start_year').value = 'all';
                     document.getElementById('filter_end_year').value = 'all';
+                    document.getElementById('filter_exact_start').value = '';
+                    document.getElementById('filter_exact_end').value = '';
                 } else {
                     const input = document.getElementById('filter_' + filterType);
                     if (input) input.value = '';
@@ -443,6 +447,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-2">Year Range <span class="text-[10px] text-slate-400 font-normal">(Start to End)</span></label>
                                     <div class="flex items-center gap-2">
@@ -470,6 +475,20 @@
                                                 @endif
                                             </select>
                                             <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Exact Date Range (Overrides Dropdowns) -->
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000]">Specific Date <span class="text-[10px] text-slate-400 font-normal normal-case tracking-normal">(Start to End)</span></h4>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <div class="relative flex-1">
+                                            <input type="date" name="exact_start" id="filter_exact_start" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
+                                        </div>
+                                        <span class="text-slate-400 font-bold">-</span>
+                                        <div class="relative flex-1">
+                                            <input type="date" name="exact_end" id="filter_exact_end" value="{{ request('exact_end') }}" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
                                         </div>
                                     </div>
                                 </div>

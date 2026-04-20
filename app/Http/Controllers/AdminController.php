@@ -154,6 +154,10 @@ class AdminController extends Controller
         if ($endMonth === 'all')
             $endMonth = 12;
 
+        $exactStart = $request->input('exact_start');
+        $exactEnd = $request->input('exact_end');
+        $hasExactDates = !empty($exactStart) && !empty($exactEnd);
+
         // New Filter Logic
         $selectedStatus = $request->input('status', null);
         $selectedReviewType = $request->input('review_type', null);
@@ -171,15 +175,20 @@ class AdminController extends Controller
         $baseQuery = Research_title::query();
 
         // Apply date range filters
-        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
-            $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
-            $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
+        if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
+            if ($hasExactDates) {
+                $startDate = Carbon::parse($exactStart)->startOfDay();
+                $endDate = Carbon::parse($exactEnd)->endOfDay();
+            } else {
+                $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
+                $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
 
-            $realStartMonth = $startMonth;
-            $realEndMonth = $endMonth;
+                $realStartMonth = $startMonth;
+                $realEndMonth = $endMonth;
 
-            $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
-            $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+                $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
+                $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+            }
 
             // Swap if user maliciously/accidentally put start after end
             if ($startDate->greaterThan($endDate)) {
@@ -250,15 +259,20 @@ class AdminController extends Controller
 
         $currentCountForTrend = $totalSubmissions;
 
-        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
+        if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
             // Compare vs identical length past period
-            $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
-            $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
-            $realStartMonth = $startMonth;
-            $realEndMonth = $endMonth;
+            if ($hasExactDates) {
+                $startDate = Carbon::parse($exactStart)->startOfDay();
+                $endDate = Carbon::parse($exactEnd)->endOfDay();
+            } else {
+                $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
+                $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
+                $realStartMonth = $startMonth;
+                $realEndMonth = $endMonth;
 
-            $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
-            $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+                $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
+                $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+            }
 
             if ($startDate->greaterThan($endDate)) {
                 $temp = $startDate;
@@ -318,7 +332,9 @@ class AdminController extends Controller
         $dailyData = [];
         $dayLabels = [];
 
-        if ($startYear === 'all' && $endYear === 'all' && $startMonth == 1 && $endMonth == 12) {
+        $isAllTime = !$hasExactDates && $startYear === 'all' && $endYear === 'all' && $startMonth == 1 && $endMonth == 12;
+
+        if ($isAllTime) {
             // Group by year
             $yearlyStats = (clone $baseQuery)
                 ->selectRaw('YEAR(created_at) as year, COUNT(*) as count')
@@ -337,7 +353,7 @@ class AdminController extends Controller
                 $dailyData = [0];
                 $dayLabels = [date('Y')];
             }
-        } elseif ($startYear !== $endYear || $startYear === 'all' || $endYear === 'all') {
+        } elseif (($hasExactDates && tap(Carbon::parse($exactStart), fn($s) => $s->diffInDays(Carbon::parse($exactEnd)) > 31)) || (!$hasExactDates && ($startYear !== $endYear || $startYear === 'all' || $endYear === 'all'))) {
             // Multiple years involved -> Group by Month/Year
             $query = clone $baseQuery;
             $monthlyStats = $query
@@ -356,8 +372,8 @@ class AdminController extends Controller
                 $dayLabels = [date('M Y')];
             }
         } else {
-            // Single Year but multiple months: Group by Month.
-            if ($startMonth !== $endMonth) {
+            // Single Year but multiple months or exact dates within a tight range: Group tightly by Month if applicable, else Daily.
+            if (!$hasExactDates && $startMonth !== $endMonth) {
                 $query = clone $baseQuery;
                 $monthlyStats = $query
                     ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
@@ -584,6 +600,10 @@ class AdminController extends Controller
         if ($endMonth === 'all')
             $endMonth = 12;
 
+        $exactStart = $request->input('exact_start');
+        $exactEnd = $request->input('exact_end');
+        $hasExactDates = !empty($exactStart) && !empty($exactEnd);
+
         // New Filter Logic
         $selectedStatus = $request->input('status', null);
         $selectedReviewType = $request->input('review_type', null);
@@ -596,20 +616,25 @@ class AdminController extends Controller
         $baseQuery = Research_title::query()->with('researcher.user');
 
         // Apply date range filters
-        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
+        if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
             $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
                 ->distinct()
                 ->orderBy('year', 'desc')
                 ->pluck('year');
 
-            $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
-            $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
+            if ($hasExactDates) {
+                $startDate = Carbon::parse($exactStart)->startOfDay();
+                $endDate = Carbon::parse($exactEnd)->endOfDay();
+            } else {
+                $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
+                $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
 
-            $realStartMonth = $startMonth;
-            $realEndMonth = $endMonth;
+                $realStartMonth = $startMonth;
+                $realEndMonth = $endMonth;
 
-            $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
-            $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+                $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
+                $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+            }
 
             if ($startDate->greaterThan($endDate)) {
                 $temp = $startDate;

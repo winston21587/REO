@@ -166,7 +166,7 @@ class AdminController extends Controller
         $baseQuery = Research_title::query();
 
         // Apply date range filters
-        if ($startYear !== 'all' || $endYear !== 'all') {
+        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth !== 'all' || $endMonth !== 'all') {
             $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
             $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
 
@@ -175,6 +175,13 @@ class AdminController extends Controller
 
             $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
             $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+
+            // Swap if user maliciously/accidentally put start after end
+            if ($startDate->greaterThan($endDate)) {
+                $temp = $startDate;
+                $startDate = $endDate;
+                $endDate = $temp;
+            }
 
             $baseQuery->whereBetween('research_title_information.created_at', [$startDate, $endDate]);
         }
@@ -238,7 +245,7 @@ class AdminController extends Controller
 
         $currentCountForTrend = $totalSubmissions;
 
-        if ($startYear !== 'all' || $endYear !== 'all') {
+        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth !== 'all' || $endMonth !== 'all') {
             // Compare vs identical length past period
             $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
             $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
@@ -247,6 +254,12 @@ class AdminController extends Controller
 
             $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
             $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+
+            if ($startDate->greaterThan($endDate)) {
+                $temp = $startDate;
+                $startDate = $endDate;
+                $endDate = $temp;
+            }
 
             $daysDiff = $startDate->diffInDays($endDate);
             $prevEndDate = $startDate->copy()->subDay()->endOfDay();
@@ -300,7 +313,7 @@ class AdminController extends Controller
         $dailyData = [];
         $dayLabels = [];
 
-        if ($startYear === 'all' && $endYear === 'all') {
+        if ($startYear === 'all' && $endYear === 'all' && $startMonth === 'all' && $endMonth === 'all') {
             // Group by year
             $yearlyStats = (clone $baseQuery)
                 ->selectRaw('YEAR(created_at) as year, COUNT(*) as count')
@@ -574,7 +587,7 @@ class AdminController extends Controller
         $baseQuery = Research_title::query()->with('researcher.user');
 
         // Apply date range filters
-        if ($startYear !== 'all' || $endYear !== 'all') {
+        if ($startYear !== 'all' || $endYear !== 'all' || $startMonth !== 'all' || $endMonth !== 'all') {
             $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
                 ->distinct()
                 ->orderBy('year', 'desc')
@@ -588,6 +601,12 @@ class AdminController extends Controller
 
             $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
             $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+
+            if ($startDate->greaterThan($endDate)) {
+                $temp = $startDate;
+                $startDate = $endDate;
+                $endDate = $temp;
+            }
 
             $baseQuery->whereBetween('research_title_information.created_at', [$startDate, $endDate]);
         }

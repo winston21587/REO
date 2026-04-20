@@ -74,7 +74,18 @@
                                             this.open = false;
                                         }
                                     }" 
-                                    @update-review-options.window="lockedType = $event.detail.locked === 'N/A' ? 'Unassigned' : ($event.detail.locked || 'Unassigned'); aiSuggested = $event.detail.aiSuggested || ''; value = ''; if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; open = false;"
+                                    @update-review-options.window="
+                                        lockedType = $event.detail.locked === 'N/A' ? 'Unassigned' : ($event.detail.locked || 'Unassigned'); 
+                                        let rawAi = $event.detail.aiSuggested || '';
+                                        // Normalize AI suggestion to match dropdown values
+                                        if (rawAi.includes('Full')) aiSuggested = 'Full Board Review';
+                                        else if (rawAi.includes('Expedited')) aiSuggested = 'Expedited Review';
+                                        else if (rawAi.includes('Exempt')) aiSuggested = 'Exempt Review';
+                                        else aiSuggested = rawAi;
+                                        value = ''; 
+                                        if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; 
+                                        open = false;
+                                    "
                                     class="relative w-full">
 
                                    <button type="button" @click="open = !open" 

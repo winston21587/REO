@@ -117,7 +117,12 @@
             if (data.success && (data.label || (data.prediction && data.prediction.prediction))) {
                 resultContainer.classList.remove('hidden');
                 let predLabel = data.label || data.prediction.prediction;
-                if (!predLabel.includes('Review')) predLabel += ' Review';
+                // Normalize label to match standard system values
+                if (predLabel.includes('Full')) predLabel = 'Full Board Review';
+                else if (predLabel.includes('Expedited')) predLabel = 'Expedited Review';
+                else if (predLabel.includes('Exempt')) predLabel = 'Exempt Review';
+                else if (!predLabel.includes('Review')) predLabel += ' Review';
+
                 document.getElementById('ai-predict-suggested-label').innerText = predLabel;
             } else {
                 errorContainer.classList.remove('hidden');

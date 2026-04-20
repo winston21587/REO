@@ -25,6 +25,9 @@ class PredictController extends Controller
             
             // On local setups like Herd/XAMPP, SSL verification often fails without proper CA config.
             // Using withoutVerifying() for local connectivity.
+
+            sleep(rand(1,3)); // just for some cache loading
+
             $response = Http::timeout(30)->withoutVerifying()->post($apiUrl, [
                 'text' => $request->text,
             ]);

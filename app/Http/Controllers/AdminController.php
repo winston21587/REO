@@ -1151,19 +1151,22 @@ class AdminController extends Controller
             } elseif ($request->classification === 'Hardcopy Incomplete') {
                 $request->validate([
                     'appointment_date' => 'required|date',
-                    'remarks' => 'required|string',
+                    'remarks' => 'nullable|string',
+                    'missing_requirements' => 'nullable|array',
                 ]);
 
                 $newStatus = 'Incomplete Hardcopy';
                 $submission->Status = $newStatus;
                 $submission->save();
 
+                $missingDocs = $request->input('missing_requirements', []);
+
                 SubmissionFeedback::create([
                     'research_title_id' => $submission->id,
                     'user_id' => auth()->id(),
                     'type' => 'hardcopy_deficiency',
                     'message' => $request->remarks,
-                    'missing_requirements' => [],
+                    'missing_requirements' => $missingDocs,
                 ]);
 
                 $appointment = Appointment::where('research_title_id', $submission->id)
@@ -1184,7 +1187,16 @@ class AdminController extends Controller
 
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
                 $message = "Your hardcopy submission for \"{$submission->Study_Protocol_title}\" is incomplete. Please submit the missing requirements by: {$dateFormatted}.";
-                $message .= "\n\nMissing Requirements / Remarks: " . $request->remarks;
+
+                if ($request->remarks) {
+                    $message .= "\n\nGeneral Remarks: " . $request->remarks;
+                }
+                if (!empty($missingDocs)) {
+                    $message .= "\n\nMissing Requirements / Actions Needed:";
+                    foreach ($missingDocs as $doc) {
+                        $message .= "\n- " . $doc;
+                    }
+                }
             }
         }
         // ---------------------------------------------------------

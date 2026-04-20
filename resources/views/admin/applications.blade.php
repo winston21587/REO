@@ -666,8 +666,23 @@
                             <input type="date" id="hc_appointment_date" value="${minDate}" min="${minDate}" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1">Missing Requirements / Remarks <span class="text-red-500">*</span></label>
-                            <textarea id="hc_remarks" rows="3" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none resize-none" placeholder="List missing requirements..."></textarea>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Missing Requirements</label>
+                            <div class="relative mb-3">
+                                <input type="text" id="hc_reqInput" list="hc_requirementsOptions"
+                                    class="w-full p-3 pr-10 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all"
+                                    placeholder="Select or type missing document...">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-search text-slate-400"></i>
+                                </div>
+                            </div>
+                            <!-- Inline hint container -->
+                            <p id="hc_reqDuplicateHint" class="text-xs text-red-500 font-bold mb-2"></p>
+                            <div id="hc_requirementsList" class="space-y-2 max-h-40 overflow-y-auto pr-1 mb-3">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">General Remarks</label>
+                            <textarea id="hc_remarks" rows="3" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none resize-none" placeholder="General remarks..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -698,12 +713,73 @@
                     };
                     window.toggleHardcopyIncomplete = toggleHardcopyIncomplete;
                     
-                    // Attach event listeners to radio inputs just in case clicking label misses
                     document.querySelectorAll('input[name="hardcopy_status"]').forEach(el => {
                         el.addEventListener('change', (e) => {
                             toggleHardcopyIncomplete(e.target.value === 'Hardcopy Incomplete');
                         });
                     });
+
+                    // Tag pill logic
+                    const reqInput = document.getElementById('hc_reqInput');
+                    
+                    window.hc_removeRequirement = function(id) {
+                        const el = document.getElementById(`hc_req-${id}`);
+                        if (el) {
+                            el.style.opacity = '0';
+                            el.style.transform = 'translateX(10px)';
+                            setTimeout(() => el.remove(), 200);
+                        }
+                    };
+
+                    const addReq = function() {
+                        const val = reqInput.value.trim();
+                        if (!val) return;
+
+                        const container = document.getElementById('hc_requirementsList');
+                        const existingValues = [...container.querySelectorAll('input[name="hc_missing_requirements[]"]')].map(el => el.value.toLowerCase());
+                        
+                        if (existingValues.includes(val.toLowerCase())) {
+                            let hint = document.getElementById('hc_reqDuplicateHint');
+                            hint.textContent = '"' + val + '" is already in the list.';
+                            setTimeout(() => { if (hint) hint.textContent = ''; }, 2000);
+                            reqInput.value = '';
+                            reqInput.focus();
+                            return;
+                        }
+                        
+                        const id = Date.now();
+                        const itemHTML = `
+                            <div id="hc_req-${id}" class="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm animate-[fadeIn_0.3s_ease-out] group transition-all duration-300">
+                                <div class="flex items-center gap-3 overflow-hidden">
+                                    <div class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></div>
+                                    <span class="text-sm font-medium text-slate-700 truncate" title="${val}">${val}</span>
+                                    <input type="hidden" name="hc_missing_requirements[]" value="${val}">
+                                </div>
+                                <button type="button" onclick="window.hc_removeRequirement('${id}')" class="text-slate-400 hover:text-red-500 transition-colors p-1 opacity-50 group-hover:opacity-100">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `;
+                        container.insertAdjacentHTML('beforeend', itemHTML);
+                        reqInput.value = '';
+                        reqInput.focus();
+                    };
+
+                    if (reqInput) {
+                        reqInput.addEventListener('keypress', function (e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addReq();
+                            }
+                        });
+                        reqInput.addEventListener('input', function(e) {
+                            const val = this.value.trim();
+                            const options = Array.from(document.querySelectorAll('#hc_requirementsOptions option')).map(o => o.value);
+                            if (options.includes(val)) {
+                                addReq();
+                            }
+                        });
+                    }
                 },
                 preConfirm: () => {
                     const status = document.querySelector('input[name="hardcopy_status"]:checked').value;
@@ -714,8 +790,10 @@
                     if (status === 'Hardcopy Incomplete') {
                         const date = document.getElementById('hc_appointment_date').value;
                         const remarks = document.getElementById('hc_remarks').value;
-                        if (!remarks.trim()) {
-                            Swal.showValidationMessage('Please provide remarks/missing requirements.');
+                        const missingInputs = document.querySelectorAll('#hc_requirementsList input[name="hc_missing_requirements[]"]');
+                        
+                        if (missingInputs.length === 0 && !remarks.trim()) {
+                            Swal.showValidationMessage('Please provide Missing Requirements OR General Remarks.');
                             return false;
                         }
                         if (!date) {
@@ -724,6 +802,10 @@
                         }
                         data.append('appointment_date', date);
                         data.append('remarks', remarks);
+                        
+                        missingInputs.forEach(input => {
+                            data.append('missing_requirements[]', input.value);
+                        });
                     }
                     return data;
                 }
@@ -900,4 +982,15 @@
             });
         });
     </script>
+    
+    @php
+        $globalRequirements = \App\Models\DocumentRequirement::all();
+    @endphp
+    <!-- Global Datalist Component injected for SweetAlert2 scopes -->
+    <datalist id="hc_requirementsOptions">
+        @foreach($globalRequirements as $req)
+            <option value="{{ $req->name }}">
+        @endforeach
+    </datalist>
+
 </x-admin_layout>

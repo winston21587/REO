@@ -2,57 +2,49 @@
     <div class="max-w-7xl mx-auto py-8 animate-[fadeInUp_0.5s_ease-out]">
 
         <!-- Top Navigation & Header -->
-        <div
-            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6 p-6 bg-gradient-to-r from-white to-slate-50 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div
-                class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 pointer-events-none">
-            </div>
-            <div class="flex items-center gap-5 relative z-10">
-                <a href="{{ $backUrl }}"
-                    class="group flex items-center justify-center w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:border-[#8B0000] hover:text-[#8B0000] hover:shadow-md hover:-translate-x-1 transition-all duration-300">
-                    <i class="fas fa-arrow-left text-lg"></i>
+        <div class="flex items-center mb-6 gap-4 p-4 bg-gradient-to-r from-white to-slate-50 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 pointer-events-none"></div>
+            <div class="flex items-center gap-4 relative z-10 w-full">
+                <a href="{{ $backUrl }}" class="flex items-center justify-center w-12 h-12 rounded-xl bg-white border border-slate-200 text-slate-400 hover:border-[#8B0000] hover:text-[#8B0000] hover:shadow-md transition-all duration-300 flex-shrink-0">
+                    <i class="fas fa-arrow-left"></i>
                 </a>
-                <div>
-                    <div class="flex items-center gap-3 mb-2">
-                        <span
-                            class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-extrabold uppercase tracking-widest border border-slate-200 shadow-sm">
-                            {{ $researchTitle->reoc_code ?? 'PENDING-ID' }}
-                        </span>
-                        <span
-                            class="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-extrabold uppercase tracking-widest border border-amber-100 flex items-center gap-1.5 shadow-sm">
-                            <i class="fas fa-clock text-[10px]"></i> {{ $researchTitle->Status }}
-                        </span>
+                <div class="flex flex-col min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-extrabold uppercase tracking-widest border border-slate-200 shadow-sm">{{ $researchTitle->reoc_code ?? 'PENDING-ID' }}</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-extrabold uppercase tracking-widest border border-amber-100 flex items-center gap-1 shadow-sm">{{ $researchTitle->Status }}</span>
                     </div>
-                    <h1 class="text-3xl font-black text-slate-900 font-heading leading-tight tracking-tight">
-                        {{ $researchTitle->Study_Protocol_title }}
-                    </h1>
+                    <h1 class="text-xl font-black text-slate-900 font-heading leading-tight tracking-tight truncate">{{ $researchTitle->Study_Protocol_title }}</h1>
                 </div>
             </div>
         </div>
 
         @if($researchTitle->revisionLogs->isNotEmpty())
-            <div class="mb-8 space-y-4">
-                <div class="flex items-center gap-4">
-                    <div class="h-px bg-slate-200 flex-1"></div>
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Revision History</span>
-                    <div class="h-px bg-slate-200 flex-1"></div>
-                </div>
-                @foreach($researchTitle->revisionLogs as $log)
-                    <div class="flex gap-4">
-                        <div
-                            class="w-10 h-10 rounded-full {{ $log->user->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">
-                            <i class="fas {{ $log->user->role === 'admin' ? 'fa-user-shield' : 'fa-user' }} text-sm"></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-800">{{ $log->user->first_name }} {{ $log->user->last_name }}
-                                <span class="text-xs font-normal text-slate-500">({{ ucfirst($log->user->role) }})</span></p>
-                            <p class="text-xs text-slate-400 mb-2">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
-                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                                <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
-                            </div>
-                        </div>
+            <div class="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" x-data="{ open: false }">
+                <button @click="open = !open" class="w-full px-6 py-4 flex justify-between items-center bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-history text-blue-500"></i>
+                        <span class="text-xs font-extrabold text-blue-600 uppercase tracking-widest">Revision History Feedback</span>
                     </div>
-                @endforeach
+                    <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="open" style="display: none;" x-transition>
+                    <div class="p-6 space-y-6 border-t border-slate-100 bg-white">
+                        @foreach($researchTitle->revisionLogs as $log)
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-full {{ $log->user->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">
+                                    <i class="fas {{ $log->user->role === 'admin' ? 'fa-user-shield' : 'fa-user' }} text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-800">{{ $log->user->first_name }} {{ $log->user->last_name }} <span class="text-xs font-normal text-slate-500">({{ ucfirst($log->user->role) }})</span></p>
+                                    <p class="text-xs text-slate-400 mb-2">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                                        <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
         @endif
 
@@ -246,8 +238,8 @@
                     </div>
                 </div>
 
-                <!-- Viewer pane: sticky so it stays visible while sidebar scrolls -->
-                <div class="sticky top-4 bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative"
+                <!-- Viewer pane: sticky behavior removed to support layout additions below -->
+                <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative"
                     style="height: 70vh; min-height: 480px;">
                     <template x-if="activeFile && isPdf(activeFile)">
                         <iframe :src="getUrl(activeFile)" class="w-full h-full border-0 bg-white"
@@ -275,34 +267,122 @@
                         </div>
                     </template>
                 </div>
-            </div>
 
-            <!-- ===== RIGHT — Sidebar ===== -->
-            <div class="lg:col-span-4 flex flex-col gap-4 pb-8">
+                <!-- Below Viewer Details -->
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4" x-data="{ subOpen: false, actOpen: false }">
+                    <!-- Submission Details Accordion -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 flex flex-col justify-start">
+                        <button @click="subOpen = !subOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-info-circle text-blue-400"></i>
+                                <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Submission Details</span>
+                            </div>
+                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300" :class="subOpen ? '' : 'rotate-180'"></i>
+                        </button>
+                        <div x-show="subOpen" x-transition>
+                            <div class="p-5 border-t border-slate-100 space-y-4 bg-white">
+                                <div class="flex justify-between items-start gap-3">
+                                    <div class="flex items-center gap-2 text-blue-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-tag w-4 text-center"></i> Category
+                                    </div>
+                                    <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 text-right text-xs font-bold text-slate-700">
+                                        {{ $researchTitle->Research_Category ?? 'N/A' }}
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-start gap-3">
+                                    <div class="flex items-center gap-2 text-emerald-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-flask w-4 text-center"></i> Type
+                                    </div>
+                                    <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 text-right text-xs font-bold text-slate-700">
+                                        {{ $researchTitle->research_type ?? 'N/A' }}
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center gap-3">
+                                    <div class="flex items-center gap-2 text-purple-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-calendar-alt w-4 text-center"></i> Submitted
+                                    </div>
+                                    <div class="text-xs font-bold text-slate-800">
+                                        {{ $researchTitle->created_at->format('M d, Y') }}
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center gap-3">
+                                    <div class="flex items-center gap-2 text-orange-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-users w-4 text-center"></i> Reviewers
+                                    </div>
+                                    <div class="text-xs font-bold text-slate-800 text-right">
+                                        @if($reviewerAssignments->count() > 0)
+                                            {{ $reviewerAssignments->map(fn($r) => $r->first_name . ' ' . $r->last_name)->join(', ') }}
+                                        @else
+                                            <span class="italic text-slate-400">None assigned</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center gap-3">
+                                    <div class="flex items-center gap-2 text-indigo-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-code-branch w-4 text-center"></i> Revisions
+                                    </div>
+                                    <div class="bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 text-indigo-700 text-xs font-bold">
+                                        {{ $researchTitle->files->where('revision_number', '>', 0)->count() }} submitted
+                                    </div>
+                                </div>
 
-                <!-- PI Card -->
-                <div
-                    class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden flex-shrink-0">
-                    <div
-                        class="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-slate-50 to-slate-100 rounded-bl-full -mr-6 -mt-6">
-                    </div>
-                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4">Principal
-                        Investigator</p>
-                    <div class="flex items-center gap-4 relative z-10">
-                        <div
-                            class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#8B0000] to-red-900 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-red-900/20 ring-4 ring-red-50 flex-shrink-0">
-                            {{ substr($researchTitle->researcher->user->first_name ?? 'U', 0, 1) }}
+                                @if($suggestedTypes->count() > 0)
+                                    <div class="mt-6 pt-4 border-t border-slate-100">
+                                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                            <i class="fas fa-lightbulb text-amber-500"></i> Suggested Review Types
+                                        </p>
+                                        <div class="space-y-2.5">
+                                            @foreach($suggestedTypes as $sugg)
+                                                <div class="flex justify-between items-center">
+                                                    <span class="text-xs font-extrabold text-slate-700">{{ $sugg['reviewer'] }}</span>
+                                                    <span class="px-3 py-1 rounded-md border border-amber-200 text-amber-600 bg-amber-50 text-[10px] font-extrabold">{{ $sugg['type'] }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
-                        <div>
-                            <p class="font-bold text-slate-900 leading-tight">
-                                {{ $researchTitle->researcher->user->first_name ?? 'Unknown' }}
-                                {{ $researchTitle->researcher->user->last_name ?? '' }}</p>
-                            <p class="text-xs text-slate-500 font-bold uppercase tracking-wide mt-0.5">
-                                {{ $researchTitle->researcher->college ?? 'External' }}</p>
-                            <p class="text-xs text-slate-400 mt-0.5">{{ $researchTitle->Research_Category }}</p>
+                    </div>
+
+                    <!-- Activity Log Accordion -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 flex flex-col justify-start">
+                        <button @click="actOpen = !actOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-history text-indigo-400"></i>
+                                <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Activity Log</span>
+                            </div>
+                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300" :class="actOpen ? '' : 'rotate-180'"></i>
+                        </button>
+                        <div x-show="actOpen" x-transition>
+                            <div class="p-5 border-t border-slate-100 bg-white">
+                                <div class="relative pl-3 max-h-[420px] overflow-y-auto custom-scrollbar">
+                                    <div class="absolute left-3 top-1 bottom-1 w-0.5 bg-slate-100"></div>
+                                    <div class="space-y-4">
+                                        @forelse($researchTitle->titleLogs as $log)
+                                            <div class="flex gap-4 relative">
+                                                <div class="w-6 h-6 rounded-full bg-slate-100 border-4 border-white flex-shrink-0 z-10 -ml-[11px] flex items-center justify-center">
+                                                    <div class="w-2 h-2 rounded-full bg-indigo-300"></div>
+                                                </div>
+                                                <div class="pb-1">
+                                                    <p class="text-sm font-bold text-slate-800 leading-tight block">{{ $log->action }}</p>
+                                                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">{{ $log->description }}</p>
+                                                    <p class="text-[9px] font-bold text-slate-400 mt-1.5 uppercase tracking-wider">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <p class="text-xs text-slate-400 italic ml-4">No activity logs recorded.</p>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+            </div>
+
+            <div class="lg:col-span-4 flex flex-col gap-4 pb-8">
 
                 <!-- AI Prediction Card -->
                 @if($researchTitle->ai_suggested_review_type)
@@ -385,254 +465,54 @@
                     </div>
                 @endif
 
-                {{-- ===== Reviewer Status Card ===== --}}
-                @if($reviewerAssignments->count() > 0)
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
-                        <p
-                            class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <i class="fas fa-users text-violet-500"></i>
-                            Reviewer Status
-                            @php
-                                $doneCount = $reviewerAssignments->filter(fn($r) => $r->pivot->status === 'Completed')->count();
-                                $totalCount = $reviewerAssignments->count();
-                            @endphp
-                            <span
-                                class="ml-auto text-[9px] font-black px-2 py-0.5 rounded-full {{ $doneCount === $totalCount ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' }}">
-                                {{ $doneCount }}/{{ $totalCount }} Done
-                            </span>
-                        </p>
-                        <div class="space-y-2">
-                            @foreach($reviewerAssignments as $rv)
-                                @php
-                                    $isDone = $rv->pivot->status === 'Completed';
-                                    $rvName = $rv->first_name . ' ' . $rv->last_name;
-                                    $rvInitial = strtoupper(substr($rv->first_name, 0, 1));
-                                @endphp
-                                <div
-                                    class="flex items-center gap-3 p-2.5 rounded-xl {{ $isDone ? 'bg-green-50 border border-green-100' : 'bg-amber-50 border border-amber-100' }}">
-                                    <div
-                                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0 {{ $isDone ? 'bg-green-600 text-white' : 'bg-amber-400 text-white' }}">
-                                        {{ $rvInitial }}
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-xs font-bold text-slate-800 truncate">{{ $rvName }}</p>
-                                        <p class="text-[9px] font-semibold {{ $isDone ? 'text-green-600' : 'text-amber-600' }}">
-                                            {{ $isDone ? 'Done Reviewing' : 'Still Reviewing' }}
-                                        </p>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        @if($isDone)
-                                            <i class="fas fa-check-circle text-green-500 text-base"></i>
-                                        @else
-                                            <i class="fas fa-spinner fa-spin text-amber-400 text-base"></i>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
 
-                {{-- ===== Reviewer Deliberation Reports (Feedback) ===== --}}
-                @if($reviewerDecisions->count() > 0)
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
-                        <p
-                            class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <i class="fas fa-clipboard-check text-green-500"></i>
-                            Reviewer Deliberations
-                            <span
-                                class="ml-auto bg-green-100 text-green-700 text-[9px] font-black px-2 py-0.5 rounded-full">{{ $reviewerDecisions->count() }}</span>
-                        </p>
 
-                        <div class="space-y-4 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
-                            @foreach($reviewerDecisions as $decision)
-                                @php
-                                    $user = $decision->user;
-                                    $reviewerName = $user ? ($user->first_name . ' ' . $user->last_name) : 'Unknown Reviewer';
-                                    $initial = $user ? strtoupper(substr($user->first_name, 0, 1)) : '?';
 
-                                    $msg = $decision->message;
 
-                                    // Parse structured deliberation
-                                    $scientificSoundness = '';
-                                    $ethicalIssues = '';
-                                    $icfIssues = '';
-                                    $summary = '';
-                                    $finalDecisionStr = '';
 
-                                    if (str_contains($msg, '=== DELIBERATION NOTES ===')) {
-                                        preg_match('/Scientific Soundness:\s*(.*?)\n\nEthical Issues:/s', $msg, $matches);
-                                        $scientificSoundness = $matches[1] ?? '';
 
-                                        preg_match('/Ethical Issues:\s*(.*?)\n\nICF Issues:/s', $msg, $matches);
-                                        $ethicalIssues = $matches[1] ?? '';
-
-                                        preg_match('/ICF Issues:\s*(.*?)\n\nSummary of Issues & Resolutions:/s', $msg, $matches);
-                                        $icfIssues = $matches[1] ?? '';
-
-                                        preg_match('/Summary of Issues & Resolutions:\s*(.*?)\n\n=== FINAL DECISION ===/s', $msg, $matches);
-                                        $summary = $matches[1] ?? '';
-                                    }
-
-                                    preg_match('/=== FINAL DECISION ===\n(.*)/s', $msg, $matches);
-                                    $finalDecisionStr = $matches[1] ?? '';
-                                @endphp
-                                <div class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50">
-                                    {{-- Reviewer header --}}
-                                    <div class="flex items-center gap-2.5 px-3 py-2.5 bg-green-50 border-b border-green-100">
-                                        <div
-                                            class="w-7 h-7 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px] font-black flex-shrink-0">
-                                            {{ $initial }}
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-xs font-bold text-green-900 truncate">{{ $reviewerName }}</p>
-                                            <p class="text-[9px] text-green-600 font-medium">
-                                                {{ $decision->updated_at->format('M d, Y • h:i A') }}</p>
-                                        </div>
-                                    </div>
-
-                                    {{-- Parsed Deliberation Data --}}
-                                    @if(str_contains($msg, '=== DELIBERATION NOTES ==='))
-                                        <div class="p-3 space-y-3 bg-white text-left">
-                                            <div>
-                                                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                                                    <i class="fas fa-microscope text-indigo-400 mr-1"></i> Scientific Soundness</p>
-                                                <p class="text-xs text-slate-700 leading-relaxed">
-                                                    {{ $scientificSoundness ?: 'N/A' }}</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                                                    <i class="fas fa-balance-scale text-amber-400 mr-1"></i> Ethical Issues</p>
-                                                <p class="text-xs text-slate-700 leading-relaxed">{{ $ethicalIssues ?: 'N/A' }}</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                                                    <i class="fas fa-file-signature text-emerald-400 mr-1"></i> ICF Issues</p>
-                                                <p class="text-xs text-slate-700 leading-relaxed">{{ $icfIssues ?: 'N/A' }}</p>
-                                            </div>
-                                            <div class="bg-slate-50 p-2 rounded border border-slate-100">
-                                                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                                                    <i class="fas fa-list-check text-rose-400 mr-1"></i> Summary</p>
-                                                <p class="text-xs text-slate-700 leading-relaxed">{{ $summary ?: 'N/A' }}</p>
-                                            </div>
-                                            <div class="border-t border-slate-100 pt-2">
-                                                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                                                    Final Action</p>
-                                                <p class="text-xs text-slate-800 font-medium whitespace-pre-wrap leading-relaxed">
-                                                    {{ trim($finalDecisionStr) ?: 'N/A' }}</p>
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div class="p-3 bg-white text-left">
-                                            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Final
-                                                Action</p>
-                                            <p class="text-xs text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">
-                                                {{ $msg }}</p>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-
-                <!-- Receipt & Payment Card -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
-                    <p
-                        class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <i class="fas fa-receipt text-amber-500"></i> Receipt & Payment
-                    </p>
-                    @if($researchTitle->is_or_verified)
-                        <div class="flex items-center gap-2 mb-3">
-                            <span
-                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200">
-                                <i class="fas fa-check-circle"></i> Verified
-                            </span>
-                        </div>
-                        <div class="space-y-2">
-                            @if($researchTitle->Official_Receipt_Number)
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-bold text-slate-500">OR Number</span>
-                                    <span
-                                        class="font-mono text-xs font-bold text-slate-800">#{{ $researchTitle->Official_Receipt_Number }}</span>
-                                </div>
-                            @endif
-                            @if($researchTitle->or_file_path)
-                                <a href="{{ asset($researchTitle->or_file_path) }}" target="_blank"
-                                    class="mt-2 flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-colors">
-                                    <i class="fas fa-external-link-alt"></i> View Receipt Image
-                                </a>
-                            @endif
-                        </div>
-                    @elseif($researchTitle->or_file_path || $researchTitle->Official_Receipt_Number)
-                        <div class="flex items-center gap-2 mb-3">
-                            <span
-                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-200">
-                                <i class="fas fa-eye"></i> Pending Verification
-                            </span>
-                        </div>
-                        <div class="space-y-2">
-                            @if($researchTitle->Official_Receipt_Number)
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-bold text-slate-500">OR Number</span>
-                                    <span
-                                        class="font-mono text-xs font-bold text-slate-800">#{{ $researchTitle->Official_Receipt_Number }}</span>
-                                </div>
-                            @endif
-                            @if($researchTitle->or_file_path)
-                                <a href="{{ asset($researchTitle->or_file_path) }}" target="_blank"
-                                    class="mt-2 flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-colors">
-                                    <i class="fas fa-external-link-alt"></i> View Receipt Image
-                                </a>
-                            @endif
-                        </div>
-                    @else
-                        <div class="flex items-center gap-2 mb-3">
-                            <span
-                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200">
-                                <i class="fas fa-clock"></i> Pending Payment
-                            </span>
-                        </div>
-                        <p class="text-xs text-slate-400 italic">No receipt has been submitted yet.</p>
-                    @endif
-                </div>
-
-                <!-- Version Timeline -->
+                <!-- Version Timeline Accordion -->
                 @if($hasRevisions)
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
-                        <p
-                            class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <i class="fas fa-code-branch text-indigo-400"></i> Version Timeline
-                        </p>
-                        <div class="relative pl-4">
-                            <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100"></div>
-                            <div class="space-y-3">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="w-8 h-8 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center flex-shrink-0 z-10 -ml-4">
-                                        <i class="fas fa-box-archive text-slate-500 text-xs"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-bold text-slate-700">Original Submission</p>
-                                        <p class="text-[10px] text-slate-400">
-                                            {{ $originalFiles->first()?->created_at?->format('M d, Y') ?? '—' }} ·
-                                            {{ $originalFiles->count() }} doc(s)</p>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0" x-data="{ vtOpen: false }">
+                        <button @click="vtOpen = !vtOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                            <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <i class="fas fa-code-branch text-indigo-400"></i> Version Timeline
+                            </span>
+                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300" :class="vtOpen ? '' : 'rotate-180'"></i>
+                        </button>
+                        <div x-show="vtOpen" x-transition>
+                            <div class="p-5 border-t border-slate-100 bg-white">
+                                <div class="relative pl-4">
+                                    <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100"></div>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-8 h-8 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center flex-shrink-0 z-10 -ml-4">
+                                                <i class="fas fa-box-archive text-slate-500 text-xs"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-700">Original Submission</p>
+                                                <p class="text-[10px] text-slate-400">
+                                                    {{ $originalFiles->first()?->created_at?->format('M d, Y') ?? '—' }} ·
+                                                    {{ $originalFiles->count() }} doc(s)</p>
+                                            </div>
+                                        </div>
+                                        @foreach($revisionFolders->sortKeys() as $revNum => $files)
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="w-8 h-8 rounded-full bg-indigo-50 border-2 border-indigo-300 flex items-center justify-center flex-shrink-0 z-10 -ml-4">
+                                                    <span class="text-[10px] font-black text-indigo-600">{{ $revNum }}</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs font-bold text-slate-700">Revision {{ $revNum }}</p>
+                                                    <p class="text-[10px] text-slate-400">
+                                                        {{ $files->first()?->created_at?->format('M d, Y') ?? '—' }} ·
+                                                        {{ $files->count() }} doc(s)</p>
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
-                                @foreach($revisionFolders->sortKeys() as $revNum => $files)
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-indigo-50 border-2 border-indigo-300 flex items-center justify-center flex-shrink-0 z-10 -ml-4">
-                                            <span class="text-[10px] font-black text-indigo-600">{{ $revNum }}</span>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs font-bold text-slate-700">Revision {{ $revNum }}</p>
-                                            <p class="text-[10px] text-slate-400">
-                                                {{ $files->first()?->created_at?->format('M d, Y') ?? '—' }} ·
-                                                {{ $files->count() }} doc(s)</p>
-                                        </div>
-                                    </div>
-                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -926,108 +806,7 @@
                     </div>{{-- end scrollable list --}}
                 </div>{{-- end tabbed picker --}}
 
-                <!-- Submission Meta -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
-                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Submission
-                        Details</p>
-                    <div class="space-y-2.5">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i
-                                    class="fas fa-tag text-blue-400 w-3"></i> Category</span>
-                            <span
-                                class="text-xs font-bold text-slate-800 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">{{ $researchTitle->Research_Category }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i
-                                    class="fas fa-microscope text-emerald-400 w-3"></i> Type</span>
-                            <span
-                                class="text-xs font-bold text-slate-800 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">{{ $researchTitle->research_type ?? 'N/A' }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i
-                                    class="fas fa-calendar text-purple-400 w-3"></i> Submitted</span>
-                            <span
-                                class="text-xs font-bold text-slate-800">{{ $researchTitle->created_at->format('M d, Y') }}</span>
-                        </div>
-                        <div class="flex justify-between items-start gap-4">
-                            <span
-                                class="text-xs font-bold text-slate-500 flex items-center gap-2 pt-0.5 whitespace-nowrap"><i
-                                    class="fas fa-users text-orange-400 w-3"></i> Reviewers</span>
-                            <div class="flex flex-col items-end text-right">
-                                @if($researchTitle->reviewers && $researchTitle->reviewers->count() > 0)
-                                    @foreach($researchTitle->reviewers as $rev)
-                                        <span class="text-xs font-bold text-slate-800">{{ $rev->first_name }}
-                                            {{ $rev->last_name }}</span>
-                                    @endforeach
-                                @elseif(is_array($researchTitle->assigned_reviewers) && count($researchTitle->assigned_reviewers) > 0)
-                                    <span
-                                        class="text-xs font-bold text-slate-800">{{ count($researchTitle->assigned_reviewers) }}
-                                        Assigned</span>
-                                @else
-                                    <span class="text-xs font-bold text-slate-400 italic">Not Assigned</span>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-500 flex items-center gap-2"><i
-                                    class="fas fa-code-branch text-indigo-400 w-3"></i> Revisions</span>
-                            <span
-                                class="text-xs font-bold {{ $hasRevisions ? 'text-indigo-600' : 'text-slate-500' }} bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100">
-                                {{ $revisionFolders->count() }} submitted
-                            </span>
-                        </div>
-                        @if($suggestedTypes->isNotEmpty())
-                            <div class="border-t border-slate-100 mt-2 pt-3">
-                                <span
-                                    class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
-                                    <i class="fas fa-lightbulb text-amber-400 w-3"></i> Suggested Review Types
-                                </span>
-                                <div class="space-y-2">
-                                    @foreach($suggestedTypes as $sugg)
-                                        <div class="flex justify-between items-center gap-4">
-                                            <span
-                                                class="text-xs font-bold text-slate-600 truncate">{{ $sugg['reviewer'] }}</span>
-                                            <span
-                                                class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 whitespace-nowrap">
-                                                {{ $sugg['type'] }}
-                                            </span>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
 
-
-                <!-- Activity Log -->
-                @if($researchTitle->titleLogs && $researchTitle->titleLogs->isNotEmpty())
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0 mt-4">
-                        <p
-                            class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <i class="fas fa-history text-blue-400"></i> Activity Log
-                        </p>
-                        <div class="relative pl-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                            <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100"></div>
-                            <div class="space-y-4">
-                                @foreach($researchTitle->titleLogs as $log)
-                                    <div class="flex gap-3 relative z-10">
-                                        <div
-                                            class="w-6 h-6 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center flex-shrink-0 -ml-3 mt-0.5">
-                                            <i class="fas fa-circle text-slate-400" style="font-size: 6px;"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs font-bold text-slate-700 leading-tight">{{ $log->action }}</p>
-                                            <p class="text-[10px] text-slate-500 mt-0.5">{{ $log->description }}</p>
-                                            <p class="text-[9px] text-slate-400 mt-1">
-                                                {{ $log->created_at->format('M d, Y • h:i A') }}</p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                @endif
 
             </div>{{-- end sidebar --}}
         </div>{{-- end grid --}}

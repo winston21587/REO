@@ -42,7 +42,7 @@
                                     </div>
                                     <input type="text" name="Study_Protocol_title" id="Study_Protocol_title"
                                         class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200"
-                                        placeholder="Enter study protocol title" required>
+                                        placeholder="Enter Study Protocol Title" required>
                                 </div>
                             </div>
 
@@ -59,7 +59,7 @@
                                         onchange="toggleOtherCategory(this)"
                                         class="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200 appearance-none cursor-pointer"
                                         required>
-                                        <option value="" disabled selected>Select review fees</option>
+                                        <option value="" disabled selected>Select Review Fees</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->name }}">
                                                 {{ $category->name }} - ₱ {{ number_format($category->fee, 2) }}
@@ -94,7 +94,7 @@
                                     <select name="research_type" id="research_type"
                                         class="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200 appearance-none cursor-pointer"
                                         required>
-                                        <option value="" disabled selected>Select research type</option>
+                                        <option value="" disabled selected>Select Research Type</option>
                                         <option value="Biomedical Studies">Biomedical Studies</option>
                                         <option value="Health Operations Research">Health Operations Research</option>
                                         <option value="Social Research">Social Research</option>
@@ -118,7 +118,7 @@
                                     </div>
                                     <input type="text" name="Adviser" id="Adviser"
                                         class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#8B0000] focus:ring-4 focus:ring-[#8B0000]/10 transition-all duration-200"
-                                        placeholder="Enter adviser's name" required>
+                                        placeholder="Enter Adviser Name" required>
                                 </div>
                             </div>
                         </div>

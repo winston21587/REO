@@ -367,6 +367,10 @@
                                        extraParams.exact_start = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-01';
                                        extraParams.exact_end = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-' + new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
                                    }
+                                } else if (label.length === 4 && !isNaN(label)) {
+                                   // "2026" (Year number)
+                                   extraParams.exact_start = label + '-01-01';
+                                   extraParams.exact_end = label + '-12-31';
                                 } else {
                                    // "21" (Day number)
                                    const yearVal = year ? year : new Date().getFullYear();

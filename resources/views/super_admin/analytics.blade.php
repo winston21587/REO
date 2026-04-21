@@ -13,9 +13,7 @@
 
                 <div class="h-8 w-px bg-slate-200"></div>
 
-                <button id="exportPdfBtn" onclick="exportToPdf()" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
-                    <i class="fas fa-download"></i> Export PDF
-                </button>
+
 
                 <a href="{{ route('super_admin.analytics.export', request()->query()) }}" id="exportCsvBtn" class="px-4 py-2 bg-white border border-slate-200 text-[#8B0000] rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
                     <i class="fas fa-file-csv"></i> Export CSV
@@ -367,6 +365,10 @@
                                        extraParams.exact_start = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-01';
                                        extraParams.exact_end = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-' + new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
                                    }
+                                } else if (label.length === 4 && !isNaN(label)) {
+                                   // "2026" (Year number)
+                                   extraParams.exact_start = label + '-01-01';
+                                   extraParams.exact_end = label + '-12-31';
                                 } else {
                                    // "21" (Day number)
                                    const yearVal = year ? year : new Date().getFullYear();

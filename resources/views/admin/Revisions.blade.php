@@ -235,6 +235,68 @@
             modal.classList.remove('hidden');
         }
 
+        function confirmRevertPhase(id, title, currentStatus) {
+            let revertText = "";
+            let targetPhase = "";
+
+            switch (currentStatus) {
+                case 'Reviewed':
+                    revertText = "Reopen the evaluation window? Submissions will step backward.";
+                    targetPhase = "Under Review";
+                    break;
+                case 'Under Review':
+                    revertText = "Are you sure? This will step backward to assignment phase.";
+                    targetPhase = "Reviewer Assigned";
+                    break;
+                case 'Reviewer Assigned':
+                    revertText = "This will unassign all reviewers and clear their progress!";
+                    targetPhase = "Hardcopy Received";
+                    break;
+                case 'Hardcopy Received':
+                case 'Incomplete Hardcopy':
+                    revertText = "Step backward to incomplete status?";
+                    targetPhase = "Incomplete - Awaiting Hardcopy";
+                    break;
+                case 'Incomplete - Awaiting Hardcopy':
+                default:
+                    revertText = "This will cancel the appointment and toss it back to New Submissions.";
+                    targetPhase = "Pending (Initial Intake)";
+                    break;
+            }
+
+            Swal.fire({
+                title: 'Step Backward?',
+                html: `Are you sure you want to revert "<span class="font-bold">${title}</span>"?<br><br>` + 
+                      `<span class="text-red-600 font-bold">${revertText}</span><br>` +
+                      `<span class="text-xs text-slate-500">Target Phase: ${targetPhase}</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#8B0000',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Yes, Step Backward',
+                cancelButtonText: 'Cancel',
+                scrollbarPadding: false,
+                backdrop: `rgba(15, 23, 42, 0.75)`,
+                customClass: {
+                    popup: 'rounded-2xl shadow-xl',
+                    confirmButton: 'rounded-xl px-4 py-2 font-bold shadow-lg shadow-red-900/20',
+                    cancelButton: 'rounded-xl px-4 py-2 font-bold'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Reverting...',
+                        text: 'Please wait...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    document.getElementById('revertPhaseForm-' + id).submit();
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('revisions_search_input');
             let debounceTimer;

@@ -234,6 +234,19 @@
                                                             @endif
                                                         @endif
 
+                                                        <hr class="border-slate-100 my-1">
+
+                                                        <!-- Global Revert Phase Button -->
+                                                        <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST"
+                                                            id="revertPhaseForm-{{ $data->id }}">
+                                                            @csrf
+                                                            <input type="hidden" name="classification" value="Revert Phase">
+                                                            <button type="button"
+                                                                onclick="confirmRevertPhase('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, '{{ $data->Status }}')"
+                                                                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-red-600 rounded-lg transition-colors text-left">
+                                                                <i class="fas fa-undo-alt w-4 text-center"></i> Step Backward (Undo)
+                                                            </button>
+                                                        </form>
                                                     </div>
                                                 </div>
                                             </div>

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
 use App\Models\DocumentRequirement;
+use Illuminate\Support\Facades\Log;
 use App\Models\SubmissionFeedback;
 use App\Models\User;
 use App\Models\Researcher;
@@ -143,10 +144,11 @@ class AdminController extends Controller
 
     public function analyticsDetails(Request $request)
     {
-        $type = $request->input('type');
+        try {
+            $type = $request->input('type');
 
-        // --- Reuse Filter Logic ---
-        $startYear = $request->input('start_year', 'all');
+            // --- Reuse Filter Logic ---
+            $startYear = $request->input('start_year', 'all');
         $endYear = $request->input('end_year', 'all');
         $startMonth = $request->input('start_month', 1);
         if ($startMonth === 'all')
@@ -294,7 +296,14 @@ class AdminController extends Controller
             ];
         });
 
-        return response()->json($data);
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Analytics Details Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            return response()->json(['error' => 'Server Error'], 500);
+        }
     }
 
     public function analytics(Request $request)

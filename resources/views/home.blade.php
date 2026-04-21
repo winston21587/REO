@@ -365,6 +365,7 @@
                                             <i class="fas fa-check-circle text-violet-500"></i> CV Verified
                                         </div>
                                     @endif
+                                </div>
                             </div>
 
                             <!-- Desktop Tracker -->

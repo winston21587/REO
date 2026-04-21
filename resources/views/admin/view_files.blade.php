@@ -626,7 +626,7 @@
                         @else
                             {{-- Pending State --}}
                             <div class="space-y-2">
-                                <p class="text-[10px] text-slate-500 italic mb-3">No verification done yet. Open the CV in the viewer, then verify or flag a mismatch.</p>
+                                <p class="text-[10px] text-slate-500 italic mb-3">Open the CV in the viewer, then verify or flag a mismatch.</p>
                                 <button type="button"
                                     onclick="document.getElementById('cv-verify-modal-{{ $researchTitle->id }}').showModal()"
                                     class="w-full py-2.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-200">

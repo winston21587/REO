@@ -2435,24 +2435,29 @@ class AdminController extends Controller
             $certPdf->SetXY(30, 90);
             $certPdf->MultiCell($w - 60, 6, $request->shared_researchers, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
 
-            // ── Title — Helvetica 11pt, centered, #2b1511 ──
+            // ── Title — Colette (dynamic registration) 11pt, centered, #2b1511 ──
+            $coletteFontName = \TCPDF_FONTS::addTTFfont(public_path('fonts/Colette.ttf'), 'TrueTypeUnicode', '', 32, public_path('fonts/tcpdf/'));
+            if (!$coletteFontName) $coletteFontName = 'helvetica';
+
             $certPdf->SetTextColor(43, 21, 17); // #2b1511
-            $certPdf->SetFont('helvetica', '', 11);
+            $certPdf->SetFont($coletteFontName, '', 11);
             $certPdf->SetXY(70, 157.5);
             $certPdf->MultiCell(115, 6, $request->shared_title, 0, 'C');
 
-            // ── REO Code — Helvetica 11pt, centered, #2b1511 ──
+            // ── REO Code — Colette 11pt, centered, #2b1511 ──
             if ($request->shared_reo_code) {
-                $certPdf->SetFont('helvetica', '', 11);
+                $certPdf->SetFont($coletteFontName, '', 11);
                 $certPdf->SetXY(20, 176);
                 $certPdf->Cell($w - 60, 6, $request->shared_reo_code, 0, 0, 'C');
             }
 
-            // ── Summary / scope of exemption — Montserrat 11pt, justified, #2b1511 ──
-            // montserrat.php is pre-compiled in public/fonts/tcpdf/
+            // ── Summary / scope of exemption — Montserrat (dynamic registration) 11pt, justified, #2b1511 ──
             if ($request->cert_reo_summary) {
+                $montserratFontName = \TCPDF_FONTS::addTTFfont(public_path('fonts/Montserrat.ttf'), 'TrueTypeUnicode', '', 32, public_path('fonts/tcpdf/'));
+                if (!$montserratFontName) $montserratFontName = 'helvetica';
+
                 $certPdf->SetTextColor(43, 21, 17); // #2b1511
-                $certPdf->SetFont('montserrat', '', 11);
+                $certPdf->SetFont($montserratFontName, '', 11);
                 $certPdf->SetXY(30, 185);
                 $certPdf->MultiCell($w - 60, 5, $request->cert_reo_summary, 0, 'J', false, 1, null, null, true, 0, false, true, 0, 'T', false);
             }

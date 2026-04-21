@@ -4,26 +4,26 @@
             <thead>
                 <tr
                     class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                    <th class="px-4 py-5 whitespace-nowrap">Research Title</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Researcher</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Reviewer</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Last Updated</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Review Type</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Status</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Action Taken</th>
-                    <th class="px-4 py-5 text-right whitespace-nowrap">Actions</th>
+                    <th class="px-3 py-4 min-w-[200px]">Research Title</th>
+                    <th class="px-3 py-4">Researcher</th>
+                    <th class="px-3 py-4 min-w-[120px]">Reviewer</th>
+                    <th class="px-3 py-4 min-w-[110px]">Last Updated</th>
+                    <th class="px-3 py-4 min-w-[120px]">Review Type</th>
+                    <th class="px-3 py-4">Status</th>
+                    <th class="px-3 py-4 min-w-[130px]">Action Taken</th>
+                    <th class="px-3 py-4 text-right">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 @forelse($datas as $data)
                     <tr class="hover:bg-slate-50/80 transition-colors group">
-                        <td class="px-4 py-5">
+                        <td class="px-3 py-4">
                             <p class="font-bold text-slate-800 text-sm line-clamp-1 group-hover:text-[#8B0000] transition-colors"
                                 title="{{ $data->Study_Protocol_title }}">
                                 {{ $data->Study_Protocol_title }}
                             </p>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="px-3 py-4">
                             <div class="flex items-center gap-3">
                                 <div
                                     class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
@@ -40,7 +40,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="px-3 py-4">
                             @php
                                 $reviewers = [];
                                 if (!empty($data->assigned_reviewers)) {
@@ -57,13 +57,13 @@
                                 <span class="text-sm italic text-slate-400">Unassigned</span>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="px-3 py-4">
                             <div class="flex items-center gap-2 text-sm text-slate-600">
                                 <i class="far fa-clock text-slate-400"></i>
                                 {{ $data->updated_at->format('M d, Y') }}
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="px-3 py-4">
                             @if($data->Review_Type)
                                 @php
                                     $rtColors = [
@@ -80,7 +80,7 @@
                                 <span class="text-xs text-slate-400 italic">—</span>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="px-3 py-4">
                             @php
                                 // Keep visual status as Reviewed even if internal status is Panel Deliberation
                                 $displayStatus = $data->Status === 'Panel Deliberation' ? 'Reviewed' : $data->Status;
@@ -97,7 +97,7 @@
                                 {{ $displayStatus }}
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="px-3 py-4">
                             @if($data->Status === 'Waiting for Revision')
                                 <span class="text-sm font-bold text-orange-600">Modifications Required</span>
                             @elseif($data->Status === 'Panel Deliberation')
@@ -113,7 +113,7 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-5 text-right relative">
+                        <td class="px-3 py-4 text-right relative">
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open" @click.away="open = false"
                                     class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">

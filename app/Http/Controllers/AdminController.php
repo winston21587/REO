@@ -2435,16 +2435,15 @@ class AdminController extends Controller
             $certPdf->SetXY(30, 90);
             $certPdf->MultiCell($w - 60, 6, $request->shared_researchers, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
 
-            // ── Title — Colette 11pt, centered, #2b1511 ──
-            // Note: only colette.php (Regular) is compiled — no bold variant exists.
+            // ── Title — Helvetica 11pt, centered, #2b1511 ──
             $certPdf->SetTextColor(43, 21, 17); // #2b1511
-            $certPdf->SetFont('colette', '', 11);
+            $certPdf->SetFont('helvetica', '', 11);
             $certPdf->SetXY(70, 157.5);
             $certPdf->MultiCell(115, 6, $request->shared_title, 0, 'C');
 
-            // ── REO Code — Colette 11pt, centered, #2b1511 ──
+            // ── REO Code — Helvetica 11pt, centered, #2b1511 ──
             if ($request->shared_reo_code) {
-                $certPdf->SetFont('colette', '', 11);
+                $certPdf->SetFont('helvetica', '', 11);
                 $certPdf->SetXY(20, 176);
                 $certPdf->Cell($w - 60, 6, $request->shared_reo_code, 0, 0, 'C');
             }

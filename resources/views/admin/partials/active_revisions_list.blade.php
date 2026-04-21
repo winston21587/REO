@@ -4,26 +4,26 @@
             <thead>
                 <tr
                     class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                    <th class="px-4 py-5 whitespace-nowrap">Research Title</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Researcher</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Reviewer</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Last Updated</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Review Type</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Status</th>
-                    <th class="px-4 py-5 whitespace-nowrap">Action Taken</th>
-                    <th class="px-4 py-5 text-right whitespace-nowrap">Actions</th>
+                    <th class="p-6">Research Title</th>
+                    <th class="p-6">Researcher</th>
+                    <th class="p-6">Reviewer</th>
+                    <th class="p-6">Last Updated</th>
+                    <th class="p-6">Review Type</th>
+                    <th class="p-6">Status</th>
+                    <th class="p-6">Action Taken</th>
+                    <th class="p-6 text-right">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 @forelse($datas as $data)
                     <tr class="hover:bg-slate-50/80 transition-colors group">
-                        <td class="px-4 py-5">
+                        <td class="p-6">
                             <p class="font-bold text-slate-800 text-sm line-clamp-1 group-hover:text-[#8B0000] transition-colors"
                                 title="{{ $data->Study_Protocol_title }}">
                                 {{ $data->Study_Protocol_title }}
                             </p>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="p-6">
                             <div class="flex items-center gap-3">
                                 <div
                                     class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
@@ -40,7 +40,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="p-6">
                             @php
                                 $reviewers = [];
                                 if (!empty($data->assigned_reviewers)) {
@@ -57,13 +57,13 @@
                                 <span class="text-sm italic text-slate-400">Unassigned</span>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="p-6">
                             <div class="flex items-center gap-2 text-sm text-slate-600">
                                 <i class="far fa-clock text-slate-400"></i>
                                 {{ $data->updated_at->format('M d, Y') }}
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="p-6">
                             @if($data->Review_Type)
                                 @php
                                     $rtColors = [
@@ -80,7 +80,7 @@
                                 <span class="text-xs text-slate-400 italic">—</span>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="p-6">
                             @php
                                 // Keep visual status as Reviewed even if internal status is Panel Deliberation
                                 $displayStatus = $data->Status === 'Panel Deliberation' ? 'Reviewed' : $data->Status;
@@ -97,7 +97,7 @@
                                 {{ $displayStatus }}
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap">
+                        <td class="p-6">
                             @if($data->Status === 'Waiting for Revision')
                                 <span class="text-sm font-bold text-orange-600">Modifications Required</span>
                             @elseif($data->Status === 'Panel Deliberation')
@@ -113,7 +113,7 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-5 text-right relative">
+                        <td class="p-6 text-right relative">
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open" @click.away="open = false"
                                     class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
@@ -234,19 +234,6 @@
                                                             @endif
                                                         @endif
 
-                                                        <hr class="border-slate-100 my-1">
-
-                                                        <!-- Global Revert Phase Button -->
-                                                        <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST"
-                                                            id="revertPhaseForm-{{ $data->id }}">
-                                                            @csrf
-                                                            <input type="hidden" name="classification" value="Revert Phase">
-                                                            <button type="button"
-                                                                onclick="confirmRevertPhase('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, '{{ $data->Status }}')"
-                                                                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-red-600 rounded-lg transition-colors text-left">
-                                                                <i class="fas fa-undo-alt w-4 text-center"></i> Step Backward (Undo)
-                                                            </button>
-                                                        </form>
                                                     </div>
                                                 </div>
                                             </div>

@@ -72,7 +72,7 @@
                                         {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
                                     </div>
                                     <div>
-                                        <p class="font-bold text-slate-800 text-base">{{ $user->first_name }} {{ $user->last_name }}</p>
+                                        <p class="font-bold text-slate-800 text-base">{{ $user->first_name }} {{ $user->middle_name ? $user->middle_name . ' ' : '' }}{{ $user->last_name }}</p>
                                         <p class="text-xs text-slate-400">{{ $user->role }}</p>
                                     </div>
                                 </div>
@@ -103,7 +103,7 @@
                                 @if($reviewedCount > 0)
                                     <button type="button"
                                         onclick="openReviewedModal(
-                                            '{{ addslashes($user->first_name . ' ' . $user->last_name) }}',
+                                            '{{ addslashes($user->first_name . ($user->middle_name ? ' ' . $user->middle_name : '') . ' ' . $user->last_name) }}',
                                             {{ $reviewedCount }},
                                             {{ json_encode($reviewedTitles->map(fn($t) => ['id' => $t->id, 'title' => $t->Study_Protocol_title])) }}
                                         )"
@@ -314,12 +314,19 @@
                                 </div>
                             @endif
                             
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-3 gap-4">
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
                                     <div class="relative">
                                         <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                                         <input type="text" name="first_name" required placeholder="John" value="{{ old('first_name') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Middle Name</label>
+                                    <div class="relative">
+                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input type="text" name="middle_name" placeholder="Quincy" value="{{ old('middle_name') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
@@ -456,7 +463,7 @@
                                 <span x-text="selectedUser.first_name.charAt(0) + selectedUser.last_name.charAt(0)"></span>
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-slate-900" x-text="selectedUser.first_name + ' ' + selectedUser.last_name"></h4>
+                                <h4 class="text-lg font-bold text-slate-900" x-text="selectedUser.first_name + (selectedUser.middle_name ? ' ' + selectedUser.middle_name : '') + ' ' + selectedUser.last_name"></h4>
                                 <p class="text-sm text-slate-500" x-text="selectedUser.email"></p>
                                 <div class="mt-2">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"

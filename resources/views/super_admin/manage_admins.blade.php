@@ -123,7 +123,12 @@
                                                 <i class="fas fa-eye w-4"></i> View Details
                                             </button>
                                             
-
+                                            <form action="{{ route('super_admin.admins.toggle_status', $user->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2 transition-colors">
+                                                    <i class="fas fa-ban w-4"></i> {{ $user->email_verified_at ? 'Deactivate' : 'Activate' }}
+                                                </button>
+                                            </form>
 
                                             <form action="{{ route('super_admin.admins.delete', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this admin? This action cannot be undone.');">
                                                 @csrf

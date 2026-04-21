@@ -31,11 +31,11 @@
                     <div class="p-6 space-y-6 border-t border-slate-100 bg-white max-h-[400px] overflow-y-auto custom-scrollbar">
                         @foreach($researchTitle->revisionLogs as $log)
                             <div class="flex gap-4">
-                                <div class="w-10 h-10 rounded-full {{ $log->user->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">
-                                    <i class="fas {{ $log->user->role === 'admin' ? 'fa-user-shield' : 'fa-user' }} text-sm"></i>
+                                <div class="w-10 h-10 rounded-full {{ $log->user?->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">
+                                    <i class="fas {{ $log->user?->role === 'admin' ? 'fa-user-shield' : 'fa-user' }} text-sm"></i>
                                 </div>
                                 <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-800">{{ $log->user->first_name }} {{ $log->user->last_name }} <span class="text-xs font-normal text-slate-500">({{ ucfirst($log->user->role) }})</span></p>
+                                    <p class="text-sm font-bold text-slate-800">{{ $log->user?->first_name ?? 'Unknown' }} {{ $log->user?->last_name }} <span class="text-xs font-normal text-slate-500">({{ ucfirst($log->user?->role ?? 'user') }})</span></p>
                                     <p class="text-xs text-slate-400 mb-2">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
                                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
                                         <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>

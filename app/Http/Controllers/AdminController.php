@@ -1367,6 +1367,9 @@ class AdminController extends Controller
                     ]);
                 }
 
+                // Handle CV Verification action (can be done alongside Complete or Incomplete)
+                $this->handleCvAction($request, $submission);
+
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
                 $message = "Your submission \"{$submission->Study_Protocol_title}\" document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
 
@@ -1396,6 +1399,9 @@ class AdminController extends Controller
                         $message .= "\n- " . $doc;
                     }
                 }
+
+                // Handle CV Verification action (can be done alongside Incomplete)
+                $this->handleCvAction($request, $submission);
 
             } elseif ($request->classification === 'Undo') {
                 $newStatus = 'Pending';
@@ -1659,6 +1665,59 @@ class AdminController extends Controller
         }
 
         return redirect()->back()->with('success', 'Status updated successfully');
+    }
+
+    /**
+     * Shared helper: process cv_action from the triage modal.
+     * Handles 'verify' (Valid) and 'invalidate' (Invalid) choices.
+     */
+    private function handleCvAction(Request $request, Research_title $submission): void
+    {
+        $cvAction = $request->input('cv_action');
+
+        if ($cvAction === 'verify') {
+            $submission->is_cv_verified = true;
+            $submission->cv_verification_status = 'Valid';
+            $submission->cv_rejection_remarks = null;
+            $submission->save();
+
+            TitleLog::create([
+                'research_title_id' => $submission->id,
+                'user_id'           => auth()->id(),
+                'action'            => 'CV Classification Verified',
+                'description'       => "Admin verified CV classification during Initial Intake. Project type: {$submission->project_type}.",
+            ]);
+
+        } elseif ($cvAction === 'invalidate') {
+            $cvRemarks = $request->input('cv_remarks', '');
+
+            $submission->is_cv_verified = false;
+            $submission->cv_verification_status = 'Invalid';
+            $submission->cv_rejection_remarks = $cvRemarks;
+            $submission->Status = 'Incomplete'; // Force incomplete on CV mismatch
+            $submission->save();
+
+            TitleLog::create([
+                'research_title_id' => $submission->id,
+                'user_id'           => auth()->id(),
+                'action'            => 'CV Classification Invalid',
+                'description'       => "Admin flagged CV mismatch during Initial Intake. Submission set to Incomplete. Remarks: {$cvRemarks}",
+            ]);
+
+            // Notify researcher
+            $researcher = $submission->researcher;
+            if ($researcher) {
+                UserNotification::create([
+                    'user_id'     => $researcher->user_id,
+                    'research_id' => $submission->id,
+                    'title'       => 'CV Classification Mismatch',
+                    'message'     => "Your submission \"{$submission->Study_Protocol_title}\" has been flagged for an incorrect project type. Please correct your classification.\n\nReason: {$cvRemarks}",
+                    'type'        => 'warning',
+                    'is_read'     => false,
+                ]);
+            }
+        }
+        // If cv_action is empty (skip), do nothing
     }
 
     public function assignReviewers(Request $request, $id)

@@ -246,6 +246,63 @@
                         </div>
                     </div>
 
+                    <!-- CV Verification Section -->
+                    <div id="cvVerificationField" class="hidden transition-all duration-300">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">CV / Classification Verification</label>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+
+                            <!-- Already Valid Badge -->
+                            <div id="cvAlreadyValid" class="hidden">
+                                <div class="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-xl">
+                                    <i class="fas fa-check-circle text-emerald-500"></i>
+                                    <span class="text-xs font-bold text-emerald-700">CV Already Verified</span>
+                                </div>
+                            </div>
+
+                            <!-- Already Invalid Badge -->
+                            <div id="cvAlreadyInvalid" class="hidden">
+                                <div class="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-xl">
+                                    <i class="fas fa-times-circle text-red-500"></i>
+                                    <span class="text-xs font-bold text-red-700">CV Marked as Invalid</span>
+                                </div>
+                            </div>
+
+                            <!-- Pending Options -->
+                            <div id="cvPendingOptions" class="hidden space-y-2">
+                                <p class="text-[11px] text-slate-500 italic mb-1">Review the researcher's CV file in View Details, then verify or flag a mismatch.</p>
+                                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 transition-colors group">
+                                    <input type="radio" name="cv_action" id="cv_action_verify" value="verify" class="text-emerald-600 focus:ring-emerald-500">
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-700">Verify CV</span>
+                                        <p class="text-[11px] text-slate-500 mt-0.5">Classification matches uploaded CV.</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-red-50 hover:border-red-200 transition-colors group">
+                                    <input type="radio" name="cv_action" id="cv_action_invalidate" value="invalidate" class="text-red-600 focus:ring-red-500" onchange="toggleCvRemarks(true)">
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-700">Mark as Invalid</span>
+                                        <p class="text-[11px] text-slate-500 mt-0.5">Mismatch between CV and stated classification.</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors group">
+                                    <input type="radio" name="cv_action" id="cv_action_skip" value="" checked class="text-slate-500 focus:ring-slate-400" onchange="toggleCvRemarks(false)">
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-700">Skip for now</span>
+                                        <p class="text-[11px] text-slate-500 mt-0.5">Verify later from View Details.</p>
+                                    </div>
+                                </label>
+
+                                <!-- CV Remarks (shown when invalidate is selected) -->
+                                <div id="cvRemarksField" class="hidden mt-2">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Reason <span class="text-red-500">*</span></label>
+                                    <textarea name="cv_remarks" id="cv_remarks" rows="3"
+                                        class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 resize-none"
+                                        placeholder="e.g., Your CV indicates you are a BS student but you selected 'Funded Research'..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="appointmentField"
                         class="transition-all duration-300 bg-white p-4 rounded-2xl border border-slate-200">
                         <label
@@ -465,7 +522,19 @@
             activeText.classList.add(`text-${activeColor}-700`);
         }
 
-        function openTriageModal(id, title, orNumber, orFilePath, isOrVerified) {
+        function toggleCvRemarks(show) {
+            const field = document.getElementById('cvRemarksField');
+            const textarea = document.getElementById('cv_remarks');
+            if (show) {
+                field.classList.remove('hidden');
+                textarea.required = true;
+            } else {
+                field.classList.add('hidden');
+                textarea.required = false;
+            }
+        }
+
+        function openTriageModal(id, title, orNumber, orFilePath, isOrVerified, cvStatus, hasProjectType) {
             const modal = document.getElementById('triageModal');
             const content = document.getElementById('modalContent');
             const titleEl = document.getElementById('modalTitle');
@@ -514,19 +583,48 @@
 
                 if (isOrVerified) {
                     orVerified.classList.remove('hidden');
-                    // Already verified — unlock Complete
                     lockCompleteOption(false);
                 } else {
                     orCheckbox.classList.remove('hidden');
-                    // Default unchecked — lock Complete until checked
                     if (verifyCheckbox) verifyCheckbox.checked = false;
                     lockCompleteOption(true);
                 }
             } else {
                 orNumEl.textContent = '—';
                 orNoReceipt.classList.remove('hidden');
-                // No receipt — lock Complete
                 lockCompleteOption(true);
+            }
+
+            // --- Populate CV Verification Section ---
+            const cvField = document.getElementById('cvVerificationField');
+            const cvAlreadyValid = document.getElementById('cvAlreadyValid');
+            const cvAlreadyInvalid = document.getElementById('cvAlreadyInvalid');
+            const cvPendingOptions = document.getElementById('cvPendingOptions');
+            const cvRemarksField = document.getElementById('cvRemarksField');
+            const cvRemarks = document.getElementById('cv_remarks');
+
+            // Reset CV section
+            cvAlreadyValid.classList.add('hidden');
+            cvAlreadyInvalid.classList.add('hidden');
+            cvPendingOptions.classList.add('hidden');
+            if (cvRemarksField) cvRemarksField.classList.add('hidden');
+            if (cvRemarks) { cvRemarks.value = ''; cvRemarks.required = false; }
+            // Reset radio to skip
+            const skipRadio = document.getElementById('cv_action_skip');
+            if (skipRadio) skipRadio.checked = true;
+
+            if (hasProjectType) {
+                cvField.classList.remove('hidden');
+                if (cvStatus === 'Valid') {
+                    cvAlreadyValid.classList.remove('hidden');
+                } else if (cvStatus === 'Invalid') {
+                    cvAlreadyInvalid.classList.remove('hidden');
+                } else {
+                    // Pending verification
+                    cvPendingOptions.classList.remove('hidden');
+                }
+            } else {
+                cvField.classList.add('hidden');
             }
 
             // Default to Incomplete

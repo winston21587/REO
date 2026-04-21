@@ -94,9 +94,12 @@
                             </td>
                             <td class="p-6">
                                 <div class="flex items-center gap-1.5 pl-1">
-                                    @if($user->email_verified_at || $user->is_verified)
+                                    @if($user->is_verified)
                                         <div class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]"></div>
                                         <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Active</span>
+                                    @elseif($user->email_verified_at)
+                                        <div class="w-1.5 h-1.5 rounded-full bg-red-400"></div>
+                                        <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Deactivated</span>
                                     @else
                                         <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
                                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Pending</span>
@@ -126,7 +129,7 @@
                                             <form action="{{ route('admin.users.toggle_status', $user->id) }}" method="POST">
                                                 @csrf
                                                 <button type="submit" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2 transition-colors">
-                                                    <i class="fas fa-ban w-4"></i> {{ $user->email_verified_at ? 'Deactivate' : 'Activate' }}
+                                                    <i class="fas fa-ban w-4"></i> {{ $user->is_verified ? 'Deactivate' : 'Activate' }}
                                                 </button>
                                             </form>
 

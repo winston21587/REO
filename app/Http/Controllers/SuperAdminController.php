@@ -102,11 +102,12 @@ class SuperAdminController extends Controller
             return redirect()->back()->with('error', 'You can only toggle the status of admins.');
         }
 
-        if ($user->email_verified_at) {
-            $user->email_verified_at = null;
+        if ($user->is_verified) {
+            $user->is_verified = false;
             $message = 'Admin account deactivated successfully.';
         } else {
-            $user->email_verified_at = now();
+            $user->is_verified = true;
+            $user->email_verified_at = $user->email_verified_at ?? now();
             $message = 'Admin account activated successfully.';
         }
         
@@ -236,11 +237,12 @@ class SuperAdminController extends Controller
             return redirect()->back()->with('error', 'You can only toggle the status of reviewers.');
         }
 
-        if ($user->email_verified_at) {
-            $user->email_verified_at = null;
+        if ($user->is_verified) {
+            $user->is_verified = false;
             $message = 'Reviewer account deactivated successfully.';
         } else {
-            $user->email_verified_at = now();
+            $user->is_verified = true;
+            $user->email_verified_at = $user->email_verified_at ?? now();
             $message = 'Reviewer account activated successfully.';
         }
         

@@ -47,6 +47,7 @@ class AdminController extends Controller
             'last_name' => $request->last_name,
             'email' => $request->email,
             'role' => 'researcher',
+            'is_verified' => true,
             'password' => Hash::make($request->password), // User-defined password
             'email_verified_at' => now(), // Auto-verify since admin created it
         ]);
@@ -65,11 +66,12 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if ($user->email_verified_at) {
-            $user->email_verified_at = null;
+        if ($user->is_verified) {
+            $user->is_verified = false;
             $message = 'User deactivated successfully.';
         } else {
-            $user->email_verified_at = now();
+            $user->is_verified = true;
+            $user->email_verified_at = $user->email_verified_at ?? now();
             $message = 'User activated successfully.';
         }
 

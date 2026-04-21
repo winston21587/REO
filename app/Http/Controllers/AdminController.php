@@ -2318,6 +2318,12 @@ class AdminController extends Controller
         $expiryFormatted = $request->has('cover_expiry_date') ? Carbon::parse($request->cover_expiry_date)->format('F j, Y') : '';
         $formattedPickup = $request->has('pickup_date') ? Carbon::parse($request->pickup_date)->format('F j, Y') : '';
 
+        // --- CRITICAL: Define TCPDF font path BEFORE any TCPDF object is instantiated ---
+        // This ensures both the Cover Letter and Certificate use the correct custom font directory.
+        if (!defined('K_PATH_FONTS')) {
+            define('K_PATH_FONTS', public_path('fonts' . DIRECTORY_SEPARATOR . 'tcpdf' . DIRECTORY_SEPARATOR));
+        }
+
         // ----------------------------------------------------------------
         // 1. Generate Cover Letter
         // ----------------------------------------------------------------
@@ -2400,11 +2406,7 @@ class AdminController extends Controller
                 return back()->with('error', 'Certificate of Exemption template not found.');
             }
 
-            // Map TCPDF font cache to the pre-compiled directory to avoid on-the-fly generation issues
-            if (!defined('K_PATH_FONTS')) {
-                define('K_PATH_FONTS', public_path('fonts/tcpdf/'));
-            }
-
+            // Use dynamic font registration to ensure metadata files are available in K_PATH_FONTS
             $certPdf = new \setasign\Fpdi\Tcpdf\Fpdi();
             $certPdf->setSourceFile($certTemplatePath);
             $certTpl = $certPdf->importPage(1);

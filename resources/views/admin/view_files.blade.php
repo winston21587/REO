@@ -379,86 +379,39 @@
                         </div>
                     </div>
 
-                    {{-- Researcher Classification Badge --}}
-                    @if($researchTitle->project_type)
-                        <div class="mt-4 pt-4 border-t border-slate-100 space-y-2">
-                            <div class="flex items-center gap-2">
-                                @php
-                                    $isFunded = $researchTitle->project_type === 'Funded Research';
-                                @endphp
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
-                                    {{ $isFunded ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
-                                    <i class="fas {{ $isFunded ? 'fa-money-bill-wave' : 'fa-graduation-cap' }}"></i>
-                                    {{ $researchTitle->project_type }}
-                                </span>
-                                @if($researchTitle->funding_type || $researchTitle->course_type)
-                                    <span class="text-[10px] text-slate-400 font-semibold">
-                                        {{ $researchTitle->funding_type ?? $researchTitle->course_type }}
-                                    </span>
-                                @endif
-                            </div>
-                            @if($researchTitle->Adviser)
-                                <div class="flex items-center gap-2 text-xs text-slate-600">
-                                    <i class="fas fa-user-tie text-slate-400 w-3"></i>
-                                    <span class="font-semibold">Adviser:</span>
-                                    <span>{{ $researchTitle->Adviser }}</span>
-                                </div>
-                            @endif
-                        </div>
-                    @endif
 
-                    {{-- CV Classification Verification Card --}}
-                    @if($researchTitle->project_type)
-                        <div class="mt-4 pt-4 border-t border-slate-100">
-                            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <i class="fas fa-id-card text-violet-400"></i> CV Verification
-                            </p>
-
-                            @if($researchTitle->cv_verification_status === 'Valid')
-                                {{-- Verified State --}}
-                                <div class="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-                                    <i class="fas fa-check-circle text-emerald-500 text-sm"></i>
-                                    <div>
-                                        <p class="text-xs font-bold text-emerald-800">CV Verified</p>
-                                        <p class="text-[10px] text-emerald-600">Classification matches uploaded CV.</p>
-                                    </div>
-                                </div>
-
-                            @elseif($researchTitle->cv_verification_status === 'Invalid')
-                                {{-- Invalid State --}}
-                                <div class="px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl">
-                                    <div class="flex items-center gap-2 mb-1.5">
-                                        <i class="fas fa-times-circle text-red-500 text-sm"></i>
-                                        <p class="text-xs font-bold text-red-800">CV Invalid</p>
-                                    </div>
-                                    <p class="text-[10px] text-red-700 leading-relaxed whitespace-pre-wrap">{{ $researchTitle->cv_rejection_remarks }}</p>
-                                    <p class="text-[9px] text-red-500 mt-1.5 font-bold">Researcher notified to correct classification.</p>
-                                </div>
-
-                            @else
-                                {{-- Pending State --}}
-                                <div class="space-y-2">
-                                    <p class="text-[10px] text-slate-500 italic">No verification done yet. Open the CV in the viewer, then verify or flag a mismatch.</p>
-                                    <form method="POST" action="{{ route('admin.cv.verify', $researchTitle->id) }}">
-                                        @csrf
-                                        <button type="submit"
-                                            class="w-full py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-200"
-                                            onclick="return confirm('Mark CV as Valid? This confirms the researcher\'s classification matches their uploaded CV.')">
-                                            <i class="fas fa-check"></i> Verify CV
-                                        </button>
-                                    </form>
-                                    <button type="button"
-                                        onclick="document.getElementById('cv-invalidate-modal-{{ $researchTitle->id }}').showModal()"
-                                        class="w-full py-2 px-3 bg-white border border-red-200 hover:bg-red-50 text-red-600 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
-                                        <i class="fas fa-times"></i> Mark as Invalid
-                                    </button>
-                                </div>
-                            @endif
-                        </div>
-                    @endif
                 </div>
 
             </div>
+
+            {{-- CV Verify Modal --}}
+            @if($researchTitle->project_type && $researchTitle->cv_verification_status !== 'Valid' && $researchTitle->cv_verification_status !== 'Invalid')
+            <dialog id="cv-verify-modal-{{ $researchTitle->id }}"
+                class="m-auto rounded-2xl p-0 backdrop:bg-slate-900/60 w-full max-w-md border border-slate-200 shadow-2xl overflow-hidden">
+                <form method="POST" action="{{ route('admin.cv.verify', $researchTitle->id) }}">
+                    @csrf
+                    <div class="bg-[#0f172a] px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-check-circle text-emerald-400"></i> Verify Curriculum Vitae
+                        </h3>
+                        <button type="button" onclick="document.getElementById('cv-verify-modal-{{ $researchTitle->id }}').close()" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="p-8 bg-white text-center">
+                        <div class="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4 border-2 border-emerald-100">
+                            <i class="fas fa-check text-2xl text-emerald-500"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">Confirm Verification</h4>
+                        <p class="text-[13px] text-slate-500 leading-relaxed max-w-xs mx-auto">
+                            By proceeding, you confirm that the researcher's stated classification matches the details found in their uploaded CV.
+                        </p>
+                    </div>
+                    <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                        <button type="button" onclick="document.getElementById('cv-verify-modal-{{ $researchTitle->id }}').close()" class="px-5 py-2.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 rounded-xl transition-all">Cancel</button>
+                        <button type="submit" class="px-6 py-2.5 text-xs font-bold bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 hover:bg-emerald-600 transition-all">Confirm Validity</button>
+                    </div>
+                </form>
+            </dialog>
+            @endif
 
             {{-- CV Invalidate Modal --}}
             @if($researchTitle->project_type && $researchTitle->cv_verification_status !== 'Valid' && $researchTitle->cv_verification_status !== 'Invalid')
@@ -639,6 +592,55 @@
                             </div>
                         </div>
                     </div>
+                    </div>
+                @endif
+
+                {{-- CV Classification Verification Card --}}
+                @if($researchTitle->project_type)
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                    <div class="px-5 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
+                        <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fas fa-id-card text-violet-400"></i> CV Verification
+                        </span>
+                    </div>
+                    <div class="p-5">
+                        @if($researchTitle->cv_verification_status === 'Valid')
+                            {{-- Verified State --}}
+                            <div class="flex items-center gap-2 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                                <i class="fas fa-check-circle text-emerald-500 text-sm"></i>
+                                <div>
+                                    <p class="text-xs font-bold text-emerald-800">CV Verified</p>
+                                    <p class="text-[10px] text-emerald-600">Classification matches uploaded CV.</p>
+                                </div>
+                            </div>
+                        @elseif($researchTitle->cv_verification_status === 'Invalid')
+                            {{-- Invalid State --}}
+                            <div class="px-4 py-3 bg-red-50 border border-red-200 rounded-xl">
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <i class="fas fa-times-circle text-red-500 text-sm"></i>
+                                    <p class="text-xs font-bold text-red-800">CV Invalid</p>
+                                </div>
+                                <p class="text-[10px] text-red-700 leading-relaxed whitespace-pre-wrap">{{ $researchTitle->cv_rejection_remarks }}</p>
+                                <p class="text-[9px] text-red-500 mt-2 font-bold">Researcher notified to correct classification.</p>
+                            </div>
+                        @else
+                            {{-- Pending State --}}
+                            <div class="space-y-2">
+                                <p class="text-[10px] text-slate-500 italic mb-3">No verification done yet. Open the CV in the viewer, then verify or flag a mismatch.</p>
+                                <button type="button"
+                                    onclick="document.getElementById('cv-verify-modal-{{ $researchTitle->id }}').showModal()"
+                                    class="w-full py-2.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-200">
+                                    <i class="fas fa-check"></i> Verify CV
+                                </button>
+                                <button type="button"
+                                    onclick="document.getElementById('cv-invalidate-modal-{{ $researchTitle->id }}').showModal()"
+                                    class="w-full py-2.5 px-3 bg-white border border-red-200 hover:bg-red-50 text-red-600 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                                    <i class="fas fa-times"></i> Mark as Invalid
+                                </button>
+                            </div>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
                 <!-- Tabbed File Picker -->

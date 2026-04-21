@@ -353,23 +353,39 @@
                                 const month = "{{ $startMonth !== 'all' ? $startMonth : '' }}";
                                 
                                 if (label.includes(' ')) {
-                                   const tempDate = new Date(label + " 1");
-                                   extraParams.exact_start = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-01';
-                                   extraParams.exact_end = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-' + new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
+                                   // "Apr 2026"
+                                   const tempDate = new Date(label);
+                                   if (!isNaN(tempDate)) {
+                                       extraParams.exact_start = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-01';
+                                       extraParams.exact_end = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-' + new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
+                                   }
                                 } else if (isNaN(label)) {
-                                   const tempDate = new Date(label + " 1, " + (year ? year : new Date().getFullYear()));
-                                   extraParams.exact_start = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-01';
-                                   extraParams.exact_end = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-' + new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
+                                   // "Apr"
+                                   const yearVal = year ? year : new Date().getFullYear();
+                                   const tempDate = new Date(label + " 1, " + yearVal);
+                                   if (!isNaN(tempDate)) {
+                                       extraParams.exact_start = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-01';
+                                       extraParams.exact_end = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-' + new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
+                                   }
                                 } else {
-                                   const currentYear = year ? year : new Date().getFullYear();
-                                   const currentMonth = month ? month : new Date().getMonth() + 1;
-                                   const formattedMonth = String(currentMonth).padStart(2, '0');
+                                   // "21" (Day number)
+                                   const yearVal = year ? year : new Date().getFullYear();
+                                   let monthVal = month ? month : null;
+                                   
+                                   // If month is not set in filters, try to guess from the chart context or just use current month
+                                   if (!monthVal || monthVal === 'all') {
+                                       monthVal = new Date().getMonth() + 1;
+                                   }
+                                   
+                                   const formattedMonth = String(monthVal).padStart(2, '0');
                                    const formattedDay = String(label).padStart(2, '0');
-                                   extraParams.exact_start = currentYear + '-' + formattedMonth + '-' + formattedDay;
-                                   extraParams.exact_end = currentYear + '-' + formattedMonth + '-' + formattedDay;
+                                   extraParams.exact_start = yearVal + '-' + formattedMonth + '-' + formattedDay;
+                                   extraParams.exact_end = yearVal + '-' + formattedMonth + '-' + formattedDay;
                                 }
 
-                                openDetailsModal('submissions', 'Submissions - ' + label, extraParams);
+                                if (extraParams.exact_start) {
+                                    openDetailsModal('submissions', 'Submissions - ' + label, extraParams);
+                                }
                             }
                         },
                         plugins: { legend: { display: false } },

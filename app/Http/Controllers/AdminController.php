@@ -667,6 +667,8 @@ class AdminController extends Controller
             ->where('Review_Type', '!=', 'N/A')
             ->distinct()
             ->pluck('Review_Type')
+            ->push('Exempt') // Ensure Exempt is always an option
+            ->unique()
             ->sort()
             ->values();
 
@@ -685,13 +687,14 @@ class AdminController extends Controller
                 'Hardcopy Received - For Initial Review',
                 'For Initial Review',
                 'Under Review',
-                'Waiting for Revision',
             ],
-            'Final Verdicts' => [
+            'Revision Stage' => [
+                'Waiting for Revision',
+                'Revision Submitted',
+            ],
+            'Certificate Stage' => [
                 'Approved',
                 'Disapproved',
-                'Complete - Awaiting Hardcopy',
-                'Completed'
             ]
         ];
 

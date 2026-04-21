@@ -1110,7 +1110,7 @@ class AdminController extends Controller
 
 
         // 2. Fetch Pending Submissions (Recent Submissions: Pending)
-        $pendingQuery = Research_title::with('revisionLogs')->whereIn('Status', ['Pending']);
+        $pendingQuery = Research_title::with(['revisionLogs', 'researcher.user'])->whereIn('Status', ['Pending']);
 
         // Search Filter
         if ($request->filled('recent_search')) {
@@ -1133,7 +1133,7 @@ class AdminController extends Controller
 
 
         // 3. Fetch Incomplete Submissions
-        $incompleteQuery = Research_title::with('files')->whereIn('Status', ['Incomplete', 'Incomplete Resubmitted', 'Rejected']);
+        $incompleteQuery = Research_title::with(['files', 'researcher.user'])->whereIn('Status', ['Incomplete', 'Incomplete Resubmitted', 'Rejected']);
 
         // Search Filter
         if ($request->filled('incomplete_search')) {

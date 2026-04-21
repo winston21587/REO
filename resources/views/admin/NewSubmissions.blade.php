@@ -138,11 +138,26 @@
             <form id="triageForm" method="POST" action="" class="flex flex-col flex-1 overflow-hidden">
                 @csrf
                 <div class="p-6 space-y-6 overflow-y-auto flex-1">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Researcher</label>
+                            <p id="modalResearcherName"
+                                class="text-slate-800 font-bold bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs truncate">
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email</label>
+                            <p id="modalResearcherEmail"
+                                class="text-slate-800 font-bold bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs truncate">
+                            </p>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Protocol
                             Title</label>
                         <p id="modalTitle"
-                            class="text-slate-800 font-bold bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm leading-relaxed">
+                            class="text-slate-800 font-bold bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs leading-relaxed">
                         </p>
                     </div>
 
@@ -534,13 +549,15 @@
             }
         }
 
-        function openTriageModal(id, title, orNumber, orFilePath, isOrVerified, cvStatus, hasProjectType) {
+        function openTriageModal(id, title, orNumber, orFilePath, isOrVerified, cvStatus, hasProjectType, researcherName, researcherEmail) {
             const modal = document.getElementById('triageModal');
             const content = document.getElementById('modalContent');
             const titleEl = document.getElementById('modalTitle');
             const form = document.getElementById('triageForm');
 
             titleEl.textContent = title;
+            document.getElementById('modalResearcherName').textContent = researcherName || 'N/A';
+            document.getElementById('modalResearcherEmail').textContent = researcherEmail || 'N/A';
             form.action = `/admin/update-status/${id}`;
 
             // Set Date Defaults (2 days from now)

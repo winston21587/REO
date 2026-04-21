@@ -384,79 +384,7 @@
 
             </div>
 
-            {{-- CV Verify Modal --}}
-            @if($researchTitle->project_type && $researchTitle->cv_verification_status !== 'Valid' && $researchTitle->cv_verification_status !== 'Invalid')
-            <dialog id="cv-verify-modal-{{ $researchTitle->id }}"
-                class="m-auto rounded-2xl p-0 backdrop:bg-slate-900/60 w-full max-w-md border border-slate-200 shadow-2xl overflow-hidden">
-                <form method="POST" action="{{ route('admin.cv.verify', $researchTitle->id) }}">
-                    @csrf
-                    <div class="bg-[#0f172a] px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-                        <h3 class="text-base font-bold text-white flex items-center gap-2">
-                            <i class="fas fa-check-circle text-emerald-400"></i> Verify Curriculum Vitae
-                        </h3>
-                        <button type="button" onclick="document.getElementById('cv-verify-modal-{{ $researchTitle->id }}').close()" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
-                    </div>
-                    <div class="p-8 bg-white text-center">
-                        <div class="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4 border-2 border-emerald-100">
-                            <i class="fas fa-check text-2xl text-emerald-500"></i>
-                        </div>
-                        <h4 class="text-lg font-bold text-slate-800 mb-2">Confirm Verification</h4>
-                        <p class="text-[13px] text-slate-500 leading-relaxed max-w-xs mx-auto">
-                            By proceeding, you confirm that the researcher's stated classification matches the details found in their uploaded CV.
-                        </p>
-                    </div>
-                    <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                        <button type="button" onclick="document.getElementById('cv-verify-modal-{{ $researchTitle->id }}').close()" class="px-5 py-2.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 rounded-xl transition-all">Cancel</button>
-                        <button type="submit" class="px-6 py-2.5 text-xs font-bold bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 hover:bg-emerald-600 transition-all">Confirm Validity</button>
-                    </div>
-                </form>
-            </dialog>
-            @endif
 
-            {{-- CV Invalidate Modal --}}
-            @if($researchTitle->project_type && $researchTitle->cv_verification_status !== 'Valid' && $researchTitle->cv_verification_status !== 'Invalid')
-            <dialog id="cv-invalidate-modal-{{ $researchTitle->id }}"
-                class="m-auto rounded-2xl p-0 backdrop:bg-slate-900/60 w-full max-w-md border border-slate-200 shadow-2xl overflow-hidden">
-                <form method="POST" action="{{ route('admin.cv.invalidate', $researchTitle->id) }}">
-                    @csrf
-                    <div class="bg-[#0f172a] px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-                        <h3 class="text-base font-bold text-white flex items-center gap-2">
-                            <i class="fas fa-id-card text-red-400"></i> Mark CV as Invalid
-                        </h3>
-                        <button type="button"
-                            onclick="document.getElementById('cv-invalidate-modal-{{ $researchTitle->id }}').close()"
-                            class="text-slate-400 hover:text-white transition-colors">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="p-6 bg-white space-y-4">
-                        <div class="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                            <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5 flex-shrink-0"></i>
-                            <p class="text-xs text-amber-800 font-medium leading-relaxed">
-                                This will set the submission to <strong>Incomplete</strong> and notify the researcher to correct their project type.
-                            </p>
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Reason <span class="text-red-500">*</span></label>
-                            <textarea name="cv_remarks" rows="4" required
-                                class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 resize-none"
-                                placeholder="e.g., Your CV indicates you are a BS Biology student but you selected 'Funded Research'. Please re-submit under 'Course Requirement' and provide your adviser's name."></textarea>
-                        </div>
-                        <div class="flex justify-end gap-2 pt-2">
-                            <button type="button"
-                                onclick="document.getElementById('cv-invalidate-modal-{{ $researchTitle->id }}').close()"
-                                class="px-4 py-2 text-sm bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition-colors">
-                                Cancel
-                            </button>
-                            <button type="submit"
-                                class="px-4 py-2 text-sm bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors shadow-sm flex items-center gap-2">
-                                <i class="fas fa-paper-plane text-xs"></i> Notify & Mark Invalid
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </dialog>
-            @endif
 
             <div class="lg:col-span-4 flex flex-col gap-4 pb-8">
 
@@ -595,53 +523,6 @@
                     </div>
                 @endif
 
-                {{-- CV Classification Verification Card --}}
-                @if($researchTitle->project_type)
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-                    <div class="px-5 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
-                        <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                            <i class="fas fa-id-card text-violet-400"></i> CV Verification
-                        </span>
-                    </div>
-                    <div class="p-5">
-                        @if($researchTitle->cv_verification_status === 'Valid')
-                            {{-- Verified State --}}
-                            <div class="flex items-center gap-2 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                                <i class="fas fa-check-circle text-emerald-500 text-sm"></i>
-                                <div>
-                                    <p class="text-xs font-bold text-emerald-800">CV Verified</p>
-                                    <p class="text-[10px] text-emerald-600">Classification matches uploaded CV.</p>
-                                </div>
-                            </div>
-                        @elseif($researchTitle->cv_verification_status === 'Invalid')
-                            {{-- Invalid State --}}
-                            <div class="px-4 py-3 bg-red-50 border border-red-200 rounded-xl">
-                                <div class="flex items-center gap-2 mb-1.5">
-                                    <i class="fas fa-times-circle text-red-500 text-sm"></i>
-                                    <p class="text-xs font-bold text-red-800">CV Invalid</p>
-                                </div>
-                                <p class="text-[10px] text-red-700 leading-relaxed whitespace-pre-wrap">{{ $researchTitle->cv_rejection_remarks }}</p>
-                                <p class="text-[9px] text-red-500 mt-2 font-bold">Researcher notified to correct classification.</p>
-                            </div>
-                        @else
-                            {{-- Pending State --}}
-                            <div class="space-y-2">
-                                <p class="text-[10px] text-slate-500 italic mb-3">Open the CV in the viewer, then verify or flag a mismatch.</p>
-                                <button type="button"
-                                    onclick="document.getElementById('cv-verify-modal-{{ $researchTitle->id }}').showModal()"
-                                    class="w-full py-2.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-200">
-                                    <i class="fas fa-check"></i> Verify CV
-                                </button>
-                                <button type="button"
-                                    onclick="document.getElementById('cv-invalidate-modal-{{ $researchTitle->id }}').showModal()"
-                                    class="w-full py-2.5 px-3 bg-white border border-red-200 hover:bg-red-50 text-red-600 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
-                                    <i class="fas fa-times"></i> Mark as Invalid
-                                </button>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-                @endif
 
                 <!-- Tabbed File Picker -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0">

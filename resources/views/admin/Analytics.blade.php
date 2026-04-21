@@ -601,11 +601,11 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i class="fas fa-tags text-slate-400"></i> Category
+                                        <i class="fas fa-tags text-slate-400"></i> Research Type
                                     </label>
                                     <div class="relative">
                                         <select name="category" id="filter_category" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
-                                            <option value="">All Categories</option>
+                                            <option value="">All Types</option>
                                             @foreach($researchCategories as $cat)
                                                 <option value="{{ $cat }}" {{ $selectedCategory == $cat ? 'selected' : '' }}>
                                                     {{ $cat }}

@@ -559,10 +559,12 @@
                 const filteredColors = [];
                 
                 const colorMap = {
-                    'Approved': '#10B981', // Emerald
-                    'Pending': '#F59E0B',  // Amber
-                    'Exempt': '#64748B',   // Slate
-                    'Rejected': '#EF4444'  // Red
+                    'Approved': '#10B981',      // Emerald 500
+                    'Intake / New': '#A855F7',  // Purple 500
+                    'Active Review': '#3B82F6', // Blue 500
+                    'In Revision': '#F59E0B',   // Amber 500
+                    'Exempt': '#64748B',        // Slate 500
+                    'Rejected': '#EF4444'       // Red 500
                 };
 
                 for (const [key, value] of Object.entries(approvalDataMap)) {

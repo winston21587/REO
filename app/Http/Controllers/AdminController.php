@@ -699,11 +699,24 @@ class AdminController extends Controller
         $trendExempt = (clone $baseQuery)->whereIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
         $trendApproved = (clone $baseQuery)->where('Status', 'Approved')->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
         $trendRejected = (clone $baseQuery)->where('Status', 'Disapproved')->count();
-        $trendPending = (clone $baseQuery)->whereNotIn('Status', ['Approved', 'Disapproved', 'Completed', 'Returned', 'Withdraw', 'Withdrawn'])->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+
+        $trendIntake = (clone $baseQuery)
+            ->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy'])
+            ->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+
+        $trendActiveReview = (clone $baseQuery)
+            ->whereIn('Status', ['For Initial Review', 'Under Review', 'Hardcopy Received - For Initial Review'])
+            ->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+
+        $trendInRevision = (clone $baseQuery)
+            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted'])
+            ->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
 
         $approvalTrends = [
             'Approved' => $trendApproved,
-            'Pending' => $trendPending,
+            'Intake / New' => $trendIntake,
+            'Active Review' => $trendActiveReview,
+            'In Revision' => $trendInRevision,
             'Exempt' => $trendExempt,
             'Rejected' => $trendRejected,
         ];

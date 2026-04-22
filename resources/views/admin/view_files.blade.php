@@ -18,31 +18,51 @@
             </div>
         </div>
 
-        @if($researchTitle->revisionLogs->isNotEmpty())
-            <div class="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" x-data="{ open: false }">
+        @if($auditTrail->isNotEmpty())
+            <div class="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" x-data="{ open: false, searchTerm: '' }">
                 <button @click="open = !open" class="w-full px-6 py-4 flex justify-between items-center bg-slate-50/50 hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-3">
-                        <i class="fas fa-history text-blue-500"></i>
-                        <span class="text-xs font-extrabold text-blue-600 uppercase tracking-widest">Revision History Feedback</span>
+                        <i class="fas fa-stream text-slate-500"></i>
+                        <span class="text-xs font-extrabold text-slate-700 uppercase tracking-widest">Complete Audit Trail</span>
+                        <span class="ml-2 px-2 py-0.5 rounded-md bg-slate-200 text-slate-600 text-[10px] font-bold">{{ $auditTrail->count() }} Events</span>
                     </div>
                     <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="open" style="display: none;" x-transition>
-                    <div class="p-6 space-y-6 border-t border-slate-100 bg-white max-h-[400px] overflow-y-auto custom-scrollbar">
-                        @foreach($researchTitle->revisionLogs as $log)
-                            <div class="flex gap-4">
-                                <div class="w-10 h-10 rounded-full {{ $log->user?->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">
-                                    <i class="fas {{ $log->user?->role === 'admin' ? 'fa-user-shield' : 'fa-user' }} text-sm"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-800">{{ $log->user?->first_name ?? 'Unknown' }} {{ $log->user?->last_name }} <span class="text-xs font-normal text-slate-500">({{ ucfirst($log->user?->role ?? 'user') }})</span></p>
-                                    <p class="text-xs text-slate-400 mb-2">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
-                                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                                        <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
+                    <div class="px-6 py-4 border-t border-b border-slate-100 bg-slate-50/80 sticky top-0 z-20">
+                        <div class="relative max-w-full">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-slate-400"></i>
+                            </div>
+                            <input type="text" x-model="searchTerm" placeholder="Search audit logs by keywords, users, or actions..." 
+                                class="w-full bg-white pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#8B0000]/10 focus:border-[#8B0000] transition-all shadow-sm">
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white max-h-[500px] overflow-y-auto custom-scrollbar relative pl-8">
+                        <div class="absolute left-8 top-6 bottom-6 w-0.5 bg-slate-100 pointer-events-none"></div>
+                        <div class="space-y-6 relative z-10 pt-2">
+                            @foreach($auditTrail as $log)
+                                <div class="flex gap-4 group" 
+                                     data-search="{{ strtolower(htmlspecialchars($log->action_label . ' ' . $log->actor_name . ' ' . $log->actor_role . ' ' . $log->message)) }}"
+                                     x-show="searchTerm === '' || $el.dataset.search.includes(searchTerm.toLowerCase())">
+                                    <div class="w-10 h-10 rounded-full {{ $log->color }} {{ $log->border }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 -ml-5 transition-transform hover:scale-110">
+                                        <i class="fas {{ $log->icon }} text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 mt-0.5">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-800">{{ $log->action_label }}</p>
+                                                <p class="text-xs text-slate-500 font-medium">By: <span class="font-bold text-slate-700">{{ $log->actor_name }}</span> <span class="text-slate-400">({{ $log->actor_role }})</span></p>
+                                            </div>
+                                            <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-md">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
+                                        </div>
+                                        <div class="bg-white border rounded-xl p-3.5 shadow-sm {{ str_contains($log->color, 'slate') ? 'border-slate-100' : 'border-slate-200' }}">
+                                            <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
@@ -281,22 +301,7 @@
                         </button>
                         <div x-show="subOpen" x-transition>
                             <div class="p-5 border-t border-slate-100 space-y-4 bg-white">
-                                <div class="flex justify-between items-start gap-3">
-                                    <div class="flex items-center gap-2 text-blue-500 font-bold text-sm flex-shrink-0">
-                                        <i class="fas fa-tag w-4 text-center"></i> Category
-                                    </div>
-                                    <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 text-right text-xs font-bold text-slate-700">
-                                        {{ $researchTitle->Research_Category ?? 'N/A' }}
-                                    </div>
-                                </div>
-                                <div class="flex justify-between items-start gap-3">
-                                    <div class="flex items-center gap-2 text-emerald-500 font-bold text-sm flex-shrink-0">
-                                        <i class="fas fa-flask w-4 text-center"></i> Type
-                                    </div>
-                                    <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 text-right text-xs font-bold text-slate-700">
-                                        {{ $researchTitle->research_type ?? 'N/A' }}
-                                    </div>
-                                </div>
+
                                 <div class="flex justify-between items-center gap-3">
                                     <div class="flex items-center gap-2 text-purple-500 font-bold text-sm flex-shrink-0">
                                         <i class="fas fa-calendar-alt w-4 text-center"></i> Submitted
@@ -406,65 +411,62 @@
                     $totalRemarks = $allFileRemarks->flatten()->count();
                 @endphp
                 @if($totalRemarks > 0)
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
-                        <p
-                            class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <i class="fas fa-comments text-indigo-400"></i>
-                            Reviewer Remarks
-                            <span
-                                class="ml-auto bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded-full">{{ $totalRemarks }}</span>
-                        </p>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0" x-data="{ rrOpen: false }">
+                        <button @click="rrOpen = !rrOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                            <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <i class="fas fa-comments text-indigo-400"></i>
+                                Reviewer Remarks
+                                <span class="bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded-full">{{ $totalRemarks }}</span>
+                            </span>
+                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300" :class="rrOpen ? '' : 'rotate-180'"></i>
+                        </button>
 
-                        @php
-                            // Group remarks by reviewer for a cleaner view
-                            $remarksByReviewer = $allFileRemarks->flatten()->groupBy('reviewer_id');
-                        @endphp
+                        <div x-show="rrOpen" x-collapse x-cloak>
+                            @php
+                                $remarksByReviewer = $allFileRemarks->flatten()->groupBy('reviewer_id');
+                            @endphp
 
-                        <div class="space-y-4 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
-                            @foreach($remarksByReviewer as $reviewerId => $remarks)
-                                @php
-                                    $reviewer = $remarks->first()->reviewer;
-                                    $reviewerName = $reviewer ? ($reviewer->first_name . ' ' . $reviewer->last_name) : 'Unknown Reviewer';
-                                    $initial = $reviewer ? strtoupper(substr($reviewer->first_name, 0, 1)) : '?';
-                                @endphp
-                                <div class="border border-slate-100 rounded-xl overflow-hidden">
-                                    {{-- Reviewer header --}}
-                                    <div class="flex items-center gap-2.5 px-3 py-2.5 bg-indigo-50 border-b border-indigo-100">
-                                        <div
-                                            class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black flex-shrink-0">
-                                            {{ $initial }}
-                                        </div>
-                                        <div class="min-w-0">
-                                            <p class="text-xs font-bold text-indigo-900 truncate">{{ $reviewerName }}</p>
-                                            <p class="text-[9px] text-indigo-500 font-medium">{{ $remarks->count() }} file
-                                                remark(s)</p>
-                                        </div>
-                                    </div>
-                                    {{-- Per-file remarks --}}
-                                    <div class="divide-y divide-slate-50">
-                                        @foreach($remarks as $remark)
-                                            @php
-                                                // Find the file this remark belongs to
-                                                $remarkFile = $researchTitle->files->firstWhere('id', $remark->researcher_file_id)
-                                                    ?? $researchTitle->adminFiles->firstWhere('id', $remark->researcher_file_id);
-                                            @endphp
-                                            <div class="px-3 py-2.5">
-                                                @if($remarkFile)
-                                                    <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1 truncate"
-                                                        title="{{ $remarkFile->filename }}">
-                                                        <i class="fas fa-file-alt text-slate-300 mr-1"></i>
-                                                        {{ $remarkFile->category ?? $remarkFile->filename }}
-                                                    </p>
-                                                @endif
-                                                <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
-                                                    {{ $remark->remarks }}</p>
-                                                <p class="text-[9px] text-slate-400 mt-1">
-                                                    {{ $remark->updated_at->format('M d, Y • h:i A') }}</p>
+                            <div class="p-5 space-y-4 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
+                                @foreach($remarksByReviewer as $reviewerId => $remarks)
+                                    @php
+                                        $reviewer = $remarks->first()->reviewer;
+                                        $reviewerName = $reviewer ? ($reviewer->first_name . ' ' . $reviewer->last_name) : 'Unknown Reviewer';
+                                        $initial = $reviewer ? strtoupper(substr($reviewer->first_name, 0, 1)) : '?';
+                                    @endphp
+                                    <div class="border border-slate-100 rounded-xl overflow-hidden">
+                                        {{-- Reviewer header --}}
+                                        <div class="flex items-center gap-2.5 px-3 py-2.5 bg-indigo-50 border-b border-indigo-100">
+                                            <div class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black flex-shrink-0">
+                                                {{ $initial }}
                                             </div>
-                                        @endforeach
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-bold text-indigo-900 truncate">{{ $reviewerName }}</p>
+                                                <p class="text-[9px] text-indigo-500 font-medium">{{ $remarks->count() }} file remark(s)</p>
+                                            </div>
+                                        </div>
+                                        {{-- Per-file remarks --}}
+                                        <div class="divide-y divide-slate-50">
+                                            @foreach($remarks as $remark)
+                                                @php
+                                                    $remarkFile = $researchTitle->files->firstWhere('id', $remark->researcher_file_id)
+                                                        ?? $researchTitle->adminFiles->firstWhere('id', $remark->researcher_file_id);
+                                                @endphp
+                                                <div class="px-3 py-2.5">
+                                                    @if($remarkFile)
+                                                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1 truncate"
+                                                            title="{{ $remarkFile->filename }}">
+                                                            <i class="fas fa-file-alt text-slate-300 mr-1"></i>
+                                                            {{ $remarkFile->category ?? $remarkFile->filename }}
+                                                        </p>
+                                                    @endif
+                                                    <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{{ $remark->remarks }}</p>
+                                                    <p class="text-[9px] text-slate-400 mt-1">{{ $remark->updated_at->format('M d, Y • h:i A') }}</p>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 @endif
@@ -817,4 +819,110 @@
             </div>{{-- end sidebar --}}
         </div>{{-- end grid --}}
     </div>
+
+    <!-- CV Verification Modal -->
+    <div id="cvVerifyModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300" aria-modal="true">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col" id="cvVerifyModalContent">
+            <!-- Dark Header -->
+            <div class="bg-[#1a0505] p-5 border-b border-white/10 relative overflow-hidden flex-shrink-0">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <i class="fas fa-id-badge text-5xl text-white transform rotate-12"></i>
+                </div>
+                <h3 class="text-white font-bold text-lg relative z-10">Verify CV Classification</h3>
+                <p class="text-slate-400 text-xs mt-1 relative z-10">Ensure CV matches selected project type.</p>
+            </div>
+            
+            <form id="cvVerifyForm" method="POST" action="{{ route('admin.verifyCvIsolated', $researchTitle->id) }}">
+                @csrf
+                <div class="p-5 space-y-4">
+                    <p class="text-xs text-slate-500 italic mb-2">Review the researcher's CV file, then verify or flag a mismatch.</p>
+                    
+                    <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 transition-colors group">
+                        <input type="radio" name="cv_action" value="verify" class="mt-0.5 text-emerald-600 focus:ring-emerald-500" onchange="document.getElementById('cvRemarksBox').classList.add('hidden'); document.getElementById('cv_remarks_isolated').required = false;">
+                        <div>
+                            <span class="text-sm font-bold text-slate-700">Verify CV</span>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Classification accurately reflects the CV.</p>
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-red-50 hover:border-red-200 transition-colors group">
+                        <input type="radio" name="cv_action" value="invalidate" class="mt-0.5 text-red-600 focus:ring-red-500" onchange="document.getElementById('cvRemarksBox').classList.remove('hidden'); document.getElementById('cv_remarks_isolated').required = true;">
+                        <div>
+                            <span class="text-sm font-bold text-slate-700">Flag as Invalid</span>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Mismatch detected between CV and classification.</p>
+                        </div>
+                    </label>
+
+                    <div id="cvRemarksBox" class="hidden mt-3">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Reason for Invalid <span class="text-red-500">*</span></label>
+                        <textarea name="cv_remarks" id="cv_remarks_isolated" rows="3"
+                            class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 resize-none shadow-sm"
+                            placeholder="e.g., CV states you are a BS student..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="px-5 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 flex-shrink-0">
+                    <button type="button" onclick="closeCvVerifyModal()"
+                        class="px-5 py-2 text-slate-600 font-bold text-xs hover:bg-white hover:text-slate-800 rounded-lg transition-all border border-transparent hover:border-slate-200">Cancel</button>
+                    <button type="submit" id="cvVerifySubmitBtn"
+                        class="px-5 py-2 bg-[#8B0000] text-white font-bold text-xs rounded-lg shadow-sm hover:bg-[#6d0000] transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
+                        Submit Decision
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        window.openCvVerifyModal = function() {
+            const modal = document.getElementById('cvVerifyModal');
+            const content = document.getElementById('cvVerifyModalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        window.closeCvVerifyModal = function() {
+            const modal = document.getElementById('cvVerifyModal');
+            const content = document.getElementById('cvVerifyModalContent');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        document.getElementById('cvVerifyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const actionFields = this.querySelectorAll('input[name="cv_action"]:checked');
+            if(actionFields.length === 0) {
+                alert('Please select an action.');
+                return;
+            }
+            
+            const btn = document.getElementById('cvVerifySubmitBtn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '{{ csrf_token() }}' },
+                    body: new FormData(this)
+                });
+                const data = await response.json();
+                if(response.ok && data.success) {
+                    window.location.reload();
+                } else {
+                    alert('An error occurred while updating CV verification.');
+                }
+            } catch(error) {
+                console.error(error);
+                alert('A network error occurred.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+    </script>
 </x-admin_layout>

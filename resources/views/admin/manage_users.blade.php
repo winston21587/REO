@@ -73,6 +73,8 @@
                 <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
             </div>
 
+
+
             <div class="flex gap-2 w-full md:w-auto">
                 <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#7A0000] transition-colors flex items-center gap-2 shadow-lg shadow-red-900/20">
                     <i class="fas fa-filter"></i> Apply
@@ -248,7 +250,7 @@
                         <form action="{{ route('admin.users.create') }}" method="POST" class="space-y-5" x-data="{ affiliation: 'internal' }">
                             @csrf
                             
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
                                     <div class="relative">
@@ -257,11 +259,19 @@
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Middle Name <span class="text-slate-400 font-normal normal-case">(Optional)</span></label>
                                     <div class="relative">
                                         <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="last_name" required placeholder="Doe" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
+                                        <input type="text" name="middle_name" placeholder="Doe" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
+                                <div class="relative">
+                                    <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input type="text" name="last_name" required placeholder="Smith" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
                                 </div>
                             </div>
 
@@ -382,7 +392,7 @@
                                 <span x-text="selectedUser.first_name.charAt(0) + selectedUser.last_name.charAt(0)"></span>
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-slate-900" x-text="selectedUser.first_name + ' ' + selectedUser.last_name"></h4>
+                                <h4 class="text-lg font-bold text-slate-900" x-text="selectedUser.first_name + (selectedUser.middle_name ? ' ' + selectedUser.middle_name : '') + ' ' + selectedUser.last_name"></h4>
                                 <p class="text-sm text-slate-500" x-text="selectedUser.email"></p>
                             </div>
                         </div>
@@ -504,11 +514,106 @@
                         </div>
 
                         <!-- Footer -->
-                        <div class="pt-4 border-t border-slate-50 flex justify-end">
+                        <div class="pt-4 border-t border-slate-50 flex justify-end gap-3">
+                            <button @click="showViewModal = false; showEditModal = true" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+                                <i class="fas fa-edit mr-1.5"></i> Edit Profile
+                            </button>
                             <button @click="showViewModal = false" class="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
                                 Close Details
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Modal -->
+        <div x-show="showEditModal" 
+             class="fixed inset-0 z-50 overflow-y-auto" 
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showEditModal = false"></div>
+
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    
+                    <div class="bg-white px-6 pt-6 pb-4 border-b border-slate-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                                    <i class="fas fa-user-edit text-blue-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-slate-900">Edit Researcher Profile</h3>
+                                    <p class="text-xs text-slate-500">Update researcher details.</p>
+                                </div>
+                            </div>
+                            <button @click="showEditModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                <i class="fas fa-times text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-6" x-if="selectedUser">
+                        <form :action="'/admin/users/' + selectedUser.id + '/update'" method="POST" class="space-y-5">
+                            @csrf
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
+                                    <div class="relative">
+                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input type="text" name="first_name" :value="selectedUser.first_name" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Middle Name</label>
+                                    <div class="relative">
+                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input type="text" name="middle_name" :value="selectedUser.middle_name" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
+                                    <div class="relative">
+                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input type="text" name="last_name" :value="selectedUser.last_name" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
+                                <div class="relative">
+                                    <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input type="email" name="email" :value="selectedUser.email" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-50 mt-6">
+                                <button type="button" @click="showEditModal = false" class="px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-800 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-900/20 hover:shadow-blue-900/30 hover:-translate-y-0.5 transition-all">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

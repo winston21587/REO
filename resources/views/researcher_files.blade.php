@@ -186,6 +186,123 @@
             </div>
         @endif
 
+        {{-- Stage-Specific Admin Remarks Banner --}}
+        @if($stageRemark)
+            @php
+                $isRevisionStage = $researchTitle->Status === 'Waiting for Revision';
+                $isHardcopyStage = in_array($researchTitle->Status, ['Incomplete Hardcopy', 'Incomplete - Awaiting Hardcopy']);
+                $missingDocs = is_array($stageRemark->missing_requirements) ? $stageRemark->missing_requirements : [];
+                
+                if ($isRevisionStage) {
+                    $bannerColor = 'bg-indigo-50 border-indigo-200';
+                    $iconBg = 'bg-indigo-100 text-indigo-600';
+                    $iconClass = 'fa-file-alt';
+                    $titleColor = 'text-indigo-900';
+                    $badgeColor = 'bg-indigo-100 text-indigo-700';
+                    $dividerColor = 'border-indigo-100';
+                    $remarkLabel = 'Revision Remarks from Panel';
+                    $remarkDesc = 'The following deliberation notes were provided by the review panel. Please address all issues in your revision:';
+                    $missingBg = 'bg-white border-indigo-100';
+                } elseif ($isHardcopyStage) {
+                    $bannerColor = 'bg-amber-50 border-amber-200';
+                    $iconBg = 'bg-amber-100 text-amber-600';
+                    $iconClass = 'fa-file-invoice';
+                    $titleColor = 'text-amber-900';
+                    $badgeColor = 'bg-amber-100 text-amber-700';
+                    $dividerColor = 'border-amber-100';
+                    $remarkLabel = 'Hardcopy Submission Remarks';
+                    $remarkDesc = 'The admin has flagged the following issues with your hardcopy submission:';
+                    $missingBg = 'bg-white border-amber-100';
+                } else {
+                    $bannerColor = 'bg-amber-50 border-amber-200';
+                    $iconBg = 'bg-amber-100 text-amber-600';
+                    $iconClass = 'fa-exclamation-triangle';
+                    $titleColor = 'text-amber-900';
+                    $badgeColor = 'bg-amber-100 text-amber-700';
+                    $dividerColor = 'border-amber-100';
+                    $remarkLabel = 'Admin Remarks — Action Required';
+                    $remarkDesc = 'The admin has reviewed your submission and provided the following remarks. Please review and comply:';
+                    $missingBg = 'bg-white border-amber-100';
+                }
+            @endphp
+            <div class="mb-8 p-6 {{ $bannerColor }} border rounded-2xl flex items-start gap-4 shadow-sm animate-[fadeInUp_0.5s_ease-out]">
+                <div class="w-10 h-10 rounded-full {{ $iconBg }} flex items-center justify-center flex-shrink-0">
+                    <i class="fas {{ $iconClass }} text-lg"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                        <h4 class="text-sm font-extrabold {{ $titleColor }} uppercase tracking-wider flex items-center gap-2">
+                            <span>{{ $remarkLabel }}</span>
+                        </h4>
+                        <span class="text-[10px] font-bold {{ $badgeColor }} px-2.5 py-1 rounded-full">
+                            <i class="far fa-clock mr-1"></i>{{ $stageRemark->created_at->timezone('Asia/Manila')->format('M d, Y \a\t h:i A') }}
+                        </span>
+                    </div>
+                    <p class="text-xs {{ $titleColor }} opacity-75 mb-3">{{ $remarkDesc }}</p>
+
+                    @if($stageRemark->message)
+                        <div class="bg-white rounded-xl border {{ $dividerColor }} p-4 shadow-sm mb-3">
+                            @if($isRevisionStage)
+                                {{-- Parse the deliberation format for revision remarks --}}
+                                @php
+                                    $rawMsg = $stageRemark->message;
+                                    $sections = [
+                                        'Scientific Soundness' => ['key' => 'Scientific Soundness: ', 'next' => 'Ethical Issues: ', 'color' => 'text-indigo-600'],
+                                        'Ethical Issues'       => ['key' => 'Ethical Issues: ', 'next' => 'ICF Issues: ', 'color' => 'text-amber-600'],
+                                        'ICF Issues'           => ['key' => 'ICF Issues: ', 'next' => 'Summary of Issues & Resolutions: ', 'color' => 'text-emerald-600'],
+                                        'Summary'              => ['key' => 'Summary of Issues & Resolutions: ', 'next' => '=== FINAL DECISION ===', 'color' => 'text-rose-600'],
+                                    ];
+                                    $parsed = [];
+                                    foreach ($sections as $label => $sec) {
+                                        $start = strpos($rawMsg, $sec['key']);
+                                        $end   = strpos($rawMsg, $sec['next']);
+                                        if ($start !== false && $end !== false) {
+                                            $val = trim(substr($rawMsg, $start + strlen($sec['key']), $end - ($start + strlen($sec['key']))));
+                                            if ($val && $val !== 'N/A') {
+                                                $parsed[$label] = ['text' => $val, 'color' => $sec['color']];
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                @if(!empty($parsed))
+                                    <div class="space-y-3">
+                                        @foreach($parsed as $label => $item)
+                                            <div>
+                                                <p class="text-[10px] font-extrabold {{ $item['color'] }} uppercase tracking-widest mb-1">{{ $label }}</p>
+                                                <p class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed border-l-2 border-slate-200 pl-3">{{ $item['text'] }}</p>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <p class="text-sm text-slate-600 whitespace-pre-wrap">{{ $stageRemark->message }}</p>
+                                @endif
+                            @else
+                                <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ $stageRemark->message }}</p>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if(!empty($missingDocs))
+                        <div class="rounded-xl border {{ $missingBg }} overflow-hidden">
+                            <div class="px-4 py-2 border-b {{ $dividerColor }} bg-white/50">
+                                <p class="text-[10px] font-extrabold {{ $titleColor }} uppercase tracking-widest flex items-center gap-1.5">
+                                    <i class="fas fa-list-check"></i> Missing Requirements / Actions Needed
+                                </p>
+                            </div>
+                            <ul class="divide-y {{ $dividerColor }}">
+                                @foreach($missingDocs as $doc)
+                                    <li class="flex items-center gap-3 px-4 py-2.5">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></div>
+                                        <span class="text-sm text-slate-700 font-medium">{{ $doc }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
+
         @php
             $missingDocs = [];
             if (in_array($researchTitle->Status ?? '', ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {

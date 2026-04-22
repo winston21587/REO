@@ -32,12 +32,12 @@ class Research_title_Controller extends Controller
         // 1. Base Validation
         $rules = [
             'Study_Protocol_title' => 'required|string|max:255',
-            'Research_Category'    => 'required|string|max:255',
-            'research_type'        => 'required|string|max:255',
-            'other_category'       => 'nullable|string|max:255',
-            'project_type'         => 'required|in:Funded Research,Course Requirement',
-            'funding_type'         => 'nullable|string|max:255',
-            'course_type'          => 'nullable|string|max:255',
+            'Research_Category' => 'required|string|max:255',
+            'research_type' => 'required|string|max:255',
+            'other_category' => 'nullable|string|max:255',
+            'project_type' => 'required|in:Funded Research,Course Requirement',
+            'funding_type' => 'nullable|string|max:255',
+            'course_type' => 'nullable|string|max:255',
         ];
 
         // Adviser is mandatory only for Course Requirement
@@ -108,16 +108,16 @@ class Research_title_Controller extends Controller
 
         // ✅ Create research title
         $research = Research_title::create([
-            'Study_Protocol_title'        => $validated['Study_Protocol_title'],
-            'Research_Category'           => $finalCategory,
-            'research_type'               => $validated['research_type'],
-            'category_fee_at_submission'  => $fee,
-            'Created_by'                  => $user->first_name . ' ' . $user->last_name,
-            'researcher_id'               => $user->researcher->id,
-            'project_type'                => $validated['project_type'],
-            'funding_type'                => $validated['funding_type'] ?? null,
-            'course_type'                 => $validated['course_type'] ?? null,
-            'Adviser'                     => $validated['Adviser'] ?? null,
+            'Study_Protocol_title' => $validated['Study_Protocol_title'],
+            'Research_Category' => $finalCategory,
+            'research_type' => $validated['research_type'],
+            'category_fee_at_submission' => $fee,
+            'Created_by' => $user->first_name . ' ' . $user->last_name,
+            'researcher_id' => $user->researcher->id,
+            'project_type' => $validated['project_type'],
+            'funding_type' => $validated['funding_type'] ?? null,
+            'course_type' => $validated['course_type'] ?? null,
+            'Adviser' => $validated['Adviser'] ?? null,
         ]);
 
         // Log OR upload (OR Number might not be submitted if it's handled as a file requirement instead)
@@ -187,9 +187,34 @@ class Research_title_Controller extends Controller
     // Show all files for a specific research title
     public function manageFiles($id)
     {
-        $researchTitle = Research_title::with(['files', 'adminFiles', 'titleLogs.user'])->findOrFail($id);
+        $researchTitle = Research_title::with(['files.reviewerRemarks.reviewer', 'adminFiles', 'titleLogs.user'])->findOrFail($id);
         $requirements = DocumentRequirement::all();
-        return view('researcher_files', compact('researchTitle', 'requirements'));
+
+        // Fetch stage-specific general remarks to display to the researcher
+        $stageRemark = null;
+        $status = $researchTitle->Status;
+
+        if (in_array($status, ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
+            // Initial Intake stage — show latest admin_deficiency remark
+            $stageRemark = SubmissionFeedback::where('research_title_id', $id)
+                ->where('type', 'admin_deficiency')
+                ->latest()
+                ->first();
+        } elseif (in_array($status, ['Incomplete Hardcopy', 'Incomplete - Awaiting Hardcopy'])) {
+            // Hardcopy stage — show latest hardcopy_deficiency remark
+            $stageRemark = SubmissionFeedback::where('research_title_id', $id)
+                ->where('type', 'hardcopy_deficiency')
+                ->latest()
+                ->first();
+        } elseif ($status === 'Waiting for Revision') {
+            // Revision stage — show latest admin_deliberation notes
+            $stageRemark = SubmissionFeedback::where('research_title_id', $id)
+                ->where('type', 'admin_deliberation')
+                ->latest()
+                ->first();
+        }
+
+        return view('researcher_files', compact('researchTitle', 'requirements', 'stageRemark'));
     }
 
     public function updateFile(Request $request, $id)

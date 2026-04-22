@@ -16,7 +16,6 @@ class Researcher extends Model
         'program',
         'institute',
         'external_user',
-        'contact',
         'expertise',
         'training_completed',
     ];

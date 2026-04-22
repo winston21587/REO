@@ -141,25 +141,26 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-slate-700 uppercase">Email Address</label>
+                    <div class="w-full">
+                        <div class="w-full space-y-1">
+                            <label class="text-xs font-bold text-slate-700 uppercase block">
+                                Email Address
+                            </label>
+
                             <input type="email" name="email" id="emailField" value="{{ old('email') }}" required
-                                class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm"
+                                class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm text-left"
                                 placeholder="id@wmsu.edu.ph">
-                            <p id="emailHint" class="text-[10px] text-[#8B0000] hidden mt-1">* Must be a valid WMSU
-                                email (@wmsu.edu.ph)</p>
-                            @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-slate-700 uppercase">Contact No.</label>
-                            <input type="text" name="contact" value="{{ old('contact') }}" required maxlength="11"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)"
-                                class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none text-sm"
-                                placeholder="+63 912 345 6789">
-                            @error('contact') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+
+                            <p id="emailHint" class="text-[10px] text-[#8B0000] hidden mt-1 text-center">
+                                * Must be a valid WMSU email (@wmsu.edu.ph)
+                            </p>
+
+                            @error('email')
+                                <p class="text-xs text-red-500 mt-1 text-left">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
+
 
                     <div id="wmsuFields"
                         class="space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-200 transition-all duration-300"

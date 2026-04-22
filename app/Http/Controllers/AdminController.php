@@ -1402,6 +1402,19 @@ class AdminController extends Controller
                     }
                 }
 
+                // Auto-verify OR if admin checked the verify box
+                if ($request->has('verify_or') && !$submission->is_or_verified) {
+                    $submission->is_or_verified = true;
+                    $submission->save();
+
+                    TitleLog::create([
+                        'research_title_id' => $submission->id,
+                        'user_id' => auth()->id(),
+                        'action' => 'Official Receipt Verified',
+                        'description' => "Admin verified the Official Receipt file during Initial Intake (Marked as Incomplete).",
+                    ]);
+                }
+
                 // Handle CV Verification action (can be done alongside Incomplete)
                 $this->handleCvAction($request, $submission);
 

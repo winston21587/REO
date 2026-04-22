@@ -257,12 +257,12 @@
         <div class="flex items-center gap-2">
             <!-- AI Suggest Reviewer Button - Moved to header -->
             <button type="button" 
-                    id="ai-suggest-reviewer-btn"
-                    onclick="suggestReviewerWithAI()"
-                    class="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg text-xs font-bold hover:from-purple-600 hover:to-indigo-700 transition-all shadow-md flex items-center gap-1.5">
+                id="ai-suggest-reviewer-btn"
+                onclick="suggestReviewerWithAI()"
+                class="px-3 py-1.5 bg-[#8B0000] text-white rounded-lg text-xs font-bold hover:bg-red-900 transition-all shadow-md flex items-center gap-1.5">
                 <i class="fas fa-magic text-xs"></i> AI Suggest
             </button>
-            <button type="button" @click="open = false" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0">
+            <button type="button" @click="open = false" class="text-slate-400 hover:text-white bg-slate-50 hover:bg-[#8B0000] w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0">
                 <i class="fas fa-times text-sm"></i>
             </button>
         </div>
@@ -592,34 +592,34 @@
         
         // Create the result card HTML with more detailed expertise display
         const resultHTML = `
-            <div id="ai-suggestion-result" class="fixed top-24 left-1/2 -translate-x-1/2 z-[10000] w-[420px] bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-600 rounded-xl shadow-2xl p-4 animate-slide-down" style="animation: slideDown 0.3s ease-out;">
-                <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                            <i class="fas fa-robot text-white text-sm"></i>
-                        </div>
+                <div id="ai-suggestion-result" class="fixed top-24 left-1/2 -translate-x-1/2 z-[10000] w-[420px] bg-white border-l-4 border-[#8B0000] rounded-xl shadow-2xl p-4 animate-slide-down" style="animation: slideDown 0.3s ease-out;">
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-[#8B0000] flex items-center justify-center shadow-lg">
+                        <i class="fas fa-robot text-white text-sm"></i>
                     </div>
-                    <div class="flex-1">
-                        <div class="flex items-center justify-between mb-1">
-                            <h4 class="font-bold text-purple-900 text-sm">🤖 AI Suggested Reviewer</h4>
-                            <button onclick="document.getElementById('ai-suggestion-result').remove()" class="text-purple-400 hover:text-purple-600 transition-colors">
-                                <i class="fas fa-times text-xs"></i>
-                            </button>
-                        </div>
-                        <p class="font-bold text-slate-800 text-base">${escapeHtml(reviewerName)}</p>
-                        <div class="mt-2 p-2 bg-white/50 rounded-lg">
-                            <p class="text-[10px] text-purple-600 font-bold uppercase tracking-wider mb-1">🎯 Matching Expertise</p>
-                            <p class="text-xs text-slate-700 font-medium">${escapeHtml(reviewerExpertise)}</p>
-                        </div>
-                        <div class="mt-2 pt-2 border-t border-purple-100">
-                            <p class="text-[11px] text-amber-600 flex items-center gap-1">
-                                <i class="fas fa-hand-pointer"></i>
-                                👆 Please manually select this reviewer
-                            </p>
-                        </div>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <h4 class="font-bold text-[#8B0000] text-sm">AI Suggested Reviewer</h4>
+                        <button onclick="document.getElementById('ai-suggestion-result').remove()" class="text-gray-400 hover:text-[#8B0000] transition-colors">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                    <p class="font-bold text-slate-800 text-base">${escapeHtml(reviewerName)}</p>
+                    <div class="mt-2 p-2 bg-red-50 rounded-lg border border-red-100">
+                        <p class="text-[10px] text-[#8B0000] font-bold uppercase tracking-wider mb-1">Matching Expertise</p>
+                        <p class="text-xs text-slate-700 font-medium">${escapeHtml(reviewerExpertise)}</p>
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-red-100">
+                        <p class="text-[11px] text-[#8B0000] flex items-center gap-1">
+                            <i class="fas fa-hand-pointer text-xs"></i>
+                            Please manually select this reviewer
+                        </p>
                     </div>
                 </div>
             </div>
+        </div>
         `;
         
         // Insert the result card into the body

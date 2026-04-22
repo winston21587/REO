@@ -205,6 +205,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/super-admin', [AdminController::class, 'superAdminAnalytics'])->name('super_admin.analytics');
         Route::get('/super-admin/analytics/details', [AdminController::class, 'analyticsDetails'])->name('super_admin.analytics.details');
         Route::get('/super-admin/analytics/export', [AdminController::class, 'exportCsv'])->name('super_admin.analytics.export');
+        Route::get('/super-admin/analytics/export-word', [AdminController::class, 'exportWord'])->name('super_admin.analytics.export_word');
 
 
         // Manage Admins
@@ -269,6 +270,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');
         Route::get('/admin/analytics/details', [AdminController::class, 'analyticsDetails'])->name('admin.analytics.details');
         Route::get('/admin/analytics/export', [AdminController::class, 'exportCsv'])->name('admin.analytics.export');
+        Route::get('/admin/analytics/export-word', [AdminController::class, 'exportWord'])->name('admin.analytics.export_word');
 
         Route::get('/admin/appointment', function () {
             return view('admin.appointment');

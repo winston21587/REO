@@ -36,6 +36,12 @@
                         <i class="fas fa-calendar-alt w-5 text-center text-purple-400"></i>
                         <span class="font-medium truncate">{{ $title->created_at->format('M d, Y') }}</span>
                     </div>
+                    @if(auth()->user()->reviewer?->show_researcher_identity)
+                    <div class="flex items-center text-slate-500">
+                        <i class="fas fa-user-graduate w-5 text-center text-slate-400"></i>
+                        <span class="font-medium truncate" title="{{ $title->researcher->user->first_name ?? '' }} {{ $title->researcher->user->last_name ?? '' }} ({{ $title->researcher->user->email ?? '' }})">{{ $title->researcher->user->first_name ?? '' }} {{ $title->researcher->user->last_name ?? '' }}</span>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Action Button (Pushed to bottom) -->

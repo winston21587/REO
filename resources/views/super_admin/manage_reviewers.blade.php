@@ -10,13 +10,15 @@
         confirmFormAction: '',
         confirmMethod: 'POST',
         confirmIsDelete: false,
+        confirmFormId: null,
 
-        triggerConfirm(title, message, buttonText, action, isDelete = false) {
+        triggerConfirm(title, message, buttonText, action, isDelete = false, formId = null) {
             this.confirmTitle = title;
             this.confirmMessage = message;
             this.confirmButtonText = buttonText;
             this.confirmFormAction = action;
             this.confirmIsDelete = isDelete;
+            this.confirmFormId = formId;
             this.showConfirmModal = true;
         }
     }" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
@@ -72,15 +74,7 @@
                 <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
             </div>
 
-            <!-- Account Status Filter -->
-            <div class="relative w-full md:w-40">
-                <select name="account_status" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
-                    <option value="">All Statuses</option>
-                    <option value="active" {{ request('account_status') == 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="deactivated" {{ request('account_status') == 'deactivated' ? 'selected' : '' }}>Deactivated</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-            </div>
+
 
             <div class="flex gap-2 w-full md:w-auto">
                 <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#7A0000] transition-colors flex items-center gap-2 shadow-lg shadow-red-900/20">
@@ -89,7 +83,39 @@
             </div>
         </form>
 
-        <!-- Users List -->
+
+        <div class="flex items-center justify-between bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 mt-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                    <i class="fas fa-eye text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900">Researcher Identity Visibility</h3>
+                    <p class="text-[11px] text-slate-500">Toggle whether all reviewers can see researcher names/emails.</p>
+                </div>
+            </div>
+            <form id="globalVisibilityForm" action="{{ route('super_admin.reviewers.global_visibility') }}" method="POST"
+                @submit.prevent="triggerConfirm(
+                    'Update Global Visibility?', 
+                    'This action will apply the chosen visibility setting to ALL reviewers in the system. Are you sure you want to proceed?', 
+                    'Yes, Apply to All', 
+                    $el.action,
+                    false,
+                    'globalVisibilityForm'
+                )">
+                @csrf
+                <div class="flex items-center gap-3">
+                    <select name="show_researcher_identity" class="pl-4 pr-10 py-2 bg-white border border-emerald-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500 transition-all outline-none appearance-none cursor-pointer text-slate-700">
+                        <option value="0" @selected(!$globalVisibility)>Hide Identities (Blind)</option>
+                        <option value="1" @selected($globalVisibility)>Show Identities (Open)</option>
+                    </select>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm">
+                        Apply Globally
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <div class="bg-white rounded-2xl shadow-xl border border-slate-100">
             <div class="overflow-x-auto md:overflow-visible">
                 <table class="w-full text-left border-collapse">
@@ -638,7 +664,7 @@
                     </div>
 
                     <div class="px-6 py-6" x-if="selectedUser">
-                        <form :action="`/super-admin/reviewers/${selectedUser.id}/update`" method="POST" class="space-y-5">
+                        <form :action="'/super-admin/reviewers/' + selectedUser.id + '/update'" method="POST" class="space-y-5">
                             @csrf
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -674,6 +700,20 @@
                                     <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                                     <input type="email" name="email" :value="selectedUser.email" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
                                 </div>
+                            </div>
+
+                            <div class="space-y-1.5 pt-2">
+                                <label class="flex items-center gap-3 cursor-pointer p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors">
+                                    <div class="relative flex items-center">
+                                        <input type="checkbox" name="show_researcher_identity" value="1" class="sr-only peer" :checked="selectedUser.reviewer?.show_researcher_identity">
+                                        <div class="block bg-slate-300 w-10 h-6 rounded-full peer-checked:bg-[#8B0000] transition-colors"></div>
+                                        <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-slate-800">Show Researcher Identity</span>
+                                        <span class="text-xs text-slate-500 font-normal">Allow this reviewer to see the researcher's name and email during evaluations.</span>
+                                    </div>
+                                </label>
                             </div>
 
                             <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-50 mt-6">
@@ -725,17 +765,25 @@
                         <button type="button" @click="showConfirmModal = false" class="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl transition-all duration-200">
                             Cancel
                         </button>
-                        <form :action="confirmFormAction" method="POST" class="w-full sm:w-auto">
-                            @csrf
-                            <template x-if="confirmIsDelete">
-                                @method('DELETE')
-                            </template>
-                            <button type="submit" 
-                                    class="w-full px-8 py-2.5 text-sm font-bold text-white rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-                                    :class="confirmIsDelete ? 'bg-red-600 hover:bg-red-700 shadow-red-900/20' : 'bg-[#8B0000] hover:bg-[#7A0000] shadow-red-900/20'"
+                        <div class="w-full sm:w-auto">
+                            <form :action="confirmFormAction" method="POST" x-show="!confirmFormId">
+                                @csrf
+                                <template x-if="confirmIsDelete">
+                                    @method('DELETE')
+                                </template>
+                                <button type="submit" 
+                                        class="w-full px-8 py-2.5 text-sm font-bold text-white rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+                                        :class="confirmIsDelete ? 'bg-red-600 hover:bg-red-700 shadow-red-900/20' : 'bg-[#8B0000] hover:bg-[#7A0000] shadow-red-900/20'"
+                                        x-text="confirmButtonText">
+                                </button>
+                            </form>
+                            <button x-show="confirmFormId" 
+                                    @click="document.getElementById(confirmFormId).submit()"
+                                    type="button"
+                                    class="w-full px-8 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
                                     x-text="confirmButtonText">
                             </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>

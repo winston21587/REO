@@ -186,7 +186,9 @@ class SuperAdminController extends Controller
         $users = $query->latest()->paginate(10)->withQueryString();
         $colleges = College::with('departments.programs')->get();
 
-        return view('super_admin.manage_reviewers', compact('users', 'colleges'));
+        $globalVisibility = \App\Models\Reviewer::where('show_researcher_identity', true)->exists();
+
+        return view('super_admin.manage_reviewers', compact('users', 'colleges', 'globalVisibility'));
     }
 
     public function createReviewer(Request $request)
@@ -332,6 +334,7 @@ class SuperAdminController extends Controller
             'middle_name' => 'nullable|string|max:255',
             'last_name'   => 'required|string|max:255',
             'email'       => 'required|email|unique:users,email,' . $user->id,
+            'show_researcher_identity' => 'nullable|boolean',
         ]);
 
         $user->update([
@@ -341,6 +344,21 @@ class SuperAdminController extends Controller
             'email'       => $request->email,
         ]);
 
+        if ($user->reviewer) {
+            $user->reviewer->update([
+                'show_researcher_identity' => $request->has('show_researcher_identity'),
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Reviewer profile updated successfully.');
+    }
+
+    public function toggleGlobalReviewerVisibility(Request $request)
+    {
+        $show = $request->input('show_researcher_identity') == '1';
+        
+        \App\Models\Reviewer::query()->update(['show_researcher_identity' => $show]);
+
+        return redirect()->back()->with('success', 'Global reviewer visibility updated successfully.');
     }
 }

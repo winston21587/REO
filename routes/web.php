@@ -217,6 +217,7 @@ Route::middleware(['auth'])->group(function () {
         // Manage Reviewers
         Route::get('/super-admin/reviewers', [\App\Http\Controllers\SuperAdminController::class, 'manageReviewers'])->name('super_admin.manage_reviewers');
         Route::post('/super-admin/reviewers', [\App\Http\Controllers\SuperAdminController::class, 'createReviewer'])->name('super_admin.reviewers.create');
+        Route::post('/super-admin/reviewers/global-visibility', [\App\Http\Controllers\SuperAdminController::class, 'toggleGlobalReviewerVisibility'])->name('super_admin.reviewers.global_visibility');
         Route::post('/super-admin/reviewers/{user}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleReviewerStatus'])->name('super_admin.reviewers.toggle_status');
         Route::delete('/super-admin/reviewers/{user}', [\App\Http\Controllers\SuperAdminController::class, 'deleteReviewer'])->name('super_admin.reviewers.delete');
         Route::post('/super-admin/reviewers/{user}/update', [\App\Http\Controllers\SuperAdminController::class, 'updateReviewerProfile'])->name('super_admin.reviewers.update');
@@ -274,6 +275,7 @@ Route::middleware(['auth'])->group(function () {
         })->name('admin.appointment');
         Route::get('/admin/users', [AdminController::class, 'manageUsers'])->name('admin.manage_users');
         Route::post('/admin/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
+        Route::post('/admin/users/{id}/update', [AdminController::class, 'updateUserProfile'])->name('admin.users.update');
         Route::post('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
         Route::delete('/admin/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
 

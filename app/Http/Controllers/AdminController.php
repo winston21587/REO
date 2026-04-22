@@ -35,6 +35,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'affiliation' => 'required|in:internal,external',
@@ -44,6 +45,7 @@ class AdminController extends Controller
 
         $user = User::create([
             'first_name' => $request->first_name,
+            'middle_name' => $request->middle_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
             'role' => 'researcher',
@@ -125,7 +127,18 @@ class AdminController extends Controller
             });
         }
 
-        $users = $query->paginate(10);
+        // Filter by Account Status (Active/Deactivated/Pending)
+        if ($request->has('account_status') && $request->account_status != '') {
+            if ($request->account_status === 'active') {
+                $query->where('is_verified', true);
+            } elseif ($request->account_status === 'deactivated') {
+                $query->where('is_verified', false)->whereNotNull('email_verified_at');
+            } elseif ($request->account_status === 'pending') {
+                $query->where('is_verified', false)->whereNull('email_verified_at');
+            }
+        }
+
+        $users = $query->paginate(10)->withQueryString();
 
 
         // Full list of WMSU Colleges
@@ -2947,5 +2960,27 @@ class AdminController extends Controller
         return back()->with('success', 'Researcher has been notified to submit their Official Receipt.');
     }
 
+    public function updateResearcherProfile(Request $request, User $user)
+    {
+        // Security check
+        if ($user->role !== 'researcher') {
+            return redirect()->back()->with('error', 'Invalid user.');
+        }
 
+        $request->validate([
+            'first_name'  => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name'   => 'required|string|max:255',
+            'email'       => 'required|email|unique:users,email,' . $user->id,
+        ]);
+
+        $user->update([
+            'first_name'  => $request->first_name,
+            'middle_name' => $request->middle_name,
+            'last_name'   => $request->last_name,
+            'email'       => $request->email,
+        ]);
+
+        return redirect()->back()->with('success', 'Researcher profile updated successfully.');
+    }
 }

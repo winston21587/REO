@@ -695,6 +695,19 @@ class AdminController extends Controller
         $activeCount = ($statusCounts['For Initial Review'] ?? 0) + ($statusCounts['Under Review'] ?? 0);
         $pendingCount = $statusCounts['Pending'] ?? 0;
 
+        // Extract detailed Approval Status Trends dynamically for the pie chart
+        $trendExempt = (clone $baseQuery)->whereIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+        $trendApproved = (clone $baseQuery)->where('Status', 'Approved')->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+        $trendRejected = (clone $baseQuery)->where('Status', 'Disapproved')->count();
+        $trendPending = (clone $baseQuery)->whereNotIn('Status', ['Approved', 'Disapproved', 'Completed', 'Returned', 'Withdraw', 'Withdrawn'])->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+
+        $approvalTrends = [
+            'Approved' => $trendApproved,
+            'Pending' => $trendPending,
+            'Exempt' => $trendExempt,
+            'Rejected' => $trendRejected,
+        ];
+
         // Calculate Completion Rate (Example: Done / Total)
         $completionRate = $totalSubmissions > 0 ? round(($doneCount / $totalSubmissions) * 100) : 0;
 
@@ -796,7 +809,8 @@ class AdminController extends Controller
             'researchCategories',
             'colleges',
             'stuckProposals',
-            'overviewTitle'
+            'overviewTitle',
+            'approvalTrends'
         ));
     }
 

@@ -144,7 +144,7 @@
                 <div class="relative z-10 flex flex-col flex-1 w-full h-full">
                     <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1">Submission Trends</h2>
                     <div class="flex items-end gap-4 mb-8">
-                        <p class="text-3xl font-extrabold text-slate-900">{{ ($startYear === 'all' && $endYear === 'all') ? 'Yearly Overview' : (($startMonth === $endMonth && $startMonth !== 'all') ? 'Daily Overview' : 'Monthly Overview') }}</p>
+                        <p class="text-3xl font-extrabold text-slate-900">{{ $overviewTitle }}</p>
                         <p class="text-sm text-slate-500 font-medium mb-1.5">
                             @if($startMonth === 'all' && $endMonth === 'all' && $startYear === 'all' && $endYear === 'all')
                                 All Years

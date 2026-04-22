@@ -151,35 +151,91 @@ class AdminController extends Controller
 
             // --- Reuse Filter Logic ---
             $startYear = $request->input('start_year', 'all');
-        $endYear = $request->input('end_year', 'all');
-        $startMonth = $request->input('start_month', 1);
-        if ($startMonth === 'all')
-            $startMonth = 1;
-        $endMonth = $request->input('end_month', 12);
-        if ($endMonth === 'all')
-            $endMonth = 12;
+            $endYear = $request->input('end_year', 'all');
+            $startMonth = $request->input('start_month', 1);
+            if ($startMonth === 'all')
+                $startMonth = 1;
+            $endMonth = $request->input('end_month', 12);
+            if ($endMonth === 'all')
+                $endMonth = 12;
 
-        $exactStart = $request->input('exact_start');
-        $exactEnd = $request->input('exact_end');
-        $hasExactDates = !empty($exactStart) && !empty($exactEnd);
+            $exactStart = $request->input('exact_start');
+            $exactEnd = $request->input('exact_end');
+            $hasExactDates = !empty($exactStart) && !empty($exactEnd);
 
-        $selectedStatus = $request->input('status', null);
-        $selectedReviewType = $request->input('review_type', null);
-        $selectedThesisType = $request->input('thesis_type', null);
-        $selectedCategory = $request->input('category', null);
-        $selectedAffiliation = $request->input('affiliation', null);
-        $selectedCollege = $request->input('college', null);
+            $selectedStatus = $request->input('status', null);
+            $selectedReviewType = $request->input('review_type', null);
+            $selectedThesisType = $request->input('thesis_type', null);
+            $selectedCategory = $request->input('category', null);
+            $selectedAffiliation = $request->input('affiliation', null);
+            $selectedCollege = $request->input('college', null);
 
-        $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
-            ->distinct()
-            ->orderBy('year', 'desc')
-            ->pluck('year');
+            $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
+                ->distinct()
+                ->orderBy('year', 'desc')
+                ->pluck('year');
 
-        if ($type === 'researchers') {
-            $query = User::where('role', 'researcher')->with('researcher');
-            // Apply researchers-specific filter logic if needed (matching manageUsers)
+            if ($type === 'researchers') {
+                $query = User::where('role', 'researcher')->with('researcher');
+                // Apply researchers-specific filter logic if needed (matching manageUsers)
+                if ($selectedAffiliation) {
+                    $query->whereHas('researcher', function ($q) use ($selectedAffiliation) {
+                        if ($selectedAffiliation == 'Internal')
+                            $q->where('external_user', false);
+                        elseif ($selectedAffiliation == 'External')
+                            $q->where('external_user', true);
+                    });
+                }
+                if ($selectedCollege && $selectedAffiliation !== 'External') {
+                    $query->whereHas('researcher', function ($q) use ($selectedCollege) {
+                        $q->where('college', $selectedCollege);
+                    });
+                }
+
+                $data = $query->get()->map(function ($user) {
+                    return [
+                        'name' => $user->first_name . ' ' . $user->last_name,
+                        'email' => $user->email,
+                        'college' => $user->researcher->college ?? 'N/A',
+                        'affiliation' => $user->researcher->external_user ? 'External' : 'Internal',
+                    ];
+                });
+                return response()->json($data);
+            }
+
+            // --- Submissions Logic ---
+            $baseQuery = Research_title::with(['researcher.user', 'revisionLogs']);
+
+            if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
+                if ($hasExactDates) {
+                    $startDate = Carbon::parse($exactStart)->startOfDay();
+                    $endDate = Carbon::parse($exactEnd)->endOfDay();
+                } else {
+                    $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
+                    $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
+                    $realStartMonth = $startMonth;
+                    $realEndMonth = $endMonth;
+                    $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
+                    $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+                }
+                if ($startDate->greaterThan($endDate)) {
+                    $temp = $startDate;
+                    $startDate = $endDate;
+                    $endDate = $temp;
+                }
+                $baseQuery->whereBetween('research_title_information.created_at', [$startDate, $endDate]);
+            }
+
+            if ($selectedStatus)
+                $baseQuery->where('Status', $selectedStatus);
+            if ($selectedReviewType)
+                $baseQuery->where('Review_Type', $selectedReviewType);
+            if ($selectedThesisType)
+                $baseQuery->where('thesis_type', $selectedThesisType);
+            if ($selectedCategory)
+                $baseQuery->where('Research_Category', $selectedCategory);
             if ($selectedAffiliation) {
-                $query->whereHas('researcher', function ($q) use ($selectedAffiliation) {
+                $baseQuery->whereHas('researcher', function ($q) use ($selectedAffiliation) {
                     if ($selectedAffiliation == 'Internal')
                         $q->where('external_user', false);
                     elseif ($selectedAffiliation == 'External')
@@ -187,116 +243,60 @@ class AdminController extends Controller
                 });
             }
             if ($selectedCollege && $selectedAffiliation !== 'External') {
-                $query->whereHas('researcher', function ($q) use ($selectedCollege) {
+                $baseQuery->whereHas('researcher', function ($q) use ($selectedCollege) {
                     $q->where('college', $selectedCollege);
                 });
             }
 
-            $data = $query->get()->map(function ($user) {
+            if ($type === 'approved') {
+                $baseQuery->where('Status', 'Approved');
+            } elseif ($type === 'revisions') {
+                $baseQuery->where(function ($query) {
+                    $query->whereIn('Status', [
+                        'Incomplete',
+                        'Incomplete - Awaiting Hardcopy',
+                        'Incomplete Hardcopy',
+                        'Waiting for Revision',
+                        'Revision Submitted'
+                    ])
+                        ->orWhereHas('feedbacks')
+                        ->orWhereHas('revisionLogs');
+                });
+            } elseif ($type === 'college_specific') {
+                $collegeName = $request->input('college_name');
+                if ($collegeName) {
+                    $baseQuery->whereHas('researcher', function ($q) use ($collegeName) {
+                        $q->where(function ($query) use ($collegeName) {
+                            $query->where('college', $collegeName)
+                                ->orWhere('department', $collegeName);
+                        });
+                    });
+                }
+            } elseif ($type === 'pipeline') {
+                $stage = $request->input('pipeline_stage');
+                if ($stage === 'Pending Intake') {
+                    $baseQuery->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy']);
+                } elseif ($stage === 'Under Review') {
+                    $baseQuery->whereIn('Status', ['For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review']);
+                } elseif ($stage === 'Waiting for Revisions') {
+                    $baseQuery->whereIn('Status', ['Waiting for Revision']);
+                } elseif ($stage === 'Final Verification') {
+                    $baseQuery->whereIn('Status', ['Complete - Awaiting Hardcopy']);
+                }
+            }
+
+            $records = $baseQuery->get();
+
+            $data = $records->map(function ($item) {
                 return [
-                    'name' => $user->first_name . ' ' . $user->last_name,
-                    'email' => $user->email,
-                    'college' => $user->researcher->college ?? 'N/A',
-                    'affiliation' => $user->researcher->external_user ? 'External' : 'Internal',
+                    'id' => $item->id,
+                    'title' => $item->Study_Protocol_title,
+                    'researcher' => $item->researcher && $item->researcher->user ? $item->researcher->user->first_name . ' ' . $item->researcher->user->last_name : 'Unknown',
+                    'status' => $item->Status,
+                    'date' => $item->created_at->format('M d, Y'),
+                    'revisions' => $item->revisionLogs->count(),
                 ];
             });
-            return response()->json($data);
-        }
-
-        // --- Submissions Logic ---
-        $baseQuery = Research_title::with(['researcher.user', 'revisionLogs']);
-
-        if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
-            if ($hasExactDates) {
-                $startDate = Carbon::parse($exactStart)->startOfDay();
-                $endDate = Carbon::parse($exactEnd)->endOfDay();
-            } else {
-                $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
-                $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
-                $realStartMonth = $startMonth;
-                $realEndMonth = $endMonth;
-                $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
-                $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
-            }
-            if ($startDate->greaterThan($endDate)) {
-                $temp = $startDate;
-                $startDate = $endDate;
-                $endDate = $temp;
-            }
-            $baseQuery->whereBetween('research_title_information.created_at', [$startDate, $endDate]);
-        }
-
-        if ($selectedStatus)
-            $baseQuery->where('Status', $selectedStatus);
-        if ($selectedReviewType)
-            $baseQuery->where('Review_Type', $selectedReviewType);
-        if ($selectedThesisType)
-            $baseQuery->where('thesis_type', $selectedThesisType);
-        if ($selectedCategory)
-            $baseQuery->where('Research_Category', $selectedCategory);
-        if ($selectedAffiliation) {
-            $baseQuery->whereHas('researcher', function ($q) use ($selectedAffiliation) {
-                if ($selectedAffiliation == 'Internal')
-                    $q->where('external_user', false);
-                elseif ($selectedAffiliation == 'External')
-                    $q->where('external_user', true);
-            });
-        }
-        if ($selectedCollege && $selectedAffiliation !== 'External') {
-            $baseQuery->whereHas('researcher', function ($q) use ($selectedCollege) {
-                $q->where('college', $selectedCollege);
-            });
-        }
-
-        if ($type === 'approved') {
-            $baseQuery->where('Status', 'Approved');
-        } elseif ($type === 'revisions') {
-            $baseQuery->where(function ($query) {
-                $query->whereIn('Status', [
-                    'Incomplete',
-                    'Incomplete - Awaiting Hardcopy',
-                    'Incomplete Hardcopy',
-                    'Waiting for Revision',
-                    'Revision Submitted'
-                ])
-                    ->orWhereHas('feedbacks')
-                    ->orWhereHas('revisionLogs');
-            });
-        } elseif ($type === 'college_specific') {
-            $collegeName = $request->input('college_name');
-            if ($collegeName) {
-                $baseQuery->whereHas('researcher', function ($q) use ($collegeName) {
-                    $q->where(function ($query) use ($collegeName) {
-                        $query->where('college', $collegeName)
-                              ->orWhere('department', $collegeName);
-                    });
-                });
-            }
-        } elseif ($type === 'pipeline') {
-            $stage = $request->input('pipeline_stage');
-            if ($stage === 'Pending Intake') {
-                $baseQuery->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy']);
-            } elseif ($stage === 'Under Review') {
-                $baseQuery->whereIn('Status', ['For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review']);
-            } elseif ($stage === 'Waiting for Revisions') {
-                $baseQuery->whereIn('Status', ['Waiting for Revision']);
-            } elseif ($stage === 'Final Verification') {
-                $baseQuery->whereIn('Status', ['Complete - Awaiting Hardcopy']);
-            }
-        }
-
-        $records = $baseQuery->get();
-
-        $data = $records->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'title' => $item->Study_Protocol_title,
-                'researcher' => $item->researcher && $item->researcher->user ? $item->researcher->user->first_name . ' ' . $item->researcher->user->last_name : 'Unknown',
-                'status' => $item->Status,
-                'date' => $item->created_at->format('M d, Y'),
-                'revisions' => $item->revisionLogs->count(),
-            ];
-        });
 
             return response()->json($data);
         } catch (\Exception $e) {
@@ -498,11 +498,13 @@ class AdminController extends Controller
         // 4. Submission Trends (Daily/Monthly/Yearly)
         $dailyData = [];
         $dayLabels = [];
+        $overviewTitle = 'Daily Overview';
 
         $isAllTime = !$hasExactDates && $startYear === 'all' && $endYear === 'all' && $startMonth == 1 && $endMonth == 12;
 
         if ($isAllTime) {
             // Group by year
+            $overviewTitle = 'Yearly Overview';
             $yearlyStats = (clone $baseQuery)
                 ->selectRaw('YEAR(created_at) as year, COUNT(*) as count')
                 ->groupBy('year')
@@ -520,8 +522,9 @@ class AdminController extends Controller
                 $dailyData = [0];
                 $dayLabels = [date('Y')];
             }
-        } elseif (($hasExactDates && tap(Carbon::parse($exactStart), fn($s) => $s->diffInDays(Carbon::parse($exactEnd)) > 31)) || (!$hasExactDates && ($startYear !== $endYear || $startYear === 'all' || $endYear === 'all'))) {
-            // Multiple years involved -> Group by Month/Year
+        } elseif (($hasExactDates && tap(Carbon::parse($exactStart), fn($s) => $s->diffInDays(Carbon::parse($exactEnd)) > 90)) || (!$hasExactDates && ($startYear !== $endYear || $startYear === 'all' || $endYear === 'all'))) {
+            // Multiple years or > 90 days -> Group by Month/Year
+            $overviewTitle = 'Monthly Overview';
             $query = clone $baseQuery;
             $monthlyStats = $query
                 ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count')
@@ -538,9 +541,29 @@ class AdminController extends Controller
                 $dailyData = [0];
                 $dayLabels = [date('M Y')];
             }
+        } elseif ($hasExactDates && tap(Carbon::parse($exactStart), fn($s) => $s->diffInDays(Carbon::parse($exactEnd)) > 31 && $s->diffInDays(Carbon::parse($exactEnd)) <= 90)) {
+            // Mid-range exact dates (1 to 3 months) -> Group by Week
+            $overviewTitle = 'Weekly Overview';
+            $query = clone $baseQuery;
+            $weeklyStats = $query
+                ->selectRaw('YEAR(created_at) as year, WEEK(created_at) as week, MIN(DATE(created_at)) as week_start, COUNT(*) as count')
+                ->groupBy('year', 'week')
+                ->orderBy('year', 'asc')
+                ->orderBy('week', 'asc')
+                ->get();
+
+            foreach ($weeklyStats as $stat) {
+                $dailyData[] = $stat->count;
+                $dayLabels[] = 'Week of ' . Carbon::parse($stat->week_start)->format('M d');
+            }
+            if (empty($dailyData)) {
+                $dailyData = [0];
+                $dayLabels = ['Week of ' . Carbon::parse($exactStart)->format('M d')];
+            }
         } else {
             // Single Year but multiple months or exact dates within a tight range: Group tightly by Month if applicable, else Daily.
             if (!$hasExactDates && $startMonth !== $endMonth) {
+                $overviewTitle = 'Monthly Overview';
                 $query = clone $baseQuery;
                 $monthlyStats = $query
                     ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
@@ -560,22 +583,38 @@ class AdminController extends Controller
                     $dayLabels = [date('M')];
                 }
             } else {
-                // Group by day for specific single month
-                $safeYear = $startYear;
-                $safeMonth = $startMonth;
-                $daysInMonth = Carbon::createFromDate($safeYear, $safeMonth, 1)->daysInMonth;
-
+                // Group by day for specific single month or tight date range
+                $overviewTitle = 'Daily Overview';
                 $query = clone $baseQuery;
 
-                $dailyStats = $query
-                    ->selectRaw('DAY(created_at) as day, COUNT(*) as count')
-                    ->groupBy('day')
-                    ->pluck('count', 'day')
-                    ->toArray();
+                if ($hasExactDates) {
+                    $sDate = Carbon::parse($exactStart);
+                    $eDate = Carbon::parse($exactEnd);
+                    $dailyStats = $query
+                        ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+                        ->groupBy('date')
+                        ->pluck('count', 'date')
+                        ->toArray();
 
-                for ($i = 1; $i <= $daysInMonth; $i++) {
-                    $dailyData[] = $dailyStats[$i] ?? 0;
-                    $dayLabels[] = (string) $i;
+                    for ($d = $sDate->copy(); $d->lte($eDate); $d->addDay()) {
+                        $dailyData[] = $dailyStats[$d->format('Y-m-d')] ?? 0;
+                        $dayLabels[] = $d->format('M d');
+                    }
+                } else {
+                    $safeYear = $startYear;
+                    $safeMonth = $startMonth;
+                    $daysInMonth = Carbon::createFromDate($safeYear, $safeMonth, 1)->daysInMonth;
+
+                    $dailyStats = $query
+                        ->selectRaw('DAY(created_at) as day, COUNT(*) as count')
+                        ->groupBy('day')
+                        ->pluck('count', 'day')
+                        ->toArray();
+
+                    for ($i = 1; $i <= $daysInMonth; $i++) {
+                        $dailyData[] = $dailyStats[$i] ?? 0;
+                        $dayLabels[] = (string) $i;
+                    }
                 }
                 if (empty($dailyData)) {
                     $dailyData = [0];
@@ -748,7 +787,8 @@ class AdminController extends Controller
             'reviewTypes',
             'thesisTypes',
             'researchCategories',
-            'colleges'
+            'colleges',
+            'overviewTitle'
         ));
     }
 
@@ -1698,9 +1738,9 @@ class AdminController extends Controller
 
             TitleLog::create([
                 'research_title_id' => $submission->id,
-                'user_id'           => auth()->id(),
-                'action'            => 'CV Classification Verified',
-                'description'       => "Admin verified CV classification during Initial Intake. Project type: {$submission->project_type}.",
+                'user_id' => auth()->id(),
+                'action' => 'CV Classification Verified',
+                'description' => "Admin verified CV classification during Initial Intake. Project type: {$submission->project_type}.",
             ]);
 
         } elseif ($cvAction === 'invalidate') {
@@ -1714,21 +1754,21 @@ class AdminController extends Controller
 
             TitleLog::create([
                 'research_title_id' => $submission->id,
-                'user_id'           => auth()->id(),
-                'action'            => 'CV Classification Invalid',
-                'description'       => "Admin flagged CV mismatch during Initial Intake. Submission set to Incomplete. Remarks: {$cvRemarks}",
+                'user_id' => auth()->id(),
+                'action' => 'CV Classification Invalid',
+                'description' => "Admin flagged CV mismatch during Initial Intake. Submission set to Incomplete. Remarks: {$cvRemarks}",
             ]);
 
             // Notify researcher
             $researcher = $submission->researcher;
             if ($researcher) {
                 UserNotification::create([
-                    'user_id'     => $researcher->user_id,
+                    'user_id' => $researcher->user_id,
                     'research_id' => $submission->id,
-                    'title'       => 'CV Classification Mismatch',
-                    'message'     => "Your submission \"{$submission->Study_Protocol_title}\" has been flagged for an incorrect project type. Please correct your classification.\n\nReason: {$cvRemarks}",
-                    'type'        => 'warning',
-                    'is_read'     => false,
+                    'title' => 'CV Classification Mismatch',
+                    'message' => "Your submission \"{$submission->Study_Protocol_title}\" has been flagged for an incorrect project type. Please correct your classification.\n\nReason: {$cvRemarks}",
+                    'type' => 'warning',
+                    'is_read' => false,
                 ]);
             }
         }
@@ -2454,7 +2494,8 @@ class AdminController extends Controller
 
             // ── Title — Colette (dynamic registration) 11pt, centered, #2b1511 ──
             $coletteFontName = \TCPDF_FONTS::addTTFfont(public_path('fonts/Colette.ttf'), 'TrueTypeUnicode', '', 32, public_path('fonts/tcpdf/'));
-            if (!$coletteFontName) $coletteFontName = 'helvetica';
+            if (!$coletteFontName)
+                $coletteFontName = 'helvetica';
 
             $certPdf->SetTextColor(43, 21, 17); // #2b1511
             $certPdf->SetFont($coletteFontName, '', 11);
@@ -2471,7 +2512,8 @@ class AdminController extends Controller
             // ── Summary / scope of exemption — Montserrat (dynamic registration) 11pt, justified, #2b1511 ──
             if ($request->cert_reo_summary) {
                 $montserratFontName = \TCPDF_FONTS::addTTFfont(public_path('fonts/Montserrat.ttf'), 'TrueTypeUnicode', '', 32, public_path('fonts/tcpdf/'));
-                if (!$montserratFontName) $montserratFontName = 'helvetica';
+                if (!$montserratFontName)
+                    $montserratFontName = 'helvetica';
 
                 $certPdf->SetTextColor(43, 21, 17); // #2b1511
                 $certPdf->SetFont($montserratFontName, '', 11);

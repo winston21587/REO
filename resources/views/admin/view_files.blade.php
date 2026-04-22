@@ -19,7 +19,7 @@
         </div>
 
         @if($auditTrail->isNotEmpty())
-            <div class="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" x-data="{ open: false }">
+            <div class="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" x-data="{ open: false, searchTerm: '' }">
                 <button @click="open = !open" class="w-full px-6 py-4 flex justify-between items-center bg-slate-50/50 hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-stream text-slate-500"></i>
@@ -29,12 +29,20 @@
                     <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="open" style="display: none;" x-transition>
-                    <div class="p-6 border-t border-slate-100 bg-white max-h-[500px] overflow-y-auto custom-scrollbar relative pl-8">
+                    <div class="px-6 pt-5 border-t border-slate-100 bg-white">
+                        <div class="relative">
+                            <input type="text" x-model="searchTerm" placeholder="Quickly search logs for keywords, users, decisions, or actions..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent bg-slate-50 transition-shadow">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white max-h-[500px] overflow-y-auto custom-scrollbar relative pl-8">
                         <div class="absolute left-8 top-6 bottom-6 w-0.5 bg-slate-100 pointer-events-none"></div>
                         <div class="space-y-6 relative z-10">
                             @foreach($auditTrail as $log)
-                                <div class="flex gap-4">
-                                    <div class="w-10 h-10 rounded-full {{ $log->color }} {{ $log->border }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 -ml-5">
+                                <div class="flex gap-4" 
+                                     data-search="{{ strtolower(htmlspecialchars($log->action_label . ' ' . $log->actor_name . ' ' . $log->actor_role . ' ' . $log->message)) }}"
+                                     x-show="searchTerm === '' || $el.dataset.search.includes(searchTerm.toLowerCase())">
+                                    <div class="w-10 h-10 rounded-full {{ $log->color }} {{ $log->border }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 -ml-5 transition-transform hover:scale-110">
                                         <i class="fas {{ $log->icon }} text-sm"></i>
                                     </div>
                                     <div class="flex-1 mt-0.5">

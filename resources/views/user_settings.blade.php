@@ -312,20 +312,26 @@
                     class="text-xs font-bold text-[#8B0000] uppercase tracking-wider border-b border-slate-200 pb-2 mb-4 mt-6">
                     Contact & Security</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email Address</label>
-                        <input type="email" value="{{ Auth::user()->email }}" disabled
-                            class="w-full p-2.5 md:p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed">
-                        <p class="text-[10px] text-slate-400 mt-1">Contact admin to change email.</p>
+
+                    <div class="md:col-span-2 flex justify-center">
+                        <div class="w-full md:w-3/4">
+
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1 text-left md:text-center">
+                                Email Address
+                            </label>
+
+                            <input type="email" value="{{ Auth::user()->email }}" disabled
+                                class="w-full p-2.5 md:p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed text-left md:text-center">
+
+                            <p class="text-[10px] text-slate-400 mt-1 text-left md:text-center">
+                                Contact admin to change email.
+                            </p>
+
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contact No.</label>
-                        <input type="text" name="contact" value="{{ Auth::user()->researcher->contact ?? '' }}"
-                            maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)"
-                            class="w-full p-2.5 md:p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-[#8B0000] focus:ring-1 focus:ring-[#8B0000] outline-none transition-all"
-                            placeholder="09123456789">
-                    </div>
+
                 </div>
+
 
                 @if(Auth::user()->researcher && Auth::user()->researcher->external_user)
                     <h3

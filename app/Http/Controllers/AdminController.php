@@ -1967,7 +1967,14 @@ class AdminController extends Controller
         //     return view('admin.view_files', compact('researchTitle'));
         // }
 
-        $researchTitle = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
+        $researchTitle = Research_title::with([
+            'researcher.user',
+            'files',
+            'adminFiles',
+            'titleLogs.user',
+            'revisionLogs.user',
+            'feedbacks.user'
+        ])->findOrFail($id);
         $backUrl = url()->previous(route('admin.analytics'));
 
         // Load all reviewer file remarks for this title's files, grouped by researcher_file_id
@@ -1987,7 +1994,71 @@ class AdminController extends Controller
         // Load reviewer assignments with pivot status to show who is done and who is still reviewing
         $reviewerAssignments = $researchTitle->reviewers()->withPivot('status', 'role')->get();
 
-        return view('admin.view_files', compact('researchTitle', 'backUrl', 'allFileRemarks', 'reviewerAssignments'));
+        // Build Complete Audit Trail
+        $auditTrail = collect();
+
+        foreach ($researchTitle->titleLogs as $log) {
+            $auditTrail->push((object) [
+                'log_type' => 'system_event',
+                'action_label' => $log->action,
+                'message' => $log->description,
+                'created_at' => $log->created_at,
+                'actor_name' => $log->user ? $log->user->first_name . ' ' . $log->user->last_name : 'System Operation',
+                'actor_role' => $log->user ? ucfirst($log->user->role) : 'System',
+                'icon' => str_contains(strtolower($log->action), 'change') ? 'fa-exchange-alt' : 'fa-laptop-code',
+                'color' => 'bg-slate-100 text-slate-600',
+                'border' => 'border-slate-200'
+            ]);
+        }
+
+        foreach ($researchTitle->revisionLogs as $log) {
+            $auditTrail->push((object) [
+                'log_type' => 'revision_note',
+                'action_label' => 'Revision Instructions & Notes',
+                'message' => $log->message,
+                'created_at' => $log->created_at,
+                'actor_name' => $log->user ? $log->user->first_name . ' ' . $log->user->last_name : 'Unknown User',
+                'actor_role' => $log->user ? ucfirst($log->user->role) : 'User',
+                'icon' => 'fa-edit',
+                'color' => ($log->user && $log->user->role === 'admin') ? 'bg-indigo-100 text-indigo-600' : 'bg-blue-100 text-blue-600',
+                'border' => ($log->user && $log->user->role === 'admin') ? 'border-indigo-200' : 'border-blue-200'
+            ]);
+        }
+
+        foreach ($researchTitle->feedbacks as $feedback) {
+            $actionLabel = 'Reviewer Feedback';
+            $icon = 'fa-comment-dots';
+            $color = 'bg-emerald-100 text-emerald-600';
+            $border = 'border-emerald-200';
+
+            if ($feedback->type === 'disapproval_remark') {
+                $actionLabel = 'Disapproval Reason';
+                $icon = 'fa-times-circle';
+                $color = 'bg-red-100 text-red-600';
+                $border = 'border-red-200';
+            } elseif ($feedback->type === 'reviewer_decision') {
+                $actionLabel = 'Reviewer Decision Filed';
+                $icon = 'fa-balance-scale';
+                $color = 'bg-amber-100 text-amber-600';
+                $border = 'border-amber-200';
+            }
+
+            $auditTrail->push((object) [
+                'log_type' => 'feedback',
+                'action_label' => $actionLabel,
+                'message' => $feedback->message,
+                'created_at' => $feedback->created_at,
+                'actor_name' => $feedback->user ? $feedback->user->first_name . ' ' . $feedback->user->last_name : 'Reviewer',
+                'actor_role' => $feedback->user ? ucfirst($feedback->user->role) : 'Reviewer',
+                'icon' => $icon,
+                'color' => $color,
+                'border' => $border
+            ]);
+        }
+
+        $auditTrail = $auditTrail->sortByDesc('created_at')->values();
+
+        return view('admin.view_files', compact('researchTitle', 'backUrl', 'allFileRemarks', 'reviewerAssignments', 'auditTrail'));
     }
 
     public function serveFile($id)

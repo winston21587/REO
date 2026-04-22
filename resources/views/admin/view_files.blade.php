@@ -18,31 +18,40 @@
             </div>
         </div>
 
-        @if($researchTitle->revisionLogs->isNotEmpty())
+        @if($auditTrail->isNotEmpty())
             <div class="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" x-data="{ open: false }">
                 <button @click="open = !open" class="w-full px-6 py-4 flex justify-between items-center bg-slate-50/50 hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-3">
-                        <i class="fas fa-history text-blue-500"></i>
-                        <span class="text-xs font-extrabold text-blue-600 uppercase tracking-widest">Revision History Feedback</span>
+                        <i class="fas fa-stream text-slate-500"></i>
+                        <span class="text-xs font-extrabold text-slate-700 uppercase tracking-widest">Complete Audit Trail</span>
+                        <span class="ml-2 px-2 py-0.5 rounded-md bg-slate-200 text-slate-600 text-[10px] font-bold">{{ $auditTrail->count() }} Events</span>
                     </div>
                     <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="open" style="display: none;" x-transition>
-                    <div class="p-6 space-y-6 border-t border-slate-100 bg-white max-h-[400px] overflow-y-auto custom-scrollbar">
-                        @foreach($researchTitle->revisionLogs as $log)
-                            <div class="flex gap-4">
-                                <div class="w-10 h-10 rounded-full {{ $log->user?->role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">
-                                    <i class="fas {{ $log->user?->role === 'admin' ? 'fa-user-shield' : 'fa-user' }} text-sm"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-800">{{ $log->user?->first_name ?? 'Unknown' }} {{ $log->user?->last_name }} <span class="text-xs font-normal text-slate-500">({{ ucfirst($log->user?->role ?? 'user') }})</span></p>
-                                    <p class="text-xs text-slate-400 mb-2">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
-                                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                                        <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
+                    <div class="p-6 border-t border-slate-100 bg-white max-h-[500px] overflow-y-auto custom-scrollbar relative pl-8">
+                        <div class="absolute left-8 top-6 bottom-6 w-0.5 bg-slate-100 pointer-events-none"></div>
+                        <div class="space-y-6 relative z-10">
+                            @foreach($auditTrail as $log)
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full {{ $log->color }} {{ $log->border }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 -ml-5">
+                                        <i class="fas {{ $log->icon }} text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 mt-0.5">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-800">{{ $log->action_label }}</p>
+                                                <p class="text-xs text-slate-500 font-medium">By: <span class="font-bold text-slate-700">{{ $log->actor_name }}</span> <span class="text-slate-400">({{ $log->actor_role }})</span></p>
+                                            </div>
+                                            <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-md">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
+                                        </div>
+                                        <div class="bg-white border rounded-xl p-3.5 shadow-sm {{ str_contains($log->color, 'slate') ? 'border-slate-100' : 'border-slate-200' }}">
+                                            <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>

@@ -295,6 +295,27 @@
                     </tbody>
                 </table>
             </div>
+
+            @if ($stuckProposals->hasPages())
+                <div class="px-6 py-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500 bg-slate-50">
+                    <div>
+                        Showing <span class="font-bold text-slate-700">{{ $stuckProposals->firstItem() ?? 0 }}</span> - <span class="font-bold text-slate-700">{{ $stuckProposals->lastItem() ?? 0 }}</span> of <span class="font-bold text-slate-700">{{ $stuckProposals->total() }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        @if ($stuckProposals->onFirstPage())
+                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-left"></i></span>
+                        @else
+                            <a href="{{ $stuckProposals->previousPageUrl() }}" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-left"></i></a>
+                        @endif
+
+                        @if ($stuckProposals->hasMorePages())
+                            <a href="{{ $stuckProposals->nextPageUrl() }}" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-right"></i></a>
+                        @else
+                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-right"></i></span>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </section>
 
         <!-- Chart.js CDN -->

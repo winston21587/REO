@@ -749,12 +749,12 @@ class AdminController extends Controller
 
         $colleges = \App\Models\College::all();
 
-        // Retrieve the list of proposals currently actively stuck or moving in the pipeline
         $stuckProposals = (clone $baseQuery)
             ->with(['researcher.user'])
             ->whereNotIn('Status', ['Approved', 'Disapproved', 'Completed', 'Returned', 'Withdraw', 'Withdrawn'])
             ->orderBy('updated_at', 'desc')
-            ->get();
+            ->paginate(6, ['*'], 'pipeline_page')
+            ->withQueryString();
 
         return view('admin.Analytics', compact(
             'totalSubmissions',

@@ -2,6 +2,7 @@
     <div x-data="{ 
         showAddModal: false, 
         showViewModal: false, 
+        showEditModal: false,
         selectedUser: null,
         showConfirmModal: false,
         confirmTitle: '',

@@ -179,36 +179,40 @@
         $reviewerColleges = $reviewers->pluck('college')->filter()->unique()->sort()->values();
     @endphp
     <div x-data="{
-            open: false,
-            protocolId: '',
-            protocolTitle: '',
-            reviewType: '',
-            assigned: [],
-            initialAssignedCount: 0,
-            search: '',
-            collegeFilter: '',
-            expandedReviewer: null,
-            maxSelection: function() {
-                return 99; // No limit
-            },
-            toggleSelection: function(id) {
-                if (this.assigned.includes(id)) {
-                    this.assigned = this.assigned.filter(val => val !== id);
-                } else {
-                    this.assigned.push(id);
-                }
-            }
-         }"
-         @open-assign-modal.window="
-            open = true; 
-            protocolId = $event.detail.id; 
-            protocolTitle = $event.detail.title; 
-            reviewType = $event.detail.reviewType;
-            assigned = Array.isArray($event.detail.assigned) ? [...$event.detail.assigned] : []; 
-            initialAssignedCount = assigned.length; 
-            search = ''; 
-            collegeFilter = ''; 
-            expandedReviewer = null;
+    open: false,
+    protocolId: '',
+    protocolTitle: '',
+    reviewType: '',
+    assigned: [],
+    initialAssignedCount: 0,
+    search: '',
+    collegeFilter: '',
+    expandedReviewer: null,
+    maxSelection: function() {
+        return 99;
+    },
+    toggleSelection: function(id) {
+        if (this.assigned.includes(id)) {
+            this.assigned = this.assigned.filter(val => val !== id);
+        } else {
+            this.assigned.push(id);
+        }
+    }
+}"
+@open-assign-modal.window="
+    open = true; 
+    protocolId = $event.detail.id; 
+    protocolTitle = $event.detail.title; 
+    reviewType = $event.detail.reviewType;
+    assigned = Array.isArray($event.detail.assigned) ? [...$event.detail.assigned] : []; 
+    initialAssignedCount = assigned.length; 
+    search = ''; 
+    collegeFilter = ''; 
+    expandedReviewer = null;
+    
+    // Store the title in the hidden input for the AI function
+    document.getElementById('current-protocol-title').value = $event.detail.title;
+"
          "
          class="relative z-[9999]"
          aria-labelledby="assign-modal-title" role="dialog" aria-modal="true" style="display: none;" x-show="open">
@@ -235,34 +239,46 @@
                         @csrf
 
                         <!-- Modal Header -->
-                        <div class="px-7 pt-7 pb-2">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex items-center gap-3.5">
-                                    <div class="w-12 h-12 rounded-[1rem] bg-red-50 flex items-center justify-center border border-red-100/50 flex-shrink-0">
-                                        <i class="fas fa-users-cog text-[#8B0000] text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-[1.15rem] font-extrabold text-slate-800 tracking-tight leading-tight" id="assign-modal-title" x-text="initialAssignedCount > 0 ? 'Change Reviewer(s)' : 'Assign Reviewer(s)'">Assign Reviewer(s)</h3>
-                                        <p class="text-xs text-slate-500 mt-1 font-medium line-clamp-1">
-                                            <span x-text="protocolTitle"></span>
-                                            <span x-show="reviewType" class="ml-1 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] uppercase font-bold text-slate-600" x-text="reviewType"></span>
-                                        </p>
-                                    </div>
-                                </div>
-                                <button type="button" @click="open = false" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 mt-1">
-                                    <i class="fas fa-times text-sm"></i>
-                                </button>
-                            </div>
+                        <!-- Modal Header -->
+<div class="px-7 pt-7 pb-2">
+    <div class="flex items-start justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-[1rem] bg-red-50 flex items-center justify-center border border-red-100/50 flex-shrink-0">
+                <i class="fas fa-users-cog text-[#8B0000] text-lg"></i>
+            </div>
+            <div>
+                <h3 class="text-[1.15rem] font-extrabold text-slate-800 tracking-tight leading-tight" id="assign-modal-title" x-text="initialAssignedCount > 0 ? 'Change Reviewer(s)' : 'Assign Reviewer(s)'">Assign Reviewer(s)</h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium line-clamp-1">
+                    <span x-text="protocolTitle"></span>
+                    <span x-show="reviewType" class="ml-1 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] uppercase font-bold text-slate-600" x-text="reviewType"></span>
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <!-- AI Suggest Reviewer Button - Moved to header -->
+            <button type="button" 
+                    id="ai-suggest-reviewer-btn"
+                    onclick="suggestReviewerWithAI()"
+                    class="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg text-xs font-bold hover:from-purple-600 hover:to-indigo-700 transition-all shadow-md flex items-center gap-1.5">
+                <i class="fas fa-magic text-xs"></i> AI Suggest
+            </button>
+            <button type="button" @click="open = false" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+    </div>
 
-                            <!-- Selection Counter -->
-                            <div class="px-7 mt-2 pb-2">
-                                <p class="text-xs font-bold text-slate-600 flex items-center gap-2">
-                                    <i class="fas fa-check-circle text-green-500" x-show="assigned.length > 0"></i>
-                                    <i class="fas fa-info-circle text-blue-500" x-show="assigned.length === 0"></i>
-                                    <span>Selected: <span x-text="assigned.length" :class="assigned.length > 0 ? 'text-green-600' : 'text-slate-500'"></span></span>
-                                </p>
-                            </div>
-
+    <!-- Hidden input for storing protocol title -->
+    <input type="hidden" id="current-protocol-title" value="">
+    
+    <!-- Selection Counter -->
+    <div class="px-7 mt-2 pb-2">
+        <p class="text-xs font-bold text-slate-600 flex items-center gap-2">
+            <i class="fas fa-check-circle text-green-500" x-show="assigned.length > 0"></i>
+            <i class="fas fa-info-circle text-blue-500" x-show="assigned.length === 0"></i>
+            <span>Selected: <span x-text="assigned.length" :class="assigned.length > 0 ? 'text-green-600' : 'text-slate-500'"></span></span>
+        </p>
+    </div>
                             <!-- Search + Filter Row -->
                             <div class="flex gap-2 mt-5">
                                 <div class="relative flex-1 group">
@@ -287,7 +303,8 @@
                                 </div>
                             </div>
                         </div>
-
+                            <!-- Add a hidden input to store the protocol title when modal opens -->
+                            <input type="hidden" id="current-protocol-title" value="">
                         <!-- Reviewer Cards List -->
                         <div class="px-7 py-5 max-h-[360px] overflow-y-auto space-y-3 custom-scrollbar" x-ref="reviewerCards">
                             @forelse($reviewers as $reviewer)
@@ -430,6 +447,275 @@
 
 
     <script>
+
+    // Add this function to suggest a reviewer using AI
+    function suggestReviewerWithAI() {
+        // Get the protocol title from the hidden input
+        const protocolTitle = document.getElementById('current-protocol-title').value;
+        const suggestionBtn = document.getElementById('ai-suggest-reviewer-btn');
+        
+        if (!protocolTitle || protocolTitle === 'Loading...') {
+            showModalAlert('No protocol title available. Please try again.', 'error');
+            return;
+        }
+        
+        // Disable button and show loading state
+        suggestionBtn.disabled = true;
+        const originalHTML = suggestionBtn.innerHTML;
+        suggestionBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+                        document.querySelector('input[name="_token"]')?.value;
+        
+        if (!csrfToken) {
+            showModalAlert('CSRF token not found. Please refresh the page.', 'error');
+            suggestionBtn.disabled = false;
+            suggestionBtn.innerHTML = originalHTML;
+            return;
+        }
+        
+        fetch('/admin/predict/suggest-reviewer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ title: protocolTitle })
+        })
+        .then(async res => {
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`HTTP ${res.status}: ${text.substring(0, 100)}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log('AI Response:', data);
+            
+            if (data.success && data.suggested_reviewer_id) {
+                // Only highlight and show result - NO auto-select
+                highlightSuggestedReviewer(data.suggested_reviewer_id, data.suggested_reviewer_name, data.suggested_reviewer_expertise);
+            } else {
+                showModalAlert('AI suggestion failed: ' + (data.message || 'Unknown error'), 'error');
+            }
+        })
+        .catch(err => {
+            console.error('AI suggestion error:', err);
+            showModalAlert('Failed to get AI suggestion: ' + err.message, 'error');
+        })
+        .finally(() => {
+            suggestionBtn.disabled = false;
+            suggestionBtn.innerHTML = originalHTML;
+        });
+    }
+
+    function highlightSuggestedReviewer(reviewerId, reviewerName, reviewerExpertise) {
+        // Find the reviewer card by looking for the checkbox with the matching value
+        const allCards = document.querySelectorAll('[x-show]');
+        let found = false;
+        
+        for (const card of allCards) {
+            const checkbox = card.querySelector(`input[type="checkbox"][value="${reviewerId}"]`);
+            if (checkbox) {
+                // Scroll to the reviewer
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Add highlight effect with animation (NO auto-check)
+                card.style.transition = 'all 0.3s ease';
+                card.style.boxShadow = '0 0 0 3px #8B0000, 0 0 0 6px rgba(139, 0, 0, 0.2)';
+                card.style.backgroundColor = '#fef2f2';
+                
+                // Create and show the AI suggestion result card
+                showAISuggestionResult(reviewerName, reviewerExpertise);
+                
+                // Remove highlight after 5 seconds
+                setTimeout(() => {
+                    card.style.boxShadow = '';
+                    card.style.backgroundColor = '';
+                    // Fade out the result card
+                    const resultCard = document.getElementById('ai-suggestion-result');
+                    if (resultCard) {
+                        resultCard.style.opacity = '0';
+                        resultCard.style.transform = 'translateY(-10px)';
+                        setTimeout(() => {
+                            if (resultCard) resultCard.remove();
+                        }, 300);
+                    }
+                }, 5000);
+                
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            console.log('Reviewer not found in list, ID:', reviewerId);
+            // Try to find by name in the text content
+            for (const card of allCards) {
+                if (card.textContent.includes(reviewerName)) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.style.backgroundColor = '#fef2f2';
+                    card.style.boxShadow = '0 0 0 3px #8B0000, 0 0 0 6px rgba(139, 0, 0, 0.2)';
+                    
+                    // Show result card
+                    showAISuggestionResult(reviewerName, reviewerExpertise);
+                    
+                    setTimeout(() => {
+                        card.style.backgroundColor = '';
+                        card.style.boxShadow = '';
+                        const resultCard = document.getElementById('ai-suggestion-result');
+                        if (resultCard) {
+                            resultCard.style.opacity = '0';
+                            resultCard.style.transform = 'translateY(-10px)';
+                            setTimeout(() => {
+                                if (resultCard) resultCard.remove();
+                            }, 300);
+                        }
+                    }, 5000);
+                    found = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!found) {
+            showModalAlert(`AI suggests: ${reviewerName}\n\nExpertise: ${reviewerExpertise}\n\nPlease find and select them manually from the list.`, 'info');
+        }
+    }
+
+    function showAISuggestionResult(reviewerName, reviewerExpertise) {
+        // Remove any existing result card
+        const existingResult = document.getElementById('ai-suggestion-result');
+        if (existingResult) existingResult.remove();
+        
+        // Create the result card HTML with more detailed expertise display
+        const resultHTML = `
+            <div id="ai-suggestion-result" class="fixed top-24 left-1/2 -translate-x-1/2 z-[10000] w-[420px] bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-600 rounded-xl shadow-2xl p-4 animate-slide-down" style="animation: slideDown 0.3s ease-out;">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                            <i class="fas fa-robot text-white text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-bold text-purple-900 text-sm">🤖 AI Suggested Reviewer</h4>
+                            <button onclick="document.getElementById('ai-suggestion-result').remove()" class="text-purple-400 hover:text-purple-600 transition-colors">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </div>
+                        <p class="font-bold text-slate-800 text-base">${escapeHtml(reviewerName)}</p>
+                        <div class="mt-2 p-2 bg-white/50 rounded-lg">
+                            <p class="text-[10px] text-purple-600 font-bold uppercase tracking-wider mb-1">🎯 Matching Expertise</p>
+                            <p class="text-xs text-slate-700 font-medium">${escapeHtml(reviewerExpertise)}</p>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-purple-100">
+                            <p class="text-[11px] text-amber-600 flex items-center gap-1">
+                                <i class="fas fa-hand-pointer"></i>
+                                👆 Please manually select this reviewer
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insert the result card into the body
+        document.body.insertAdjacentHTML('beforeend', resultHTML);
+        
+        // Auto-remove after 6 seconds
+        setTimeout(() => {
+            const resultCard = document.getElementById('ai-suggestion-result');
+            if (resultCard) {
+                resultCard.style.opacity = '0';
+                resultCard.style.transform = 'translateY(-20px)';
+                resultCard.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    if (resultCard) resultCard.remove();
+                }, 300);
+            }
+        }, 6000);
+    }
+
+    function showModalAlert(message, type = 'info') {
+        // Remove any existing alert
+        const existingAlert = document.getElementById('ai-modal-alert');
+        if (existingAlert) existingAlert.remove();
+        
+        const bgColor = type === 'error' ? 'bg-red-500' : (type === 'success' ? 'bg-green-500' : 'bg-blue-500');
+        const icon = type === 'error' ? 'exclamation-triangle' : (type === 'success' ? 'check-circle' : 'info-circle');
+        
+        const alertHTML = `
+            <div id="ai-modal-alert" class="fixed top-24 left-1/2 -translate-x-1/2 z-[10000] w-96 ${bgColor} text-white rounded-xl shadow-2xl p-4 animate-slide-down" style="animation: slideDown 0.3s ease-out;">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-${icon} text-white text-lg"></i>
+                    <p class="text-sm font-medium flex-1">${escapeHtml(message)}</p>
+                    <button onclick="document.getElementById('ai-modal-alert').remove()" class="text-white/80 hover:text-white transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', alertHTML);
+        
+        setTimeout(() => {
+            const alert = document.getElementById('ai-modal-alert');
+            if (alert) {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-20px)';
+                alert.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    if (alert) alert.remove();
+                }, 300);
+            }
+        }, 4000);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Add CSS animations if not already present
+    if (!document.querySelector('#ai-reviewer-styles')) {
+        const style = document.createElement('style');
+        style.id = 'ai-reviewer-styles';
+        style.textContent = `
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(-30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+            }
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .animate-slide-down {
+                animation: slideDown 0.3s ease-out;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
         function confirmUnchooseReviewer(form, title, clearSelectionCallback, cancelCallback) {
             Swal.fire({
                 title: 'Unchoose Reviewer?',

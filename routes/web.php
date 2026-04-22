@@ -27,6 +27,9 @@ Route::get('/test-model', function () {
 Route::get('/test_model', function () { // Added this to match your typo!
     return view('test_model');
 });
+
+Route::post('/admin/predict/suggest-reviewer', [App\Http\Controllers\PredictController::class, 'suggestReviewer'])->name('admin.predict.suggest-reviewer');
+
 Route::post('/predict-model', [\App\Http\Controllers\PredictionController::class, 'predict'])->name('predict.model');
 
 Route::middleware('guest')->group(function () {

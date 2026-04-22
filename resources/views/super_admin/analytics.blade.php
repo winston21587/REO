@@ -573,6 +573,13 @@
                     }
                 }
 
+                // Fallback for empty state
+                if (filteredData.length === 0) {
+                    filteredLabels.push('No Submissions');
+                    filteredData.push(1);
+                    filteredColors.push('#E2E8F0'); // Light Slate
+                }
+
                 new Chart(ctxPie, {
                     type: 'doughnut',
                     data: {

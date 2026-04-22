@@ -411,18 +411,22 @@
                     $totalRemarks = $allFileRemarks->flatten()->count();
                 @endphp
                 @if($totalRemarks > 0)
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 flex flex-col justify-start" x-data="{ remOpen: false }">
-                        <button @click="remOpen = !remOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-comments text-indigo-400"></i>
-                                <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Reviewer Remarks</span>
-                                <span class="ml-2 bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded-full">{{ $totalRemarks }}</span>
-                            </div>
-                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300" :class="remOpen ? '' : 'rotate-180'"></i>
-                        </button>
-                        <div x-show="remOpen" x-transition style="display: none;">
-                            <div class="p-5 border-t border-slate-100 space-y-4 max-h-[420px] overflow-y-auto custom-scrollbar bg-white">
-                                @foreach($remarksByReviewer as $reviewerId => $remarks)
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-shrink-0">
+                        <p
+                            class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="fas fa-comments text-indigo-400"></i>
+                            Reviewer Remarks
+                            <span
+                                class="ml-auto bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded-full">{{ $totalRemarks }}</span>
+                        </p>
+
+                        @php
+                            // Group remarks by reviewer for a cleaner view
+                            $remarksByReviewer = $allFileRemarks->flatten()->groupBy('reviewer_id');
+                        @endphp
+
+                        <div class="space-y-4 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
+                            @foreach($remarksByReviewer as $reviewerId => $remarks)
                                 @php
                                     $reviewer = $remarks->first()->reviewer;
                                     $reviewerName = $reviewer ? ($reviewer->first_name . ' ' . $reviewer->last_name) : 'Unknown Reviewer';
@@ -466,7 +470,6 @@
                                     </div>
                                 </div>
                             @endforeach
-                            </div>
                         </div>
                     </div>
                 @endif
@@ -671,10 +674,10 @@
                                     <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2"
                                         x-data="{ expanded: false }">
                                         <button @click="expanded = !expanded"
-                                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors gap-2 min-w-0">
-                                            <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest truncate text-left"
+                                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                            <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest"
                                                 x-text="group.category"></h4>
-                                            <div class="flex items-center gap-3 flex-shrink-0">
+                                            <div class="flex items-center gap-3">
                                                 <span
                                                     class="text-[10px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200"
                                                     x-text="group.files.length + ' file(s)'"></span>
@@ -773,10 +776,10 @@
                                     <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2"
                                         x-data="{ expanded: false }">
                                         <button @click="expanded = !expanded"
-                                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors gap-2 min-w-0">
-                                            <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest truncate text-left"
+                                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                            <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest"
                                                 x-text="group.category"></h4>
-                                            <div class="flex items-center gap-3 flex-shrink-0">
+                                            <div class="flex items-center gap-3">
                                                 <span
                                                     class="text-[10px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200"
                                                     x-text="group.files.length + ' file(s)'"></span>

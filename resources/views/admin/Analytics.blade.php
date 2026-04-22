@@ -228,7 +228,7 @@
                     <p class="text-xs text-slate-500 font-medium mt-0.5">Quick-access list of submissions currently requiring action.</p>
                 </div>
                 <div class="flex items-center gap-2 relative z-10">
-                    <span class="px-3 py-1 bg-[#8B0000] text-white text-xs font-bold rounded-lg shadow-sm">{{ count($stuckProposals) }} Pending</span>
+                    <span class="px-3 py-1 bg-[#8B0000] text-white text-xs font-bold rounded-lg shadow-sm">{{ $stuckProposals->total() }} Pending</span>
                 </div>
             </div>
             

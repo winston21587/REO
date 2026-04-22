@@ -141,23 +141,48 @@
                     <i class="fas fa-chart-line text-9xl text-[#8B0000]"></i>
                 </div>
                 
-                <div class="relative z-10 flex flex-col flex-1 w-full h-full">
-                    <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1">Submission Trends</h2>
-                    <div class="flex items-end gap-4 mb-8">
-                        <p class="text-3xl font-extrabold text-slate-900">{{ $overviewTitle }}</p>
-                        <p class="text-sm text-slate-500 font-medium mb-1.5">
-                            @if($startMonth === 'all' && $endMonth === 'all' && $startYear === 'all' && $endYear === 'all')
-                                All Years
-                            @else
-                                {{ $startMonth === 'all' ? 'January' : DateTime::createFromFormat('!m', $startMonth)->format('F') }} {{ $startYear === 'all' ? 'All' : $startYear }}
-                                to 
-                                {{ $endMonth === 'all' ? 'December' : DateTime::createFromFormat('!m', $endMonth)->format('F') }} {{ $endYear === 'all' ? 'All' : $endYear }}
-                            @endif
-                        </p>
+                <div class="relative z-10 flex flex-col flex-1 w-full h-full" x-data="{ viewMode: 'timeline' }">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1" x-text="viewMode === 'timeline' ? 'Submission Trends' : 'Approval Status Trends'">Submission Trends</h2>
+                            <div class="flex items-end gap-4">
+                                <p class="text-3xl font-extrabold text-slate-900" x-text="viewMode === 'timeline' ? '{{ addslashes($overviewTitle) }}' : 'Visual Overview'"></p>
+                                <p class="text-sm text-slate-500 font-medium mb-1.5" x-show="viewMode === 'timeline'">
+                                    @if($startMonth === 'all' && $endMonth === 'all' && $startYear === 'all' && $endYear === 'all')
+                                        All Years
+                                    @else
+                                        {{ $startMonth === 'all' ? 'January' : DateTime::createFromFormat('!m', $startMonth)->format('F') }} {{ $startYear === 'all' ? 'All' : $startYear }}
+                                        to 
+                                        {{ $endMonth === 'all' ? 'December' : DateTime::createFromFormat('!m', $endMonth)->format('F') }} {{ $endYear === 'all' ? 'All' : $endYear }}
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Toggle Button -->
+                        <button @click="viewMode = viewMode === 'timeline' ? 'pie' : 'timeline'" class="group relative inline-flex items-center justify-center bg-slate-100 rounded-xl p-1 shrink-0 z-20 hover:bg-slate-200 transition-colors shadow-inner outline-none">
+                            <div class="absolute inset-y-1 left-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-transform duration-300 ease-out" 
+                                 :class="viewMode === 'pie' ? 'translate-x-full' : 'translate-x-0'"></div>
+                            
+                            <span class="relative z-10 flex items-center justify-center w-10 h-8 text-slate-600 transition-colors" 
+                                  :class="viewMode === 'timeline' ? 'text-[#8B0000]' : ''" title="Timeline Chart">
+                                <i class="fas fa-chart-line"></i>
+                            </span>
+                            <span class="relative z-10 flex items-center justify-center w-10 h-8 text-slate-600 transition-colors" 
+                                  :class="viewMode === 'pie' ? 'text-[#8B0000]' : ''" title="Pie Chart">
+                                <i class="fas fa-chart-pie"></i>
+                            </span>
+                        </button>
                     </div>
 
                     <div class="flex-1 w-full relative min-h-[320px]">
-                        <canvas id="dailyTrendChart" class="absolute inset-0 w-full h-full"></canvas>
+                        <div x-show="viewMode === 'timeline'" x-transition:enter="transition-opacity duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 w-full h-full">
+                            <canvas id="dailyTrendChart" class="w-full h-full"></canvas>
+                        </div>
+                        
+                        <div x-show="viewMode === 'pie'" style="display: none;" x-transition:enter="transition-opacity duration-500 delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 w-full h-full flex items-center justify-center">
+                            <canvas id="approvalPieChart" class="max-h-full"></canvas>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -520,7 +545,64 @@
                         plugins: { legend: { display: false } },
                         scales: {
                             y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0 } },
-                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+
+                // --- 2. Approval Status Doughnut Chart ---
+                const ctxPie = document.getElementById('approvalPieChart').getContext('2d');
+                const approvalDataMap = @json($approvalTrends);
+                
+                // Exclude categories with 0 to keep the chart clean, but maintain original mapping
+                const filteredLabels = [];
+                const filteredData = [];
+                const filteredColors = [];
+                
+                const colorMap = {
+                    'Approved': '#10B981', // Emerald
+                    'Pending': '#F59E0B',  // Amber
+                    'Exempt': '#64748B',   // Slate
+                    'Rejected': '#EF4444'  // Red
+                };
+
+                for (const [key, value] of Object.entries(approvalDataMap)) {
+                    if (value > 0) {
+                        filteredLabels.push(key);
+                        filteredData.push(value);
+                        filteredColors.push(colorMap[key] || '#94A3B8');
+                    }
+                }
+
+                new Chart(ctxPie, {
+                    type: 'doughnut',
+                    data: {
+                        labels: filteredLabels,
+                        datasets: [{
+                            data: filteredData,
+                            backgroundColor: filteredColors,
+                            borderWidth: 2,
+                            borderColor: '#ffffff',
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 25,
+                                    font: { family: 'Inter', size: 14, weight: '600' },
+                                    color: '#475569'
+                                }
+                            },
+                        },
+                        cutout: '70%',
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
                         }
                     }
                 });

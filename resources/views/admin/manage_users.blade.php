@@ -10,6 +10,7 @@
         confirmFormAction: '',
         confirmMethod: 'POST',
         confirmIsDelete: false,
+        titleSearch: '',
 
         triggerConfirm(title, message, buttonText, action, isDelete = false) {
             this.confirmTitle = title;
@@ -18,6 +19,16 @@
             this.confirmFormAction = action;
             this.confirmIsDelete = isDelete;
             this.showConfirmModal = true;
+        },
+
+        get filteredTitles() {
+            if (!this.selectedUser || !this.selectedUser.researcher || !this.selectedUser.researcher.research_titles) return [];
+            if (!this.titleSearch) return this.selectedUser.researcher.research_titles;
+            const search = this.titleSearch.toLowerCase();
+            return this.selectedUser.researcher.research_titles.filter(t => 
+                t.Study_Protocol_title.toLowerCase().includes(search) || 
+                t.Status.toLowerCase().includes(search)
+            );
         }
     }" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
         
@@ -431,6 +442,64 @@
                                         <span x-text="new Date(selectedUser.created_at).toLocaleDateString()"></span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Submitted Titles Section -->
+                        <div class="space-y-4 pt-4 border-t border-slate-100">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fas fa-file-alt text-[#8B0000]"></i> Submitted Titles
+                                </h4>
+                                <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold" 
+                                      x-text="selectedUser.researcher?.research_titles?.length || 0"></span>
+                            </div>
+
+                            <!-- Title Search -->
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text" 
+                                       x-model="titleSearch" 
+                                       placeholder="Search titles or status..." 
+                                       class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
+                            </div>
+
+                            <!-- Titles List -->
+                            <div class="max-h-[300px] overflow-y-auto custom-scrollbar space-y-2 pr-1">
+                                <template x-for="title in filteredTitles" :key="title.id">
+                                    <div class="p-3 rounded-xl border border-slate-100 bg-white hover:border-[#8B0000]/30 transition-all group shadow-sm">
+                                        <div class="flex flex-col gap-2">
+                                            <div class="flex justify-between items-start gap-3">
+                                                <h5 class="text-xs font-bold text-slate-800 leading-tight group-hover:text-[#8B0000] transition-colors" x-text="title.Study_Protocol_title"></h5>
+                                                <span class="shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                                                      :class="{
+                                                          'bg-emerald-50 text-emerald-700': title.Status === 'Approved' || title.Status === 'Completed',
+                                                          'bg-amber-50 text-amber-700': title.Status === 'Pending' || title.Status.includes('Incomplete'),
+                                                          'bg-blue-50 text-blue-700': title.Status.includes('Review') || title.Status.includes('Under'),
+                                                          'bg-red-50 text-red-700': title.Status === 'Disapproved',
+                                                          'bg-slate-50 text-slate-700': !['Approved', 'Completed', 'Pending', 'Disapproved'].some(s => title.Status.includes(s))
+                                                      }"
+                                                      x-text="title.Status"></span>
+                                            </div>
+                                            <div class="flex items-center justify-between mt-1">
+                                                <span class="text-[10px] text-slate-400" x-text="'Submitted: ' + new Date(title.created_at).toLocaleDateString()"></span>
+                                                <a :href="'/admin/view_files/' + title.id" 
+                                                   class="text-[10px] font-bold text-[#8B0000] hover:underline flex items-center gap-1">
+                                                    View Details <i class="fas fa-external-link-alt text-[8px]"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <template x-if="filteredTitles.length === 0">
+                                    <div class="py-12 text-center">
+                                        <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <i class="fas fa-folder-open text-slate-300 text-xl"></i>
+                                        </div>
+                                        <p class="text-xs text-slate-500 font-medium" x-text="titleSearch ? 'No matches found.' : 'No titles submitted yet.'"></p>
+                                    </div>
+                                </template>
                             </div>
                         </div>
 

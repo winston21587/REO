@@ -1,5 +1,25 @@
 <x-super_admin_layout>
-    <div x-data="{ showAddModal: {{ $errors->any() ? 'true' : 'false' }}, showViewModal: false, selectedUser: null }" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
+    <div x-data="{ 
+        showAddModal: {{ $errors->any() ? 'true' : 'false' }}, 
+        showViewModal: false, 
+        selectedUser: null,
+        showConfirmModal: false,
+        confirmTitle: '',
+        confirmMessage: '',
+        confirmButtonText: '',
+        confirmFormAction: '',
+        confirmMethod: 'POST',
+        confirmIsDelete: false,
+
+        triggerConfirm(title, message, buttonText, action, isDelete = false) {
+            this.confirmTitle = title;
+            this.confirmMessage = message;
+            this.confirmButtonText = buttonText;
+            this.confirmFormAction = action;
+            this.confirmIsDelete = isDelete;
+            this.showConfirmModal = true;
+        }
+    }" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
         
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-end pb-6 border-b border-slate-200">
@@ -154,20 +174,29 @@
                                                 <i class="fas fa-eye w-4"></i> View Details
                                             </button>
                                             
-                                            <form action="{{ route('super_admin.reviewers.toggle_status', $user->id) }}" method="POST">
-                                                @csrf
-                                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2 transition-colors">
-                                                    <i class="fas fa-ban w-4"></i> {{ $user->is_verified ? 'Deactivate' : 'Activate' }}
-                                                </button>
-                                            </form>
+                                            <button type="button" 
+                                                    @click="triggerConfirm(
+                                                        '{{ $user->is_verified ? 'Deactivate Account' : 'Activate Account' }}', 
+                                                        'Are you sure you want to {{ $user->is_verified ? 'deactivate' : 'activate' }} {{ $user->first_name }}\'s account?', 
+                                                        '{{ $user->is_verified ? 'Deactivate' : 'Activate' }}', 
+                                                        '{{ route('super_admin.reviewers.toggle_status', $user->id) }}',
+                                                        false
+                                                    )" 
+                                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2 transition-colors">
+                                                <i class="fas fa-ban w-4"></i> {{ $user->is_verified ? 'Deactivate' : 'Activate' }}
+                                            </button>
 
-                                            <form action="{{ route('super_admin.reviewers.delete', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this reviewer? This action cannot be undone.');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
-                                                    <i class="fas fa-trash w-4"></i> Delete Reviewer
-                                                </button>
-                                            </form>
+                                            <button type="button" 
+                                                    @click="triggerConfirm(
+                                                        'Delete Reviewer Account', 
+                                                        'Are you sure you want to delete this reviewer? This action cannot be undone and all associated data will be removed.', 
+                                                        'Delete Reviewer', 
+                                                        '{{ route('super_admin.reviewers.delete', $user->id) }}',
+                                                        true
+                                                    )" 
+                                                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
+                                                <i class="fas fa-trash w-4"></i> Delete Reviewer
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -541,6 +570,57 @@
                                 Close Details
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Confirmation Modal -->
+        <div x-show="showConfirmModal" 
+             class="fixed inset-0 z-[100] overflow-y-auto" 
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @click="showConfirmModal = false"></div>
+
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-100"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    
+                    <div class="bg-white px-6 pt-8 pb-6 text-center">
+                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full" :class="confirmIsDelete ? 'bg-red-50' : 'bg-amber-50'">
+                            <i class="fas" :class="confirmIsDelete ? 'fa-exclamation-triangle text-red-600 text-2xl' : 'fa-info-circle text-amber-600 text-2xl'"></i>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="text-xl font-bold text-slate-900" x-text="confirmTitle"></h3>
+                            <p class="mt-3 text-sm text-slate-500 leading-relaxed" x-text="confirmMessage"></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-center gap-3">
+                        <button type="button" @click="showConfirmModal = false" class="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl transition-all duration-200">
+                            Cancel
+                        </button>
+                        <form :action="confirmFormAction" method="POST" class="w-full sm:w-auto">
+                            @csrf
+                            <template x-if="confirmIsDelete">
+                                @method('DELETE')
+                            </template>
+                            <button type="submit" 
+                                    class="w-full px-8 py-2.5 text-sm font-bold text-white rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+                                    :class="confirmIsDelete ? 'bg-red-600 hover:bg-red-700 shadow-red-900/20' : 'bg-[#8B0000] hover:bg-[#7A0000] shadow-red-900/20'"
+                                    x-text="confirmButtonText">
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

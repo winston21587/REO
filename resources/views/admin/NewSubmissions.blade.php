@@ -241,7 +241,7 @@
                                 <label
                                     class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors group">
                                     <input type="checkbox" id="verifyOrCheckbox" name="verify_or" value="1"
-                                        onchange="handleOrVerifyChange(this)"
+                                        onchange="refreshCompleteOptionLock()"
                                         class="w-5 h-5 text-emerald-600 focus:ring-emerald-500 rounded border-slate-300">
                                     <div>
                                         <span class="text-sm font-bold text-slate-700">Verify this receipt</span>
@@ -286,21 +286,21 @@
                             <div id="cvPendingOptions" class="hidden space-y-2">
                                 <p class="text-[11px] text-slate-500 italic mb-1">Review the researcher's CV file in View Details, then verify or flag a mismatch.</p>
                                 <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 transition-colors group">
-                                    <input type="radio" name="cv_action" id="cv_action_verify" value="verify" class="text-emerald-600 focus:ring-emerald-500">
+                                    <input type="radio" name="cv_action" id="cv_action_verify" value="verify" onchange="refreshCompleteOptionLock()" class="text-emerald-600 focus:ring-emerald-500">
                                     <div>
                                         <span class="text-sm font-bold text-slate-700">Verify CV</span>
                                         <p class="text-[11px] text-slate-500 mt-0.5">Classification matches uploaded CV.</p>
                                     </div>
                                 </label>
                                 <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-red-50 hover:border-red-200 transition-colors group">
-                                    <input type="radio" name="cv_action" id="cv_action_invalidate" value="invalidate" class="text-red-600 focus:ring-red-500" onchange="toggleCvRemarks(true)">
+                                    <input type="radio" name="cv_action" id="cv_action_invalidate" value="invalidate" class="text-red-600 focus:ring-red-500" onchange="toggleCvRemarks(true); refreshCompleteOptionLock()">
                                     <div>
                                         <span class="text-sm font-bold text-slate-700">Mark as Invalid</span>
                                         <p class="text-[11px] text-slate-500 mt-0.5">Mismatch between CV and stated classification.</p>
                                     </div>
                                 </label>
                                 <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors group">
-                                    <input type="radio" name="cv_action" id="cv_action_skip" value="" checked class="text-slate-500 focus:ring-slate-400" onchange="toggleCvRemarks(false)">
+                                    <input type="radio" name="cv_action" id="cv_action_skip" value="" checked class="text-slate-500 focus:ring-slate-400" onchange="toggleCvRemarks(false); refreshCompleteOptionLock()">
                                     <div>
                                         <span class="text-sm font-bold text-slate-700">Skip for now</span>
                                         <p class="text-[11px] text-slate-500 mt-0.5">Verify later from View Details.</p>
@@ -588,6 +588,15 @@
             orNoReceipt.classList.add('hidden');
             orFileLink.classList.add('hidden');
 
+            // Store initial state for the lock logic
+            window._triageModalState = {
+                id: id,
+                isOrVerified: isOrVerified,
+                hasOrFile: !!(orFilePath && orFilePath !== 'null' && orFilePath !== ''),
+                cvStatus: cvStatus,
+                hasProjectType: hasProjectType
+            };
+
             if (orFilePath && orFilePath !== 'null' && orFilePath !== '') {
                 const filename = orFilePath.split('/').pop();
                 orNumEl.innerHTML = `<span class="text-emerald-600 flex items-center gap-1.5 w-[200px]" title="${filename}">
@@ -600,16 +609,13 @@
 
                 if (isOrVerified) {
                     orVerified.classList.remove('hidden');
-                    lockCompleteOption(false);
                 } else {
                     orCheckbox.classList.remove('hidden');
                     if (verifyCheckbox) verifyCheckbox.checked = false;
-                    lockCompleteOption(true);
                 }
             } else {
                 orNumEl.textContent = '—';
                 orNoReceipt.classList.remove('hidden');
-                lockCompleteOption(true);
             }
 
             // --- Populate CV Verification Section ---
@@ -655,14 +661,33 @@
                 content.classList.remove('scale-95');
                 content.classList.add('scale-100');
             }, 10);
+
+            // Run lock evaluation
+            refreshCompleteOptionLock();
         }
 
 
 
-        // Locks/unlocks the Complete radio option
-        function lockCompleteOption(locked) {
+        // Evaluates both OR and CV status to lock/unlock "Complete Submission"
+        function refreshCompleteOptionLock() {
+            const state = window._triageModalState || {};
             const completeRadio = document.querySelector('input[value="Complete"]');
             const completeLabel = completeRadio ? completeRadio.closest('label') : null;
+            const verifyOrCheckbox = document.getElementById('verifyOrCheckbox');
+            const cvVerifyRadio = document.getElementById('cv_action_verify');
+
+            // 1. OR Condition: Already verified OR admin just checked the box
+            // Note: If no OR file exists and it's not already verified, it's always false.
+            let orOk = state.isOrVerified || (verifyOrCheckbox && verifyOrCheckbox.checked);
+            if (!state.hasOrFile && !state.isOrVerified) orOk = false;
+
+            // 2. CV Condition: If project type required, must be Valid OR admin just verified.
+            let cvOk = true;
+            if (state.hasProjectType) {
+                cvOk = (state.cvStatus === 'Valid') || (cvVerifyRadio && cvVerifyRadio.checked);
+            }
+
+            const locked = !(orOk && cvOk);
 
             if (locked) {
                 // Force Incomplete if Complete is currently selected
@@ -683,15 +708,6 @@
                 if (completeLabel) {
                     completeLabel.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
                 }
-            }
-        }
-
-        // Called when the verify OR checkbox is toggled
-        function handleOrVerifyChange(checkbox) {
-            if (checkbox.checked) {
-                lockCompleteOption(false);
-            } else {
-                lockCompleteOption(true);
             }
         }
 

@@ -708,6 +708,32 @@ class AdminController extends Controller
         $activeCount = ($statusCounts['For Initial Review'] ?? 0) + ($statusCounts['Under Review'] ?? 0);
         $pendingCount = $statusCounts['Pending'] ?? 0;
 
+        // Extract detailed Approval Status Trends dynamically for the pie chart
+        $trendExempt = (clone $baseQuery)->whereIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+        $trendApproved = (clone $baseQuery)->where('Status', 'Approved')->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+        $trendRejected = (clone $baseQuery)->where('Status', 'Disapproved')->count();
+
+        $trendIntake = (clone $baseQuery)
+            ->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy'])
+            ->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+
+        $trendActiveReview = (clone $baseQuery)
+            ->whereIn('Status', ['For Initial Review', 'Under Review', 'Hardcopy Received - For Initial Review'])
+            ->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+
+        $trendInRevision = (clone $baseQuery)
+            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted'])
+            ->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+
+        $approvalTrends = [
+            'Approved' => $trendApproved,
+            'Intake / New' => $trendIntake,
+            'Active Review' => $trendActiveReview,
+            'In Revision' => $trendInRevision,
+            'Exempt' => $trendExempt,
+            'Rejected' => $trendRejected,
+        ];
+
         // Calculate Completion Rate (Example: Done / Total)
         $completionRate = $totalSubmissions > 0 ? round(($doneCount / $totalSubmissions) * 100) : 0;
 
@@ -809,7 +835,8 @@ class AdminController extends Controller
             'researchCategories',
             'colleges',
             'stuckProposals',
-            'overviewTitle'
+            'overviewTitle',
+            'approvalTrends'
         ));
     }
 

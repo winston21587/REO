@@ -189,7 +189,32 @@ class Research_title_Controller extends Controller
     {
         $researchTitle = Research_title::with(['files', 'adminFiles', 'titleLogs.user'])->findOrFail($id);
         $requirements = DocumentRequirement::all();
-        return view('researcher_files', compact('researchTitle', 'requirements'));
+
+        // Fetch stage-specific general remarks to display to the researcher
+        $stageRemark = null;
+        $status = $researchTitle->Status;
+
+        if (in_array($status, ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
+            // Initial Intake stage — show latest admin_deficiency remark
+            $stageRemark = SubmissionFeedback::where('research_title_id', $id)
+                ->where('type', 'admin_deficiency')
+                ->latest()
+                ->first();
+        } elseif (in_array($status, ['Incomplete Hardcopy', 'Incomplete - Awaiting Hardcopy'])) {
+            // Hardcopy stage — show latest hardcopy_deficiency remark
+            $stageRemark = SubmissionFeedback::where('research_title_id', $id)
+                ->where('type', 'hardcopy_deficiency')
+                ->latest()
+                ->first();
+        } elseif ($status === 'Waiting for Revision') {
+            // Revision stage — show latest admin_deliberation notes
+            $stageRemark = SubmissionFeedback::where('research_title_id', $id)
+                ->where('type', 'admin_deliberation')
+                ->latest()
+                ->first();
+        }
+
+        return view('researcher_files', compact('researchTitle', 'requirements', 'stageRemark'));
     }
 
     public function updateFile(Request $request, $id)

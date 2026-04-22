@@ -66,42 +66,47 @@
 
 <script>
     function openAiPredictModal(id, title, existingSuggestion = null) {
-        document.getElementById('ai-predict-modal-title').textContent = title;
-        document.getElementById('ai-predict-protocol-id').value = id;
+    document.getElementById('ai-predict-modal-title').textContent = title;
+    document.getElementById('ai-predict-protocol-id').value = id;
+    
+    const modal = document.getElementById('aiPredictModal');
+    modal.classList.remove('hidden');
+    window.dispatchEvent(new CustomEvent('open-ai-predict-modal'));
+
+    const loader = document.getElementById('ai-predict-loader');
+    const resultContainer = document.getElementById('ai-predict-result');
+    const errorContainer = document.getElementById('ai-predict-error');
+    const saveBtn = document.getElementById('ai-predict-save-btn');
+    const cancelBtn = document.getElementById('ai-predict-cancel-btn');
+    
+    loader.classList.remove('hidden');
+    resultContainer.classList.add('hidden');
+    errorContainer.classList.add('hidden');
+
+    // Check if there is an existing prediction cached in the database
+    if (existingSuggestion && existingSuggestion !== 'null' && existingSuggestion !== '') {
+        loader.classList.add('hidden');
+        resultContainer.classList.remove('hidden');
+        document.getElementById('ai-predict-suggested-label').innerText = existingSuggestion;
         
-        const modal = document.getElementById('aiPredictModal');
-        modal.classList.remove('hidden');
-        window.dispatchEvent(new CustomEvent('open-ai-predict-modal'));
-
-        const loader = document.getElementById('ai-predict-loader');
-        const resultContainer = document.getElementById('ai-predict-result');
-        const errorContainer = document.getElementById('ai-predict-error');
-        const saveBtn = document.getElementById('ai-predict-save-btn');
-        const cancelBtn = document.getElementById('ai-predict-cancel-btn');
+        // Hide save button since it's already saved
+        saveBtn.classList.add('hidden');
+        saveBtn.classList.remove('flex');
+        cancelBtn.innerText = 'Close';
         
-        loader.classList.remove('hidden');
-        resultContainer.classList.add('hidden');
-        errorContainer.classList.add('hidden');
+        return;
+    }
 
-        // Check if there is an existing prediction cached in the database
-        if (existingSuggestion && existingSuggestion !== 'null' && existingSuggestion !== '') {
-            loader.classList.add('hidden');
-            resultContainer.classList.remove('hidden');
-            document.getElementById('ai-predict-suggested-label').innerText = existingSuggestion;
-            
-            // Hide save button since it's already saved
-            saveBtn.classList.add('hidden');
-            saveBtn.classList.remove('flex');
-            cancelBtn.innerText = 'Close';
-            
-            return;
-        }
-
-        // Reset visibility for new fetches
-        saveBtn.classList.remove('hidden');
-        saveBtn.classList.add('flex');
-        cancelBtn.innerText = 'Cancel';
-
+    // Reset visibility for new fetches
+    saveBtn.classList.remove('hidden');
+    saveBtn.classList.add('flex');
+    cancelBtn.innerText = 'Cancel';
+    
+    // Add retry logic for model loading
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    function makePrediction() {
         fetch('/admin/predict', {
             method: 'POST',
             headers: {
@@ -111,30 +116,40 @@
             },
             body: JSON.stringify({ text: title })
         })
-        .then(res => res.json())
+        .then(res => {
+            if (res.status === 503 && retryCount < maxRetries) {
+                // Model is loading, retry after delay
+                retryCount++;
+                loader.querySelector('span').innerHTML = `Model Loading... (Attempt ${retryCount}/${maxRetries})`;
+                setTimeout(makePrediction, 3000);
+                return;
+            }
+            return res.json();
+        })
         .then(data => {
+            if (!data) return; // Handling the 503 retry case
+            
             loader.classList.add('hidden');
-            if (data.success && (data.label || (data.prediction && data.prediction.prediction))) {
+            if (data.success && data.label) {
                 resultContainer.classList.remove('hidden');
-                let predLabel = data.label || data.prediction.prediction;
-                // Normalize label to match standard system values
-                if (predLabel.includes('Full')) predLabel = 'Full Board Review';
-                else if (predLabel.includes('Expedited')) predLabel = 'Expedited Review';
-                else if (predLabel.includes('Exempt')) predLabel = 'Exempt Review';
-                else if (!predLabel.includes('Review')) predLabel += ' Review';
-
+                let predLabel = data.label;
                 document.getElementById('ai-predict-suggested-label').innerText = predLabel;
             } else {
                 errorContainer.classList.remove('hidden');
                 if (data.message) document.getElementById('ai-predict-error-msg').innerText = data.message;
+                else if (data.loading) document.getElementById('ai-predict-error-msg').innerText = 'Model is still loading. Please try again in a moment.';
             }
         })
         .catch(err => {
             console.error('AI Predict Error:', err);
             loader.classList.add('hidden');
             errorContainer.classList.remove('hidden');
+            document.getElementById('ai-predict-error-msg').innerText = 'Network error. Please check your connection and try again.';
         });
     }
+    
+    makePrediction();
+}
 
     function saveAiPrediction() {
         const id = document.getElementById('ai-predict-protocol-id').value;

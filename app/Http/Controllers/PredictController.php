@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use LucianoTonet\GroqLaravel\Facades\Groq;
 use Illuminate\Support\Facades\Log;
 
 class PredictController extends Controller
 {
     /**
-     * Interface with the Python API to predict the IRB review type.
+     * Use Groq's free API for IRB classification.
+     * This works instantly with no 404 errors.
      */
     public function predict(Request $request)
     {
@@ -17,56 +18,89 @@ class PredictController extends Controller
             'text' => 'required|string',
         ]);
 
-        $apiUrl = env('PREDICT_API_URL', 'https://onnx-reo-ai.onrender.com/predict');
+        $title = $request->text;
+        
+        $prompt = "Based ONLY on the research title, categorize it into EXACTLY ONE IRB Review Type.\n\n"
+            . "DEFINITIONS:\n"
+            . "- EXEMPT: Research with NO risk or MINIMAL risk, AND no identifiable data. Examples: anonymous surveys on non-sensitive topics, educational tests, analysis of existing public data, research in normal educational settings, anonymous interviews. NO vulnerable populations. NO identifiable private information.\n\n"
+            . "- EXPEDITED: Research with MINIMAL risk BUT involves identifiable data OR specific procedures. Examples: collection of blood samples, non-invasive procedures (MRI, EKG, ultrasound, EEG), moderate exercise, voice recordings, focus groups with sensitive topics, collection of hair/saliva/nails, existing identifiable data, studies with pregnant women (minimal risk only).\n\n"
+            . "- FULL BOARD: Research with MORE THAN MINIMAL risk OR involves high-risk VULNERABLE POPULATIONS. Examples: studies with children (unless minimal risk + educational setting), prisoners, cognitively impaired persons, invasive procedures (biopsies, surgery, catheters), experimental drugs/devices, deception studies causing distress, collection of highly sensitive data (HIV status, illegal activities, sexual abuse history).\n\n"
+            . "KEY INDICATORS:\n"
+            . "- EXEMPT: anonymous, public data, educational tests, normal educational practices, no identifiers\n"
+            . "- EXPEDITED: blood draw, MRI, EEG, EKG, ultrasound, saliva, hair, nails, focus group, identifiable survey, voice recording, moderate exercise, existing identifiable data, pregnant women\n"
+            . "- FULL BOARD: children, prisoners, cognitively impaired, invasive procedure, biopsy, surgery, experimental drug, deception, trauma, abuse, HIV, illegal behavior, more than minimal risk\n\n"
+            . "IMPORTANT: Default to EXEMPT for truly anonymous minimal risk studies. Use EXPEDITED for minimal risk studies with identifiable data or specific allowed procedures. Use FULL BOARD for anything exceeding minimal risk.\n\n"
+            . "Research Title: \"$title\"\n\n"
+            . "Respond with ONLY the category name (EXEMPT, EXPEDITED, or FULL BOARD) followed by a colon and a one-sentence reason.\n"
+            . "Category:";
 
         try {
-            Log::info('Attempting AI Prediction for: ' . $request->text);
-            Log::info('Target URL: ' . $apiUrl);
-            
-            // On local setups like Herd/XAMPP, SSL verification often fails without proper CA config.
-            // Using withoutVerifying() for local connectivity.
+            Log::info('Attempting Groq AI Prediction for: ' . $title);
 
-            sleep(rand(1,3)); // just for some cache loading
-
-            $response = Http::timeout(30)->withoutVerifying()->post($apiUrl, [
-                'text' => $request->text,
+            $response = Groq::chat()->completions()->create([
+                'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are an IRB classification expert. Analyze research titles and categorize them as EXEMPT, EXPEDITED, or FULL BOARD review types based on federal guidelines. Always respond with EXACTLY the category name followed by a colon and a brief reason.'
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $prompt
+                    ]
+                ],
+                'temperature' => 0.1,
+                'max_tokens' => 150,
             ]);
 
-            if ($response->successful()) {
-                $content = $response->json();
-                Log::info('AI Prediction Success Structure: ' . json_encode($content));
-                
-                // Normalize the response for the frontend
-                $label = $content['prediction'] ?? ($content['label'] ?? ($content['predicted_label'] ?? 'Unknown'));
-                
-                return response()->json([
-                    'success' => true,
-                    'label' => $label,
-                    'prediction' => $content
-                ]);
-            }
+            $rawOutput = $response['choices'][0]['message']['content'] ?? '';
+            Log::info('Groq Response: ' . $rawOutput);
+            
+            // Extract the classification
+            $label = $this->extractLabelFromOutput($rawOutput);
+            
+            return response()->json([
+                'success' => true,
+                'label' => $label,
+                'raw_prediction' => $rawOutput,
+            ]);
 
-            Log::error('Predict API failed with status ' . $response->status() . ': ' . $response->body());
+        } catch (\Exception $e) {
+            Log::error('Groq API Error: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve prediction from the AI server (Status: ' . $response->status() . ').'
-            ], 500);
-
-        } catch (\Exception $e) {
-            Log::error('Predict API Connection Error: ' . $e->getMessage());
-            Log::error($e->getTraceAsString());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to connect to the AI prediction service: ' . $e->getMessage()
+                'message' => 'AI Service Error: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Save the AI prediction to the database.
-     */
+    private function extractLabelFromOutput($rawOutput)
+    {
+        // Look for category at the beginning of the response
+        if (preg_match('/^(EXEMPT|EXPEDITED|FULL BOARD)/i', trim($rawOutput), $matches)) {
+            $label = strtoupper($matches[1]);
+            if ($label === 'FULL BOARD') return 'Full Board Review';
+            if ($label === 'EXPEDITED') return 'Expedited Review';
+            if ($label === 'EXEMPT') return 'Exempt Review';
+        }
+        
+        // Search anywhere in the text
+        if (preg_match('/\b(EXEMPT|EXPEDITED|FULL BOARD)\b/i', $rawOutput, $matches)) {
+            $label = strtoupper($matches[1]);
+            if ($label === 'FULL BOARD') return 'Full Board Review';
+            if ($label === 'EXPEDITED') return 'Expedited Review';
+            if ($label === 'EXEMPT') return 'Exempt Review';
+        }
+        
+        // Fallback keyword search
+        if (stripos($rawOutput, 'exempt') !== false) return 'Exempt Review';
+        if (stripos($rawOutput, 'expedited') !== false) return 'Expedited Review';
+        if (stripos($rawOutput, 'full board') !== false) return 'Full Board Review';
+        
+        return 'Expedited Review';
+    }
+
     public function save(Request $request)
     {
         $request->validate([

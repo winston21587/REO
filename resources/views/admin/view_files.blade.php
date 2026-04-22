@@ -281,22 +281,7 @@
                         </button>
                         <div x-show="subOpen" x-transition>
                             <div class="p-5 border-t border-slate-100 space-y-4 bg-white">
-                                <div class="flex justify-between items-start gap-3">
-                                    <div class="flex items-center gap-2 text-blue-500 font-bold text-sm flex-shrink-0">
-                                        <i class="fas fa-tag w-4 text-center"></i> Category
-                                    </div>
-                                    <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 text-right text-xs font-bold text-slate-700">
-                                        {{ $researchTitle->Research_Category ?? 'N/A' }}
-                                    </div>
-                                </div>
-                                <div class="flex justify-between items-start gap-3">
-                                    <div class="flex items-center gap-2 text-emerald-500 font-bold text-sm flex-shrink-0">
-                                        <i class="fas fa-flask w-4 text-center"></i> Type
-                                    </div>
-                                    <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 text-right text-xs font-bold text-slate-700">
-                                        {{ $researchTitle->research_type ?? 'N/A' }}
-                                    </div>
-                                </div>
+
                                 <div class="flex justify-between items-center gap-3">
                                     <div class="flex items-center gap-2 text-purple-500 font-bold text-sm flex-shrink-0">
                                         <i class="fas fa-calendar-alt w-4 text-center"></i> Submitted
@@ -817,4 +802,110 @@
             </div>{{-- end sidebar --}}
         </div>{{-- end grid --}}
     </div>
+
+    <!-- CV Verification Modal -->
+    <div id="cvVerifyModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300" aria-modal="true">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col" id="cvVerifyModalContent">
+            <!-- Dark Header -->
+            <div class="bg-[#1a0505] p-5 border-b border-white/10 relative overflow-hidden flex-shrink-0">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <i class="fas fa-id-badge text-5xl text-white transform rotate-12"></i>
+                </div>
+                <h3 class="text-white font-bold text-lg relative z-10">Verify CV Classification</h3>
+                <p class="text-slate-400 text-xs mt-1 relative z-10">Ensure CV matches selected project type.</p>
+            </div>
+            
+            <form id="cvVerifyForm" method="POST" action="{{ route('admin.verifyCvIsolated', $researchTitle->id) }}">
+                @csrf
+                <div class="p-5 space-y-4">
+                    <p class="text-xs text-slate-500 italic mb-2">Review the researcher's CV file, then verify or flag a mismatch.</p>
+                    
+                    <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 transition-colors group">
+                        <input type="radio" name="cv_action" value="verify" class="mt-0.5 text-emerald-600 focus:ring-emerald-500" onchange="document.getElementById('cvRemarksBox').classList.add('hidden'); document.getElementById('cv_remarks_isolated').required = false;">
+                        <div>
+                            <span class="text-sm font-bold text-slate-700">Verify CV</span>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Classification accurately reflects the CV.</p>
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-red-50 hover:border-red-200 transition-colors group">
+                        <input type="radio" name="cv_action" value="invalidate" class="mt-0.5 text-red-600 focus:ring-red-500" onchange="document.getElementById('cvRemarksBox').classList.remove('hidden'); document.getElementById('cv_remarks_isolated').required = true;">
+                        <div>
+                            <span class="text-sm font-bold text-slate-700">Flag as Invalid</span>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Mismatch detected between CV and classification.</p>
+                        </div>
+                    </label>
+
+                    <div id="cvRemarksBox" class="hidden mt-3">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Reason for Invalid <span class="text-red-500">*</span></label>
+                        <textarea name="cv_remarks" id="cv_remarks_isolated" rows="3"
+                            class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 resize-none shadow-sm"
+                            placeholder="e.g., CV states you are a BS student..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="px-5 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 flex-shrink-0">
+                    <button type="button" onclick="closeCvVerifyModal()"
+                        class="px-5 py-2 text-slate-600 font-bold text-xs hover:bg-white hover:text-slate-800 rounded-lg transition-all border border-transparent hover:border-slate-200">Cancel</button>
+                    <button type="submit" id="cvVerifySubmitBtn"
+                        class="px-5 py-2 bg-[#8B0000] text-white font-bold text-xs rounded-lg shadow-sm hover:bg-[#6d0000] transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
+                        Submit Decision
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        window.openCvVerifyModal = function() {
+            const modal = document.getElementById('cvVerifyModal');
+            const content = document.getElementById('cvVerifyModalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        window.closeCvVerifyModal = function() {
+            const modal = document.getElementById('cvVerifyModal');
+            const content = document.getElementById('cvVerifyModalContent');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        document.getElementById('cvVerifyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const actionFields = this.querySelectorAll('input[name="cv_action"]:checked');
+            if(actionFields.length === 0) {
+                alert('Please select an action.');
+                return;
+            }
+            
+            const btn = document.getElementById('cvVerifySubmitBtn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '{{ csrf_token() }}' },
+                    body: new FormData(this)
+                });
+                const data = await response.json();
+                if(response.ok && data.success) {
+                    window.location.reload();
+                } else {
+                    alert('An error occurred while updating CV verification.');
+                }
+            } catch(error) {
+                console.error(error);
+                alert('A network error occurred.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+    </script>
 </x-admin_layout>

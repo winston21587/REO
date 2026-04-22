@@ -2987,7 +2987,7 @@ class AdminController extends Controller
         return back()->with('success', 'Researcher has been notified to submit their Official Receipt.');
     }
 
-    public function updateResearcherProfile(Request $request, User $user)
+    public function updateUserProfile(Request $request, User $user)
     {
         // Security check
         if ($user->role !== 'researcher') {

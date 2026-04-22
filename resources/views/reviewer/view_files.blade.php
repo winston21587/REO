@@ -398,6 +398,19 @@
                                         {{ $revisionFolders->count() }} submitted
                                     </div>
                                 </div>
+                                @if(auth()->user()->reviewer?->show_researcher_identity)
+                                <div class="flex justify-between items-start gap-3 border-t border-slate-100 pt-3 mt-3">
+                                    <div class="flex items-center gap-2 text-rose-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-user-graduate w-4 text-center"></i> Researcher
+                                    </div>
+                                    <div class="flex flex-col items-end gap-1">
+                                        <div class="bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 text-right text-xs font-bold text-rose-700">
+                                            {{ $researchTitle->researcher->user->first_name ?? '' }} {{ $researchTitle->researcher->user->last_name ?? '' }}
+                                        </div>
+                                        <span class="text-[10px] text-slate-500 font-bold">{{ $researchTitle->researcher->user->email ?? '' }}</span>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>

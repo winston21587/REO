@@ -61,15 +61,7 @@
                 <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
             </div>
 
-            <!-- Account Status Filter -->
-            <div class="relative w-full md:w-40">
-                <select name="account_status" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
-                    <option value="">All Statuses</option>
-                    <option value="active" {{ request('account_status') == 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="deactivated" {{ request('account_status') == 'deactivated' ? 'selected' : '' }}>Deactivated</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-            </div>
+
 
             <!-- College Filter -->
             <div class="relative w-full md:w-48">
@@ -482,7 +474,7 @@
                     </div>
 
                     <div class="px-6 py-6" x-if="selectedUser">
-                        <form :action="`/super-admin/admins/${selectedUser.id}/update`" method="POST" class="space-y-5">
+                        <form :action="'/super-admin/admins/' + selectedUser.id + '/update'" method="POST" class="space-y-5">
                             @csrf
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

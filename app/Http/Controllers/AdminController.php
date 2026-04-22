@@ -749,6 +749,13 @@ class AdminController extends Controller
 
         $colleges = \App\Models\College::all();
 
+        // Retrieve the list of proposals currently actively stuck or moving in the pipeline
+        $stuckProposals = (clone $baseQuery)
+            ->with(['researcher.user'])
+            ->whereNotIn('Status', ['Approved', 'Disapproved', 'Completed', 'Returned', 'Withdraw', 'Withdrawn'])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
         return view('admin.Analytics', compact(
             'totalSubmissions',
             'submissionsGrowthRate',
@@ -788,6 +795,7 @@ class AdminController extends Controller
             'thesisTypes',
             'researchCategories',
             'colleges',
+            'stuckProposals',
             'overviewTitle'
         ));
     }
@@ -1720,6 +1728,17 @@ class AdminController extends Controller
         }
 
         return redirect()->back()->with('success', 'Status updated successfully');
+    }
+
+    public function verifyCvIsolated(Request $request, $id)
+    {
+        $submission = Research_title::findOrFail($id);
+        $this->handleCvAction($request, $submission);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'CV Verification status updated successfully.'
+        ]);
     }
 
     /**

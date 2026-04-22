@@ -296,6 +296,7 @@ Route::middleware(['auth'])->group(function () {
 
         // The Main Update Logic (Covers Triage Modal)
         Route::post('/admin/update-status/{id}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
+        Route::post('/admin/verify-cv-isolated/{id}', [AdminController::class, 'verifyCvIsolated'])->name('admin.verifyCvIsolated');
         Route::get('/admin/reviewer-feedback/{id}', [AdminController::class, 'getReviewerFeedback'])->name('admin.reviewerFeedback');
 
         // Official Receipt Number Logging (Admin Access)

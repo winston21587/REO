@@ -29,17 +29,20 @@
                     <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="open" style="display: none;" x-transition>
-                    <div class="px-6 pt-5 border-t border-slate-100 bg-white">
-                        <div class="relative">
-                            <input type="text" x-model="searchTerm" placeholder="Quickly search logs for keywords, users, decisions, or actions..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent bg-slate-50 transition-shadow">
-                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <div class="px-6 py-4 border-t border-b border-slate-100 bg-slate-50/80 sticky top-0 z-20">
+                        <div class="relative max-w-full">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-slate-400"></i>
+                            </div>
+                            <input type="text" x-model="searchTerm" placeholder="Search audit logs by keywords, users, or actions..." 
+                                class="w-full bg-white pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#8B0000]/10 focus:border-[#8B0000] transition-all shadow-sm">
                         </div>
                     </div>
                     <div class="p-6 bg-white max-h-[500px] overflow-y-auto custom-scrollbar relative pl-8">
                         <div class="absolute left-8 top-6 bottom-6 w-0.5 bg-slate-100 pointer-events-none"></div>
-                        <div class="space-y-6 relative z-10">
+                        <div class="space-y-6 relative z-10 pt-2">
                             @foreach($auditTrail as $log)
-                                <div class="flex gap-4" 
+                                <div class="flex gap-4 group" 
                                      data-search="{{ strtolower(htmlspecialchars($log->action_label . ' ' . $log->actor_name . ' ' . $log->actor_role . ' ' . $log->message)) }}"
                                      x-show="searchTerm === '' || $el.dataset.search.includes(searchTerm.toLowerCase())">
                                     <div class="w-10 h-10 rounded-full {{ $log->color }} {{ $log->border }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 -ml-5 transition-transform hover:scale-110">

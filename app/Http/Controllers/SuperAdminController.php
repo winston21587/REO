@@ -39,6 +39,15 @@ class SuperAdminController extends Controller
                 }
             });
         }
+        if ($request->filled('account_status')) {
+            if ($request->account_status === 'active') {
+                $query->where('is_verified', true);
+            } elseif ($request->account_status === 'deactivated') {
+                $query->where('is_verified', false)->whereNotNull('email_verified_at');
+            } elseif ($request->account_status === 'pending') {
+                $query->where('is_verified', false)->whereNull('email_verified_at');
+            }
+        }
 
         $users = $query->latest()->paginate(10)->withQueryString();
         $colleges = College::all();
@@ -49,10 +58,12 @@ class SuperAdminController extends Controller
     public function createAdmin(Request $request)
     {
         $request->validate([
-            'first_name' => 'required|string|max:255',
+            'first_name'  => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'last_name'   => 'required|string|max:255',
+            'email'       => 'required|string|email|max:255|unique:users',
+            'label'       => 'nullable|string|max:255',
+            'affiliation' => 'nullable|in:internal,external',
         ]);
 
         $otp = (string) rand(100000, 999999);
@@ -61,31 +72,31 @@ class SuperAdminController extends Controller
             DB::beginTransaction();
 
             $user = User::create([
-                'first_name' => $request->first_name,
-                'middle_name' => $request->middle_name,
-                'last_name' => $request->last_name,
-                'email' => $request->email,
-                'password' => Hash::make($otp), 
-                'role' => 'admin',
-                'is_verified' => true,
-                'require_password_change' => true,
+                'first_name'             => $request->first_name,
+                'middle_name'            => $request->middle_name,
+                'last_name'              => $request->last_name,
+                'email'                  => $request->email,
+                'password'               => Hash::make($otp),
+                'role'                   => 'admin',
+                'is_verified'            => true,
+                'require_password_change'=> true,
             ]);
-            
+
             $user->email_verified_at = now();
             $user->save();
 
             Admin::create([
-                'user_id' => $user->id,
+                'user_id'       => $user->id,
+                'label'         => $request->label,
+                'external_user' => $request->affiliation === 'external',
             ]);
 
             DB::commit();
 
-            // Send Email
             try {
                 \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\AdminCreatedMail($user, $otp));
                 $emailStatus = ' An email with their temporary credentials has been sent.';
             } catch (\Exception $e) {
-                // Ignore email failure for the main transaction, but notify user
                 $emailStatus = ' However, the credential email failed to send to ' . $user->email . '.';
             }
 
@@ -160,6 +171,16 @@ class SuperAdminController extends Controller
                     $q->where('external_user', true);
                 }
             });
+        }
+
+        if ($request->filled('account_status')) {
+            if ($request->account_status === 'active') {
+                $query->where('is_verified', true);
+            } elseif ($request->account_status === 'deactivated') {
+                $query->where('is_verified', false)->whereNotNull('email_verified_at');
+            } elseif ($request->account_status === 'pending') {
+                $query->where('is_verified', false)->whereNull('email_verified_at');
+            }
         }
 
         $users = $query->latest()->paginate(10)->withQueryString();
@@ -266,5 +287,60 @@ class SuperAdminController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error deleting reviewer: ' . $e->getMessage());
         }
+    }
+
+    public function updateAdminProfile(Request $request, User $user)
+    {
+        if ($user->role !== 'admin') {
+            return redirect()->back()->with('error', 'Invalid user.');
+        }
+
+        $request->validate([
+            'first_name'  => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name'   => 'required|string|max:255',
+            'email'       => 'required|email|unique:users,email,' . $user->id,
+            'label'       => 'nullable|string|max:255',
+            'affiliation' => 'nullable|in:internal,external',
+        ]);
+
+        $user->update([
+            'first_name'  => $request->first_name,
+            'middle_name' => $request->middle_name,
+            'last_name'   => $request->last_name,
+            'email'       => $request->email,
+        ]);
+
+        if ($user->admin) {
+            $user->admin->update([
+                'label'         => $request->label,
+                'external_user' => $request->affiliation === 'external',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Admin profile updated successfully.');
+    }
+
+    public function updateReviewerProfile(Request $request, User $user)
+    {
+        if ($user->role !== 'reviewer') {
+            return redirect()->back()->with('error', 'Invalid user.');
+        }
+
+        $request->validate([
+            'first_name'  => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name'   => 'required|string|max:255',
+            'email'       => 'required|email|unique:users,email,' . $user->id,
+        ]);
+
+        $user->update([
+            'first_name'  => $request->first_name,
+            'middle_name' => $request->middle_name,
+            'last_name'   => $request->last_name,
+            'email'       => $request->email,
+        ]);
+
+        return redirect()->back()->with('success', 'Reviewer profile updated successfully.');
     }
 }

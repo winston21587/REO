@@ -212,12 +212,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/super-admin/admins', [\App\Http\Controllers\SuperAdminController::class, 'createAdmin'])->name('super_admin.admins.create');
         Route::post('/super-admin/admins/{user}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleAdminStatus'])->name('super_admin.admins.toggle_status');
         Route::delete('/super-admin/admins/{user}', [\App\Http\Controllers\SuperAdminController::class, 'deleteAdmin'])->name('super_admin.admins.delete');
+        Route::post('/super-admin/admins/{user}/update', [\App\Http\Controllers\SuperAdminController::class, 'updateAdminProfile'])->name('super_admin.admins.update');
 
         // Manage Reviewers
         Route::get('/super-admin/reviewers', [\App\Http\Controllers\SuperAdminController::class, 'manageReviewers'])->name('super_admin.manage_reviewers');
         Route::post('/super-admin/reviewers', [\App\Http\Controllers\SuperAdminController::class, 'createReviewer'])->name('super_admin.reviewers.create');
         Route::post('/super-admin/reviewers/{user}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleReviewerStatus'])->name('super_admin.reviewers.toggle_status');
         Route::delete('/super-admin/reviewers/{user}', [\App\Http\Controllers\SuperAdminController::class, 'deleteReviewer'])->name('super_admin.reviewers.delete');
+        Route::post('/super-admin/reviewers/{user}/update', [\App\Http\Controllers\SuperAdminController::class, 'updateReviewerProfile'])->name('super_admin.reviewers.update');
 
         // Manage Fees & Revenue Logs
         Route::get('/super-admin/manage-fees', [\App\Http\Controllers\SuperAdminFeeController::class, 'manageFees'])->name('super_admin.manage_fees');

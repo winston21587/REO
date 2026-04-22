@@ -186,7 +186,9 @@ class SuperAdminController extends Controller
         $users = $query->latest()->paginate(10)->withQueryString();
         $colleges = College::with('departments.programs')->get();
 
-        return view('super_admin.manage_reviewers', compact('users', 'colleges'));
+        $globalVisibility = \App\Models\Reviewer::where('show_researcher_identity', true)->exists();
+
+        return view('super_admin.manage_reviewers', compact('users', 'colleges', 'globalVisibility'));
     }
 
     public function createReviewer(Request $request)

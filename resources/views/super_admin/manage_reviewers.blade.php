@@ -10,13 +10,15 @@
         confirmFormAction: '',
         confirmMethod: 'POST',
         confirmIsDelete: false,
+        confirmFormId: null,
 
-        triggerConfirm(title, message, buttonText, action, isDelete = false) {
+        triggerConfirm(title, message, buttonText, action, isDelete = false, formId = null) {
             this.confirmTitle = title;
             this.confirmMessage = message;
             this.confirmButtonText = buttonText;
             this.confirmFormAction = action;
             this.confirmIsDelete = isDelete;
+            this.confirmFormId = formId;
             this.showConfirmModal = true;
         }
     }" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
@@ -92,12 +94,20 @@
                     <p class="text-[11px] text-slate-500">Toggle whether all reviewers can see researcher names/emails.</p>
                 </div>
             </div>
-            <form action="{{ route('super_admin.reviewers.global_visibility') }}" method="POST">
+            <form id="globalVisibilityForm" action="{{ route('super_admin.reviewers.global_visibility') }}" method="POST"
+                @submit.prevent="triggerConfirm(
+                    'Update Global Visibility?', 
+                    'This action will apply the chosen visibility setting to ALL reviewers in the system. Are you sure you want to proceed?', 
+                    'Yes, Apply to All', 
+                    $el.action,
+                    false,
+                    'globalVisibilityForm'
+                )">
                 @csrf
                 <div class="flex items-center gap-3">
                     <select name="show_researcher_identity" class="pl-4 pr-10 py-2 bg-white border border-emerald-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500 transition-all outline-none appearance-none cursor-pointer text-slate-700">
-                        <option value="0">Hide Identities (Blind)</option>
-                        <option value="1">Show Identities (Open)</option>
+                        <option value="0" @selected(!$globalVisibility)>Hide Identities (Blind)</option>
+                        <option value="1" @selected($globalVisibility)>Show Identities (Open)</option>
                     </select>
                     <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm">
                         Apply Globally
@@ -755,17 +765,25 @@
                         <button type="button" @click="showConfirmModal = false" class="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl transition-all duration-200">
                             Cancel
                         </button>
-                        <form :action="confirmFormAction" method="POST" class="w-full sm:w-auto">
-                            @csrf
-                            <template x-if="confirmIsDelete">
-                                @method('DELETE')
-                            </template>
-                            <button type="submit" 
-                                    class="w-full px-8 py-2.5 text-sm font-bold text-white rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-                                    :class="confirmIsDelete ? 'bg-red-600 hover:bg-red-700 shadow-red-900/20' : 'bg-[#8B0000] hover:bg-[#7A0000] shadow-red-900/20'"
+                        <div class="w-full sm:w-auto">
+                            <form :action="confirmFormAction" method="POST" x-show="!confirmFormId">
+                                @csrf
+                                <template x-if="confirmIsDelete">
+                                    @method('DELETE')
+                                </template>
+                                <button type="submit" 
+                                        class="w-full px-8 py-2.5 text-sm font-bold text-white rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+                                        :class="confirmIsDelete ? 'bg-red-600 hover:bg-red-700 shadow-red-900/20' : 'bg-[#8B0000] hover:bg-[#7A0000] shadow-red-900/20'"
+                                        x-text="confirmButtonText">
+                                </button>
+                            </form>
+                            <button x-show="confirmFormId" 
+                                    @click="document.getElementById(confirmFormId).submit()"
+                                    type="button"
+                                    class="w-full px-8 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
                                     x-text="confirmButtonText">
                             </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>

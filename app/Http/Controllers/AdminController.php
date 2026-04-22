@@ -522,7 +522,7 @@ class AdminController extends Controller
                 $dailyData = [0];
                 $dayLabels = [date('Y')];
             }
-        } elseif (($hasExactDates && tap(Carbon::parse($exactStart), fn($s) => $s->diffInDays(Carbon::parse($exactEnd)) > 90)) || (!$hasExactDates && ($startYear !== $endYear || $startYear === 'all' || $endYear === 'all'))) {
+        } elseif (($hasExactDates && Carbon::parse($exactStart)->diffInDays(Carbon::parse($exactEnd)) > 90) || (!$hasExactDates && ($startYear !== $endYear || $startYear === 'all' || $endYear === 'all'))) {
             // Multiple years or > 90 days -> Group by Month/Year
             $overviewTitle = 'Monthly Overview';
             $query = clone $baseQuery;
@@ -541,7 +541,7 @@ class AdminController extends Controller
                 $dailyData = [0];
                 $dayLabels = [date('M Y')];
             }
-        } elseif ($hasExactDates && tap(Carbon::parse($exactStart), fn($s) => $s->diffInDays(Carbon::parse($exactEnd)) > 31 && $s->diffInDays(Carbon::parse($exactEnd)) <= 90)) {
+        } elseif ($hasExactDates && Carbon::parse($exactStart)->diffInDays(Carbon::parse($exactEnd)) > 31 && Carbon::parse($exactStart)->diffInDays(Carbon::parse($exactEnd)) <= 90) {
             // Mid-range exact dates (1 to 3 months) -> Group by Week
             $overviewTitle = 'Weekly Overview';
             $query = clone $baseQuery;

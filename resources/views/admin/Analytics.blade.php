@@ -225,7 +225,33 @@
 
             document.addEventListener('DOMContentLoaded', function() {
                 toggleCollegeFilter();
+                toggleExactDates();
             });
+
+            function toggleExactDates() {
+                const exactStart = document.getElementById('filter_exact_start').value;
+                const exactEnd = document.getElementById('filter_exact_end').value;
+                
+                const startMonth = document.getElementById('filter_start_month');
+                const endMonth = document.getElementById('filter_end_month');
+                const startYear = document.getElementById('filter_start_year');
+                const endYear = document.getElementById('filter_end_year');
+                
+                // Disable if either exact date has a value
+                const disableMonthsAndYears = (exactStart !== '' || exactEnd !== '');
+
+                if (disableMonthsAndYears) {
+                    if (startMonth) { startMonth.disabled = true; startMonth.classList.add('opacity-50', 'bg-slate-100'); }
+                    if (endMonth) { endMonth.disabled = true; endMonth.classList.add('opacity-50', 'bg-slate-100'); }
+                    if (startYear) { startYear.disabled = true; startYear.classList.add('opacity-50', 'bg-slate-100'); }
+                    if (endYear) { endYear.disabled = true; endYear.classList.add('opacity-50', 'bg-slate-100'); }
+                } else {
+                    if (startMonth) { startMonth.disabled = false; startMonth.classList.remove('opacity-50', 'bg-slate-100'); }
+                    if (endMonth) { endMonth.disabled = false; endMonth.classList.remove('opacity-50', 'bg-slate-100'); }
+                    if (startYear) { startYear.disabled = false; startYear.classList.remove('opacity-50', 'bg-slate-100'); }
+                    if (endYear) { endYear.disabled = false; endYear.classList.remove('opacity-50', 'bg-slate-100'); }
+                }
+            }
 
             function toggleCollegeFilter() {
                 const affiliationSelect = document.getElementById('filter_affiliation');
@@ -532,11 +558,11 @@
                                     <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000]">Specific Date <span class="text-[10px] text-slate-400 font-normal normal-case tracking-normal">(Start to End)</span></h4>
                                     <div class="flex items-center gap-2 mt-2">
                                         <div class="relative flex-1">
-                                            <input type="date" name="exact_start" id="filter_exact_start" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
+                                            <input type="date" name="exact_start" id="filter_exact_start" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value; toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
                                         </div>
                                         <span class="text-slate-400 font-bold">-</span>
                                         <div class="relative flex-1">
-                                            <input type="date" name="exact_end" id="filter_exact_end" value="{{ request('exact_end') }}" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
+                                            <input type="date" name="exact_end" id="filter_exact_end" value="{{ request('exact_end') }}" onchange="toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
                                         </div>
                                     </div>
                                 </div>

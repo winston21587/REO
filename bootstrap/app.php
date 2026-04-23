@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
             $middleware->alias([
         'role' => \App\Http\Middleware\RoleMiddleware::class,
         'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+        'rate_limit_submissions' => \App\Http\Middleware\RateLimitSubmissions::class,
     ]);
         
     $middleware->redirectGuestsTo(fn (Illuminate\Http\Request $request) => route('login'));

@@ -23,3 +23,8 @@ public/uploads/official_receipts/
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+/storage/app/public/certificates/*.pdf
+/storage/app/public/certificates/generated/
+/storage/app/public/recommendation_letters/*.pdf
+/storage/app/public/recommendation_letters/generated/

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
 use App\Models\DocumentRequirement;
+use Illuminate\Support\Facades\Log;
 use App\Models\SubmissionFeedback;
 use App\Models\User;
 use App\Models\Researcher;
@@ -143,10 +144,11 @@ class AdminController extends Controller
 
     public function analyticsDetails(Request $request)
     {
-        $type = $request->input('type');
+        try {
+            $type = $request->input('type');
 
-        // --- Reuse Filter Logic ---
-        $startYear = $request->input('start_year', 'all');
+            // --- Reuse Filter Logic ---
+            $startYear = $request->input('start_year', 'all');
         $endYear = $request->input('end_year', 'all');
         $startMonth = $request->input('start_month', 1);
         if ($startMonth === 'all')
@@ -294,7 +296,14 @@ class AdminController extends Controller
             ];
         });
 
-        return response()->json($data);
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Analytics Details Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            return response()->json(['error' => 'Server Error'], 500);
+        }
     }
 
     public function analytics(Request $request)
@@ -658,6 +667,8 @@ class AdminController extends Controller
             ->where('Review_Type', '!=', 'N/A')
             ->distinct()
             ->pluck('Review_Type')
+            ->push('Exempt') // Ensure Exempt is always an option
+            ->unique()
             ->sort()
             ->values();
 
@@ -676,13 +687,14 @@ class AdminController extends Controller
                 'Hardcopy Received - For Initial Review',
                 'For Initial Review',
                 'Under Review',
-                'Waiting for Revision',
             ],
-            'Final Verdicts' => [
+            'Revision Stage' => [
+                'Waiting for Revision',
+                'Revision Submitted',
+            ],
+            'Certificate Stage' => [
                 'Approved',
                 'Disapproved',
-                'Complete - Awaiting Hardcopy',
-                'Completed'
             ]
         ];
 
@@ -1355,6 +1367,9 @@ class AdminController extends Controller
                     ]);
                 }
 
+                // Handle CV Verification action (can be done alongside Complete or Incomplete)
+                $this->handleCvAction($request, $submission);
+
                 $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
                 $message = "Your submission \"{$submission->Study_Protocol_title}\" document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
 
@@ -1384,6 +1399,9 @@ class AdminController extends Controller
                         $message .= "\n- " . $doc;
                     }
                 }
+
+                // Handle CV Verification action (can be done alongside Incomplete)
+                $this->handleCvAction($request, $submission);
 
             } elseif ($request->classification === 'Undo') {
                 $newStatus = 'Pending';
@@ -1647,6 +1665,59 @@ class AdminController extends Controller
         }
 
         return redirect()->back()->with('success', 'Status updated successfully');
+    }
+
+    /**
+     * Shared helper: process cv_action from the triage modal.
+     * Handles 'verify' (Valid) and 'invalidate' (Invalid) choices.
+     */
+    private function handleCvAction(Request $request, Research_title $submission): void
+    {
+        $cvAction = $request->input('cv_action');
+
+        if ($cvAction === 'verify') {
+            $submission->is_cv_verified = true;
+            $submission->cv_verification_status = 'Valid';
+            $submission->cv_rejection_remarks = null;
+            $submission->save();
+
+            TitleLog::create([
+                'research_title_id' => $submission->id,
+                'user_id'           => auth()->id(),
+                'action'            => 'CV Classification Verified',
+                'description'       => "Admin verified CV classification during Initial Intake. Project type: {$submission->project_type}.",
+            ]);
+
+        } elseif ($cvAction === 'invalidate') {
+            $cvRemarks = $request->input('cv_remarks', '');
+
+            $submission->is_cv_verified = false;
+            $submission->cv_verification_status = 'Invalid';
+            $submission->cv_rejection_remarks = $cvRemarks;
+            $submission->Status = 'Incomplete'; // Force incomplete on CV mismatch
+            $submission->save();
+
+            TitleLog::create([
+                'research_title_id' => $submission->id,
+                'user_id'           => auth()->id(),
+                'action'            => 'CV Classification Invalid',
+                'description'       => "Admin flagged CV mismatch during Initial Intake. Submission set to Incomplete. Remarks: {$cvRemarks}",
+            ]);
+
+            // Notify researcher
+            $researcher = $submission->researcher;
+            if ($researcher) {
+                UserNotification::create([
+                    'user_id'     => $researcher->user_id,
+                    'research_id' => $submission->id,
+                    'title'       => 'CV Classification Mismatch',
+                    'message'     => "Your submission \"{$submission->Study_Protocol_title}\" has been flagged for an incorrect project type. Please correct your classification.\n\nReason: {$cvRemarks}",
+                    'type'        => 'warning',
+                    'is_read'     => false,
+                ]);
+            }
+        }
+        // If cv_action is empty (skip), do nothing
     }
 
     public function assignReviewers(Request $request, $id)
@@ -2247,6 +2318,12 @@ class AdminController extends Controller
         $expiryFormatted = $request->has('cover_expiry_date') ? Carbon::parse($request->cover_expiry_date)->format('F j, Y') : '';
         $formattedPickup = $request->has('pickup_date') ? Carbon::parse($request->pickup_date)->format('F j, Y') : '';
 
+        // --- CRITICAL: Define TCPDF font path BEFORE any TCPDF object is instantiated ---
+        // This ensures both the Cover Letter and Certificate use the correct custom font directory.
+        if (!defined('K_PATH_FONTS')) {
+            define('K_PATH_FONTS', public_path('fonts' . DIRECTORY_SEPARATOR . 'tcpdf' . DIRECTORY_SEPARATOR));
+        }
+
         // ----------------------------------------------------------------
         // 1. Generate Cover Letter
         // ----------------------------------------------------------------
@@ -2329,11 +2406,7 @@ class AdminController extends Controller
                 return back()->with('error', 'Certificate of Exemption template not found.');
             }
 
-            // Map TCPDF font cache to the pre-compiled directory to avoid on-the-fly generation issues
-            if (!defined('K_PATH_FONTS')) {
-                define('K_PATH_FONTS', public_path('fonts/tcpdf/'));
-            }
-
+            // Use dynamic font registration to ensure metadata files are available in K_PATH_FONTS
             $certPdf = new \setasign\Fpdi\Tcpdf\Fpdi();
             $certPdf->setSourceFile($certTemplatePath);
             $certTpl = $certPdf->importPage(1);
@@ -2364,25 +2437,29 @@ class AdminController extends Controller
             $certPdf->SetXY(30, 90);
             $certPdf->MultiCell($w - 60, 6, $request->shared_researchers, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', false);
 
-            // ── Title — Colette 11pt, centered, #2b1511 ──
-            // Note: only colette.php (Regular) is compiled — no bold variant exists.
+            // ── Title — Colette (dynamic registration) 11pt, centered, #2b1511 ──
+            $coletteFontName = \TCPDF_FONTS::addTTFfont(public_path('fonts/Colette.ttf'), 'TrueTypeUnicode', '', 32, public_path('fonts/tcpdf/'));
+            if (!$coletteFontName) $coletteFontName = 'helvetica';
+
             $certPdf->SetTextColor(43, 21, 17); // #2b1511
-            $certPdf->SetFont('colette', '', 11);
+            $certPdf->SetFont($coletteFontName, '', 11);
             $certPdf->SetXY(70, 157.5);
             $certPdf->MultiCell(115, 6, $request->shared_title, 0, 'C');
 
             // ── REO Code — Colette 11pt, centered, #2b1511 ──
             if ($request->shared_reo_code) {
-                $certPdf->SetFont('colette', '', 11);
+                $certPdf->SetFont($coletteFontName, '', 11);
                 $certPdf->SetXY(20, 176);
                 $certPdf->Cell($w - 60, 6, $request->shared_reo_code, 0, 0, 'C');
             }
 
-            // ── Summary / scope of exemption — Montserrat 11pt, justified, #2b1511 ──
-            // montserrat.php is pre-compiled in public/fonts/tcpdf/
+            // ── Summary / scope of exemption — Montserrat (dynamic registration) 11pt, justified, #2b1511 ──
             if ($request->cert_reo_summary) {
+                $montserratFontName = \TCPDF_FONTS::addTTFfont(public_path('fonts/Montserrat.ttf'), 'TrueTypeUnicode', '', 32, public_path('fonts/tcpdf/'));
+                if (!$montserratFontName) $montserratFontName = 'helvetica';
+
                 $certPdf->SetTextColor(43, 21, 17); // #2b1511
-                $certPdf->SetFont('montserrat', '', 11);
+                $certPdf->SetFont($montserratFontName, '', 11);
                 $certPdf->SetXY(30, 185);
                 $certPdf->MultiCell($w - 60, 5, $request->cert_reo_summary, 0, 'J', false, 1, null, null, true, 0, false, true, 0, 'T', false);
             }

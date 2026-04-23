@@ -397,7 +397,6 @@
     </div>
 
     <!-- Reusable File Upload Component -->
-    @verbatim
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('submissionForm', () => ({
@@ -502,11 +501,13 @@
                 }
             }
 
-            // File Size Validation
+            // File Size Validation & Progress Tracking
             document.getElementById('submission-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+
                 const fileInputs = document.querySelectorAll('input[type="file"]');
                 let totalSize = 0;
-                const maxSize = 25 * 1024 * 1024; // 25MB in bytes
+                const maxSize = 25 * 1024 * 1024; // 25MB
 
                 fileInputs.forEach(input => {
                     if (input.files.length > 0) {
@@ -517,13 +518,68 @@
                 });
 
                 if (totalSize > maxSize) {
-                    e.preventDefault();
                     const sizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
                     alert(`Total file size (${sizeInMB} MB) exceeds the maximum limit of 25 MB.\n\nPlease reduce the file sizes or upload fewer files.`);
+                    return;
                 }
+
+                // Show Progress Modal
+                const progressModal = document.getElementById('upload-progress-modal');
+                const progressBar = document.getElementById('upload-progress-bar');
+                const percentageText = document.getElementById('upload-percentage');
+                const sizeText = document.getElementById('upload-size');
+                
+                if (progressModal) progressModal.classList.remove('hidden');
+
+                // Prepare Form Data
+                const formData = new FormData(this);
+                const xhr = new XMLHttpRequest();
+
+                // Helper to format bytes
+                const formatBytes = (bytes, decimals = 2) => {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const dm = decimals < 0 ? 0 : decimals;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+                }
+
+                // Track Upload Progress
+                xhr.upload.addEventListener('progress', function (e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        if (progressBar) progressBar.style.width = percentComplete + '%';
+                        if (percentageText) percentageText.textContent = percentComplete + '%';
+                        
+                        const loadedFormatted = formatBytes(e.loaded);
+                        const totalFormatted = formatBytes(e.total);
+                        if (sizeText) sizeText.textContent = `${loadedFormatted} / ${totalFormatted}`;
+                    }
+                });
+
+                // Handle Completion
+                xhr.onload = function () {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        // Success - Laravel will redirect if successful, but we are in AJAX.
+                        // We should manually redirect to the intended page (home).
+                        window.location.href = "{{ route('home') }}";
+                    } else {
+                        if (progressModal) progressModal.classList.add('hidden');
+                        alert('An error occurred during upload. Please try again.');
+                    }
+                };
+
+                xhr.onerror = function () {
+                    if (progressModal) progressModal.classList.add('hidden');
+                    alert('A network error occurred. Please check your connection.');
+                };
+
+                xhr.open('POST', this.action, true);
+                xhr.setRequestHeader('X-CSRF-TOKEN', "{{ csrf_token() }}");
+                xhr.send(formData);
             });
         </script>
-    @endverbatim
 
     <script>
         // AI Check Logic
@@ -689,5 +745,52 @@
             background: #94a3b8;
         }
     </style>
+
+    <!-- Upload Progress Modal -->
+    <div id="upload-progress-modal" class="fixed inset-0 z-[60] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
+                    <div class="px-8 py-10">
+                        <div class="flex flex-col items-center text-center">
+                            <!-- Animated Icon -->
+                            <div class="relative w-24 h-24 mb-8">
+                                <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
+                                <div class="absolute inset-0 border-4 border-[#8B0000] rounded-full border-t-transparent animate-spin"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i class="fas fa-cloud-upload-alt text-3xl text-[#8B0000] animate-bounce"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-bold text-slate-900 mb-2">Uploading Research Files</h3>
+                            <p class="text-slate-500 text-sm mb-8 max-w-sm">Please do not close this window or refresh the page. We are securely transferring your documents to our servers.</p>
+                            <!-- Progress Bar Container -->
+                            <div class="w-full bg-slate-100 rounded-full h-4 mb-4 relative overflow-hidden shadow-inner">
+                                <div id="upload-progress-bar" class="bg-gradient-to-r from-[#8B0000] to-red-600 h-full w-0 transition-all duration-300 ease-out shadow-lg relative">
+                                    <div class="absolute inset-0 bg-white/20 animate-shimmer"></div>
+                                </div>
+                            </div>
+                            <!-- Progress Stats -->
+                            <div class="flex justify-between w-full text-sm font-bold">
+                                <span id="upload-percentage" class="text-[#8B0000]">0%</span>
+                                <span id="upload-size" class="text-slate-400">0 KB / 0 KB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+            animation: shimmer 2s infinite;
+        }
+    </style>
+
     </div>
 </x-user_layout>

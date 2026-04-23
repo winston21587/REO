@@ -16,7 +16,11 @@
 
 
                 <a href="{{ route('super_admin.analytics.export', request()->query()) }}" id="exportCsvBtn" class="px-4 py-2 bg-white border border-slate-200 text-[#8B0000] rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
-                    <i class="fas fa-file-csv"></i> Export CSV
+                    <i class="fas fa-download"></i> EXPORT TO CSV
+                </a>
+                <!-- EXPORT TO WORD BTN -->
+                <a href="{{ route('super_admin.analytics.export_word', request()->query()) }}" id="exportWordBtn" class="px-4 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-50 transition-colors shadow-sm flex items-center gap-2">
+                    <i class="fas fa-file-word"></i> EXPORT TO WORD
                 </a>
             </div>
         </div>
@@ -141,23 +145,48 @@
                     <i class="fas fa-chart-line text-9xl text-[#8B0000]"></i>
                 </div>
                 
-                <div class="relative z-10 flex flex-col flex-1 w-full h-full">
-                    <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1">Submission Trends</h2>
-                    <div class="flex items-end gap-4 mb-8">
-                        <p class="text-3xl font-extrabold text-slate-900">{{ ($startYear === 'all' && $endYear === 'all') ? 'Yearly Overview' : (($startMonth === $endMonth && $startMonth !== 'all') ? 'Daily Overview' : 'Monthly Overview') }}</p>
-                        <p class="text-sm text-slate-500 font-medium mb-1.5">
-                            @if($startMonth === 'all' && $endMonth === 'all' && $startYear === 'all' && $endYear === 'all')
-                                All Years
-                            @else
-                                {{ $startMonth === 'all' ? 'January' : DateTime::createFromFormat('!m', $startMonth)->format('F') }} {{ $startYear === 'all' ? 'All' : $startYear }}
-                                to 
-                                {{ $endMonth === 'all' ? 'December' : DateTime::createFromFormat('!m', $endMonth)->format('F') }} {{ $endYear === 'all' ? 'All' : $endYear }}
-                            @endif
-                        </p>
+                <div class="relative z-10 flex flex-col flex-1 w-full h-full" x-data="{ viewMode: 'timeline' }">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1" x-text="viewMode === 'timeline' ? 'Submission Trends' : 'Approval Status Trends'">Submission Trends</h2>
+                            <div class="flex items-end gap-4">
+                                <p class="text-3xl font-extrabold text-slate-900" x-text="viewMode === 'timeline' ? '{{ addslashes($overviewTitle) }}' : 'Visual Overview'"></p>
+                                <p class="text-sm text-slate-500 font-medium mb-1.5" x-show="viewMode === 'timeline'">
+                                    @if($startMonth === 'all' && $endMonth === 'all' && $startYear === 'all' && $endYear === 'all')
+                                        All Years
+                                    @else
+                                        {{ $startMonth === 'all' ? 'January' : DateTime::createFromFormat('!m', $startMonth)->format('F') }} {{ $startYear === 'all' ? 'All' : $startYear }}
+                                        to 
+                                        {{ $endMonth === 'all' ? 'December' : DateTime::createFromFormat('!m', $endMonth)->format('F') }} {{ $endYear === 'all' ? 'All' : $endYear }}
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Toggle Button -->
+                        <button @click="viewMode = viewMode === 'timeline' ? 'pie' : 'timeline'" class="group relative inline-flex items-center justify-center bg-slate-100 rounded-xl p-1 shrink-0 z-20 hover:bg-slate-200 transition-colors shadow-inner outline-none">
+                            <div class="absolute inset-y-1 left-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-transform duration-300 ease-out" 
+                                 :class="viewMode === 'pie' ? 'translate-x-full' : 'translate-x-0'"></div>
+                            
+                            <span class="relative z-10 flex items-center justify-center w-10 h-8 text-slate-600 transition-colors" 
+                                  :class="viewMode === 'timeline' ? 'text-[#8B0000]' : ''" title="Timeline Chart">
+                                <i class="fas fa-chart-line"></i>
+                            </span>
+                            <span class="relative z-10 flex items-center justify-center w-10 h-8 text-slate-600 transition-colors" 
+                                  :class="viewMode === 'pie' ? 'text-[#8B0000]' : ''" title="Pie Chart">
+                                <i class="fas fa-chart-pie"></i>
+                            </span>
+                        </button>
                     </div>
 
                     <div class="flex-1 w-full relative min-h-[320px]">
-                        <canvas id="dailyTrendChart" class="absolute inset-0 w-full h-full"></canvas>
+                        <div x-show="viewMode === 'timeline'" x-transition:enter="transition-opacity duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 w-full h-full">
+                            <canvas id="dailyTrendChart" class="w-full h-full"></canvas>
+                        </div>
+                        
+                        <div x-show="viewMode === 'pie'" style="display: none;" x-transition:enter="transition-opacity duration-500 delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 w-full h-full flex items-center justify-center">
+                            <canvas id="approvalPieChart" class="max-h-full"></canvas>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -215,6 +244,107 @@
             </div>
         </div>
 
+        <!-- Pending / Ongoing Proposals Table -->
+        <section class="bg-white rounded-2xl shadow-lg border border-slate-100 mt-8 overflow-hidden animate-[fadeInUp_0.7s_ease-out]">
+            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 relative overflow-hidden">
+                <div class="absolute right-0 top-0 opacity-5 p-4 transform translate-x-4 -translate-y-4">
+                    <i class="fas fa-tasks text-6xl text-[#8b0000]"></i>
+                </div>
+                <div class="relative z-10">
+                    <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Ongoing Pipeline Proposals</h2>
+                    <p class="text-xs text-slate-500 font-medium mt-0.5">Quick-access list of submissions currently requiring action.</p>
+                </div>
+                <div class="flex items-center gap-2 relative z-10">
+                    <span class="px-3 py-1 bg-[#8B0000] text-white text-xs font-bold rounded-lg shadow-sm">{{ $stuckProposals->total() }} Pending</span>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider font-bold border-y border-slate-100">
+                            <th class="px-6 py-4">Protocol Title</th>
+                            <th class="px-6 py-4">Researcher</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4">Last Updated</th>
+                            <th class="px-6 py-4 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($stuckProposals as $proposal)
+                            <tr class="hover:bg-slate-50 transition-colors group">
+                                <td class="px-6 py-4">
+                                    <div class="font-bold text-slate-800 text-sm max-w-md truncate group-hover:text-[#8B0000] transition-colors" title="{{ $proposal->Study_Protocol_title }}">
+                                        {{ $proposal->Study_Protocol_title }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                            {{ substr($proposal->researcher->user->first_name ?? 'U', 0, 1) }}
+                                        </div>
+                                        {{ $proposal->researcher->user->first_name ?? '' }} {{ $proposal->researcher->user->last_name ?? 'Unknown' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @php
+                                        $statusFormat = match($proposal->Status) {
+                                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-600',
+                                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-100 text-blue-700',
+                                            'Waiting for Revision' => 'bg-amber-100 text-amber-700',
+                                            'Complete - Awaiting Hardcopy' => 'bg-emerald-100 text-emerald-700',
+                                            default => 'bg-slate-100 text-slate-600'
+                                        };
+                                    @endphp
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest {{ $statusFormat }}">
+                                        {{ $proposal->Status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-slate-500 font-medium">
+                                    {{ $proposal->updated_at->diffForHumans() }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    @if(Auth::user()->role === 'super_admin' || Auth::user()->role === 'admin')
+                                    <a href="{{ route('admin.view_files', $proposal->id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-[#8B0000] hover:border-[#8B0000] hover:shadow-sm transition-all focus:outline-none" title="View Submission">
+                                        <i class="fas fa-external-link-alt text-xs"></i>
+                                    </a>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                                    <i class="fas fa-check-circle text-4xl mb-3 text-slate-200"></i>
+                                    <p class="text-sm font-semibold">The pipeline is completely clear!</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if ($stuckProposals->hasPages())
+                <div class="px-6 py-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500 bg-slate-50">
+                    <div>
+                        Showing <span class="font-bold text-slate-700">{{ $stuckProposals->firstItem() ?? 0 }}</span> - <span class="font-bold text-slate-700">{{ $stuckProposals->lastItem() ?? 0 }}</span> of <span class="font-bold text-slate-700">{{ $stuckProposals->total() }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        @if ($stuckProposals->onFirstPage())
+                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-left"></i></span>
+                        @else
+                            <a href="{{ $stuckProposals->previousPageUrl() }}" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-left"></i></a>
+                        @endif
+
+                        @if ($stuckProposals->hasMorePages())
+                            <a href="{{ $stuckProposals->nextPageUrl() }}" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-right"></i></a>
+                        @else
+                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-right"></i></span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </section>
+
         <!-- Chart.js CDN -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -223,7 +353,33 @@
 
             document.addEventListener('DOMContentLoaded', function() {
                 toggleCollegeFilter();
+                toggleExactDates();
             });
+
+            function toggleExactDates() {
+                const exactStart = document.getElementById('filter_exact_start').value;
+                const exactEnd = document.getElementById('filter_exact_end').value;
+                
+                const startMonth = document.getElementById('filter_start_month');
+                const endMonth = document.getElementById('filter_end_month');
+                const startYear = document.getElementById('filter_start_year');
+                const endYear = document.getElementById('filter_end_year');
+                
+                // Disable if either exact date has a value
+                const disableMonthsAndYears = (exactStart !== '' || exactEnd !== '');
+
+                if (disableMonthsAndYears) {
+                    if (startMonth) { startMonth.disabled = true; startMonth.classList.add('opacity-50', 'bg-slate-100'); }
+                    if (endMonth) { endMonth.disabled = true; endMonth.classList.add('opacity-50', 'bg-slate-100'); }
+                    if (startYear) { startYear.disabled = true; startYear.classList.add('opacity-50', 'bg-slate-100'); }
+                    if (endYear) { endYear.disabled = true; endYear.classList.add('opacity-50', 'bg-slate-100'); }
+                } else {
+                    if (startMonth) { startMonth.disabled = false; startMonth.classList.remove('opacity-50', 'bg-slate-100'); }
+                    if (endMonth) { endMonth.disabled = false; endMonth.classList.remove('opacity-50', 'bg-slate-100'); }
+                    if (startYear) { startYear.disabled = false; startYear.classList.remove('opacity-50', 'bg-slate-100'); }
+                    if (endYear) { endYear.disabled = false; endYear.classList.remove('opacity-50', 'bg-slate-100'); }
+                }
+            }
 
             function toggleCollegeFilter() {
                 const affiliationSelect = document.getElementById('filter_affiliation');
@@ -393,7 +549,73 @@
                         plugins: { legend: { display: false } },
                         scales: {
                             y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0 } },
-                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+
+                // --- 2. Approval Status Doughnut Chart ---
+                const ctxPie = document.getElementById('approvalPieChart').getContext('2d');
+                const approvalDataMap = @json($approvalTrends);
+                
+                // Exclude categories with 0 to keep the chart clean, but maintain original mapping
+                const filteredLabels = [];
+                const filteredData = [];
+                const filteredColors = [];
+                
+                const colorMap = {
+                    'Approved': '#10B981',      // Emerald 500
+                    'Intake / New': '#A855F7',  // Purple 500
+                    'Active Review': '#3B82F6', // Blue 500
+                    'In Revision': '#F59E0B',   // Amber 500
+                    'Exempt': '#64748B',        // Slate 500
+                    'Rejected': '#EF4444'       // Red 500
+                };
+
+                for (const [key, value] of Object.entries(approvalDataMap)) {
+                    if (value > 0) {
+                        filteredLabels.push(key);
+                        filteredData.push(value);
+                        filteredColors.push(colorMap[key] || '#94A3B8');
+                    }
+                }
+
+                // Fallback for empty state
+                if (filteredData.length === 0) {
+                    filteredLabels.push('No Submissions');
+                    filteredData.push(1);
+                    filteredColors.push('#E2E8F0'); // Light Slate
+                }
+
+                new Chart(ctxPie, {
+                    type: 'doughnut',
+                    data: {
+                        labels: filteredLabels,
+                        datasets: [{
+                            data: filteredData,
+                            backgroundColor: filteredColors,
+                            borderWidth: 2,
+                            borderColor: '#ffffff',
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 25,
+                                    font: { family: 'Inter', size: 14, weight: '600' },
+                                    color: '#475569'
+                                }
+                            },
+                        },
+                        cutout: '70%',
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
                         }
                     }
                 });
@@ -530,11 +752,11 @@
                                     <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000]">Specific Date <span class="text-[10px] text-slate-400 font-normal normal-case tracking-normal">(Start to End)</span></h4>
                                     <div class="flex items-center gap-2 mt-2">
                                         <div class="relative flex-1">
-                                            <input type="date" name="exact_start" id="filter_exact_start" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
+                                            <input type="date" name="exact_start" id="filter_exact_start" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value; toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
                                         </div>
                                         <span class="text-slate-400 font-bold">-</span>
                                         <div class="relative flex-1">
-                                            <input type="date" name="exact_end" id="filter_exact_end" value="{{ request('exact_end') }}" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
+                                            <input type="date" name="exact_end" id="filter_exact_end" value="{{ request('exact_end') }}" onchange="toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
                                         </div>
                                     </div>
                                 </div>

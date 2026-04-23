@@ -398,6 +398,19 @@
                                         {{ $revisionFolders->count() }} submitted
                                     </div>
                                 </div>
+                                @if(auth()->user()->reviewer?->show_researcher_identity)
+                                <div class="flex justify-between items-start gap-3 border-t border-slate-100 pt-3 mt-3">
+                                    <div class="flex items-center gap-2 text-rose-500 font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-user-graduate w-4 text-center"></i> Researcher
+                                    </div>
+                                    <div class="flex flex-col items-end gap-1">
+                                        <div class="bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 text-right text-xs font-bold text-rose-700">
+                                            {{ $researchTitle->researcher->user->first_name ?? '' }} {{ $researchTitle->researcher->user->last_name ?? '' }}
+                                        </div>
+                                        <span class="text-[10px] text-slate-500 font-bold">{{ $researchTitle->researcher->user->email ?? '' }}</span>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -741,38 +754,87 @@
                                         @if($researchTitle->Status !== 'Reviewed')
                                             @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
                                                 <div x-data="{ 
-                                                                                                                                                                                                                                                                                                                                showModal: false, 
-                                                                                                                                                                                                                                                                                                                                step: 1,
-                                                                                                                                                                                                                                                                                                                                scientific_soundness: '',
-                                                                                                                                                                                                                                                                                                                                ethical_issues: '',
-                                                                                                                                                                                                                                                                                                                                icf_issues: '',
-                                                                                                                                                                                                                                                                                                                                summary_of_issues: '',
-                                                                                                                                                                                                                                                                                                                                stepOneValid() {
-                                                                                                                                                                                                                                                                                                                                    return this.scientific_soundness.trim() !== '' 
-                                                                                                                                                                                                                                                                                                                                        && this.ethical_issues.trim() !== '' 
-                                                                                                                                                                                                                                                                                                                                        && this.icf_issues.trim() !== '' 
-                                                                                                                                                                                                                                                                                                                                        && this.summary_of_issues.trim() !== '';
-                                                                                                                                                                                                                                                                                                                                },
-                                                                                                                                                                                                                                                                                                                                proceedToStep2() {
-                                                                                                                                                                                                                                                                                                                                    if (!this.stepOneValid()) {
-                                                                                                                                                                                                                                                                                                                                        alert('Please fill out all deliberation fields before proceeding.');
-                                                                                                                                                                                                                                                                                                                                        return;
-                                                                                                                                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                                                                                                                                    this.step = 2;
-                                                                                                                                                                                                                                                                                                                                },
-                                                                                                                                                                                                                                                                                                                                resetWizard() {
-                                                                                                                                                                                                                                                                                                                                    this.step = 1;
-                                                                                                                                                                                                                                                                                                                                    this.scientific_soundness = '';
-                                                                                                                                                                                                                                                                                                                                    this.ethical_issues = '';
-                                                                                                                                                                                                                                                                                                                                    this.icf_issues = '';
-                                                                                                                                                                                                                                                                                                                                    this.summary_of_issues = '';
-                                                                                                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                                                                                            }"
-                                                    class="w-full">
+                                                                                                                                                                                                                                                                                                                                            showModal: false, 
+                                                                                                                                                                                                                                                                                                                                            step: 1,
+                                                                                                                                                                                                                                                                                                                                            showValidationError: false,
+                                                                                                                                                                              scientific_soundness: '',
+                                                                                                                                                                                                                                                                                                                                            ethical_issues: '',
+                                                                                                                                                                                                                                                                                                                                            icf_issues: '',
+                                                                                                                                                                                                                                                                                                                                            summary_of_issues: '',
+                                                                                                                                                                                                                                                                                                                                            stepOneValid() {
+                                                                                                                                                                                                                                                                                                                                                return this.scientific_soundness.trim() !== '' 
+                                                                                                                                                                                                                                                                                                                                                    && this.ethical_issues.trim() !== '' 
+                                                                                                                                                                                                                                                                                                                                                    && this.icf_issues.trim() !== '' 
+                                                                                                                                                                                                                                                                                                                                                    && this.summary_of_issues.trim() !== '';
+                                                                                                                                                                                                                                                                                                                                            },
+                                                                                                                                                                                                                                                                                                                                            proceedToStep2() {
+                                                                                                                                                                                                                                                                                                                                                if (!this.stepOneValid()) {
+                                                                                                                                                                                                                                                                                                                                                    this.showValidationError = true;
+                                                                                                                                                                                                                                                                                                                                                    return;
+                                                                                                                                                                                                                                                                                                                                                }
+                                                                                                                                                                                                                                                                                                                                                this.step = 2;
+                                                                                                                                                                                                                                                                                                                                            },
+                                                                                                                                                                                                                                                                                                                                            resetWizard() {
+                                                                                                                                                                                                                                                                                                                                                this.step = 1;
+                                                                                                                                                                                                                                                                                                                                                this.scientific_soundness = '';
+                                                                                                                                                                                                                                                                                                                                                this.ethical_issues = '';
+                                                                                                                                                                                                                                                                                                                                                this.icf_issues = '';
+                                                                                                                                                                                                                                                                                                                                                this.summary_of_issues = '';
+                                                                                                                                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                                                                                                                                        }"
+                                                    class="w-full relative">
                                                     <button type="button" @click="resetWizard(); showModal = true"
                                                         class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm shadow-green-900/20 flex items-center justify-center gap-2 text-xs transition-all">
                                                         <i class="fas fa-check-circle"></i> Complete Review
                                                     </button>
+
+                                                    <!-- Validation Error Modal -->
+                                                    <template x-teleport="body">
+                                                        <div x-show="showValidationError" style="display: none;"
+                                                            class="fixed inset-0 z-[120] overflow-y-auto"
+                                                            aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                                                            <div
+                                                                class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                                                <div x-show="showValidationError" x-transition.opacity
+                                                                    class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity"
+                                                                    @click="showValidationError = false" aria-hidden="true"></div>
+                                                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
+                                                                    aria-hidden="true">&#8203;</span>
+                                                                <div x-show="showValidationError" x-transition.scale.origin.bottom
+                                                                    class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
+                                                                    <div
+                                                                        class="bg-white px-6 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-slate-100">
+                                                                        <div class="sm:flex sm:items-start">
+                                                                            <div
+                                                                                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                                                                <i
+                                                                                    class="fas fa-exclamation-triangle text-red-600"></i>
+                                                                            </div>
+                                                                            <div
+                                                                                class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                                                                <h3 class="text-lg leading-6 font-bold text-slate-900"
+                                                                                    id="modal-title">Incomplete Fields</h3>
+                                                                                <div class="mt-2">
+                                                                                    <p class="text-sm text-slate-500">Please provide
+                                                                                        your assessment for all deliberation fields
+                                                                                        (Scientific Soundness, Ethical Issues, ICF
+                                                                                        Issues, and Summary of Issues) before
+                                                                                        proceeding to cast your vote.</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div
+                                                                        class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3 rounded-b-2xl">
+                                                                        <button type="button" @click="showValidationError = false"
+                                                                            class="inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-sm font-bold text-white hover:bg-red-700 transition-colors focus:outline-none w-full sm:w-auto">
+                                                                            I Understand
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </template>
 
                                                     <!-- Embedded CSS for the custom thin scrollbar -->
                                                     <style>
@@ -1379,3 +1441,5 @@
             </div>{{-- end grid --}}
         </div>
 </x-reviewer_layout>
+
+

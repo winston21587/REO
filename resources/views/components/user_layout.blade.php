@@ -99,7 +99,7 @@
                         <x-nav-link href="{{ route('home') }}" route="home" mode="desktop">
                             <i class="fas fa-home w-5 text-center"></i>
                             <span class="whitespace-nowrap transition-opacity duration-300"
-                                x-show="sidebarOpen">Dashboard</span>
+                                x-show="sidebarOpen">Home</span>
                         </x-nav-link>
 
                         <x-nav-link href="{{ route('submit') }}" route="submit" mode="desktop">

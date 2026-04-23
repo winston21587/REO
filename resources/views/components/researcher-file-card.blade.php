@@ -1,10 +1,18 @@
 @props(['file', 'researchTitle'])
 
 @php 
-                    $ext = strtolower($file->filetype);
+    $ext = strtolower($file->filetype);
     $isPdf = $ext === 'pdf';
     $isOffice = in_array($ext, ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']);
     $displayName = $file->category ?? 'General Document';
+
+    $hasRemarks = isset($file->reviewerRemarks) && $file->reviewerRemarks->isNotEmpty();
+
+    if ($hasRemarks) {
+        $cardBorder = 'border-amber-400 shadow-md shadow-amber-100/50 ring-1 ring-amber-400/20';
+    } else {
+        $cardBorder = 'border-slate-200 hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-300';
+    }
 
     if ($isPdf) {
         $iconClass = 'fa-file-pdf text-[#8B0000]';
@@ -72,20 +80,50 @@
             event.target.value = '';
         }
     }
-}"
-    class="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-300 transition-all duration-300 flex flex-col">
+ }"
+    class="group bg-white rounded-2xl border {{ $cardBorder }} overflow-hidden transition-all duration-300 flex flex-col relative">
+    
+    @if($hasRemarks)
+        <!-- Floating Needs Attention Badge -->
+        <div class="absolute -right-12 top-5 bg-amber-500 text-white text-[10px] font-extrabold uppercase tracking-widest py-1 px-12 rotate-45 shadow-sm shadow-amber-500/20 z-20 pointer-events-none">
+            Attention
+        </div>
+    @endif
+
     <!-- Header -->
-    <div class="p-5 flex items-start gap-4 border-b border-slate-50 bg-white relative z-10">
+    <div class="p-5 flex items-start gap-4 border-b {{ $hasRemarks ? 'border-amber-100 bg-amber-50/20' : 'border-slate-50 bg-white' }} relative z-10">
         <div
             class="w-12 h-12 rounded-xl {{ $bgClass }} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
             <i class="fas {{ $iconClass }} text-xl"></i>
         </div>
-        <div class="min-w-0 flex-1">
+        <div class="min-w-0 flex-1 pr-4">
             <h4 class="font-bold text-slate-800 text-sm leading-snug truncate mb-1" x-text="fileName" :title="fileName">
                 {{ $displayName }}
             </h4>
         </div>
     </div>
+
+    <!-- Reviewer Remarks Section -->
+    @if($hasRemarks)
+        <div class="bg-amber-50 border-b border-amber-100 px-5 py-4 z-10 relative">
+            <div class="absolute top-0 left-0 bottom-0 w-1 bg-amber-400"></div>
+            <div class="flex items-center gap-2 mb-3">
+                <i class="fas fa-exclamation-circle text-amber-600"></i>
+                <span class="text-xs font-extrabold text-amber-900 uppercase tracking-widest">Reviewer Feedback</span>
+            </div>
+            <div class="space-y-2">
+                @foreach($file->reviewerRemarks as $remark)
+                    <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-sm relative overflow-hidden">
+                        <p class="text-[10px] font-bold text-slate-500 mb-1 flex items-center gap-1.5 uppercase tracking-wider">
+                            <i class="fas fa-user-edit text-slate-400"></i> 
+                            {{ $remark->reviewer->first_name ?? 'Reviewer' }} {{ $remark->reviewer->last_name ?? '' }}
+                        </p>
+                        <p class="text-xs text-amber-900 leading-relaxed font-medium whitespace-pre-wrap">{{ $remark->remarks }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     <!-- Preview Area -->
     <div

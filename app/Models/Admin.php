@@ -13,6 +13,7 @@ class Admin extends Model
         'user_id',
         'member_type',
         'position',
+        'label',
         'expertise',
         'college',
         'training_completed',

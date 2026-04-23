@@ -33,6 +33,20 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
+            // Check if account is deactivated
+            // Note: is_verified = false AND email_verified_at != null means deactivated
+            if (!$user->is_verified && $user->email_verified_at) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Your account has been deactivated. Please contact support.',
+                ]);
+            }
+
+            if (!$user->is_verified) {
+                Auth::logout();
+                return redirect()->route('verify.show', ['email' => $user->email])->with('error', 'Please verify your email first.');
+            }
+
             if ($user->require_password_change) {
                 return redirect()->route('password.change');
             }

@@ -27,6 +27,9 @@ Route::get('/test-model', function () {
 Route::get('/test_model', function () { // Added this to match your typo!
     return view('test_model');
 });
+
+Route::post('/admin/predict/suggest-reviewer', [App\Http\Controllers\PredictController::class, 'suggestReviewer'])->name('admin.predict.suggest-reviewer');
+
 Route::post('/predict-model', [\App\Http\Controllers\PredictionController::class, 'predict'])->name('predict.model');
 
 Route::middleware('guest')->group(function () {
@@ -202,6 +205,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/super-admin', [AdminController::class, 'superAdminAnalytics'])->name('super_admin.analytics');
         Route::get('/super-admin/analytics/details', [AdminController::class, 'analyticsDetails'])->name('super_admin.analytics.details');
         Route::get('/super-admin/analytics/export', [AdminController::class, 'exportCsv'])->name('super_admin.analytics.export');
+        Route::get('/super-admin/analytics/export-word', [AdminController::class, 'exportWord'])->name('super_admin.analytics.export_word');
 
 
         // Manage Admins
@@ -209,12 +213,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/super-admin/admins', [\App\Http\Controllers\SuperAdminController::class, 'createAdmin'])->name('super_admin.admins.create');
         Route::post('/super-admin/admins/{user}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleAdminStatus'])->name('super_admin.admins.toggle_status');
         Route::delete('/super-admin/admins/{user}', [\App\Http\Controllers\SuperAdminController::class, 'deleteAdmin'])->name('super_admin.admins.delete');
+        Route::post('/super-admin/admins/{user}/update', [\App\Http\Controllers\SuperAdminController::class, 'updateAdminProfile'])->name('super_admin.admins.update');
 
         // Manage Reviewers
         Route::get('/super-admin/reviewers', [\App\Http\Controllers\SuperAdminController::class, 'manageReviewers'])->name('super_admin.manage_reviewers');
         Route::post('/super-admin/reviewers', [\App\Http\Controllers\SuperAdminController::class, 'createReviewer'])->name('super_admin.reviewers.create');
+        Route::post('/super-admin/reviewers/global-visibility', [\App\Http\Controllers\SuperAdminController::class, 'toggleGlobalReviewerVisibility'])->name('super_admin.reviewers.global_visibility');
         Route::post('/super-admin/reviewers/{user}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleReviewerStatus'])->name('super_admin.reviewers.toggle_status');
         Route::delete('/super-admin/reviewers/{user}', [\App\Http\Controllers\SuperAdminController::class, 'deleteReviewer'])->name('super_admin.reviewers.delete');
+        Route::post('/super-admin/reviewers/{user}/update', [\App\Http\Controllers\SuperAdminController::class, 'updateReviewerProfile'])->name('super_admin.reviewers.update');
 
         // Manage Fees & Revenue Logs
         Route::get('/super-admin/manage-fees', [\App\Http\Controllers\SuperAdminFeeController::class, 'manageFees'])->name('super_admin.manage_fees');
@@ -263,12 +270,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');
         Route::get('/admin/analytics/details', [AdminController::class, 'analyticsDetails'])->name('admin.analytics.details');
         Route::get('/admin/analytics/export', [AdminController::class, 'exportCsv'])->name('admin.analytics.export');
+        Route::get('/admin/analytics/export-word', [AdminController::class, 'exportWord'])->name('admin.analytics.export_word');
 
         Route::get('/admin/appointment', function () {
             return view('admin.appointment');
         })->name('admin.appointment');
         Route::get('/admin/users', [AdminController::class, 'manageUsers'])->name('admin.manage_users');
         Route::post('/admin/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
+        Route::post('/admin/users/{id}/update', [AdminController::class, 'updateUserProfile'])->name('admin.users.update');
         Route::post('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
         Route::delete('/admin/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
 
@@ -293,6 +302,7 @@ Route::middleware(['auth'])->group(function () {
 
         // The Main Update Logic (Covers Triage Modal)
         Route::post('/admin/update-status/{id}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
+        Route::post('/admin/verify-cv-isolated/{id}', [AdminController::class, 'verifyCvIsolated'])->name('admin.verifyCvIsolated');
         Route::get('/admin/reviewer-feedback/{id}', [AdminController::class, 'getReviewerFeedback'])->name('admin.reviewerFeedback');
 
         // Official Receipt Number Logging (Admin Access)

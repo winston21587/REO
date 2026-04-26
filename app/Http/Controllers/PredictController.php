@@ -41,7 +41,7 @@ class PredictController extends Controller
             Log::info('Attempting Groq AI Prediction for: ' . $title);
 
             $response = Groq::chat()->completions()->create([
-                'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+                'model' => env('GROQ_MODEL', 'GROQ_MODEL'),
                 'messages' => [
                     [
                         'role' => 'system',

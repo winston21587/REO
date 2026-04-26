@@ -1043,6 +1043,188 @@ class AdminController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    public function exportWord(Request $request)
+    {
+        // Date Filter Logic (Dual Range)
+        $startYear = $request->input('start_year', 'all');
+        $endYear = $request->input('end_year', 'all');
+        $startMonth = $request->input('start_month', 1);
+        if ($startMonth === 'all')
+            $startMonth = 1;
+        $endMonth = $request->input('end_month', 12);
+        if ($endMonth === 'all')
+            $endMonth = 12;
+
+        $exactStart = $request->input('exact_start');
+        $exactEnd = $request->input('exact_end');
+        $hasExactDates = !empty($exactStart) && !empty($exactEnd);
+
+        // New Filter Logic
+        $selectedStatus = $request->input('status', null);
+        $selectedReviewType = $request->input('review_type', null);
+        $selectedThesisType = $request->input('thesis_type', null);
+        $selectedCategory = $request->input('category', null);
+        $selectedAffiliation = $request->input('affiliation', null);
+        $selectedCollege = $request->input('college', null);
+
+        // Build base query with filters
+        $baseQuery = Research_title::query()->with('researcher.user');
+
+        // Apply date range filters
+        if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
+            $availableYears = Research_title::selectRaw('YEAR(created_at) as year')
+                ->distinct()
+                ->orderBy('year', 'desc')
+                ->pluck('year');
+
+            if ($hasExactDates) {
+                $startDate = Carbon::parse($exactStart)->startOfDay();
+                $endDate = Carbon::parse($exactEnd)->endOfDay();
+            } else {
+                $realStartYear = $startYear === 'all' ? min($availableYears->toArray() ?: [date('Y')]) : $startYear;
+                $realEndYear = $endYear === 'all' ? date('Y') : $endYear;
+
+                $realStartMonth = $startMonth;
+                $realEndMonth = $endMonth;
+
+                $startDate = Carbon::createFromDate($realStartYear, $realStartMonth, 1)->startOfDay();
+                $endDate = Carbon::createFromDate($realEndYear, $realEndMonth, 1)->endOfMonth()->endOfDay();
+            }
+
+            if ($startDate->greaterThan($endDate)) {
+                $temp = $startDate;
+                $startDate = $endDate;
+                $endDate = $temp;
+            }
+
+            $baseQuery->whereBetween('research_title_information.created_at', [$startDate, $endDate]);
+        }
+
+        // Apply specific criteria filters
+        if ($selectedStatus) {
+            $baseQuery->where('Status', $selectedStatus);
+        }
+        if ($selectedReviewType) {
+            $baseQuery->where('Review_Type', $selectedReviewType);
+        }
+        if ($selectedThesisType) {
+            $baseQuery->where('thesis_type', $selectedThesisType);
+        }
+        if ($selectedCategory) {
+            $baseQuery->where('Research_Category', $selectedCategory);
+        }
+        if ($selectedAffiliation) {
+            $baseQuery->whereHas('researcher', function ($q) use ($selectedAffiliation) {
+                if ($selectedAffiliation == 'Internal') {
+                    $q->where('external_user', false);
+                } elseif ($selectedAffiliation == 'External') {
+                    $q->where('external_user', true);
+                }
+            });
+        }
+        if ($selectedCollege && $selectedAffiliation !== 'External') {
+            $baseQuery->whereHas('researcher', function ($q) use ($selectedCollege) {
+                $q->where('college', $selectedCollege);
+            });
+        }
+
+        $records = $baseQuery->get();
+
+        $templatePath = storage_path('app/templates/report_template.docx');
+        
+        if (!file_exists($templatePath)) {
+            return redirect()->back()->with('error', 'Word template is missing at: ' . $templatePath);
+        }
+        
+        $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($templatePath);
+
+        if (count($records) > 0) {
+            try {
+                $templateProcessor->cloneRow('code', count($records));
+            } catch (\Exception $e) {
+                dd("TEMPLATE ERROR: " . $e->getMessage() . " || Word has injected invisible formatting tags into your placeholders! Please try the NOTEPAD TRICK to fix your Word file.");
+            }
+
+            foreach ($records as $index => $record) {
+                $rowNum = $index + 1;
+                
+                $researchType = $record->Research_Category;
+                $reviewTypeRaw = $record->Review_Type;
+                $systemStatus = $record->Status;
+
+                $reviewType = '';
+                $decisionMap = '';
+
+                // Only show review type and decision if it passed initial stages
+                $passedReviewStages = [
+                    'Waiting for Revision', 'Revision Submitted', 'Approved', 
+                    'Disapproved', 'Complete - Awaiting Hardcopy', 'Completed', 'Reviewed'
+                ];
+
+                if (in_array($systemStatus, $passedReviewStages)) {
+                    if (stripos($reviewTypeRaw, 'full') !== false) { $reviewType = 'FR'; } 
+                    elseif (stripos($reviewTypeRaw, 'expedited') !== false) { $reviewType = 'ER'; } 
+                    elseif (stripos($reviewTypeRaw, 'exempt') !== false) { $reviewType = 'EX'; }
+
+                    $decisionRaw = $record->reviewer_decision ?? '';
+                    if (stripos($decisionRaw, 'Minor') !== false) { $decisionMap = 'MN'; } 
+                    elseif (stripos($decisionRaw, 'Major') !== false) { $decisionMap = 'MJ'; } 
+                    elseif (stripos($decisionRaw, 'Disapproved') !== false || $systemStatus === 'Disapproved') { $decisionMap = 'D'; } 
+                    elseif (stripos($decisionRaw, 'Approved') !== false || $systemStatus === 'Approved' || in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) { $decisionMap = 'A'; }
+                }
+
+                $statusMap = '';
+                if ($systemStatus === 'Approved') { $statusMap = 'A'; } 
+                elseif (in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) { $statusMap = 'C'; } 
+                elseif (in_array($systemStatus, ['Disapproved'])) { $statusMap = 'D'; } 
+                elseif (in_array($systemStatus, ['Withdrawn'])) { $statusMap = 'W'; } 
+                else { $statusMap = 'OR'; }
+
+                $protocolCode = $record->protocol_code ?? $record->id;
+                
+                $researcherName = 'N/A';
+                if ($record->researcher && $record->researcher->user) {
+                    $researcherName = trim($record->researcher->user->first_name . ' ' . $record->researcher->user->last_name);
+                }
+
+                $dateReceived = \Carbon\Carbon::parse($record->created_at)->format('m-d-y');
+
+                $templateProcessor->setValue("code#$rowNum", htmlspecialchars((string)$protocolCode, ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("title#$rowNum", htmlspecialchars((string)$record->Study_Protocol_title, ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("researcher#$rowNum", htmlspecialchars((string)$researcherName, ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("funding#$rowNum", htmlspecialchars((string)($record->funding_type ?? 'N/A'), ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("research_type#$rowNum", htmlspecialchars((string)($researchType ?? 'N/A'), ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("date_received#$rowNum", htmlspecialchars((string)$dateReceived, ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("review_type#$rowNum", htmlspecialchars((string)$reviewType, ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("date_first_meeting#$rowNum", ''); // blank as per csv
+                $templateProcessor->setValue("primary_reviewer#$rowNum", ''); // blank as per csv
+                $templateProcessor->setValue("decision#$rowNum", htmlspecialchars((string)$decisionMap, ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("date_first_decision#$rowNum", ''); // blank as per csv
+                $templateProcessor->setValue("status#$rowNum", htmlspecialchars((string)$statusMap, ENT_COMPAT, 'UTF-8'));
+            }
+        } else {
+             $templateProcessor->setValue("code", '');
+             $templateProcessor->setValue("title", '');
+             $templateProcessor->setValue("researcher", '');
+             $templateProcessor->setValue("funding", '');
+             $templateProcessor->setValue("research_type", '');
+             $templateProcessor->setValue("date_received", '');
+             $templateProcessor->setValue("review_type", '');
+             $templateProcessor->setValue("date_first_meeting", '');
+             $templateProcessor->setValue("primary_reviewer", '');
+             $templateProcessor->setValue("decision", '');
+             $templateProcessor->setValue("date_first_decision", '');
+             $templateProcessor->setValue("status", '');
+        }
+
+        $fileName = 'analytics_export_' . date('Y-m-d') . '.docx';
+        $tempFile = tempnam(sys_get_temp_dir(), 'phpword');
+        $templateProcessor->saveAs($tempFile);
+
+        return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
+    }
+
+
     public function index($request)
     {
         return view('admin.Analytics');

@@ -2,7 +2,8 @@
     <x-skeleton-loader />
 
     <div id="page-content" style="display: none;" class="min-h-screen bg-surface-50 py-8 px-4 sm:px-6 lg:px-8"
-        x-data="submissionForm()">
+        x-data="submissionForm()"
+        x-cloak>
 
         <div class="max-w-7xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
 
@@ -12,6 +13,9 @@
                 <p class="text-slate-500 mt-2 max-w-2xl mx-auto">Submit your research protocol for ethics review. Please
                     ensure all details are accurate and required documents are attached.</p>
             </div>
+
+            <!-- Submission Status Widget -->
+            <x-submission-status-widget />
 
             <form action="{{ route('submit.title') }}" method="POST" enctype="multipart/form-data"
                 class="grid grid-cols-1 lg:grid-cols-3 gap-8" id="submission-form">
@@ -268,45 +272,51 @@
                                 </h3>
                             </div>
 
-                            <div class="p-6">
+                            <div class="p-6 space-y-4">
                                 <!-- File Status List -->
-                                <div class="space-y-3 mb-6">
-                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Attached
-                                        Files</p>
-                                    <div id="file-status-list" class="space-y-2 text-sm">
+                                <div class="space-y-2 mb-6">
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Attached Files</p>
+                                    <div id="file-status-list" class="space-y-2 text-sm max-h-48 overflow-y-auto">
                                         <div class="text-slate-400 italic text-xs">No files attached yet.</div>
                                     </div>
                                 </div>
 
-                                <!-- AI Check Section -->
-                                <!-- <div class="border-t border-slate-100 pt-6">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h4 class="font-bold text-slate-800 flex items-center gap-2">
-                                            <i class="fas fa-robot text-[#8B0000]"></i> AI Compliance Check
-                                        </h4>
-                                        <span
-                                            class="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded-full">BETA</span>
+                                <!-- Status & Submit Section -->
+                                <div x-data="submitButtonStatus()"
+                                     x-init="loadStatus()"
+                                     x-cloak
+                                     class="space-y-3">
+                                    
+                                    <!-- Status Block -->
+                                    <div class="bg-white rounded-xl border border-slate-200 p-4 cursor-pointer hover:shadow-md transition-all"
+                                         @click="openStatusModal()">
+                                        <div class="flex items-center gap-4">
+                                            <!-- Icon -->
+                                            <div class="flex-shrink-0">
+                                                <i class="material-icons text-2xl" :class="canSubmit ? 'text-green-600' : 'text-red-600'" 
+                                                   x-text="canSubmit ? 'check_circle' : 'block'"></i>
+                                            </div>
+                                            <!-- Text -->
+                                            <div class="flex-1">
+                                                <h4 class="font-semibold text-slate-900" x-text="canSubmit ? 'Ready to Submit' : 'Cannot Submit Right Now'"></h4>
+                                                <p class="text-xs text-slate-500 mt-1">Click to see details</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p class="text-xs text-slate-500 mb-4">
-                                        Scan all attached files for missing signatures or formatting errors before
-                                        submitting.
-                                    </p>
 
-                                    <button type="button" onclick="performAiCheck()" id="check-btn"
-                                        class="w-full py-3 bg-white border-2 border-[#8B0000] text-[#8B0000] font-bold rounded-xl hover:bg-red-50 transition-all shadow-sm flex items-center justify-center gap-2 group">
-                                        <i class="fas fa-magic group-hover:animate-pulse"></i> Check with AI
-                                    </button> -->
-
-                                <!-- AI Loader & Results Removed (Moved to Modal) -->
-                                <!-- </div> -->
-
-                                <!-- Submit Button -->
-                                <div class="mt-6 pt-6 border-t border-slate-100">
+                                    <!-- Submit Button - Only visible if can submit -->
                                     <button type="submit"
-                                        class="w-full bg-[#8B0000] text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3">
+                                        x-show="canSubmit"
+                                        :disabled="!canSubmit"
+                                        class="w-full text-white font-bold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 bg-[#8B0000] hover:bg-red-800 hover:shadow-xl hover:-translate-y-0.5 shadow-lg shadow-red-900/20 cursor-pointer">
+                                        <i class="material-icons">send</i>
                                         <span>Submit Research</span>
-                                        <i class="fas fa-paper-plane"></i>
                                     </button>
+
+                                    <!-- Helper Text (only when can submit) -->
+                                    <p class="text-xs text-slate-600 text-center" x-show="canSubmit">
+                                        Your submission is complete and ready to be reviewed
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -409,6 +419,57 @@
                             select.value = categoryName;
                             // Trigger the onchange logic (like revealing 'Other' or updating fee display)
                             select.dispatchEvent(new Event('change'));
+                        }
+                    }
+                }));
+
+                // Submit Button Status Component
+                Alpine.data('submitButtonStatus', () => ({
+                    canSubmit: true,
+                    dailyRemaining: 10,
+                    loading: true,
+
+                    openStatusModal() {
+                        const widget = document.querySelector('[x-data*="submissionStatusWidget"]');
+                        if (widget && widget.__x) {
+                            widget.__x.$data.openModal?.();
+                        }
+                    },
+
+                    async loadStatus() {
+                        this.loading = true;
+                        try {
+                            const response = await fetch('{{ route("api.submission_status") }}', {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                credentials: 'same-origin',
+                            });
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                this.canSubmit = data.can_submit;
+                                this.dailyRemaining = data.status?.daily?.remaining ?? 10;
+                            }
+                        } catch (error) {
+                            console.error('Failed to load submission status:', error);
+                            // Default to allowing submission on error
+                            this.canSubmit = true;
+                        } finally {
+                            this.loading = false;
+                            // Refresh every 15 seconds for faster updates
+                            setTimeout(() => this.loadStatus(), 15000);
+                        }
+                    },
+
+                    // Instantly decrement remaining when form submits
+                    decrementRemaining() {
+                        if (this.dailyRemaining > 0) {
+                            this.dailyRemaining--;
+                        }
+                        if (this.dailyRemaining === 0) {
+                            this.canSubmit = false;
                         }
                     }
                 }));
@@ -561,9 +622,23 @@
                 // Handle Completion
                 xhr.onload = function () {
                     if (xhr.status >= 200 && xhr.status < 300) {
-                        // Success - Laravel will redirect if successful, but we are in AJAX.
-                        // We should manually redirect to the intended page (home).
-                        window.location.href = "{{ route('home') }}";
+                        // Success - Instantly update remaining count before redirect
+                        const buttonElement = document.querySelector('[x-data*="submitButtonStatus"]');
+                        if (buttonElement && buttonElement.__x) {
+                            // Call decrementRemaining on the Alpine component
+                            buttonElement.__x.$data.decrementRemaining?.();
+                        }
+                        
+                        // Also update the widget if present
+                        const widgetElement = document.querySelector('[x-data*="submissionStatusWidget"]');
+                        if (widgetElement && widgetElement.__x) {
+                            widgetElement.__x.$data.loadStatus?.();
+                        }
+                        
+                        // Redirect to home after brief moment
+                        setTimeout(() => {
+                            window.location.href = "{{ route('home') }}";
+                        }, 300);
                     } else {
                         if (progressModal) progressModal.classList.add('hidden');
                         alert('An error occurred during upload. Please try again.');

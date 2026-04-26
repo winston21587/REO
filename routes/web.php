@@ -174,13 +174,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
         Route::get('/submit', [Research_title_Controller::class, 'showSubmit'])->name('submit');
-        Route::post('/submit', [Research_title_Controller::class, 'submitTitle'])->name('submit.title');
+        Route::post('/submit', [Research_title_Controller::class, 'submitTitle'])->middleware('rate_limit_submissions')->name('submit.title');
         Route::get('/home/{id}/files', [Research_title_Controller::class, 'manageFiles'])->name('manage.files');
         Route::put('/submissions/update-file/{id}', [Research_title_Controller::class, 'updateFile'])->name('update.file');
-        Route::post('/submissions/add-missing-file/{id}', [Research_title_Controller::class, 'addMissingFile'])->name('add.missing.file');
-        Route::post('/submissions/upload-revision-document/{id}', [Research_title_Controller::class, 'uploadRevisionDocument'])->name('upload.revision.document');
+        Route::post('/submissions/add-missing-file/{id}', [Research_title_Controller::class, 'addMissingFile'])->middleware('rate_limit_submissions')->name('add.missing.file');
+        Route::post('/submissions/upload-revision-document/{id}', [Research_title_Controller::class, 'uploadRevisionDocument'])->middleware('rate_limit_submissions')->name('upload.revision.document');
         Route::delete('/submissions/delete-revision-document/{file_id}', [Research_title_Controller::class, 'deleteRevisionDocument'])->name('delete.revision.document');
-        Route::post('/home/{id}/files/submit', [Research_title_Controller::class, 'submitRevisions'])->name('submit.revisions');
+        Route::post('/home/{id}/files/submit', [Research_title_Controller::class, 'submitRevisions'])->middleware('rate_limit_submissions')->name('submit.revisions');
         Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
         Route::get('/home/{id}/recommendation-letter', [Research_title_Controller::class, 'viewRecommendationLetter'])->name('recommendation.view');
 
@@ -196,6 +196,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/preferences/email', [SettingsController::class, 'updateEmailPreferences'])->name('settings.update_email_preferences');
         Route::post('/settings/preferences/display', [SettingsController::class, 'updateDisplayPreferences'])->name('settings.update_display_preferences');
         Route::delete('/settings/account', [SettingsController::class, 'deleteAccount'])->name('settings.delete_account');
+
+        // Submission Rate Limit Status API
+        Route::get('/api/submission-status', [\App\Http\Controllers\SubmissionStatusController::class, 'getStatus'])->name('api.submission_status');
+        Route::get('/api/submission-history', [\App\Http\Controllers\SubmissionStatusController::class, 'getHistory'])->name('api.submission_history');
     });
 
     // ====================================================
@@ -205,6 +209,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/super-admin', [AdminController::class, 'superAdminAnalytics'])->name('super_admin.analytics');
         Route::get('/super-admin/analytics/details', [AdminController::class, 'analyticsDetails'])->name('super_admin.analytics.details');
         Route::get('/super-admin/analytics/export', [AdminController::class, 'exportCsv'])->name('super_admin.analytics.export');
+        Route::get('/super-admin/analytics/export-word', [AdminController::class, 'exportWord'])->name('super_admin.analytics.export_word');
 
 
         // Manage Admins
@@ -269,6 +274,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');
         Route::get('/admin/analytics/details', [AdminController::class, 'analyticsDetails'])->name('admin.analytics.details');
         Route::get('/admin/analytics/export', [AdminController::class, 'exportCsv'])->name('admin.analytics.export');
+        Route::get('/admin/analytics/export-word', [AdminController::class, 'exportWord'])->name('admin.analytics.export_word');
 
         Route::get('/admin/appointment', function () {
             return view('admin.appointment');

@@ -2,6 +2,7 @@
     <div x-data="{ 
         showAddModal: {{ $errors->any() ? 'true' : 'false' }}, 
         showViewModal: false, 
+        showEditModal: false,
         selectedUser: null,
         showConfirmModal: false,
         confirmTitle: '',

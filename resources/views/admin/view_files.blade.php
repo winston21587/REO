@@ -303,6 +303,14 @@
                             <div class="p-5 border-t border-slate-100 space-y-4 bg-white">
 
                                 <div class="flex justify-between items-center gap-3">
+                                    <div class="flex items-center gap-2 text-[#8B0000] font-bold text-sm flex-shrink-0">
+                                        <i class="fas fa-user w-4 text-center"></i> Researcher
+                                    </div>
+                                    <div class="text-xs font-bold text-slate-800 text-right">
+                                        {{ $researchTitle->researcher?->user ? ($researchTitle->researcher->user->first_name . ' ' . $researchTitle->researcher->user->last_name) : 'Unknown' }}
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center gap-3">
                                     <div class="flex items-center gap-2 text-purple-500 font-bold text-sm flex-shrink-0">
                                         <i class="fas fa-calendar-alt w-4 text-center"></i> Submitted
                                     </div>
@@ -521,7 +529,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
                     </div>
                 @endif
 

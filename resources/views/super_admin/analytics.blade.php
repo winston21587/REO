@@ -16,7 +16,11 @@
 
 
                 <a href="{{ route('super_admin.analytics.export', request()->query()) }}" id="exportCsvBtn" class="px-4 py-2 bg-white border border-slate-200 text-[#8B0000] rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
-                    <i class="fas fa-file-csv"></i> Export CSV
+                    <i class="fas fa-download"></i> EXPORT TO CSV
+                </a>
+                <!-- EXPORT TO WORD BTN -->
+                <a href="{{ route('super_admin.analytics.export_word', request()->query()) }}" id="exportWordBtn" class="px-4 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-50 transition-colors shadow-sm flex items-center gap-2">
+                    <i class="fas fa-file-word"></i> EXPORT TO WORD
                 </a>
             </div>
         </div>

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Research_title_Controller;
-use App\Http\Controllers\AiCheckController;
+// use App\Http\Controllers\AiCheckController;       no need bcz clean hehe
 use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Auth; // Needed for Auth::id()
 use App\Models\UserNotification; // Needed for the Notification route
@@ -181,7 +181,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/submissions/upload-revision-document/{id}', [Research_title_Controller::class, 'uploadRevisionDocument'])->middleware('rate_limit_submissions')->name('upload.revision.document');
         Route::delete('/submissions/delete-revision-document/{file_id}', [Research_title_Controller::class, 'deleteRevisionDocument'])->name('delete.revision.document');
         Route::post('/home/{id}/files/submit', [Research_title_Controller::class, 'submitRevisions'])->middleware('rate_limit_submissions')->name('submit.revisions');
-        Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
+        // Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
         Route::get('/home/{id}/recommendation-letter', [Research_title_Controller::class, 'viewRecommendationLetter'])->name('recommendation.view');
 
         // Official Receipt Upload Route for Researchers (DEPRECATED: OR is now required at submission time)
@@ -322,7 +322,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/predict/save', [\App\Http\Controllers\PredictController::class, 'save'])->name('admin.predict.save');
 
         // AI Analysis Route for Modals
-        Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol_type');
+        // Route::post('/admin/analyze-protocol-type/{id}', [AiCheckController::class, 'analyzeProtocolType'])->name('admin.analyze_protocol_type');
 
         Route::get('/admin/revisions', [AdminController::class, 'revisions'])->name('admin.revisions');
         Route::get('/admin/certifications', [AdminController::class, 'certifications'])->name('admin.certifications');

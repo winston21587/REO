@@ -8,8 +8,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/png" href="{{ asset('images/reoc-nobg.png') }}">
+  <link rel="apple-touch-icon" href="{{ asset('images/reoc-nobg.png') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #8B0000;
+      --primary-dark: #5c0000;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -36,7 +43,7 @@
       font-weight: 700;
       font-size: 1.6rem;
       letter-spacing: -0.02em;
-      color: #a41d1d;
+      color: var(--primary);
     }
     .logo img {
       height: 1.6rem;
@@ -55,18 +62,18 @@
       font-size: 1rem;
     }
     .nav-links a:hover {
-      color: #e63946;
+      color: var(--primary);
     }
     .nav-download {
-      background: #e63946;
+      background: var(--primary);
       color: white !important;
       padding: 0.5rem 1.5rem;
       border-radius: 40px;
       font-weight: 600;
-      box-shadow: 0 4px 10px rgba(230, 57, 70, 0.25);
+      box-shadow: 0 4px 10px rgba(139, 0, 0, 0.25);
     }
     .nav-download:hover {
-      background: #c92c3a;
+      background: var(--primary-dark);
     }
     .container {
       max-width: 1300px;
@@ -107,7 +114,7 @@
       display: inline-flex;
       align-items: center;
       gap: 0.6rem;
-      background: #e63946;
+      background: var(--primary);
       color: white;
       border: none;
       padding: 0.9rem 2.2rem;
@@ -115,16 +122,16 @@
       font-weight: 600;
       font-size: 1.1rem;
       text-decoration: none;
-      box-shadow: 0 8px 18px -6px rgba(230, 57, 70, 0.4);
+      box-shadow: 0 8px 18px -6px rgba(139, 0, 0, 0.4);
       transition: all 0.2s ease;
     }
     .btn-primary i {
       color: white;
     }
     .btn-primary:hover {
-      background: #c92c3a;
+      background: var(--primary-dark);
       transform: translateY(-2px);
-      box-shadow: 0 14px 24px -8px rgba(230, 57, 70, 0.5);
+      box-shadow: 0 14px 24px -8px rgba(139, 0, 0, 0.5);
     }
     .hero-right {
       display: flex;
@@ -193,7 +200,7 @@
   <main class="container">
     <div class="hero">
       <div class="hero-left">
-        <h1>REO Mobile<br><span style="color:#e63946;">by SayLess</span></h1>
+        <h1>REO Mobile<br><span style="color:var(--primary);">by SayLess</span></h1>
         <div class="tagline">Your research companion: Simplify submissions, track progress, and get approvals on the go.</div>
         <div class="hero-buttons">
           <a href="https://github.com/charlottedbszx/ReoMobile/releases/download/Apk/Reo.apk" class="btn-primary"><i class="fa-brands fa-android"></i> Download Application</a>
@@ -201,7 +208,7 @@
       </div>
       <div class="hero-right">
         <div class="screenshot-wrapper">
-          <img src="{{ asset('images/mobile-screenshot.png') }}" alt="REO Mobile interface" onerror="this.src='https://placehold.co/400x800/f8fafc/e63946?text=REO+Mobile&font=inter'; this.style.background='transparent';">
+          <img src="{{ asset('images/mobile-screenshot.png') }}" alt="REO Mobile interface" onerror="this.src='https://placehold.co/400x800/f8fafc/8B0000?text=REO+Mobile&font=inter'; this.style.background='transparent';">
         </div>
       </div>
     </div>

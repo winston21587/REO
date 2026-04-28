@@ -219,10 +219,26 @@ class AuthController extends Controller
 }
 public function showVerifyForm(Request $request)
 {
-        if (!$request->has('email')) {
+    if (!$request->has('email')) {
         return redirect()->route('register')
                          ->with('error', 'Please register first to get your verification code.');
     }
+
+    // Allow access if the email belongs to an existing, unverified account.
+    // This lets users who accidentally closed the tab come back via
+    // /verify?email=their@email.com without having to re-register.
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return redirect()->route('register')
+                         ->with('error', 'No account found for that email. Please register first.');
+    }
+
+    if ($user->is_verified) {
+        return redirect()->route('login')
+                         ->with('success', 'Your account is already verified. Please log in.');
+    }
+
     return view('auth.verification');
 }
 
@@ -249,6 +265,40 @@ public function showVerifyForm(Request $request)
         // Auth::login($user);
 
         return redirect()->route('login')->with('success', 'Email verified successfully!');
+    }
+
+    /**
+     * Resend the OTP verification code to the user's email.
+     * Accessible from the verification page when the user didn't receive the code
+     * or when they return to the page after closing the tab.
+     */
+    public function resendVerificationCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return redirect()->route('register')
+                             ->with('error', 'No account found for that email. Please register first.');
+        }
+
+        if ($user->is_verified) {
+            return redirect()->route('login')
+                             ->with('success', 'Your account is already verified. Please log in.');
+        }
+
+        // Generate a fresh OTP and resend
+        $verificationCode = rand(100000, 999999);
+        $user->verification_code = $verificationCode;
+        $user->save();
+
+        Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user));
+
+        return redirect()->route('verify.show', ['email' => $user->email])
+                         ->with('success', 'A new verification code has been sent to your email.');
     }
 
 

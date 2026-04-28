@@ -79,16 +79,23 @@
 
                 <div class="mt-8 pt-6 border-t border-slate-100 text-center space-y-4">
                     <div class="text-xs text-slate-500">
-                        Didn't receive the code? 
-                        <form action="#" method="POST" class="inline">
+                        Didn't receive the code?
+                        <form action="{{ route('verify.resend') }}" method="POST" class="inline">
                             @csrf
+                            <input type="hidden" name="email" value="{{ request('email') }}">
                             <button type="submit" class="text-[#8B0000] font-bold hover:underline">Resend Code</button>
                         </form>
                     </div>
-                    
+
+                    <div class="text-xs text-slate-400">
+                        Accidentally closed the tab? 
+                        <a href="{{ route('login') }}" class="text-[#8B0000] font-bold hover:underline">Log in</a> 
+                        with your registered email and you'll be brought back here.
+                    </div>
+
                     <div>
-                        <a href="{{ route('logout') }}" class="text-xs font-bold text-slate-400 hover:text-slate-600 inline-flex items-center gap-1 transition-colors">
-                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        <a href="{{ route('login') }}" class="text-xs font-bold text-slate-400 hover:text-slate-600 inline-flex items-center gap-1 transition-colors">
+                            <i class="fas fa-arrow-left"></i> Back to Login
                         </a>
                     </div>
                 </div>

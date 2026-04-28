@@ -41,6 +41,7 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/verify', [AuthController::class, 'showVerifyForm'])->name('verify.show');
     Route::post('/verify', [AuthController::class, 'verifyCode'])->name('verify.submit');
+    Route::post('/verify/resend', [AuthController::class, 'resendVerificationCode'])->name('verify.resend');
 
     // Forgot Password
     Route::get('forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');

@@ -714,7 +714,7 @@
             modalContent.innerHTML = '';
 
             try {
-                const response = await fetch("{{ route('submit.ai_check') }}", {
+                const response = await fetch("/submit/ai-check", {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,

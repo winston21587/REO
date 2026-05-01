@@ -49,25 +49,25 @@ class RateLimitSubmissions
             ], 429);
         }
 
-        // 2. CHECK: Hard throttle (3 per hour - prevents rapid-fire spam attacks)
+        // 2. CHECK: Hard throttle (20 per hour - prevents rapid-fire spam attacks)
         $hourlyKey = "submission_hourly:{$researcher->id}";
         $hourlyCount = Cache::get($hourlyKey, 0);
         
-        if ($hourlyCount >= 3) {
+        if ($hourlyCount >= 20) {
             return response()->json([
                 'error' => 'Too many submissions in a short time. Please try again in 1 hour.',
                 'retry_after' => 3600,
             ], 429);
         }
 
-        // 3. CHECK: Daily soft limit (10 per 24 hours - reasonable for researchers)
+        // 3. CHECK: Daily soft limit (50 per 24 hours - reasonable for researchers)
         $dailyKey = "submission_daily:{$researcher->id}";
         $dailyCount = Cache::get($dailyKey, 0);
         
-        if ($dailyCount >= 10) {
+        if ($dailyCount >= 50) {
             return response()->json([
-                'error' => 'Daily submission limit reached (10 per day). Please try again tomorrow.',
-                'limit' => 10,
+                'error' => 'Daily submission limit reached (50 per day). Please try again tomorrow.',
+                'limit' => 50,
                 'current' => $dailyCount,
                 'retry_after' => 86400,
             ], 429);

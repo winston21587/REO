@@ -138,9 +138,7 @@ class RateLimitSubmissions
     {
         return $request->isMethod('post') && (
             $request->routeIs('submit.title') ||
-            $request->routeIs('submit.revisions') ||
-            $request->routeIs('upload.revision.document') ||
-            $request->routeIs('add.missing.file')
+            $request->routeIs('submit.revisions')
         );
     }
 

@@ -1,5 +1,5 @@
 <x-admin_layout>
-    <div class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
+    <div class="max-w-7xl mx-auto space-y-8">
         
         <div class="flex flex-col md:flex-row justify-between items-end pb-6 border-b border-slate-200">
             <div>

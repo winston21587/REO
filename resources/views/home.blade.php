@@ -78,7 +78,7 @@
 
                         if (in_array($checkStatus, ['Incomplete', 'Pending', 'Submitted', 'Rejected'])) {
                             $currentStep = 1;
-                        } elseif (str_contains($checkStatus, 'Complete - Awaiting Hardcopy') || str_contains($checkStatus, 'Hardcopy Received') || str_contains($checkStatus, 'For Initial Review') || str_contains($checkStatus, 'Under Review')) {
+                        } elseif (str_contains($checkStatus, 'Complete - Awaiting Hardcopy') || str_contains($checkStatus, 'Hardcopy Received') || str_contains($checkStatus, 'For Initial Review') || str_contains($checkStatus, 'Under Review') || str_contains($checkStatus, 'Reviewer Assigned') || str_contains($checkStatus, 'Reviewed')) {
                             $currentStep = 2; // Review Tracker
                         } elseif (stripos($checkStatus, 'Approved') !== false || stripos($checkStatus, 'Certification') !== false) {
                             $currentStep = 5;

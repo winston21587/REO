@@ -129,7 +129,7 @@
     <div
         class="relative bg-slate-50 flex-1 min-h-[200px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
         @if($isPdf)
-            <iframe :src="fileSrc + '#toolbar=0&navpanes=0&scrollbar=0'"
+            <iframe loading="lazy" :src="fileSrc + '#toolbar=0&navpanes=0&scrollbar=0'"
                 class="w-full h-full border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
             <div
                 class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
@@ -139,7 +139,7 @@
                 </a>
             </div>
         @elseif($isOffice)
-            <iframe :src="'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(fileSrc)" width="100%"
+            <iframe loading="lazy" :src="'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(fileSrc)" width="100%"
                 height="100%"
                 class="border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
             <div

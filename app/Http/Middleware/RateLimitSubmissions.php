@@ -170,18 +170,17 @@ class RateLimitSubmissions
     {
         $total = 0;
 
-        // Sum all file fields in the request
-        foreach ($request->allFiles() as $fileArray) {
-            if (!is_array($fileArray)) {
-                $fileArray = [$fileArray];
-            }
-
-            foreach ($fileArray as $file) {
-                if ($file && $file->isValid()) {
-                    $total += $file->getSize();
+        // Sum all file fields in the request (handles nested arrays like files[])
+        $addSize = function ($items) use (&$addSize, &$total) {
+            foreach ($items as $item) {
+                if (is_array($item)) {
+                    $addSize($item);
+                } elseif ($item instanceof \Illuminate\Http\UploadedFile && $item->isValid()) {
+                    $total += $item->getSize();
                 }
             }
-        }
+        };
+        $addSize($request->allFiles());
 
         return $total;
     }

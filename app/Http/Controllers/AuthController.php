@@ -314,6 +314,11 @@ public function showVerifyForm(Request $request)
         $request->validate(['email' => 'required|email|exists:users,email']);
 
         $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'No account found with that email address.']);
+        }
+
         $code = rand(100000, 999999);
 
         $user->reset_code = $code;

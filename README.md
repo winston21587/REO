@@ -32,7 +32,7 @@
 
 ## Overview
 
-**WMSU-REOC** is a comprehensive academic platform designed to manage the complete lifecycle of research ethics review, institutional review workflows, accreditation processing, and administrative oversight.
+**WMSU REO** is a comprehensive academic platform designed to manage the complete lifecycle of research ethics review, institutional review workflows, accreditation processing, and administrative oversight.
 
 It brings together researchers, reviewers, administrators, and super-admins in one centralized system for:
 

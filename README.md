@@ -1,4 +1,7 @@
-<!-- PROJECT BADGES -->
+<p align="center">
+  <img src="https://raw.githubusercontent.com/winston21587/REO/master/public/images/reoc-nobg.png" alt="WMSU-REO Logo" width="180">
+</p>
+
 <p align="center">
   <img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12">
   <img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.2+">
@@ -10,7 +13,7 @@
   <img src="https://img.shields.io/badge/MySQL-8.x-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL">
 </p>
 
-<h1 align="center">WMSU-REOC</h1>
+<h1 align="center">WMSU REO</h1>
 <h3 align="center">Research Ethics and Accreditation Review System</h3>
 
 <p align="center">
@@ -49,31 +52,45 @@ Whether you are an Institutional Review Board (IRB) coordinator, a faculty revie
 
 <table>
   <tr>
-    <td><b>👥 Multi-Role Access</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/Multi--Role_Access-4285F4?style=flat-square" alt="Multi-Role Access">
+    </td>
     <td>Supports Researchers, Reviewers, Admins, and Super-Admins with role-based permissions and tailored dashboards.</td>
   </tr>
   <tr>
-    <td><b>📄 Document Workflow</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/Document_Workflow-34A853?style=flat-square" alt="Document Workflow">
+    </td>
     <td>Handles upload, processing, verification, and tracking of research documents (PDF, Word, etc.).</td>
   </tr>
   <tr>
-    <td><b>🗓️ Scheduling System</b></td>
-    <td>Manages appointments and review meetings between researchers and reviewers with calendar integration.</td>
+    <td>
+      <img src="https://img.shields.io/badge/Scheduling_System-8E44AD?style=flat-square" alt="Scheduling System">
+    </td>
+    <td>Manages appointments and review meetings between researchers and reviewers.</td>
   </tr>
   <tr>
-    <td><b>💬 Feedback & Revisions</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/Feedback_&_Revisions-E67E22?style=flat-square" alt="Feedback & Revisions">
+    </td>
     <td>Tracks reviewer comments, researcher revisions, and complete decision history across review cycles.</td>
   </tr>
   <tr>
-    <td><b>🤖 AI-Assisted Review</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/AI--Assisted_Review-F1C40F?style=flat-square" alt="AI-Assisted Review">
+    </td>
     <td>Uses a trained machine learning model to provide IRB classification and decision support for preliminary reviews.</td>
   </tr>
   <tr>
-    <td><b>📧 Notifications</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/Notifications-E74C3C?style=flat-square" alt="Notifications">
+    </td>
     <td>Automated email alerts for account creation, appointments, password resets, and review decisions.</td>
   </tr>
   <tr>
-    <td><b>⚙️ Administrative Oversight</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/Administrative_Oversight-2C3E50?style=flat-square" alt="Administrative Oversight">
+    </td>
     <td>Super-admin dashboards for managing system settings, fees, content, and user roles.</td>
   </tr>
 </table>
@@ -140,6 +157,7 @@ Whether you are an Institutional Review Board (IRB) coordinator, a faculty revie
   <img src="https://img.shields.io/badge/Tailwind_CSS-4.x-38BDF8?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
   <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite">
   <img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="JavaScript">
+  <img src="https://img.shields.io/badge/Alpine.js-8BC0D0?style=flat-square&logo=alpine.js&logoColor=black" alt="Alpine.js">
   <img src="https://img.shields.io/badge/Axios-API%20Calls-5A29E4?style=flat-square&logo=axios&logoColor=white" alt="Axios">
 </p>
 

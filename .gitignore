@@ -33,3 +33,6 @@ Thumbs.db
 /.agents/skills/
 /.claude/skills/
 /skills-lock.json
+/DESIGN.md
+/PRODUCT.md
+design.json

@@ -64,7 +64,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                <a href="{{ route('admin.serve_file', $archived->id) }}" target="_blank" class="text-slate-400 hover:text-[#8B0000] hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center transition-all bg-white border border-slate-100 flex-shrink-0">
+                                <a href="{{ route('admin.serve_file', $archived->id) }}" target="_blank" class="text-slate-500 hover:text-[#8B0000] hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center transition-all bg-white border border-slate-100 flex-shrink-0">
                                     <i class="fas fa-external-link-alt text-[10px]"></i>
                                 </a>
                             </div>

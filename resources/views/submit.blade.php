@@ -25,7 +25,7 @@
                 <div class="lg:col-span-2 space-y-8">
 
                     <!-- Step 1: Protocol Details -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-white rounded-2xl shadow-sm shadow-[#8B0000]/5 border border-slate-200 overflow-hidden">
                         <div class="bg-[#0f172a] p-4 border-b border-slate-800">
                             <h2 class="text-white font-bold text-lg flex items-center gap-3">
                                 <span
@@ -48,7 +48,7 @@
                                         :class="projectType === 'Funded Research'
                                             ? 'border-[#8B0000] bg-red-50 text-[#8B0000] shadow-sm shadow-red-100'
                                             : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-[#8B0000] hover:text-[#8B0000]'"
-                                        class="flex flex-col items-center justify-center gap-2 p-5 border-2 rounded-2xl transition-all duration-200 font-bold text-sm cursor-pointer">
+                                        class="flex flex-col items-center justify-center gap-2 p-5 border-2 rounded-2xl transition-all duration-200 font-bold text-sm cursor-pointer active:scale-95">
                                         <div :class="projectType === 'Funded Research' ? 'bg-[#8B0000] text-white' : 'bg-slate-200 text-slate-600'"
                                             class="w-10 h-10 rounded-xl flex items-center justify-center transition-all">
                                             <i class="fas fa-money-bill-wave text-base"></i>
@@ -63,7 +63,7 @@
                                         :class="projectType === 'Course Requirement'
                                             ? 'border-[#8B0000] bg-red-50 text-[#8B0000] shadow-sm shadow-red-100'
                                             : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-[#8B0000] hover:text-[#8B0000]'"
-                                        class="flex flex-col items-center justify-center gap-2 p-5 border-2 rounded-2xl transition-all duration-200 font-bold text-sm cursor-pointer">
+                                        class="flex flex-col items-center justify-center gap-2 p-5 border-2 rounded-2xl transition-all duration-200 font-bold text-sm cursor-pointer active:scale-95">
                                         <div :class="projectType === 'Course Requirement' ? 'bg-[#8B0000] text-white' : 'bg-slate-200 text-slate-600'"
                                             class="w-10 h-10 rounded-xl flex items-center justify-center transition-all">
                                             <i class="fas fa-graduation-cap text-base"></i>
@@ -86,13 +86,13 @@
                                 @endphp
 
                                 {{-- Funded Research Sub-options --}}
-                                <div x-show="projectType === 'Funded Research'" x-transition style="display:none;" class="mt-4">
+                                <div x-show="projectType === 'Funded Research'" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-4" style="display:none;" class="mt-4 origin-top">
                                     <input type="hidden" name="funding_type" x-bind:value="fundingSubType">
                                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Funding Source <span class="text-red-500">*</span></label>
                                     <div class="grid grid-cols-2 gap-3">
                                         @foreach($categories->where('classification', 'Funded Research') as $cat)
                                         <button type="button" @click="fundingSubType = '{{ addslashes($cat->name) }}'; syncFee('{{ addslashes($cat->name) }}')"
-                                            :class="fundingSubType === '{{ addslashes($cat->name) }}' ? 'border-[#8B0000] bg-red-50 text-[#8B0000]' : 'border-slate-200 text-slate-600 hover:border-slate-400'"
+                                            :class="fundingSubType === '{{ addslashes($cat->name) }}' ? 'border-[#8B0000] bg-red-50 text-[#8B0000]' : 'border-slate-200 text-slate-700 hover:border-slate-400'"
                                             class="py-2.5 px-4 border-2 rounded-xl text-sm font-semibold transition-all">
                                             <i class="fas {{ $getIcon($cat->name) }} mr-2"></i>{{ $cat->name }}
                                         </button>
@@ -101,13 +101,13 @@
                                 </div>
 
                                 {{-- Course Requirement Sub-options --}}
-                                <div x-show="projectType === 'Course Requirement'" x-transition style="display:none;" class="mt-4">
+                                <div x-show="projectType === 'Course Requirement'" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-4" style="display:none;" class="mt-4 origin-top">
                                     <input type="hidden" name="course_type" x-bind:value="courseSubType">
                                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Type of Course Requirement <span class="text-red-500">*</span></label>
                                     <div class="grid grid-cols-3 gap-3">
                                         @foreach($categories->where('classification', 'Course Requirement') as $cat)
                                         <button type="button" @click="courseSubType = '{{ addslashes($cat->name) }}'; syncFee('{{ addslashes($cat->name) }}')"
-                                            :class="courseSubType === '{{ addslashes($cat->name) }}' ? 'border-[#8B0000] bg-red-50 text-[#8B0000]' : 'border-slate-200 text-slate-600 hover:border-slate-400'"
+                                            :class="courseSubType === '{{ addslashes($cat->name) }}' ? 'border-[#8B0000] bg-red-50 text-[#8B0000]' : 'border-slate-200 text-slate-700 hover:border-slate-400'"
                                             class="py-2.5 px-3 border-2 rounded-xl text-xs font-semibold transition-all text-center">
                                             <i class="fas {{ $getIcon($cat->name) }} mb-1 block text-base"></i>{{ $cat->name }}
                                         </button>
@@ -115,7 +115,7 @@
                                     </div>
                                 </div>
 
-                                <p x-show="!projectType" class="mt-2 text-xs text-slate-400 italic" style="display:none;">Please select a project type to continue.</p>
+                                <p x-show="!projectType" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-4" class="mt-2 text-xs text-slate-400 italic origin-top" style="display:none;">Please select a project type to continue.</p>
                             </div>
 
                             {{-- ===== Study Protocol Title ===== --}}
@@ -194,7 +194,7 @@
                             </div>
 
                             <!-- Name of Adviser (mandatory for Course Requirement, hidden for Funded Research) -->
-                            <div class="group" x-show="projectType === 'Course Requirement'" x-transition style="display:none;">
+                            <div class="group origin-top" x-show="projectType === 'Course Requirement'" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-4" style="display:none;">
                                 <label for="Adviser" class="block text-sm font-bold text-slate-700 mb-2">
                                     Name of Adviser <span class="text-red-500">*</span>
                                     <span class="ml-2 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">Required for Students</span>
@@ -214,7 +214,7 @@
                     </div> <!-- End of Step 1 container div (FIXED LAYOUT) -->
 
                     <!-- Step 2: Required Documents -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-white rounded-2xl shadow-sm shadow-[#8B0000]/5 border border-slate-200 overflow-hidden">
                         <div class="bg-[#0f172a] p-4 border-b border-slate-800">
                             <h2 class="text-white font-bold text-lg flex items-center gap-3">
                                 <span
@@ -265,7 +265,7 @@
                     <div class="sticky top-8 space-y-6">
 
                         <!-- Submission Summary Card -->
-                        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative">
+                        <div class="bg-white rounded-2xl shadow-lg shadow-[#8B0000]/10 border border-slate-200 overflow-hidden relative">
                             <div class="bg-[#0f172a] p-4 border-b border-slate-800">
                                 <h3 class="text-white font-bold text-lg flex items-center gap-2">
                                     <i class="fas fa-clipboard-check text-[#8B0000]"></i> Submission Summary
@@ -288,7 +288,7 @@
                                      class="space-y-3">
                                     
                                     <!-- Status Block -->
-                                    <div class="bg-white rounded-xl border border-slate-200 p-4 cursor-pointer hover:shadow-md transition-all"
+                                    <div class="bg-white rounded-xl border border-slate-200 p-4 cursor-pointer hover:shadow-md shadow-[#8B0000]/5 transition-all"
                                          @click="openStatusModal()">
                                         <div class="flex items-center gap-4">
                                             <!-- Icon -->
@@ -308,7 +308,7 @@
                                     <button type="submit"
                                         x-show="canSubmit"
                                         :disabled="!canSubmit"
-                                        class="w-full text-white font-bold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 bg-[#8B0000] hover:bg-red-800 hover:shadow-xl hover:-translate-y-0.5 shadow-lg shadow-red-900/20 cursor-pointer">
+                                        class="w-full text-white font-bold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 bg-[#8B0000] hover:bg-red-800 hover:shadow-xl shadow-[#8B0000]/10 hover:-translate-y-0.5 shadow-lg shadow-red-900/20 cursor-pointer active:scale-95">
                                         <i class="material-icons">send</i>
                                         <span>Submit Research</span>
                                     </button>
@@ -360,7 +360,7 @@
                             <i class="fas fa-robot text-[#8B0000]"></i> AI Compliance Check Results
                         </h3>
                         <button type="button" onclick="closeAiModal()"
-                            class="text-slate-400 hover:text-white transition-colors">
+                            class="text-slate-400 hover:text-white transition-colors active:scale-95">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
@@ -393,11 +393,11 @@
                     <!-- Footer -->
                     <div class="bg-slate-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-200">
                         <button type="button" onclick="closeAiModal()"
-                            class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 font-bold hover:bg-slate-50 transition-colors">
+                            class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 font-bold hover:bg-slate-50 transition-colors active:scale-95">
                             Close
                         </button>
                         <button type="button" onclick="closeAiModal()"
-                            class="px-4 py-2 bg-[#8B0000] text-white rounded-lg font-bold hover:bg-red-800 transition-colors shadow-lg shadow-red-900/20">
+                            class="px-4 py-2 bg-[#8B0000] text-white rounded-lg font-bold hover:bg-red-800 transition-colors shadow-lg shadow-red-900/20 active:scale-95">
                             I Understand
                         </button>
                     </div>
@@ -483,13 +483,13 @@
                 if (input.files && input.files.length > 0) {
                     const count = input.files.length;
                     fileNameDisplay.textContent = count === 1 ? input.files[0].name : `${count} files selected`;
-                    fileNameDisplay.classList.add('text-slate-900', 'font-medium');
+                    fileNameDisplay.classList.add('text-slate-900', 'font-medium', 'truncate', 'max-w-[150px]', 'sm:max-w-[200px]', 'inline-block', 'align-bottom');
                     fileNameDisplay.classList.remove('text-slate-400', 'italic');
 
                     if (clearBtn) clearBtn.classList.remove('hidden');
                 } else {
                     fileNameDisplay.textContent = 'No file chosen';
-                    fileNameDisplay.classList.remove('text-slate-900', 'font-medium');
+                    fileNameDisplay.classList.remove('text-slate-900', 'font-medium', 'truncate', 'max-w-[150px]', 'sm:max-w-[200px]', 'inline-block', 'align-bottom');
                     fileNameDisplay.classList.add('text-slate-400', 'italic');
 
                     if (clearBtn) clearBtn.classList.add('hidden');
@@ -563,8 +563,10 @@
             }
 
             // File Size Validation & Progress Tracking
+            let isSubmitting = false;
             document.getElementById('submission-form').addEventListener('submit', function (e) {
                 e.preventDefault();
+                if (isSubmitting) return;
 
                 const fileInputs = document.querySelectorAll('input[type="file"]');
                 let totalSize = 0;
@@ -582,6 +584,17 @@
                     const sizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
                     alert(`Total file size (${sizeInMB} MB) exceeds the maximum limit of 25 MB.\n\nPlease reduce the file sizes or upload fewer files.`);
                     return;
+                }
+
+                // Prevent double submission
+                isSubmitting = true;
+                const submitBtn = document.querySelector('button[type="submit"]');
+                let originalBtnText = '';
+                if (submitBtn) {
+                    originalBtnText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
+                    submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
                 }
 
                 // Show Progress Modal
@@ -813,7 +826,7 @@
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 3px;
+            border-radius: 4px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -834,14 +847,14 @@
                                 <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
                                 <div class="absolute inset-0 border-4 border-[#8B0000] rounded-full border-t-transparent animate-spin"></div>
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <i class="fas fa-cloud-upload-alt text-3xl text-[#8B0000] animate-bounce"></i>
+                                    <i class="fas fa-cloud-upload-alt text-3xl text-[#8B0000] animate-pulse"></i>
                                 </div>
                             </div>
                             <h3 class="text-2xl font-bold text-slate-900 mb-2">Uploading Research Files</h3>
                             <p class="text-slate-500 text-sm mb-8 max-w-sm">Please do not close this window or refresh the page. We are securely transferring your documents to our servers.</p>
                             <!-- Progress Bar Container -->
                             <div class="w-full bg-slate-100 rounded-full h-4 mb-4 relative overflow-hidden shadow-inner">
-                                <div id="upload-progress-bar" class="bg-gradient-to-r from-[#8B0000] to-red-600 h-full w-0 transition-all duration-300 ease-out shadow-lg relative">
+                                <div id="upload-progress-bar" class="bg-gradient-to-r from-[#8B0000] to-red-600 h-full w-0 transition-all duration-300 ease-out shadow-lg shadow-[#8B0000]/10 relative">
                                     <div class="absolute inset-0 bg-white/20 animate-shimmer"></div>
                                 </div>
                             </div>

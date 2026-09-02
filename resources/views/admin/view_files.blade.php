@@ -2,16 +2,16 @@
     <div class="max-w-7xl mx-auto py-8 animate-[fadeInUp_0.5s_ease-out]">
 
         <!-- Top Navigation & Header -->
-        <div class="flex items-center mb-6 gap-4 p-4 bg-gradient-to-r from-white to-slate-50 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
+        <div class="flex items-center mb-6 gap-4 p-4 bg-gradient-to-r from-white to-slate-50 rounded-2xl border border-slate-100 shadow-sm shadow-[#8B0000]/5 relative overflow-hidden group">
             <div class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 pointer-events-none"></div>
             <div class="flex items-center gap-4 relative z-10 w-full">
-                <a href="{{ $backUrl }}" class="flex items-center justify-center w-12 h-12 rounded-xl bg-white border border-slate-200 text-slate-400 hover:border-[#8B0000] hover:text-[#8B0000] hover:shadow-md transition-all duration-300 flex-shrink-0">
+                <a href="{{ $backUrl }}" class="flex items-center justify-center w-12 h-12 rounded-xl bg-white border border-slate-200 text-slate-400 hover:border-[#8B0000] hover:text-[#8B0000] hover:shadow-md shadow-[#8B0000]/5 transition-all duration-300 flex-shrink-0 active:scale-95">
                     <i class="fas fa-arrow-left"></i>
                 </a>
                 <div class="flex flex-col min-w-0">
                     <div class="flex items-center gap-2 mb-1">
-                        <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-extrabold uppercase tracking-widest border border-slate-200 shadow-sm">{{ $researchTitle->reoc_code ?? 'PENDING-ID' }}</span>
-                        <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-extrabold uppercase tracking-widest border border-amber-100 flex items-center gap-1 shadow-sm">{{ $researchTitle->Status }}</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-extrabold uppercase tracking-widest border border-slate-200 shadow-sm shadow-[#8B0000]/5">{{ $researchTitle->reoc_code ?? 'PENDING-ID' }}</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-extrabold uppercase tracking-widest border border-amber-100 flex items-center gap-1 shadow-sm shadow-[#8B0000]/5">{{ $researchTitle->Status }}</span>
                     </div>
                     <h1 class="text-xl font-black text-slate-900 font-heading leading-tight tracking-tight truncate">{{ $researchTitle->Study_Protocol_title }}</h1>
                 </div>
@@ -19,8 +19,8 @@
         </div>
 
         @if($auditTrail->isNotEmpty())
-            <div class="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" x-data="{ open: false, searchTerm: '' }">
-                <button @click="open = !open" class="w-full px-6 py-4 flex justify-between items-center bg-slate-50/50 hover:bg-slate-50 transition-colors">
+            <div class="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm shadow-[#8B0000]/5 overflow-hidden" x-data="{ open: false, searchTerm: '' }">
+                <button @click="open = !open" class="w-full px-6 py-4 flex justify-between items-center bg-slate-50/50 hover:bg-slate-50 transition-colors active:scale-95">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-stream text-slate-500"></i>
                         <span class="text-xs font-extrabold text-slate-700 uppercase tracking-widest">Complete Audit Trail</span>
@@ -35,7 +35,7 @@
                                 <i class="fas fa-search text-slate-400"></i>
                             </div>
                             <input type="text" x-model="searchTerm" placeholder="Search audit logs by keywords, users, or actions..." 
-                                class="w-full bg-white pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#8B0000]/10 focus:border-[#8B0000] transition-all shadow-sm">
+                                class="w-full bg-white pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#8B0000]/10 focus:border-[#8B0000] transition-all shadow-sm shadow-[#8B0000]/5">
                         </div>
                     </div>
                     <div class="p-6 bg-white max-h-[500px] overflow-y-auto custom-scrollbar relative pl-8">
@@ -45,7 +45,7 @@
                                 <div class="flex gap-4 group" 
                                      data-search="{{ strtolower(htmlspecialchars($log->action_label . ' ' . $log->actor_name . ' ' . $log->actor_role . ' ' . $log->message)) }}"
                                      x-show="searchTerm === '' || $el.dataset.search.includes(searchTerm.toLowerCase())">
-                                    <div class="w-10 h-10 rounded-full {{ $log->color }} {{ $log->border }} flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 -ml-5 transition-transform hover:scale-110">
+                                    <div class="w-10 h-10 rounded-full {{ $log->color }} {{ $log->border }} flex items-center justify-center border-2 border-white shadow-sm shadow-[#8B0000]/5 flex-shrink-0 -ml-5 transition-transform hover:scale-110">
                                         <i class="fas {{ $log->icon }} text-sm"></i>
                                     </div>
                                     <div class="flex-1 mt-0.5">
@@ -56,7 +56,7 @@
                                             </div>
                                             <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-md">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
                                         </div>
-                                        <div class="bg-white border rounded-xl p-3.5 shadow-sm {{ str_contains($log->color, 'slate') ? 'border-slate-100' : 'border-slate-200' }}">
+                                        <div class="bg-white border rounded-xl p-3.5 shadow-sm shadow-[#8B0000]/5 {{ str_contains($log->color, 'slate') ? 'border-slate-100' : 'border-slate-200' }}">
                                             <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
                                         </div>
                                     </div>
@@ -75,7 +75,7 @@
 
         @if($researchTitle->Status === 'Disapproved' && $disapprovalFeedback)
             <div
-                class="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4 shadow-sm animate-[fadeInUp_0.5s_ease-out]">
+                class="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4 shadow-sm shadow-[#8B0000]/5 animate-[fadeInUp_0.5s_ease-out]">
                 <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 text-red-600">
                     <i class="fas fa-times-circle text-lg"></i>
                 </div>
@@ -83,7 +83,7 @@
                     <h4 class="text-lg font-bold text-red-900 mb-1">Protocol Disapproved</h4>
                     <p class="text-red-800 text-sm font-medium mb-3">This research protocol has been disapproved due to the
                         following reason:</p>
-                    <div class="bg-white p-4 rounded-xl border border-red-100 shadow-sm">
+                    <div class="bg-white p-4 rounded-xl border border-red-100 shadow-sm shadow-[#8B0000]/5">
                         <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ $disapprovalFeedback->message }}</p>
                     </div>
                 </div>
@@ -218,11 +218,11 @@
              }">
 
             <!-- ===== LEFT — Viewer ===== -->
-            <div class="lg:col-span-8 flex flex-col gap-4">
+            <div class="lg:col-span-8 flex flex-col gap-4 order-last lg:order-first">
 
                 <!-- Top bar -->
                 <div
-                    class="flex items-center justify-between bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
+                    class="flex items-center justify-between bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-200 shadow-sm shadow-[#8B0000]/5">
                     <div class="flex items-center gap-3 min-w-0">
                         <div
                             class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 text-[#8B0000]">
@@ -246,12 +246,12 @@
                     </div>
                     <div class="flex gap-1" x-show="activeFile">
                         <a :href="isOffice(activeFile) ? getOfficeUrl(activeFile) : getUrl(activeFile)" target="_blank"
-                            class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-all"
+                            class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 hover:text-[#8B0000] hover:bg-red-50 transition-all active:scale-95"
                             title="Open in new tab">
                             <i class="fas fa-external-link-alt"></i>
                         </a>
                         <a :href="getUrl(activeFile)" download
-                            class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-all"
+                            class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 hover:text-[#8B0000] hover:bg-red-50 transition-all active:scale-95"
                             title="Download">
                             <i class="fas fa-download"></i>
                         </a>
@@ -272,7 +272,7 @@
                     <template x-if="activeFile && isImage(activeFile)">
                         <div class="absolute inset-0 flex items-center justify-center bg-slate-900 p-4 overflow-auto">
                             <img :src="getUrl(activeFile)" :alt="activeFile.filename"
-                                class="max-w-full max-h-full object-contain rounded-lg shadow-lg" />
+                                class="max-w-full max-h-full object-contain rounded-lg shadow-lg shadow-[#8B0000]/10" />
                         </div>
                     </template>
                     <template x-if="!activeFile">
@@ -291,8 +291,8 @@
                 <!-- Below Viewer Details -->
                 <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4" x-data="{ subOpen: false, actOpen: false }">
                     <!-- Submission Details Accordion -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 flex flex-col justify-start">
-                        <button @click="subOpen = !subOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                    <div class="bg-white rounded-2xl shadow-sm shadow-[#8B0000]/5 border border-slate-200 overflow-hidden flex-shrink-0 flex flex-col justify-start">
+                        <button @click="subOpen = !subOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors active:scale-95">
                             <div class="flex items-center gap-2">
                                 <i class="fas fa-info-circle text-blue-400"></i>
                                 <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Submission Details</span>
@@ -359,8 +359,8 @@
                     </div>
 
                     <!-- Activity Log Accordion -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 flex flex-col justify-start">
-                        <button @click="actOpen = !actOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                    <div class="bg-white rounded-2xl shadow-sm shadow-[#8B0000]/5 border border-slate-200 overflow-hidden flex-shrink-0 flex flex-col justify-start">
+                        <button @click="actOpen = !actOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors active:scale-95">
                             <div class="flex items-center gap-2">
                                 <i class="fas fa-history text-indigo-400"></i>
                                 <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Activity Log</span>
@@ -399,11 +399,11 @@
 
 
 
-            <div class="lg:col-span-4 flex flex-col gap-4 pb-8">
+            <div class="lg:col-span-4 flex flex-col gap-4 pb-8 order-first lg:order-last">
 
                 <!-- AI Prediction Card -->
                 @if($researchTitle->ai_suggested_review_type)
-                    <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-2xl shadow-sm text-center flex-shrink-0 relative overflow-hidden group">
+                    <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-2xl shadow-sm shadow-[#8B0000]/5 text-center flex-shrink-0 relative overflow-hidden group">
                         <div class="absolute -right-4 -top-4 text-indigo-100/50 transform rotate-12 transition-transform group-hover:rotate-18 duration-500 pointer-events-none">
                             <i class="fas fa-robot text-7xl"></i>
                         </div>
@@ -419,8 +419,8 @@
                     $totalRemarks = $allFileRemarks->flatten()->count();
                 @endphp
                 @if($totalRemarks > 0)
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0" x-data="{ rrOpen: false }">
-                        <button @click="rrOpen = !rrOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                    <div class="bg-white rounded-2xl shadow-sm shadow-[#8B0000]/5 border border-slate-200 overflow-hidden flex-shrink-0" x-data="{ rrOpen: false }">
+                        <button @click="rrOpen = !rrOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors active:scale-95">
                             <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                 <i class="fas fa-comments text-indigo-400"></i>
                                 Reviewer Remarks
@@ -487,8 +487,8 @@
 
                 <!-- Version Timeline Accordion -->
                 @if($hasRevisions)
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0" x-data="{ vtOpen: false }">
-                        <button @click="vtOpen = !vtOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                    <div class="bg-white rounded-2xl shadow-sm shadow-[#8B0000]/5 border border-slate-200 overflow-hidden flex-shrink-0" x-data="{ vtOpen: false }">
+                        <button @click="vtOpen = !vtOpen" class="w-full flex justify-between items-center px-5 py-4 bg-slate-50/50 hover:bg-slate-50 transition-colors active:scale-95">
                             <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                 <i class="fas fa-code-branch text-indigo-400"></i> Version Timeline
                             </span>
@@ -534,28 +534,28 @@
 
 
                 <!-- Tabbed File Picker -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0">
+                <div class="bg-white rounded-2xl shadow-sm shadow-[#8B0000]/5 border border-slate-200 overflow-hidden flex-shrink-0">
                     <!-- Tab bar -->
                     <div
                         class="flex gap-1 border-b border-slate-100 bg-slate-50/60 px-2 pt-2 overflow-x-auto custom-scrollbar flex-shrink-0">
                         @if($letters->isNotEmpty())
                             <button @click="activeTab = 'letters'"
                                 :class="activeTab === 'letters' ? 'bg-white border-b-2 border-emerald-500 text-emerald-700' : 'text-slate-500 hover:text-slate-700'"
-                                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg">
+                                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg active:scale-95">
                                 <i class="fas fa-certificate text-emerald-500"></i> Letters
                             </button>
                         @endif
 
                         <button @click="activeTab = 'original'"
                             :class="activeTab === 'original' ? 'bg-white border-b-2 border-slate-500 text-slate-800' : 'text-slate-500 hover:text-slate-700'"
-                            class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg">
+                            class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg active:scale-95">
                             <i class="fas fa-box-archive text-slate-400"></i> Original
                         </button>
 
                         <template x-if="reviewerDocs.length > 0">
                             <button @click="activeTab = 'reviewer_docs'"
                                 :class="activeTab === 'reviewer_docs' ? 'bg-white border-b-2 border-slate-700 text-slate-900' : 'text-slate-500 hover:text-slate-700'"
-                                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg">
+                                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg active:scale-95">
                                 <i class="fas fa-user-edit text-slate-500"></i> Reports
                             </button>
                         </template>
@@ -563,7 +563,7 @@
                         @foreach($revisionFolders->sortKeys() as $revNum => $_)
                             <button @click="activeTab = 'rev_{{ $revNum }}'"
                                 :class="activeTab === 'rev_{{ $revNum }}' ? 'bg-white border-b-2 border-indigo-500 text-indigo-700' : 'text-slate-500 hover:text-slate-700'"
-                                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg">
+                                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg active:scale-95">
                                 <i class="fas fa-folder text-indigo-400"></i> Rev {{ $revNum }}
                             </button>
                         @endforeach
@@ -571,7 +571,7 @@
                         @if($hasRevisions && $activeFiles->isNotEmpty())
                             <button @click="activeTab = 'current'"
                                 :class="activeTab === 'current' ? 'bg-white border-b-2 border-[#8B0000] text-[#8B0000]' : 'text-slate-500 hover:text-slate-700'"
-                                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg">
+                                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold whitespace-nowrap transition-all rounded-t-lg active:scale-95">
                                 <i class="fas fa-file-signature text-[#8B0000]"></i> Current
                             </button>
                         @endif
@@ -586,7 +586,7 @@
                                 <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2"
                                     x-data="{ expanded: false }">
                                     <button @click="expanded = !expanded"
-                                        class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                        class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors active:scale-95">
                                         <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest"
                                             x-text="group.category"></h4>
                                         <div class="flex items-center gap-3">
@@ -600,8 +600,8 @@
                                     <div x-show="expanded" style="display: none;" x-transition>
                                         <template x-for="file in group.files" :key="file.id">
                                             <button @click="selectFile(file)"
-                                                :class="activeFile && activeFile.id === file.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : 'hover:bg-slate-50 border-l-4 border-transparent'"
-                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                :class="activeFile && activeFile.id === file.id ? 'bg-emerald-50 border border-emerald-200 shadow-sm shadow-[#8B0000]/5' : 'hover:bg-slate-50 border border-transparent hover:border-slate-200'"
+                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100 active:scale-95">
                                                 <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                                                     :class="file.bg">
                                                     <i :class="[file.icon, file.color]"></i>
@@ -632,7 +632,7 @@
                                 <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2"
                                     x-data="{ expanded: false }">
                                     <button @click="expanded = !expanded"
-                                        class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                        class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors active:scale-95">
                                         <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest"
                                             x-text="group.category"></h4>
                                         <div class="flex items-center gap-3">
@@ -646,8 +646,8 @@
                                     <div x-show="expanded" style="display: none;" x-transition>
                                         <template x-for="file in group.files" :key="file.id">
                                             <button @click="selectFile(file)"
-                                                :class="activeFile && activeFile.id === file.id ? 'bg-red-50 border-l-4 border-[#8B0000]' : 'hover:bg-slate-50 border-l-4 border-transparent'"
-                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                :class="activeFile && activeFile.id === file.id ? 'bg-red-50 border border-red-200 shadow-sm shadow-[#8B0000]/5' : 'hover:bg-slate-50 border border-transparent hover:border-slate-200'"
+                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100 active:scale-95">
                                                 <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                                                     :class="file.bg">
                                                     <i :class="[file.icon, file.color]"></i>
@@ -678,7 +678,7 @@
                                     <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2"
                                         x-data="{ expanded: false }">
                                         <button @click="expanded = !expanded"
-                                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors active:scale-95">
                                             <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest"
                                                 x-text="group.category"></h4>
                                             <div class="flex items-center gap-3">
@@ -692,8 +692,8 @@
                                         <div x-show="expanded" style="display: none;" x-transition>
                                             <template x-for="file in group.files" :key="file.id">
                                                 <button @click="selectFile(file)"
-                                                    :class="activeFile && activeFile.id === file.id ? 'bg-indigo-50 border-l-4 border-indigo-500' : 'hover:bg-slate-50 border-l-4 border-transparent'"
-                                                    class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                    :class="activeFile && activeFile.id === file.id ? 'bg-indigo-50 border border-indigo-200 shadow-sm shadow-[#8B0000]/5' : 'hover:bg-slate-50 border border-transparent hover:border-slate-200'"
+                                                    class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100 active:scale-95">
                                                     <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                                                         :class="file.bg">
                                                         <i :class="[file.icon, file.color]"></i>
@@ -723,7 +723,7 @@
                                 <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2"
                                     x-data="{ expanded: false }">
                                     <button @click="expanded = !expanded"
-                                        class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                        class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors active:scale-95">
                                         <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest"
                                             x-text="group.category"></h4>
                                         <div class="flex items-center gap-3">
@@ -737,8 +737,8 @@
                                     <div x-show="expanded" style="display: none;" x-transition>
                                         <template x-for="file in group.files" :key="file.id">
                                             <button @click="selectFile(file)"
-                                                :class="activeFile && activeFile.id === file.id ? 'bg-[#8B0000] border-l-4 border-[#8B0000] text-white' : 'hover:bg-slate-50 border-l-4 border-transparent'"
-                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                :class="activeFile && activeFile.id === file.id ? 'bg-[#8B0000] border border-[#600000] text-white shadow-sm shadow-[#8B0000]/5' : 'hover:bg-slate-50 border border-transparent hover:border-slate-200'"
+                                                class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100 active:scale-95">
                                                 <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                                                     :class="file.bg">
                                                     <i :class="[file.icon, file.color]"></i>
@@ -780,7 +780,7 @@
                                     <div class="mb-2 border border-slate-100 rounded-lg overflow-hidden mx-2"
                                         x-data="{ expanded: false }">
                                         <button @click="expanded = !expanded"
-                                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors">
+                                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors active:scale-95">
                                             <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest"
                                                 x-text="group.category"></h4>
                                             <div class="flex items-center gap-3">
@@ -794,8 +794,8 @@
                                         <div x-show="expanded" style="display: none;" x-transition>
                                             <template x-for="file in group.files" :key="file.id">
                                                 <button @click="selectFile(file)"
-                                                    :class="activeFile && activeFile.id === file.id ? 'bg-red-50 border-l-4 border-[#8B0000]' : 'hover:bg-slate-50 border-l-4 border-transparent'"
-                                                    class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100">
+                                                    :class="activeFile && activeFile.id === file.id ? 'bg-red-50 border border-red-200 shadow-sm shadow-[#8B0000]/5' : 'hover:bg-slate-50 border border-transparent hover:border-slate-200'"
+                                                    class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all bg-white border-t border-slate-100 active:scale-95">
                                                     <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                                                         :class="file.bg">
                                                         <i :class="[file.icon, file.color]"></i>
@@ -862,16 +862,16 @@
                     <div id="cvRemarksBox" class="hidden mt-3">
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Reason for Invalid <span class="text-red-500">*</span></label>
                         <textarea name="cv_remarks" id="cv_remarks_isolated" rows="3"
-                            class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 resize-none shadow-sm"
+                            class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 resize-none shadow-sm shadow-[#8B0000]/5"
                             placeholder="e.g., CV states you are a BS student..."></textarea>
                     </div>
                 </div>
                 
                 <div class="px-5 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 flex-shrink-0">
                     <button type="button" onclick="closeCvVerifyModal()"
-                        class="px-5 py-2 text-slate-600 font-bold text-xs hover:bg-white hover:text-slate-800 rounded-lg transition-all border border-transparent hover:border-slate-200">Cancel</button>
+                        class="px-5 py-2 text-slate-600 font-bold text-xs hover:bg-white hover:text-slate-800 rounded-lg transition-all border border-transparent hover:border-slate-200 active:scale-95">Cancel</button>
                     <button type="submit" id="cvVerifySubmitBtn"
-                        class="px-5 py-2 bg-[#8B0000] text-white font-bold text-xs rounded-lg shadow-sm hover:bg-[#6d0000] transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
+                        class="px-5 py-2 bg-[#8B0000] text-white font-bold text-xs rounded-lg shadow-sm shadow-[#8B0000]/5 hover:bg-[#6d0000] transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1 active:scale-95">
                         Submit Decision
                     </button>
                 </div>

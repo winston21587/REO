@@ -63,9 +63,9 @@
     </style>
 </head>
 
-<body class="bg-surface-50 text-slate-800 antialiased"
+<body class="bg-[#faf8f8] text-slate-800 antialiased"
     x-data="{ sidebarOpen: true, mobileOpen: false, mobileMenuOpen: false }">
-    <div class="min-h-screen bg-surface-50 flex">
+    <div class="min-h-screen bg-[#faf8f8] flex">
 
         <!-- Sidebar (Desktop Only) -->
         <aside

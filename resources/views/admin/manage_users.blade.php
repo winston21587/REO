@@ -142,7 +142,7 @@
                             </td>
                             <td class="p-6 text-right relative">
                                 <div x-data="{ open: false }" class="relative inline-block text-left">
-                                    <button @click="open = !open" @click.away="open = false" class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
+                                    <button @click="open = !open" @click.away="open = false" class="p-2 text-slate-500 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     

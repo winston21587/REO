@@ -95,14 +95,14 @@
                                     data-item="{{ json_encode($item) }}"
                                     data-url="{{ route('admin.agenda.update', $item->id) }}"
                                     @click="openEditModal(JSON.parse($el.dataset.item), $el.dataset.url)"
-                                    class="p-1.5 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded transition-colors" 
+                                    class="p-1.5 text-slate-500 hover:text-[#8B0000] hover:bg-red-50 rounded transition-colors" 
                                     title="Edit Item">
                                     <i class="fa-solid fa-pen text-sm pointer-events-none"></i>
                                 </button>
                                 <form action="{{ route('admin.agenda.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Remove Item">
+                                    <button type="submit" class="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Remove Item">
                                         <i class="fa-solid fa-trash text-sm"></i>
                                     </button>
                                 </form>

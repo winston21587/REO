@@ -65,7 +65,7 @@
     </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800">
+<body class="bg-[#faf8f8] text-slate-800">
 
     <div class="flex h-screen overflow-hidden">
         <aside class="w-72 bg-[#1a0505] text-white flex flex-col shadow-2xl z-50 relative">
@@ -131,7 +131,7 @@
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50">
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-[#faf8f8]">
             <header
                 class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-50">
                 <h2 class="text-xl font-bold text-slate-800 font-heading">{{ $title ?? 'Reviewer Dashboard' }}</h2>

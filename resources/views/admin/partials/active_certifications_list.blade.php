@@ -86,7 +86,7 @@
                         </td>
                         <td class="p-6 text-right">
                             <button type="button" @click="actionDrawerOpen = true"
-                                class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all ml-auto flex items-center justify-center">
+                                class="p-2 text-slate-500 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all ml-auto flex items-center justify-center">
                                 <i class="fas fa-ellipsis-v text-sm"></i>
                             </button>
 
@@ -135,7 +135,7 @@
                                                             </div>
                                                         </div>
                                                         <button @click="actionDrawerOpen = false"
-                                                            class="text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
+                                                            class="text-slate-500 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
                                                             <i class="fas fa-times text-lg"></i>
                                                         </button>
                                                     </div>

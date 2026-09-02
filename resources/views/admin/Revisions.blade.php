@@ -50,7 +50,7 @@
                                             <!-- Drawer Header -->
                                             <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-none text-left">
                                                 <h3 class="font-heading font-extrabold text-lg text-slate-800 leading-tight">Apply Filters</h3>
-                                                <button type="button" @click="expanded = false" class="text-slate-400 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
+                                                <button type="button" @click="expanded = false" class="text-slate-500 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
                                                     <i class="fas fa-times text-lg"></i>
                                                 </button>
                                             </div>

@@ -146,14 +146,14 @@
                 </div>
                 
                 <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <a href="{{ route('admin.meetings.show', $meeting->id) }}" class="p-2 text-slate-400 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-colors" title="Manage Agenda">
+                    <a href="{{ route('admin.meetings.show', $meeting->id) }}" class="p-2 text-slate-500 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-colors" title="Manage Agenda">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </a>
                     <button 
                         data-url="{{ route('admin.meetings.destroy', $meeting->id) }}"
                         data-title="{{ $meeting->title }}"
                         @click="showDeleteModal = true; meetingToDelete = $el.dataset.title; deleteUrl = $el.dataset.url"
-                        class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                        class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
                         title="Delete Meeting">
                         <i class="fa-solid fa-trash pointer-events-none"></i>
                     </button>

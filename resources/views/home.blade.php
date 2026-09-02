@@ -124,107 +124,113 @@
                     @endphp
 
                     <!-- ========================================== -->
-                    <!-- MOBILE CARD (Compact Design)               -->
+                    <!-- UNIFIED RESPONSIVE CARD                    -->
                     <!-- ========================================== -->
-                    <div class="md:hidden bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative group mb-6">
-                        <div class="p-5 relative z-10">
-                            <!-- Mobile Header -->
-                            <div class="mb-4">
-                                <div class="flex flex-col gap-2 mb-3">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-{{ $statusColor }}-50 text-{{ $statusColor }}-600 border border-{{ $statusColor }}-100 flex items-center gap-1.5">
-                                            <i class="fas {{ $statusIcon }} text-[10px]"></i>
-                                            {{ $title->Status ?? $title->status ?? 'Pending' }}
-                                        </span>
-
-                                        @if($title->Review_Type && $title->Review_Type !== 'N/A')
-                                            <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center gap-1.5">
-                                                <i class="fas fa-clipboard-list text-[10px]"></i>
-                                                {{ $title->Review_Type }}
+                    <div class="bg-gradient-to-br from-white to-slate-50/50 rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-100/50 overflow-hidden relative group mb-6 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50">
+                        <div class="p-5 md:p-8 relative z-10">
+                            <!-- Header & Actions -->
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2 md:mb-4">
+                                <!-- Left Content -->
+                                <div class="flex-1">
+                                    <div class="flex flex-col md:flex-row md:items-center gap-3 mb-3 md:mb-5">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-[11px] font-extrabold uppercase tracking-widest bg-{{ $statusColor }}-100 text-{{ $statusColor }}-700 flex items-center gap-2 shadow-sm border border-{{ $statusColor }}-200">
+                                                <i class="fas {{ $statusIcon }}"></i>
+                                                {{ $title->Status ?? $title->status ?? 'Pending Review' }}
                                             </span>
-                                        @endif
-                                    </div>
-                                    <h2 class="text-xl font-extrabold text-slate-900 leading-snug">
-                                        {{ $title->Study_Protocol_title }}
-                                    </h2>
-                                    <div class="flex items-center justify-between mt-1">
-                                        <span class="text-slate-400 text-xs font-medium">
+                                            @if($title->Review_Type && $title->Review_Type !== 'N/A')
+                                                <span class="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-[11px] font-extrabold uppercase tracking-widest bg-indigo-100 text-indigo-700 flex items-center gap-2 shadow-sm border border-indigo-200">
+                                                    <i class="fas fa-clipboard-list"></i>
+                                                    {{ $title->Review_Type }}
+                                                </span>
+                                            @endif
+                                            
+                                            {{-- CV State --}}
+                                            @if($title->cv_verification_status === 'Invalid')
+                                                <span class="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-[11px] font-extrabold uppercase tracking-widest bg-red-100 text-red-700 flex items-center gap-2 shadow-sm border border-red-200">
+                                                    <i class="fas fa-id-card"></i> CV Mismatch
+                                                </span>
+                                            @elseif($title->cv_verification_status === 'Valid')
+                                                <span class="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-[11px] font-extrabold uppercase tracking-widest bg-violet-100 text-violet-700 flex items-center gap-2 shadow-sm border border-violet-200">
+                                                    <i class="fas fa-check-circle"></i> CV Verified
+                                                </span>
+                                            @endif
+
+                                            {{-- OR State --}}
+                                            @if($title->Official_Receipt_Number && !$title->is_or_verified)
+                                                <span class="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-[11px] font-extrabold uppercase tracking-widest bg-slate-50 text-slate-500 flex items-center gap-2 border border-slate-100/50">
+                                                    <i class="fas fa-hourglass-half"></i> OR Pending
+                                                </span>
+                                            @elseif($title->is_or_verified)
+                                                <span class="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-[11px] font-extrabold uppercase tracking-widest bg-emerald-100 text-emerald-700 flex items-center gap-2 shadow-sm border border-emerald-200">
+                                                    <i class="fas fa-check-circle"></i> OR Verified
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <span class="text-slate-400 text-xs md:text-sm font-medium ml-0 md:ml-auto mt-1 md:mt-0 tracking-wide">
                                             <i class="far fa-calendar-alt mr-1"></i> {{ $title->created_at->format('M d, Y') }}
                                         </span>
-                                        <div class="flex items-center gap-3">
-                                            <button onclick="document.getElementById('info-modal-{{ $title->id }}').showModal()"
-                                                class="text-slate-500 hover:text-[#8B0000] font-semibold text-xs transition-colors flex items-center gap-1">
-                                                <i class="fas fa-info-circle"></i> Details
-                                            </button>
-                                            <button onclick="document.getElementById('log-modal-{{ $title->id }}').showModal()"
-                                                class="text-indigo-500 hover:text-indigo-700 font-semibold text-xs transition-colors flex items-center gap-1">
-                                                <i class="fas fa-history"></i> Logs
-                                            </button>
-                                        </div>
+                                    </div>
+                                    
+                                    <h2 class="text-xl md:text-3xl font-extrabold text-slate-900 leading-snug md:leading-tight max-w-3xl mb-3 pl-1">
+                                        {{ $title->Study_Protocol_title }}
+                                    </h2>
+                                    
+                                    <div class="flex items-center gap-4 pl-1 mt-2 md:mt-4">
+                                        <button onclick="document.getElementById('info-modal-{{ $title->id }}').showModal()" class="text-slate-500 hover:text-[#8B0000] font-bold text-sm md:text-base flex items-center gap-1.5 transition-colors group">
+                                            <i class="fas fa-info-circle group-hover:scale-110 transition-transform"></i> Details
+                                        </button>
+                                        <span class="text-slate-300 px-1">|</span>
+                                        <button onclick="document.getElementById('log-modal-{{ $title->id }}').showModal()" class="text-slate-500 hover:text-indigo-600 font-bold text-sm md:text-base flex items-center gap-1.5 transition-colors group">
+                                            <i class="fas fa-history group-hover:scale-110 transition-transform"></i> Logs
+                                        </button>
                                     </div>
                                 </div>
 
-                                <!-- Mobile Actions (Grid) -->
-                                <div class="grid grid-cols-2 gap-3 mt-4">
-                                    <a href="{{ route('manage.files', $title->id) }}"
-                                        class="col-span-2 w-full py-2.5 px-6 bg-[#8B0000] text-white rounded-xl font-bold text-center shadow-md shadow-red-900/10 hover:bg-red-800 transition-all flex items-center justify-center gap-2 text-sm">
+                                <!-- Right Actions -->
+                                <div class="flex flex-col gap-3 w-full md:min-w-[200px] md:w-auto mt-4 md:mt-0 shrink-0">
+                                    <a href="{{ route('manage.files', $title->id) }}" class="w-full py-2.5 md:py-3 px-6 bg-gradient-to-r from-[#8B0000] to-red-900 text-white rounded-xl font-bold text-sm md:text-base text-center shadow-lg shadow-red-900/20 hover:shadow-red-900/40 hover:to-red-800 transition-all flex items-center justify-center gap-2 active:scale-95 border border-red-950/20">
                                         <i class="fas {{ $checkStatus === 'Incomplete' ? 'fa-file-upload' : 'fa-folder-open' }}"></i> 
                                         {{ $checkStatus === 'Incomplete' ? 'Add Files' : 'Manage Files' }}
                                     </a>
 
-                                    @if($title->Official_Receipt_Number && !$title->is_or_verified)
-                                        <div class="col-span-2 w-full py-2.5 px-6 bg-slate-50 text-slate-500 rounded-xl font-bold flex items-center justify-center gap-2 text-sm border border-slate-200 cursor-not-allowed shadow-inner">
-                                            <i class="fas fa-hourglass-half text-indigo-400 animate-pulse"></i> OR Pending Verification
-                                        </div>
-                                    @elseif($title->is_or_verified)
-                                        <div class="col-span-2 w-full py-2.5 px-6 bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 rounded-xl font-bold flex items-center justify-center gap-2 text-sm border border-emerald-200 shadow-sm cursor-default">
-                                            <i class="fas fa-check-circle text-emerald-500"></i> OR Verified
-                                        </div>
-                                    @endif
-
-                                    @if($title->status === 'Approved')
-                                        <div class="col-span-2 w-full py-2.5 px-6 bg-green-50 border border-green-200 text-green-700 rounded-xl font-bold flex items-center justify-center gap-2 text-sm">
-                                            <i class="fas fa-check-circle"></i> Approved
-                                        </div>
-                                    @endif
-
                                     @if($title->status === 'Incomplete')
-                                        <div class="col-span-2 px-3 py-2 text-xs text-orange-600 font-bold text-center bg-orange-50 rounded-lg border border-orange-100">
+                                        <div class="w-full px-3 py-2 text-xs md:text-sm text-orange-600 font-bold text-center bg-orange-50/80 backdrop-blur-sm rounded-lg border border-orange-100 shadow-sm">
                                             <i class="fas fa-exclamation-triangle mr-1"></i> Check Requirements
                                         </div>
                                     @endif
-                                    
-                                     @if($title->status === 'Returned' || $title->status === 'Waiting for Revision')
-                                        <button class="col-span-2 w-full py-2.5 px-6 bg-white border border-orange-200 text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition-colors flex items-center justify-center gap-2 text-sm">
-                                            <i class="fas fa-comment-alt"></i> Feedback
+
+                                    @if($title->status === 'Returned' || $title->status === 'Waiting for Revision')
+                                        <button class="w-full py-2.5 md:py-3 px-6 bg-white border border-orange-200 text-orange-700 rounded-xl font-bold hover:bg-orange-50 transition-colors flex items-center justify-center gap-2 text-sm md:text-base active:scale-95 shadow-sm hover:shadow-md">
+                                            <i class="fas fa-comment-alt"></i> View Feedback
                                         </button>
                                     @endif
 
-                                    {{-- CV Alert (Mobile) --}}
+                                    {{-- CV Classification Invalid Alert (Actionable) --}}
                                     @if($title->cv_verification_status === 'Invalid')
-                                        <div class="col-span-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
-                                            <p class="text-xs font-bold text-red-700 flex items-center gap-1 mb-1.5"><i class="fas fa-id-card"></i> CV Mismatch</p>
+                                        <div class="w-full px-4 py-3 bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-xl shadow-sm">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <i class="fas fa-id-card text-red-500 text-sm"></i>
+                                                <span class="text-sm font-bold text-red-800">CV Mismatch</span>
+                                            </div>
+                                            <p class="text-xs text-red-700 mb-3 leading-relaxed hidden md:block">{{ Str::limit($title->cv_rejection_remarks, 80) }}</p>
                                             <button onclick="document.getElementById('cv-correct-modal-{{ $title->id }}').showModal()"
-                                                class="w-full py-1.5 text-xs font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5">
-                                                <i class="fas fa-edit"></i> Correct Project Type
+                                                class="w-full py-2 px-3 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 active:scale-95 shadow-md">
+                                                <i class="fas fa-edit"></i> Correct Project
                                             </button>
-                                        </div>
-                                    @elseif($title->cv_verification_status === 'Valid')
-                                        <div class="col-span-2 w-full py-2.5 px-4 bg-violet-50 border border-violet-200 text-violet-700 rounded-xl font-bold flex items-center justify-center gap-2 text-xs">
-                                            <i class="fas fa-check-circle text-violet-500"></i> CV Verified
                                         </div>
                                     @endif
                                 </div>
                             </div>
 
-                            <!-- Mobile Horizontal Tracker -->
-                            <div class="pt-4 border-t border-slate-100 relative mt-4">
+                            <!-- Original Mobile Tracker (2 rows) -->
+                            <div class="md:hidden pt-2 relative mt-0">
                                 <!-- First Row (3 steps: Submission, Review, Revision) -->
                                 <div class="relative px-1 mb-6">
                                     <!-- Background Line -->
-                                    <div class="absolute top-3 left-4 right-4 h-0.5 bg-slate-100 rounded-full z-0"></div>
+                                    <div class="absolute top-3 left-4 right-4 h-1.5 bg-slate-100 rounded-full z-0"></div>
                                     <!-- Progress Line -->
-                                    <div class="absolute top-3 left-4 h-0.5 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
+                                    <div class="absolute top-3 left-4 h-1.5 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
                                          style="width: calc({{ min($currentStep, 3) === 1 ? 0 : ($currentStep >= 3 ? 100 : (($currentStep - 1) / 2 * 100)) }}%)"></div>
 
                                     <!-- Steps -->
@@ -239,7 +245,7 @@
                                                 <div class="w-6 h-6 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 bg-white relative z-10 {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }} {{ $isCurrent ? 'scale-105 shadow-md shadow-red-900/20 ring-1 ring-red-50' : '' }}">
                                                     <i class="fas {{ $data['icon'] }} {{ $isActive ? '' : 'text-slate-300' }} text-[7px]"></i>
                                                 </div>
-                                                <span class="block text-[7px] font-bold uppercase tracking-tight transition-colors duration-300 text-center {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }} leading-tight max-w-[45px] line-clamp-2">
+                                                <span class="block text-[8px] font-bold uppercase tracking-wide transition-colors duration-300 text-center {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }} leading-tight max-w-[45px] line-clamp-2">
                                                     {{ $data['label'] }}
                                                 </span>
                                             </div>
@@ -250,9 +256,9 @@
                                 <!-- Second Row (2 steps: Deliberation, Certificate) -->
                                 <div class="relative px-1">
                                     <!-- Background Line -->
-                                    <div class="absolute top-3 left-4 right-4 h-0.5 bg-slate-100 rounded-full z-0"></div>
+                                    <div class="absolute top-3 left-4 right-4 h-1.5 bg-slate-100 rounded-full z-0"></div>
                                     <!-- Progress Line -->
-                                    <div class="absolute top-3 left-4 h-0.5 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
+                                    <div class="absolute top-3 left-4 h-1.5 bg-[#8B0000] rounded-full z-0 transition-all duration-1000 ease-out"
                                          style="width: calc({{ $currentStep <= 3 ? 0 : (($currentStep - 3) / 2 * 100) }}%)"></div>
 
                                     <!-- Steps -->
@@ -267,112 +273,21 @@
                                                 <div class="w-6 h-6 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 bg-white relative z-10 {{ $isActive ? 'border-[#8B0000] text-[#8B0000]' : 'border-slate-200 text-slate-300' }} {{ $isCurrent ? 'scale-105 shadow-md shadow-red-900/20 ring-1 ring-red-50' : '' }}">
                                                     <i class="fas {{ $data['icon'] }} {{ $isActive ? '' : 'text-slate-300' }} text-[7px]"></i>
                                                 </div>
-                                                <span class="block text-[7px] font-bold uppercase tracking-tight transition-colors duration-300 text-center {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }} leading-tight max-w-[45px] line-clamp-2">
+                                                <span class="block text-[8px] font-bold uppercase tracking-wide transition-colors duration-300 text-center {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }} leading-tight max-w-[45px] line-clamp-2">
                                                     {{ $data['label'] }}
                                                 </span>
                                             </div>
                                         @endforeach
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ========================================== -->
-                    <!-- DESKTOP CARD (Spacious Original Design)    -->
-                    <!-- ========================================== -->
-                    <div class="hidden md:block bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative group">
-                        <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <i class="fas {{ $statusIcon }} text-9xl text-{{ $statusColor }}-600"></i>
-                        </div>
-
-                        <div class="p-8 relative z-10">
-                            <!-- Header & Actions -->
-                            <div class="flex items-center justify-between gap-6 mb-8">
-                                <div>
-                                    <div class="flex items-center gap-3 mb-4">
-                                        <div class="flex items-center gap-2">
-                                            <span class="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider bg-{{ $statusColor }}-100 text-{{ $statusColor }}-700 flex items-center gap-2">
-                                                <i class="fas {{ $statusIcon }}"></i>
-                                                {{ $title->Status ?? $title->status ?? 'Pending Review' }}
-                                            </span>
-                                            @if($title->Review_Type && $title->Review_Type !== 'N/A')
-                                                <span class="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 flex items-center gap-2">
-                                                    <i class="fas fa-clipboard-list"></i>
-                                                    {{ $title->Review_Type }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                        <span class="text-slate-400 text-sm font-medium ml-auto">
-                                            <i class="far fa-calendar-alt mr-1"></i> Submitted on {{ $title->created_at->format('F d, Y') }}
-                                        </span>
-                                    </div>
-                                    <h2 class="text-3xl font-extrabold text-slate-900 leading-tight max-w-3xl mb-2 pl-1">
-                                        {{ $title->Study_Protocol_title }}
-                                    </h2>
-                                    <div class="flex items-center gap-4 pl-1 mt-3">
-                                        <button onclick="document.getElementById('info-modal-{{ $title->id }}').showModal()" class="text-[#8B0000] font-bold text-sm hover:underline flex items-center gap-1">
-                                            <i class="fas fa-info-circle"></i> View Protocol Details
-                                        </button>
-                                        <span class="text-slate-300">|</span>
-                                        <button onclick="document.getElementById('log-modal-{{ $title->id }}').showModal()" class="text-indigo-600 font-bold text-sm hover:underline flex items-center gap-1">
-                                            <i class="fas fa-history"></i> View Activity Log
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="flex flex-col gap-3 min-w-[200px]">
-                                    <a href="{{ route('manage.files', $title->id) }}" class="w-full py-3 px-6 bg-[#8B0000] text-white rounded-xl font-bold text-center shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-xl transition-all flex items-center justify-center gap-2">
-                                        <i class="fas {{ $checkStatus === 'Incomplete' ? 'fa-file-upload' : 'fa-folder-open' }}"></i> 
-                                        {{ $checkStatus === 'Incomplete' ? 'Add Files' : 'Manage Files' }}
-                                    </a>
-
-                                    @if($title->Official_Receipt_Number && !$title->is_or_verified)
-                                        <div class="w-full py-3 px-6 bg-slate-50 text-slate-500 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-200 cursor-not-allowed shadow-inner">
-                                            <i class="fas fa-hourglass-half text-indigo-400 animate-pulse"></i> OR Pending Verification
-                                        </div>
-                                    @elseif($title->is_or_verified)
-                                        <div class="w-full py-3 px-6 bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 rounded-xl font-bold flex items-center justify-center gap-2 border border-emerald-200 shadow-sm cursor-default">
-                                            <i class="fas fa-check-circle text-emerald-500"></i> OR Verified
-                                        </div>
-                                    @endif
-                                    @if($title->status === 'Approved')
-                                        <div class="w-full py-3 px-6 bg-green-50 border-2 border-green-500 text-green-700 rounded-xl font-bold flex items-center justify-center gap-2">
-                                            <i class="fas fa-check-circle"></i> Approved
-                                        </div>
-                                    @endif
-                                    @if($title->status === 'Returned' || $title->status === 'Waiting for Revision')
-                                        <button class="w-full py-3 px-6 bg-white border-2 border-orange-100 text-orange-700 rounded-xl font-bold hover:bg-orange-50 transition-colors flex items-center justify-center gap-2">
-                                            <i class="fas fa-comment-alt"></i> View Feedback
-                                        </button>
-                                    @endif
-
-                                    {{-- CV Classification Invalid Alert --}}
-                                    @if($title->cv_verification_status === 'Invalid')
-                                        <div class="w-full px-4 py-3 bg-red-50 border-2 border-red-200 rounded-xl">
-                                            <div class="flex items-center gap-2 mb-2">
-                                                <i class="fas fa-id-card text-red-500 text-sm"></i>
-                                                <span class="text-sm font-bold text-red-800">CV Mismatch Detected</span>
-                                            </div>
-                                            <p class="text-xs text-red-700 mb-3 leading-relaxed">{{ Str::limit($title->cv_rejection_remarks, 80) }}</p>
-                                            <button onclick="document.getElementById('cv-correct-modal-{{ $title->id }}').showModal()"
-                                                class="w-full py-2 px-3 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
-                                                <i class="fas fa-edit"></i> Correct Project Type
-                                            </button>
-                                        </div>
-                                    @elseif($title->cv_verification_status === 'Valid')
-                                        <div class="w-full py-3 px-6 bg-gradient-to-r from-violet-50 to-violet-100 text-violet-700 rounded-xl font-bold flex items-center justify-center gap-2 border border-violet-200 shadow-sm cursor-default">
-                                            <i class="fas fa-check-circle text-violet-500"></i> CV Verified
-                                        </div>
-                                    @endif
-                                </div>
+                                <div class="h-4"></div>
                             </div>
 
-                            <!-- Desktop Tracker -->
-                            <div class="pt-8 border-t border-slate-100 relative mt-8">
+                            <!-- Original Desktop Tracker -->
+                            <div class="hidden md:block pt-2 relative mt-2">
                                 <div class="relative px-8">
                                     <!-- Progress Line -->
-                                    <div class="absolute top-[1.125rem] left-[3.25rem] right-[3.25rem] h-1.5 rounded-full z-0 overflow-hidden shadow-sm" style="background-color: #e2e8f0;">
+                                    <div class="absolute top-[1.125rem] left-[3.25rem] right-[3.25rem] h-1.5 rounded-full z-0 overflow-hidden" style="background-color: #e2e8f0;">
                                         <div class="absolute top-0 left-0 h-full bg-[#8B0000] rounded-full transition-all duration-1000 ease-out" 
                                              style="width: {{ ($currentStep - 1) / (count($steps) - 1) * 100 }}%"></div>
                                     </div>
@@ -391,11 +306,13 @@
                                                 
                                                 <!-- Label -->
                                                 <div class="absolute top-full mt-3 text-center pointer-events-none z-20">
-                                                    <span class="block text-[10px] font-bold uppercase tracking-wide transition-colors duration-300 {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }} whitespace-nowrap">
+                                                    <span class="block text-[11px] font-bold uppercase tracking-widest transition-colors duration-300 {{ $isActive ? 'text-[#8B0000]' : 'text-slate-400' }} whitespace-nowrap">
                                                         {{ $data['label'] }}
                                                     </span>
                                                     @if($isCurrent)
-                                                        <span class="inline-block text-[8px] font-bold text-[#8B0000] bg-red-50 px-2 py-0.5 rounded-full mt-0.5 whitespace-nowrap">Current</span>
+                                                        <span class="inline-block mt-1 px-2.5 py-1 bg-red-50 text-[#8B0000] text-[9px] font-bold rounded-full border border-red-100">
+                                                            Current
+                                                        </span>
                                                     @endif
                                                 </div>
                                             </div>

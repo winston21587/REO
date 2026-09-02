@@ -28,3 +28,8 @@ Thumbs.db
 /storage/app/public/certificates/generated/
 /storage/app/public/recommendation_letters/*.pdf
 /storage/app/public/recommendation_letters/generated/
+
+# AI Skills
+/.agents/skills/
+/.claude/skills/
+/skills-lock.json

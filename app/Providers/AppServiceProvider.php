@@ -26,21 +26,30 @@ public function boot()
     // Adjust 'components.admin_layout' or 'layouts.app' to match your actual layout file name
     View::composer('*', function ($view) {
         if (Auth::check()) {
-            $notifications = UserNotification::where('user_id', Auth::id())
-                                ->orderBy('created_at', 'desc')
-                                ->take(5) // Limit to 5 for the dropdown
-                                ->get();
-            
-            $unreadCount = UserNotification::where('user_id', Auth::id())
-                                ->where('is_read', false)
-                                ->count();
+            static $userNotifications = [];
+            static $unreadCounts = [];
+            $userId = Auth::id();
 
-            $view->with('notifications', $notifications)
-                 ->with('unreadCount', $unreadCount);
+            if (!isset($userNotifications[$userId])) {
+                $userNotifications[$userId] = UserNotification::where('user_id', $userId)
+                                    ->orderBy('created_at', 'desc')
+                                    ->take(5) // Limit to 5 for the dropdown
+                                    ->get();
+                
+                $unreadCounts[$userId] = UserNotification::where('user_id', $userId)
+                                    ->where('is_read', false)
+                                    ->count();
+            }
+
+            $view->with('notifications', $userNotifications[$userId])
+                 ->with('unreadCount', $unreadCounts[$userId]);
         }
         
-        // Share CMS content globally
-        $cms = CmsContent::all()->pluck('value', 'key');
+        // Share CMS content globally (cached per request)
+        static $cms = null;
+        if ($cms === null) {
+            $cms = CmsContent::all()->pluck('value', 'key');
+        }
         $view->with('cms', $cms);
     });
 }

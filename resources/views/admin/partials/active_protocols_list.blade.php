@@ -1,389 +1,513 @@
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 flex flex-col h-full min-h-[400px]">
-            <div class="overflow-x-auto flex-grow overflow-y-visible">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr
-                            class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                            <th class="p-6">Research Title</th>
-                            <th class="p-6">Researcher</th>
-                            <th class="p-6">Reviewers</th>
-                            <th class="p-6">Submission Date</th>
-                            <th class="p-6">Document Status</th>
-                            <th class="p-6">Reviewer Status</th>
-                            <th class="p-6">Review Type</th>
-                            <th class="p-6 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @forelse($datas as $data)
-                            <tr class="hover:bg-slate-50/80 transition-colors group">
+        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 flex flex-col flex-1 h-full min-h-[400px]">
+            @if(count($datas) > 0)
+                <!-- MOBILE & TABLET ADAPTIVE CARDS VIEW (Visible below lg: 1024px) -->
+                <div class="block lg:hidden divide-y divide-slate-100 flex-grow">
+                    @foreach($datas as $data)
+                        @php
+                            $isAdvanced = in_array($data->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed']);
+                            $docStatus = $isAdvanced ? 'Hardcopy Received' : $data->Status;
+                            $docBadgeConfig = [
+                                'Hardcopy Received' => [
+                                    'badge' => 'bg-teal-50/70 text-teal-800 border-teal-200/70',
+                                    'dot' => 'bg-teal-500',
+                                    'label' => 'Hardcopy Received'
+                                ],
+                                'Incomplete - Awaiting Hardcopy' => [
+                                    'badge' => 'bg-rose-50/70 text-rose-800 border-rose-200/70',
+                                    'dot' => 'bg-rose-500',
+                                    'label' => 'Incomplete - Awaiting Hardcopy'
+                                ],
+                                'Incomplete Hardcopy' => [
+                                    'badge' => 'bg-rose-50/70 text-rose-800 border-rose-200/70',
+                                    'dot' => 'bg-rose-500',
+                                    'label' => 'Incomplete Hardcopy'
+                                ],
+                                'For Initial Review' => [
+                                    'badge' => 'bg-sky-50/70 text-sky-800 border-sky-200/70',
+                                    'dot' => 'bg-sky-500',
+                                    'label' => 'For Initial Review'
+                                ],
+                            ];
+                            $docConfig = $docBadgeConfig[$docStatus] ?? [
+                                'badge' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                'dot' => 'bg-slate-400',
+                                'label' => $docStatus
+                            ];
 
-                                <td class="p-6">
-                                    <p class="font-bold text-slate-800 text-sm line-clamp-1 group-hover:text-[#8B0000] transition-colors"
-                                        title="{{ $data->Study_Protocol_title }}">
+                            $revStatus = $isAdvanced ? $data->Status : 'Pending Assignment';
+                            $revBadgeConfig = [
+                                'Pending Assignment' => [
+                                    'badge' => 'bg-slate-100 text-slate-600 border-slate-200/80 italic',
+                                    'dot' => 'bg-slate-400',
+                                    'label' => 'Pending Assignment'
+                                ],
+                                'Reviewer Assigned' => [
+                                    'badge' => 'bg-blue-50/70 text-blue-800 border-blue-200/70',
+                                    'dot' => 'bg-blue-500',
+                                    'label' => 'Reviewer Assigned'
+                                ],
+                                'Under Review' => [
+                                    'badge' => 'bg-indigo-50/70 text-indigo-800 border-indigo-200/70',
+                                    'dot' => 'bg-indigo-500',
+                                    'label' => 'Under Review'
+                                ],
+                                'Reviewed' => [
+                                    'badge' => 'bg-emerald-50/70 text-emerald-800 border-emerald-200/70',
+                                    'dot' => 'bg-emerald-500',
+                                    'label' => 'Reviewed'
+                                ],
+                            ];
+                            $revConfig = $revBadgeConfig[$revStatus] ?? [
+                                'badge' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                'dot' => 'bg-slate-400',
+                                'label' => $revStatus
+                            ];
+
+                            $reviewerSuggestedType = $data->adminFiles->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
+                            $typeBadgeConfig = [
+                                'Exempt Review' => [
+                                    'badge' => 'bg-emerald-50/70 text-emerald-800 border-emerald-200/70',
+                                    'icon' => 'fa-check-circle text-emerald-600',
+                                    'label' => 'Exempt Review'
+                                ],
+                                'Expedited Review' => [
+                                    'badge' => 'bg-blue-50/70 text-blue-800 border-blue-200/70',
+                                    'icon' => 'fa-bolt text-blue-600',
+                                    'label' => 'Expedited Review'
+                                ],
+                                'Full Board Review' => [
+                                    'badge' => 'bg-amber-50/70 text-amber-900 border-amber-200/70',
+                                    'icon' => 'fa-users text-amber-700',
+                                    'label' => 'Full Board Review'
+                                ]
+                            ];
+
+                            $recLetter = $data->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first()
+                                ?? $data->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first();
+                            $defMessage = $latestDeficiencies->get($data->id)?->message ?? '';
+                            $alreadyNotified = isset($recentReminders[$data->id]);
+                            $hasReviewers = !empty($data->assigned_reviewers) && count($data->assigned_reviewers) > 0;
+                            $hasValidType = !empty($data->Review_Type) && !in_array($data->Review_Type, ['Unassigned', 'N/A']);
+                        @endphp
+                        <div class="p-4 sm:p-5 space-y-3 hover:bg-slate-50/60 transition-colors">
+                            <!-- Header: Code + Date + Title + Action Trigger -->
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                                        <span class="text-[10px] font-mono font-medium text-slate-600 bg-slate-100 border border-slate-200/70 px-1.5 py-0.5 rounded">
+                                            #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
+                                        </span>
+                                        <span class="text-xs text-slate-500 font-medium">
+                                            <i class="far fa-calendar-alt text-slate-400 mr-1"></i>{{ $data->created_at->format('M d, Y') }}
+                                        </span>
+                                    </div>
+                                    <a href="{{ route('admin.view_files', $data->id) }}"
+                                       class="font-semibold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors"
+                                       title="{{ $data->Study_Protocol_title }}">
                                         {{ $data->Study_Protocol_title }}
-                                    </p>
-                                </td>
-                                <td class="p-6">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
-                                            {{ substr($data->researcher->user->first_name ?? 'U', 0, 1) }}
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium text-slate-700">
-                                                {{ $data->researcher->user->first_name ?? '' }}
-                                                {{ $data->researcher->user->last_name ?? 'Unknown' }}
-                                            </p>
-                                            <p class="text-[10px] text-slate-400">{{ $data->researcher->user->email ?? '' }}
-                                            </p>
-                                        </div>
+                                    </a>
+                                </div>
+                                <button type="button"
+                                    @click="$dispatch('open-protocol-drawer', {
+                                        id: '{{ $data->id }}',
+                                        title: {{ json_encode($data->Study_Protocol_title) }},
+                                        researcher_name: {{ json_encode(trim(($data->researcher->user->first_name ?? '') . ' ' . ($data->researcher->user->last_name ?? 'Unknown'))) }},
+                                        created_at: '{{ $data->created_at->format('M d, Y') }}',
+                                        code: '#{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}',
+                                        status: {{ json_encode($data->Status) }},
+                                        review_type: {{ json_encode($data->Review_Type) }},
+                                        ai_suggested_type: {{ json_encode($data->ai_suggested_review_type) }},
+                                        view_url: '{{ route('admin.view_files', $data->id) }}',
+                                        has_deficiency: {{ in_array($data->Status, ['Incomplete - Awaiting Hardcopy', 'Incomplete Hardcopy']) ? 'true' : 'false' }},
+                                        deficiency_message: {{ json_encode($defMessage) }},
+                                        can_ai_predict: {{ (empty($data->Review_Type) || in_array($data->Review_Type, ['Unassigned', 'N/A'])) ? 'true' : 'false' }},
+                                        rec_letter_url: {{ $recLetter ? json_encode(route('admin.recommendation.view_saved', $data->id)) : 'null' }},
+                                        is_reviewed: {{ $data->Status === 'Reviewed' ? 'true' : 'false' }},
+                                        is_or_verified: {{ (bool)$data->is_or_verified ? 'true' : 'false' }},
+                                        rec_form_url: '{{ route('admin.recommendation.form', $data->id) }}',
+                                        already_notified: {{ $alreadyNotified ? 'true' : 'false' }},
+                                        can_assign: {{ in_array($data->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review']) ? 'true' : 'false' }},
+                                        has_valid_review_type: {{ $hasValidType ? 'true' : 'false' }},
+                                        has_reviewers_assigned: {{ $hasReviewers ? 'true' : 'false' }},
+                                        assigned_reviewers: {{ json_encode($data->assigned_reviewers ?? []) }},
+                                        update_status_url: '{{ route('admin.updateStatus', $data->id) }}'
+                                    })"
+                                    class="p-2.5 -mr-1 text-slate-400 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]"
+                                    title="Protocol Actions"
+                                    aria-label="Actions for {{ $data->Study_Protocol_title }}">
+                                    <i class="fas fa-ellipsis-v text-sm"></i>
+                                </button>
+                            </div>
+
+                            <!-- Researcher Row -->
+                            <div class="flex items-center gap-2.5 pt-2 border-t border-slate-100 text-xs text-slate-600">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-700 uppercase shrink-0">
+                                    {{ substr($data->researcher->user->first_name ?? 'U', 0, 1) }}
+                                </div>
+                                <span class="font-semibold text-slate-800 truncate">
+                                    {{ $data->researcher->user->first_name ?? '' }} {{ $data->researcher->user->last_name ?? 'Unknown' }}
+                                </span>
+                                @if($data->researcher->user->email ?? false)
+                                    <span class="text-slate-300">•</span>
+                                    <span class="text-slate-400 truncate text-[11px]">{{ $data->researcher->user->email }}</span>
+                                @endif
+                            </div>
+
+                            <!-- Status Badges Grid -->
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                                <div class="bg-slate-50/80 border border-slate-200/60 p-2 rounded-lg">
+                                    <span class="block text-[9px] font-semibold uppercase tracking-wider text-slate-400">Document Status</span>
+                                    <div class="flex items-center gap-1.5 mt-1">
+                                        <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ $docConfig['dot'] }}"></span>
+                                        <span class="text-xs font-semibold truncate leading-tight">
+                                            {{ $docConfig['label'] }}
+                                        </span>
+                                        @if($data->Status === 'Incomplete - Awaiting Hardcopy' && $latestDeficiencies->get($data->id))
+                                            <span class="text-rose-600 shrink-0" title="Reason: {{ $latestDeficiencies->get($data->id)->message }}">
+                                                <i class="fas fa-exclamation-circle text-xs"></i>
+                                            </span>
+                                        @endif
                                     </div>
-                                </td>
-                                <td class="p-6">
-                                    @if($data->assigned_reviewers && count($data->assigned_reviewers) > 0)
-                                        <div class="flex flex-col gap-1">
-                                            @foreach($data->assigned_reviewers as $reviewerId)
-                                                @php
-                                                    $reviewerUser = \App\Models\User::find($reviewerId);
-                                                @endphp
-                                                @if($reviewerUser)
-                                                    <span class="text-sm font-medium text-slate-700">
-                                                        <i class="fas fa-user-check text-green-600 mr-1 opacity-70"></i>
-                                                        {{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}
-                                                    </span>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <span class="text-xs text-slate-400 italic">None Assigned</span>
-                                    @endif
-                                </td>
-                                <td class="p-6">
-                                    <div class="flex items-center gap-2 text-sm text-slate-600">
-                                        <i class="far fa-calendar text-slate-400"></i>
-                                        {{ $data->created_at->format('M d, Y') }}
+                                </div>
+
+                                <div class="bg-slate-50/80 border border-slate-200/60 p-2 rounded-lg">
+                                    <span class="block text-[9px] font-semibold uppercase tracking-wider text-slate-400">Reviewer Status</span>
+                                    <div class="flex items-center gap-1.5 mt-1">
+                                        <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ $revConfig['dot'] }}"></span>
+                                        <span class="text-xs font-semibold truncate leading-tight">
+                                            {{ $revConfig['label'] }}
+                                        </span>
                                     </div>
-                                </td>
-                                <td class="p-6">
-                                    @php
-                                        $isAdvanced = in_array($data->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed']);
-                                        $docStatus = $isAdvanced ? 'Hardcopy Received' : $data->Status;
-                                        
-                                        $docColors = [
-                                            'For Initial Review' => 'text-blue-600', // legacy
-                                            'Incomplete - Awaiting Hardcopy' => 'text-red-600',
-                                            'Incomplete Hardcopy' => 'text-red-600',
-                                            'Hardcopy Received' => 'text-teal-600',
-                                        ];
-                                        $docClass = $docColors[$docStatus] ?? 'text-slate-500';
-                                    @endphp
-                                    <div class="flex items-center gap-2">
-                                        <div class="text-sm font-bold {{ $docClass }}">
-                                            {{ $docStatus }}
-                                        </div>
-                                        @if($data->Status === 'Incomplete - Awaiting Hardcopy')
-                                            @php
-                                                $latestDeficiency = \App\Models\SubmissionFeedback::where('research_title_id', $data->id)
-                                                    ->where('type', 'hardcopy_deficiency')
-                                                    ->latest()
-                                                    ->first();
-                                            @endphp
-                                            @if($latestDeficiency)
-                                                <span class="text-red-500 cursor-help transition-all hover:scale-110" title="Reason: {{ $latestDeficiency->message }}">
-                                                    <i class="fas fa-exclamation-circle text-sm drop-shadow-sm"></i>
+                                </div>
+
+                                <div class="bg-slate-50/80 border border-slate-200/60 p-2 rounded-lg col-span-2 sm:col-span-1">
+                                    <span class="block text-[9px] font-semibold uppercase tracking-wider text-slate-400">Classification</span>
+                                    <div class="flex flex-col gap-0.5 mt-1">
+                                        <div class="flex items-center gap-1">
+                                            @if(isset($typeBadgeConfig[$data->Review_Type]))
+                                                <i class="fas {{ $typeBadgeConfig[$data->Review_Type]['icon'] }} text-[9px]"></i>
+                                                <span class="text-xs font-semibold truncate leading-tight">
+                                                    {{ $data->Review_Type }}
+                                                </span>
+                                            @else
+                                                <span class="text-xs font-medium text-slate-400 italic truncate leading-tight">
+                                                    {{ $data->Review_Type ?: 'Unassigned' }}
                                                 </span>
                                             @endif
+                                        </div>
+                                        @if(!empty($reviewerSuggestedType))
+                                            <span class="text-[10px] text-slate-500 font-medium truncate">
+                                                Suggested: {{ str_replace(' Review', '', $reviewerSuggestedType) }}
+                                            </span>
                                         @endif
                                     </div>
-                                </td>
-                                <td class="p-6">
-                                    @php
-                                        $revStatus = $isAdvanced ? $data->Status : 'Pending Assignment';
-                                        
-                                        $revColors = [
-                                            'Pending Assignment' => 'text-slate-400 italic opacity-80',
-                                            'Reviewer Assigned' => 'text-blue-600',
-                                            'Under Review' => 'text-indigo-600',
-                                            'Reviewed' => 'text-green-600',
-                                        ];
-                                        $revClass = $revColors[$revStatus] ?? 'text-slate-500';
-                                    @endphp
-                                    <div class="text-sm font-bold {{ $revClass }}">
-                                        {{ $revStatus }}
-                                    </div>
-                                </td>
-                                <td class="p-6">
-                                    @php
-                                        $reviewerSuggestedType = $data->adminFiles->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
-                                        $hasTop = !empty($data->Review_Type) && $data->Review_Type !== 'Unassigned' && $data->Review_Type !== 'N/A';
-                                        $isNA = $data->Review_Type === 'N/A';
-                                        $hasMid = !empty($reviewerSuggestedType);
-                                        $typeColors = [
-                                            'Exempt Review' => 'text-emerald-600',
-                                            'Expedited Review' => 'text-blue-600',
-                                            'Full Board Review' => 'text-amber-600'
-                                        ];
-                                    @endphp
-                                    <div class="flex flex-col gap-0.5 {{ !$hasTop ? 'opacity-60' : '' }}">
-                                        @if($hasTop)
-                                            <div class="flex items-center cursor-default" title="Official Review Type">
-                                                <span class="text-sm font-bold {{ $typeColors[$data->Review_Type] ?? 'text-slate-500' }} tracking-tight leading-tight">{{ $data->Review_Type }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Assigned Reviewers -->
+                            @if($data->assigned_reviewers && count($data->assigned_reviewers) > 0)
+                                <div class="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
+                                    <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mr-0.5">Reviewers:</span>
+                                    @foreach($data->assigned_reviewers as $reviewerId)
+                                        @php $reviewerUser = $reviewersById->get($reviewerId); @endphp
+                                        @if($reviewerUser)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80 font-medium text-[11px]">
+                                                <i class="fas fa-user-check text-slate-400 text-[9px]"></i>
+                                                {{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}
+                                            </span>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+
+                <!-- DESKTOP DATA TABLE (Visible on Desktop lg+: 1024px and up) -->
+                <div class="hidden lg:block overflow-x-auto flex-grow overflow-y-visible">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+                                <th class="px-4 py-3.5 min-w-[200px]">Research Title</th>
+                                <th class="px-3 py-3.5 min-w-[140px]">Researcher</th>
+                                <th class="px-3 py-3.5 min-w-[120px]">Reviewers</th>
+                                <th class="px-3 py-3.5 min-w-[100px] whitespace-nowrap">Date</th>
+                                <th class="px-3 py-3.5 min-w-[120px] whitespace-nowrap">Doc Status</th>
+                                <th class="px-3 py-3.5 min-w-[110px] whitespace-nowrap">Review Status</th>
+                                <th class="px-3 py-3.5 min-w-[115px] whitespace-nowrap">Review Type</th>
+                                <th class="px-3 py-3.5 w-12 text-right pr-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach($datas as $data)
+                                @php
+                                    $isAdvanced = in_array($data->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed']);
+                                    $docStatus = $isAdvanced ? 'Hardcopy Received' : $data->Status;
+                                    $docBadgeConfig = [
+                                        'Hardcopy Received' => [
+                                            'badge' => 'bg-teal-50/70 text-teal-800 border-teal-200/70',
+                                            'dot' => 'bg-teal-500',
+                                            'label' => 'Hardcopy Received'
+                                        ],
+                                        'Incomplete - Awaiting Hardcopy' => [
+                                            'badge' => 'bg-rose-50/70 text-rose-800 border-rose-200/70',
+                                            'dot' => 'bg-rose-500',
+                                            'label' => 'Incomplete - Awaiting Hardcopy'
+                                        ],
+                                        'Incomplete Hardcopy' => [
+                                            'badge' => 'bg-rose-50/70 text-rose-800 border-rose-200/70',
+                                            'dot' => 'bg-rose-500',
+                                            'label' => 'Incomplete Hardcopy'
+                                        ],
+                                        'For Initial Review' => [
+                                            'badge' => 'bg-sky-50/70 text-sky-800 border-sky-200/70',
+                                            'dot' => 'bg-sky-500',
+                                            'label' => 'For Initial Review'
+                                        ],
+                                    ];
+                                    $docConfig = $docBadgeConfig[$docStatus] ?? [
+                                        'badge' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                        'dot' => 'bg-slate-400',
+                                        'label' => $docStatus
+                                    ];
+
+                                    $revStatus = $isAdvanced ? $data->Status : 'Pending Assignment';
+                                    $revBadgeConfig = [
+                                        'Pending Assignment' => [
+                                            'badge' => 'bg-slate-100 text-slate-600 border-slate-200/80 italic',
+                                            'dot' => 'bg-slate-400',
+                                            'label' => 'Pending Assignment'
+                                        ],
+                                        'Reviewer Assigned' => [
+                                            'badge' => 'bg-blue-50/70 text-blue-800 border-blue-200/70',
+                                            'dot' => 'bg-blue-500',
+                                            'label' => 'Reviewer Assigned'
+                                        ],
+                                        'Under Review' => [
+                                            'badge' => 'bg-indigo-50/70 text-indigo-800 border-indigo-200/70',
+                                            'dot' => 'bg-indigo-500',
+                                            'label' => 'Under Review'
+                                        ],
+                                        'Reviewed' => [
+                                            'badge' => 'bg-emerald-50/70 text-emerald-800 border-emerald-200/70',
+                                            'dot' => 'bg-emerald-500',
+                                            'label' => 'Reviewed'
+                                        ],
+                                    ];
+                                    $revConfig = $revBadgeConfig[$revStatus] ?? [
+                                        'badge' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                        'dot' => 'bg-slate-400',
+                                        'label' => $revStatus
+                                    ];
+
+                                    $reviewerSuggestedType = $data->adminFiles->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
+                                    $hasTop = !empty($data->Review_Type) && $data->Review_Type !== 'Unassigned' && $data->Review_Type !== 'N/A';
+                                    $isNA = $data->Review_Type === 'N/A';
+                                    $hasMid = !empty($reviewerSuggestedType);
+                                    $typeBadgeConfig = [
+                                        'Exempt Review' => [
+                                            'badge' => 'bg-emerald-50/70 text-emerald-800 border-emerald-200/70',
+                                            'icon' => 'fa-check-circle text-emerald-600',
+                                            'label' => 'Exempt Review'
+                                        ],
+                                        'Expedited Review' => [
+                                            'badge' => 'bg-blue-50/70 text-blue-800 border-blue-200/70',
+                                            'icon' => 'fa-bolt text-blue-600',
+                                            'label' => 'Expedited Review'
+                                        ],
+                                        'Full Board Review' => [
+                                            'badge' => 'bg-amber-50/70 text-amber-900 border-amber-200/70',
+                                            'icon' => 'fa-users text-amber-700',
+                                            'label' => 'Full Board Review'
+                                        ]
+                                    ];
+
+                                    $recLetter = $data->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first()
+                                        ?? $data->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first();
+                                    $defMessage = $latestDeficiencies->get($data->id)?->message ?? '';
+                                    $alreadyNotified = isset($recentReminders[$data->id]);
+                                    $hasReviewers = !empty($data->assigned_reviewers) && count($data->assigned_reviewers) > 0;
+                                    $hasValidType = !empty($data->Review_Type) && !in_array($data->Review_Type, ['Unassigned', 'N/A']);
+                                @endphp
+                                <tr class="hover:bg-slate-50/80 transition-colors group">
+                                    <td class="px-4 py-3 align-middle">
+                                        <div class="flex items-center gap-1.5 mb-1">
+                                            <span class="text-[10px] font-mono font-medium text-slate-600 bg-slate-100 border border-slate-200/70 px-1.5 py-0.5 rounded">
+                                                #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
+                                            </span>
+                                        </div>
+                                        <a href="{{ route('admin.view_files', $data->id) }}"
+                                           class="font-semibold text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-[#8B0000] transition-colors"
+                                           title="{{ $data->Study_Protocol_title }}">
+                                            {{ $data->Study_Protocol_title }}
+                                        </a>
+                                    </td>
+                                    <td class="px-3 py-3 align-middle">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-xs font-bold text-slate-700 uppercase shrink-0">
+                                                {{ substr($data->researcher->user->first_name ?? 'U', 0, 1) }}
                                             </div>
-                                        @elseif($isNA)
-                                            <span class="text-sm font-semibold text-slate-500 italic tracking-tight leading-tight">N/A</span>
-                                        @else
-                                            <span class="text-sm font-semibold text-slate-500 italic leading-tight">Unassigned</span>
-                                        @endif
-                                        
-                                        @if($hasMid)
-                                            <div class="flex items-start gap-1.5 mt-0.5 {{ $hasTop ? 'opacity-60' : 'opacity-80' }}" title="Suggested by Reviewer">
-                                                <i class="fas fa-level-up-alt text-[9px] text-slate-400 rotate-90 mt-[3px]"></i>
-                                                <span class="text-[10px] font-bold text-slate-500 leading-tight">Suggested: {{ str_replace(' Review', '', $reviewerSuggestedType) }}</span>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="p-6 text-right relative">
-                                    <div class="relative" x-data="{ open: false }">
-                                        <button @click="open = !open" @click.away="open = false"
-                                            class="p-2 text-slate-500 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-
-                                        <!-- SIDEBAR DRAWER -->
-                                        <div x-show="open" style="display: none;" class="relative z-[100]" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-                                            <!-- Background backdrop -->
-                                            <div x-show="open" 
-                                                 x-transition:enter="ease-in-out duration-300" 
-                                                 x-transition:enter-start="opacity-0" 
-                                                 x-transition:enter-end="opacity-100" 
-                                                 x-transition:leave="ease-in-out duration-300" 
-                                                 x-transition:leave-start="opacity-100" 
-                                                 x-transition:leave-end="opacity-0" 
-                                                 class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
-                                                 @click="open = false"></div>
-
-                                            <div class="fixed inset-0 overflow-hidden pointer-events-none">
-                                                <div class="absolute inset-0 overflow-hidden">
-                                                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10"
-                                                         x-show="open"
-                                                         x-transition:enter="transform transition ease-in-out duration-300 sm:duration-400"
-                                                         x-transition:enter-start="translate-x-full"
-                                                         x-transition:enter-end="translate-x-0"
-                                                         x-transition:leave="transform transition ease-in-out duration-300 sm:duration-400"
-                                                         x-transition:leave-start="translate-x-0"
-                                                         x-transition:leave-end="translate-x-full">
-                                                        
-                                                        <div class="pointer-events-auto w-screen max-w-sm flex flex-col h-full bg-white shadow-2xl">
-                                                            <!-- Drawer Header -->
-                                                            <div class="px-6 py-6 border-b border-slate-100 flex justify-between items-start bg-slate-50 flex-none text-left">
-                                                                <div class="pr-3 w-full">
-                                                                    <h3 class="font-heading font-extrabold text-lg text-slate-800 leading-tight line-clamp-3" title="{{ $data->Study_Protocol_title }}">
-                                                                        {{ $data->Study_Protocol_title }}
-                                                                    </h3>
-                                                                    
-                                                                    <div class="mt-3 space-y-1.5">
-                                                                        <div class="flex items-center gap-2 text-sm text-slate-600">
-                                                                            <i class="fas fa-user-circle text-slate-400 w-4 text-center"></i>
-                                                                            <span class="font-medium truncate">{{ $data->researcher->user->first_name ?? '' }} {{ $data->researcher->user->last_name ?? 'Unknown' }}</span>
-                                                                        </div>
-                                                                        <div class="flex items-center gap-2 text-xs text-slate-500">
-                                                                            <i class="far fa-calendar-alt text-slate-400 w-4 text-center"></i>
-                                                                            <span>{{ $data->created_at->format('M d, Y') }}</span>
-                                                                            <span class="mx-1 text-slate-300">•</span>
-                                                                            <span class="text-[#8B0000] font-mono font-bold">#{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <button @click="open = false" class="text-slate-500 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
-                                                                    <i class="fas fa-times text-lg"></i>
-                                                                </button>
-                                                            </div>
-
-                                                            <!-- Drawer Actions List -->
-                                                            <div class="flex-1 overflow-y-auto p-4 space-y-2">
-                                                <a href="{{ route('admin.view_files', $data->id) }}"
-                                                    class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                    <i class="fas fa-eye w-4"></i> View Details
-                                                </a>
-
-                                                @if(in_array($data->Status, ['Incomplete - Awaiting Hardcopy', 'Incomplete Hardcopy']))
-                                                    @php
-                                                        $defMessage = '';
-                                                        $def = \App\Models\SubmissionFeedback::where('research_title_id', $data->id)->where('type', 'hardcopy_deficiency')->latest()->first();
-                                                        $defMessage = $def ? $def->message : '';
-                                                    @endphp
-                                                    <button type="button" @click="open = false; confirmHardcopyReceived('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($defMessage) }})"
-                                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
-                                                        <i class="fas fa-file-import w-4"></i> Receive Hardcopy
-                                                    </button>
-
-                                                @else
-                                                     <button
-                                                        @click="open = false; openStatusModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($data->Status) }}, {{ json_encode($data->Review_Type) }}, {{ json_encode($data->ai_suggested_review_type) }})"
-                                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                        <i class="fas fa-sync-alt w-4"></i> Update Status
-                                                    </button>
-                                                @endif
-
-                                                @if(empty($data->Review_Type) || in_array($data->Review_Type, ['Unassigned', 'N/A']))
-                                                    <button
-                                                        @click="open = false; openAiPredictModal('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, '{{ $data->ai_suggested_review_type }}')"
-                                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                        <i class="fas fa-magic w-4"></i> AI Review Predict
-                                                    </button>
-                                                @endif
-
-                                                @php
-                                                    // Check for letter in both relationships
-                                                    $recLetter = $data->files->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first()
-                                                        ?? $data->adminFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->first();
-                                                @endphp
-
-                                                @if($recLetter)
-                                                    <!-- View Letter -->
-                                                    <a href="{{ route('admin.recommendation.view_saved', $data->id) }}"
-                                                        target="_blank"
-                                                        class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                        <i class="fas fa-file-pdf w-4"></i> View Recommendation Letter
-                                                    </a>
-                                                @endif
-
-                                                <!-- Generate Recommendation Letter (Only when Reviewed) -->
-                                                @if($data->Status === 'Reviewed')
-                                                    @if($data->is_or_verified)
-                                                        <a href="{{ route('admin.recommendation.form', $data->id) }}"
-                                                            class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                            <i class="fas fa-file-signature w-4"></i> Generate Recommendation Letter
-                                                        </a>
-                                                    @else
-                                                        <div title="Official Receipt must be received and verified before generating a Recommendation Letter."
-                                                             class="flex items-center gap-3 px-4 py-3 rounded-lg select-none">
-                                                            <i class="fas fa-lock w-4 text-slate-300"></i>
-                                                            <span class="text-sm font-medium text-slate-300 flex-1 truncate">Generate Recommendation Letter</span>
-                                                            <span class="ml-auto text-[9px] font-bold bg-orange-50 text-orange-500 px-1.5 py-0.5 rounded-full border border-orange-200 leading-none whitespace-nowrap">
-                                                                OR Required
-                                                            </span>
-                                                        </div>
-                                                        @php
-                                                            $researcherUserId = optional(optional($data->researcher)->user)->id;
-                                                            $alreadyNotified = $researcherUserId && \App\Models\UserNotification::where('user_id', $researcherUserId)
-                                                                ->where('research_id', $data->id)
-                                                                ->where('type', 'receipt_reminder')
-                                                                ->where('is_read', false)
-                                                                ->where('created_at', '>=', \Carbon\Carbon::now()->subHours(24))
-                                                                ->exists();
-                                                        @endphp
-                                                        <button
-                                                            type="button"
-                                                            @if($alreadyNotified)
-                                                            disabled
-                                                            title="A receipt reminder has already been sent. Awaiting researcher response."
-                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 bg-slate-50 rounded-lg cursor-not-allowed select-none text-left"
-                                                            @else
-                                                            onclick="notifyReceiptRequired('{{ $data->id }}', '{{ addslashes($data->Study_Protocol_title) }}')"
-                                                            title="Send a notification reminding the researcher to submit their Official Receipt."
-                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-orange-600 hover:bg-orange-50 rounded-lg transition-colors text-left"
-                                                            @endif
-                                                        >
-                                                            @if($alreadyNotified)
-                                                                <i class="fas fa-clock w-4 text-slate-400"></i>
-                                                                <span>Awaiting Response</span>
-                                                                <span class="ml-auto text-[9px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full border border-slate-200 leading-none whitespace-nowrap">
-                                                                    Notified
-                                                                </span>
-                                                            @else
-                                                                <i class="fas fa-bell w-4"></i>
-                                                                <span>Notify Researcher</span>
-                                                                <span class="ml-auto text-[9px] font-bold bg-orange-50 text-orange-500 px-1.5 py-0.5 rounded-full border border-orange-200 leading-none">
-                                                                    OR Required
-                                                                </span>
-                                                            @endif
-                                                        </button>
-                                                    @endif
-                                                @endif
-
-                                                <!-- Assign Reviewers (Only after Hardcopy Received) -->
-                                                @if(in_array($data->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review']))
-                                                    @php 
-                                                        $hasReviewersAssigned = !empty($data->assigned_reviewers) && count($data->assigned_reviewers) > 0;
-                                                        $hasValidReviewType = !empty($data->Review_Type) && !in_array($data->Review_Type, ['Unassigned', 'N/A']);
-                                                    @endphp
-                                                    @if($hasValidReviewType)
-                                                        <button @click="open = false; $dispatch('open-assign-modal', { id: '{{ $data->id }}', title: {{ json_encode($data->Study_Protocol_title) }}, assigned: {{ json_encode($data->assigned_reviewers ?? []) }}, reviewType: {{ json_encode($data->Review_Type) }} })"
-                                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors text-left">
-                                                            <i class="fas {{ $hasReviewersAssigned ? 'fa-user-edit' : 'fa-users-cog' }} w-4"></i> 
-                                                            {{ $hasReviewersAssigned ? 'Change Reviewer(s)' : 'Assign Reviewer(s)' }}
-                                                        </button>
-                                                    @else
-                                                        <div title="Review Classification must be set before assigning reviewers." class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 bg-slate-50 rounded-lg cursor-not-allowed select-none text-left">
-                                                            <i class="fas fa-users-slash w-4"></i> Assign Reviewer(s)
-                                                            <span class="ml-auto text-[9px] font-bold bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full border border-slate-300 leading-none whitespace-nowrap">
-                                                                Set Type First
-                                                            </span>
-                                                        </div>
-                                                    @endif
-                                                @endif
-
-                                                <hr class="border-slate-100 my-1">
-
-                                                <!-- Global Revert Phase Button -->
-                                                <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST"
-                                                    id="revertPhaseForm-{{ $data->id }}">
-                                                    @csrf
-                                                    <input type="hidden" name="classification" value="Revert Phase">
-                                                    <button type="button"
-                                                        onclick="confirmRevertPhase('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, '{{ $data->Status }}')"
-                                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-red-600 rounded-lg transition-colors text-left">
-                                                        <i class="fas fa-undo-alt w-4"></i> Step Backward (Undo)
-                                                    </button>
-                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-semibold text-slate-800 truncate">
+                                                    {{ $data->researcher->user->first_name ?? '' }}
+                                                    {{ $data->researcher->user->last_name ?? 'Unknown' }}
+                                                </p>
+                                                <p class="text-[10px] text-slate-400 truncate">{{ $data->researcher->user->email ?? '' }}</p>
                                             </div>
                                         </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="p-12 text-center text-slate-400">
-                                    <i class="fas fa-folder-open text-4xl mb-4 text-slate-300"></i>
-                                    <p>No active review or revision protocols found.</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                    </td>
+                                    <td class="px-3 py-3 align-middle">
+                                        @if($data->assigned_reviewers && count($data->assigned_reviewers) > 0)
+                                            <div class="flex flex-col gap-1">
+                                                @foreach($data->assigned_reviewers as $reviewerId)
+                                                    @php
+                                                        $reviewerUser = $reviewersById->get($reviewerId);
+                                                    @endphp
+                                                    @if($reviewerUser)
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80 font-medium text-[11px] truncate max-w-[125px]" title="{{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}">
+                                                            <i class="fas fa-user-check text-slate-400 text-[9px] shrink-0"></i>
+                                                            <span class="truncate">{{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}</span>
+                                                        </span>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-slate-400 italic">None Assigned</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-3 align-middle whitespace-nowrap">
+                                        <div class="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+                                            <i class="far fa-calendar-alt text-slate-400 text-[10px]"></i>
+                                            <span>{{ $data->created_at->format('M d, Y') }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-3 align-middle whitespace-nowrap">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ $docConfig['badge'] }}">
+                                                <span class="w-1.5 h-1.5 rounded-full {{ $docConfig['dot'] }}"></span>
+                                                {{ $docConfig['label'] }}
+                                            </span>
+                                            @if($data->Status === 'Incomplete - Awaiting Hardcopy')
+                                                @if($latestDeficiencies->get($data->id))
+                                                    <span class="text-rose-600 cursor-help transition-all hover:scale-110" title="Reason: {{ $latestDeficiencies->get($data->id)->message }}">
+                                                        <i class="fas fa-exclamation-circle text-xs drop-shadow-xs"></i>
+                                                    </span>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-3 align-middle whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ $revConfig['badge'] }}">
+                                            <span class="w-1.5 h-1.5 rounded-full {{ $revConfig['dot'] }}"></span>
+                                            {{ $revConfig['label'] }}
+                                        </span>
+                                    </td>
+                                    <td class="px-3 py-3 align-middle whitespace-nowrap">
+                                        <div class="flex flex-col gap-1 items-start">
+                                            @if(isset($typeBadgeConfig[$data->Review_Type]))
+                                                @php $tConf = $typeBadgeConfig[$data->Review_Type]; @endphp
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border {{ $tConf['badge'] }}" title="Official Review Type">
+                                                    <i class="fas {{ $tConf['icon'] }} text-[9px]"></i>
+                                                    {{ $tConf['label'] }}
+                                                </span>
+                                            @elseif($isNA)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold text-slate-500 italic">N/A</span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold text-slate-400 italic">Unassigned</span>
+                                            @endif
+                                            
+                                            @if($hasMid)
+                                                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-slate-100/90 px-1.5 py-0.5 rounded border border-slate-200/80" title="Suggested by Reviewer">
+                                                    <i class="fas fa-level-up-alt text-[8px] text-slate-400 rotate-90"></i>
+                                                    Suggested: {{ str_replace(' Review', '', $reviewerSuggestedType) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-3 text-right align-middle pr-4 relative">
+                                        <button type="button"
+                                            @click="$dispatch('open-protocol-drawer', {
+                                                id: '{{ $data->id }}',
+                                                title: {{ json_encode($data->Study_Protocol_title) }},
+                                                researcher_name: {{ json_encode(trim(($data->researcher->user->first_name ?? '') . ' ' . ($data->researcher->user->last_name ?? 'Unknown'))) }},
+                                                created_at: '{{ $data->created_at->format('M d, Y') }}',
+                                                code: '#{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}',
+                                                status: {{ json_encode($data->Status) }},
+                                                review_type: {{ json_encode($data->Review_Type) }},
+                                                ai_suggested_type: {{ json_encode($data->ai_suggested_review_type) }},
+                                                view_url: '{{ route('admin.view_files', $data->id) }}',
+                                                has_deficiency: {{ in_array($data->Status, ['Incomplete - Awaiting Hardcopy', 'Incomplete Hardcopy']) ? 'true' : 'false' }},
+                                                deficiency_message: {{ json_encode($defMessage) }},
+                                                can_ai_predict: {{ (empty($data->Review_Type) || in_array($data->Review_Type, ['Unassigned', 'N/A'])) ? 'true' : 'false' }},
+                                                rec_letter_url: {{ $recLetter ? json_encode(route('admin.recommendation.view_saved', $data->id)) : 'null' }},
+                                                is_reviewed: {{ $data->Status === 'Reviewed' ? 'true' : 'false' }},
+                                                is_or_verified: {{ (bool)$data->is_or_verified ? 'true' : 'false' }},
+                                                rec_form_url: '{{ route('admin.recommendation.form', $data->id) }}',
+                                                already_notified: {{ $alreadyNotified ? 'true' : 'false' }},
+                                                can_assign: {{ in_array($data->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review']) ? 'true' : 'false' }},
+                                                has_valid_review_type: {{ $hasValidType ? 'true' : 'false' }},
+                                                has_reviewers_assigned: {{ $hasReviewers ? 'true' : 'false' }},
+                                                assigned_reviewers: {{ json_encode($data->assigned_reviewers ?? []) }},
+                                                update_status_url: '{{ route('admin.updateStatus', $data->id) }}'
+                                            })"
+                                            class="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-slate-400 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all ml-auto touch-manipulation focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                                            title="Protocol Actions"
+                                            aria-label="Actions for {{ $data->Study_Protocol_title }}">
+                                            <i class="fas fa-ellipsis-v text-xs"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="p-12 text-center text-slate-500 flex-grow flex flex-col items-center justify-center">
+                    @if(request()->anyFilled(['search', 'review_types', 'doc_statuses', 'rev_statuses', 'assignment', 'sort_by']))
+                        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                            <i class="fas fa-search text-xl"></i>
+                        </div>
+                        <h4 class="text-sm font-semibold text-slate-900 mb-1">No matching protocols found</h4>
+                        <p class="text-xs text-slate-500 max-w-sm mb-4 leading-relaxed">No active protocols match your current search or filter criteria. Try adjusting your parameters or clear all filters.</p>
+                        <a href="{{ route('admin.applications') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200/80 transition-colors shadow-2xs">
+                            <i class="fas fa-times-circle text-slate-400"></i> Clear All Filters
+                        </a>
+                    @else
+                        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                            <i class="fas fa-folder-open text-xl"></i>
+                        </div>
+                        <h4 class="text-sm font-semibold text-slate-900 mb-1">No active protocols</h4>
+                        <p class="text-xs text-slate-500 max-w-sm leading-relaxed">There are currently no research protocols undergoing initial ethical review or revision.</p>
+                    @endif
+                </div>
+            @endif
 
             @if($datas->total() > 0)
-            <div class="p-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-                <div>
-                    Showing <span class="font-bold text-slate-700">{{ $datas->firstItem() ?? 0 }}</span> - <span
-                        class="font-bold text-slate-700">{{ $datas->lastItem() ?? 0 }}</span> of <span
-                        class="font-bold text-slate-700">{{ $datas->total() }}</span>
+            <div class="p-4 sm:p-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 mt-auto shrink-0">
+                <div class="text-center sm:text-left">
+                    Showing <span class="font-semibold text-slate-800 tabular-nums">{{ $datas->firstItem() ?? 0 }}</span> - <span
+                        class="font-semibold text-slate-800 tabular-nums">{{ $datas->lastItem() ?? 0 }}</span> of <span
+                        class="font-semibold text-slate-800 tabular-nums">{{ $datas->total() }}</span>
                 </div>
                 <div class="flex gap-2 filter-pagination">
                     <!-- Previous Page Link -->
                     @if ($datas->onFirstPage())
-                        <span class="opacity-50 cursor-not-allowed text-slate-400"><i class="fas fa-chevron-left"></i></span>
+                        <span class="opacity-50 cursor-not-allowed text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs"><i class="fas fa-chevron-left"></i></span>
                     @else
                         <a href="{{ $datas->appends(request()->except('page'))->previousPageUrl() }}"
-                            class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
+                            class="text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                            aria-label="Previous page"><i
                                 class="fas fa-chevron-left"></i></a>
                     @endif
 
                     <!-- Next Page Link -->
                     @if ($datas->hasMorePages())
                         <a href="{{ $datas->appends(request()->except('page'))->nextPageUrl() }}"
-                            class="text-slate-600 hover:text-[#8B0000] transition-colors"><i
+                            class="text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                            aria-label="Next page"><i
                                 class="fas fa-chevron-right"></i></a>
                     @else
-                        <span class="opacity-50 cursor-not-allowed text-slate-400"><i class="fas fa-chevron-right"></i></span>
+                        <span class="opacity-50 cursor-not-allowed text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs"><i class="fas fa-chevron-right"></i></span>
                     @endif
                 </div>
             </div>

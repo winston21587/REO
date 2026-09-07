@@ -35,6 +35,7 @@ class ReviewerController extends Controller
                 });
         })
             ->whereNotIn('Status', $revisionStatuses)
+            ->with(['researcher.user'])
             ->latest()
             ->get();
 
@@ -63,6 +64,7 @@ class ReviewerController extends Controller
                 });
         })
             ->whereIn('Status', $revisionStatuses)
+            ->with(['researcher.user'])
             ->latest()
             ->get();
 
@@ -72,9 +74,46 @@ class ReviewerController extends Controller
         return view('reviewer.dashboard', compact('titles', 'pageTitle', 'pageDescription'));
     }
 
+    /**
+     * Authorize that the authenticated reviewer is assigned to the given research title,
+     * or possesses administrator privileges.
+     */
+    protected function authorizeReviewerAssignment(Research_title $title): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        if (in_array($user->role ?? '', ['admin', 'superadmin'])) {
+            return;
+        }
+
+        $userId = $user->id;
+
+        // 1. Check modern pivot assignment
+        if ($title->reviewers()->where('users.id', $userId)->exists()) {
+            return;
+        }
+
+        // 2. Check legacy JSON column assigned_reviewers
+        $assigned = $title->assigned_reviewers;
+        if (is_array($assigned) && in_array((string) $userId, array_map('strval', $assigned))) {
+            return;
+        } elseif (is_string($assigned)) {
+            $decoded = json_decode($assigned, true);
+            if (is_array($decoded) && in_array((string) $userId, array_map('strval', $decoded))) {
+                return;
+            }
+        }
+
+        abort(403, 'Unauthorized. You are not assigned to evaluate this research protocol.');
+    }
+
     public function viewFiles($id)
     {
         $researchTitle = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
+        $this->authorizeReviewerAssignment($researchTitle);
 
         // Automatically transition status when reviewer opens the files for the first time
         if ($researchTitle->Status === 'Reviewer Assigned') {
@@ -98,7 +137,7 @@ class ReviewerController extends Controller
             })
                 ->where('reviewer_id', Auth::id())
                 ->get()
-                ->keyBy('researcher_file_id');
+                ->keyBy('file_id');
         } catch (\Exception $e) {
             \Log::error('Error loading remarks: ' . $e->getMessage());
             $myFileRemarks = collect();
@@ -110,6 +149,8 @@ class ReviewerController extends Controller
     public function serveFile($id)
     {
         $file = researcher_files::findOrFail($id);
+        $researchTitle = Research_title::findOrFail($file->research_title_id);
+        $this->authorizeReviewerAssignment($researchTitle);
 
         // Normalize path: remove 'storage/' prefix if present
         $path = str_replace('storage/', '', $file->filepath);
@@ -136,10 +177,16 @@ class ReviewerController extends Controller
 
     public function uploadFile(Request $request, $id)
     {
+        $researchTitle = Research_title::findOrFail($id);
+        $this->authorizeReviewerAssignment($researchTitle);
+
         $request->validate([
             'category' => 'required|string',
             'files' => 'required|array',
-            'files.*' => 'file|max:20480'
+            'files.*' => 'file|mimes:pdf,doc,docx|max:20480'
+        ], [
+            'files.*.mimes' => 'Evaluation files must be in PDF, DOC, or DOCX format.',
+            'files.*.max' => 'Each evaluation file must not exceed 20MB in size.'
         ]);
 
         foreach ($request->file('files') as $file) {
@@ -171,27 +218,44 @@ class ReviewerController extends Controller
         return back()->with('success', 'Evaluation Documents Uploaded Successfully');
     }
 
-    public function deleteFile($id)
+    public function deleteFile(Request $request, $id)
     {
         $file = researcher_files::findOrFail($id);
+        $researchTitle = Research_title::findOrFail($file->research_title_id);
+        $this->authorizeReviewerAssignment($researchTitle);
 
-        if ($file->uploaded_by !== Auth::id() && !str_starts_with($file->category, 'Reviewer Uploads')) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized deletion.'], 403);
+        if ($file->uploaded_by !== Auth::id() && !in_array(Auth::user()->role ?? '', ['admin', 'superadmin'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized deletion.'], 403);
+            }
+            return back()->with('error', 'Unauthorized deletion.');
         }
 
-        // Standardize file path by removing 'storage/' if somehow saved that way
+        if (!str_starts_with($file->category, 'Reviewer Uploads')) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Cannot delete non-evaluation files.'], 403);
+            }
+            return back()->with('error', 'Cannot delete non-evaluation files.');
+        }
+
+        // Standardize file path by removing 'uploads/research_files/' if somehow saved that way
         $path = str_replace('uploads/research_files/', '', $file->filepath);
         $path = str_replace('storage/', '', $path);
 
         Storage::disk('public_uploads')->delete($path);
         $file->delete();
 
-        return response()->json(['success' => true]);
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return back()->with('success', 'Evaluation document removed successfully.');
     }
 
     public function completeReview(Request $request, $id)
     {
         $submission = Research_title::findOrFail($id);
+        $this->authorizeReviewerAssignment($submission);
 
         // Determine if this is a re-evaluation (revision-related status)
         $isReEvaluation = in_array($submission->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']);
@@ -326,6 +390,9 @@ class ReviewerController extends Controller
             return response()->json(['success' => false, 'message' => 'Missing research_title_id.'], 400);
         }
 
+        $researchTitle = Research_title::findOrFail($titleId);
+        $this->authorizeReviewerAssignment($researchTitle);
+
         if ($remark === '') {
             // Delete existing remark if cleared
             \App\Models\ReviewerFileRemark::where('reviewer_id', Auth::id())
@@ -359,6 +426,7 @@ class ReviewerController extends Controller
                         ->where('Status', 'Reviewed');
                 });
         })
+            ->with(['researcher.user'])
             ->latest()
             ->get();
 

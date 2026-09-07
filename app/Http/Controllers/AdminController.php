@@ -279,10 +279,18 @@ class AdminController extends Controller
                 $collegeName = $request->input('college_name');
                 if ($collegeName) {
                     $baseQuery->whereHas('researcher', function ($q) use ($collegeName) {
-                        $q->where(function ($query) use ($collegeName) {
-                            $query->where('college', $collegeName)
-                                ->orWhere('department', $collegeName);
-                        });
+                        if ($collegeName === 'External Researchers' || $collegeName === 'External Affiliates') {
+                            $q->where('external_user', true);
+                        } elseif ($collegeName === 'Unassigned / Independent') {
+                            $q->where(function ($sub) {
+                                $sub->whereNull('college')->orWhere('college', '');
+                            })->where('external_user', false);
+                        } else {
+                            $q->where(function ($query) use ($collegeName) {
+                                $query->where('college', $collegeName)
+                                    ->orWhere('department', $collegeName);
+                            });
+                        }
                     });
                 }
             } elseif ($type === 'pipeline') {
@@ -516,8 +524,6 @@ class AdminController extends Controller
         $isAllTime = !$hasExactDates && $startYear === 'all' && $endYear === 'all' && $startMonth == 1 && $endMonth == 12;
 
         if ($isAllTime) {
-            // Group by year
-            $overviewTitle = 'Yearly Overview';
             $yearlyStats = (clone $baseQuery)
                 ->selectRaw('YEAR(created_at) as year, COUNT(*) as count')
                 ->groupBy('year')
@@ -525,15 +531,36 @@ class AdminController extends Controller
                 ->toArray();
 
             ksort($yearlyStats);
-            foreach ($yearlyStats as $year => $count) {
-                if (!$year)
-                    continue;
-                $dailyData[] = $count;
-                $dayLabels[] = (string) $year;
+
+            if (count($yearlyStats) > 1) {
+                // True multi-year dataset: show yearly trend progression
+                $overviewTitle = 'Yearly Overview';
+                foreach ($yearlyStats as $year => $count) {
+                    if (!$year)
+                        continue;
+                    $dailyData[] = $count;
+                    $dayLabels[] = (string) $year;
+                }
+            } else {
+                // Single-year or initial dataset: show rich 12-month curve instead of a lone dot
+                $targetYear = !empty($yearlyStats) ? (string) array_key_first($yearlyStats) : (string) date('Y');
+                $overviewTitle = 'Monthly Overview (' . $targetYear . ')';
+
+                $monthlyStats = (clone $baseQuery)
+                    ->whereYear('created_at', $targetYear)
+                    ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+                    ->groupBy('month')
+                    ->pluck('count', 'month')
+                    ->toArray();
+
+                for ($m = 1; $m <= 12; $m++) {
+                    $dailyData[] = $monthlyStats[$m] ?? 0;
+                    $dayLabels[] = date('M', mktime(0, 0, 0, $m, 10));
+                }
             }
             if (empty($dailyData)) {
                 $dailyData = [0];
-                $dayLabels = [date('Y')];
+                $dayLabels = [date('M')];
             }
         } elseif (($hasExactDates && Carbon::parse($exactStart)->diffInDays(Carbon::parse($exactEnd)) > 90) || (!$hasExactDates && ($startYear !== $endYear || $startYear === 'all' || $endYear === 'all'))) {
             // Multiple years or > 90 days -> Group by Month/Year
@@ -636,6 +663,8 @@ class AdminController extends Controller
             }
         }
 
+        $colleges = \App\Models\College::all();
+
         // 5. Top Submitting Colleges or Departments (Smart Drill-Down)
         if ($selectedCollege && $selectedAffiliation !== 'External') {
             // Drill into departments within the selected college
@@ -649,36 +678,42 @@ class AdminController extends Controller
                 ->pluck('count', 'name')
                 ->toArray();
 
-            $collegeRecord = \App\Models\College::where('name', $selectedCollege)->first();
+            $collegeRecord = $colleges->firstWhere('name', $selectedCollege);
             $allEntities = $collegeRecord ? $collegeRecord->departments()->pluck('name')->toArray() : [];
             $topSubmittersLabel = 'Top Departments';
         } else {
             $activeSubmittersQuery = (clone $baseQuery)
                 ->join('researchers', 'research_title_information.researcher_id', '=', 'researchers.id')
-                ->whereNotNull('researchers.college')
-                ->where('researchers.college', '!=', '')
-                ->selectRaw('researchers.college as name, COUNT(*) as count')
-                ->groupBy('researchers.college')
+                ->selectRaw("
+                    CASE 
+                        WHEN researchers.external_user = 1 THEN 'External Researchers'
+                        WHEN researchers.college IS NOT NULL AND researchers.college != '' THEN researchers.college
+                        ELSE 'Unassigned / Independent'
+                    END as name,
+                    COUNT(*) as count
+                ")
+                ->groupBy('name')
                 ->pluck('count', 'name')
                 ->toArray();
 
-            $allEntities = \App\Models\College::pluck('name')->toArray();
-            $topSubmittersLabel = 'Top Submitting Colleges';
+            $allEntities = $colleges->pluck('name')->toArray();
+            $topSubmittersLabel = 'Top Submitting Entities';
         }
 
         $allSubmittersCollection = collect();
-        foreach ($allEntities as $entityName) {
+        // Priority 1: Add all entities with active counts (> 0)
+        foreach ($activeSubmittersQuery as $name => $count) {
             $allSubmittersCollection->push((object) [
-                'name' => $entityName,
-                'count' => $activeSubmittersQuery[$entityName] ?? 0,
+                'name' => $name,
+                'count' => $count,
             ]);
         }
-        // Include any active submitters that might not be in the predefined list (e.g., misspelled legacy data)
-        foreach ($activeSubmittersQuery as $name => $count) {
-            if (!in_array($name, $allEntities)) {
+        // Priority 2: Add registered colleges with 0 submissions
+        foreach ($allEntities as $entityName) {
+            if (!isset($activeSubmittersQuery[$entityName])) {
                 $allSubmittersCollection->push((object) [
-                    'name' => $name,
-                    'count' => $count,
+                    'name' => $entityName,
+                    'count' => 0,
                 ]);
             }
         }
@@ -688,16 +723,7 @@ class AdminController extends Controller
         $topSubmittersMax = $topSubmitters->max('count') ?: 1;
         $allSubmittersMax = $allSubmitters->max('count') ?: 1;
 
-        // 6. Active Pipeline Stages
-        $pipelineStages = [
-            ['label' => 'Pending Intake', 'count' => (clone $baseQuery)->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy'])->count(), 'color' => 'slate'],
-            ['label' => 'Under Review', 'count' => (clone $baseQuery)->whereIn('Status', ['For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review'])->count(), 'color' => 'blue'],
-            ['label' => 'Waiting for Revisions', 'count' => (clone $baseQuery)->whereIn('Status', ['Waiting for Revision'])->count(), 'color' => 'amber'],
-            ['label' => 'Final Verification', 'count' => (clone $baseQuery)->whereIn('Status', ['Complete - Awaiting Hardcopy'])->count(), 'color' => 'emerald'],
-        ];
-        $pipelineMax = max(array_column($pipelineStages, 'count')) ?: 1;
-
-        // 7. Completion Status Breakdown (All time / Current snapshots)
+        // 6. Completion Status Breakdown (Grouped Status Query)
         $statusCounts = (clone $baseQuery)
             ->selectRaw('Status, COUNT(*) as count')
             ->groupBy('Status')
@@ -708,38 +734,65 @@ class AdminController extends Controller
         $activeCount = ($statusCounts['For Initial Review'] ?? 0) + ($statusCounts['Under Review'] ?? 0);
         $pendingCount = $statusCounts['Pending'] ?? 0;
 
-        // Extract detailed Approval Status Trends dynamically for the pie chart
-        $trendExempt = (clone $baseQuery)->whereIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
-        $trendApproved = (clone $baseQuery)->where('Status', 'Approved')->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
-        $trendRejected = (clone $baseQuery)->where('Status', 'Disapproved')->count();
+        // 7. Active Pipeline Stages (Computed in-memory from grouped status counts to save 4 database queries)
+        $pipelineStages = [
+            [
+                'label' => 'Pending Intake',
+                'count' => ($statusCounts['Pending'] ?? 0) + ($statusCounts['Incomplete'] ?? 0) + ($statusCounts['Incomplete - Awaiting Hardcopy'] ?? 0),
+                'color' => 'slate'
+            ],
+            [
+                'label' => 'Under Review',
+                'count' => ($statusCounts['For Initial Review'] ?? 0) + ($statusCounts['Hardcopy Received - For Initial Review'] ?? 0) + ($statusCounts['Under Review'] ?? 0),
+                'color' => 'blue'
+            ],
+            [
+                'label' => 'Waiting for Revisions',
+                'count' => ($statusCounts['Waiting for Revision'] ?? 0) + ($statusCounts['Revision Submitted'] ?? 0),
+                'color' => 'amber'
+            ],
+            [
+                'label' => 'Final Verification',
+                'count' => ($statusCounts['Complete - Awaiting Hardcopy'] ?? 0),
+                'color' => 'emerald'
+            ],
+        ];
+        $pipelineMax = max(array_column($pipelineStages, 'count')) ?: 1;
 
-        $trendIntake = (clone $baseQuery)
-            ->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy'])
-            ->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
-
-        $trendActiveReview = (clone $baseQuery)
-            ->whereIn('Status', ['For Initial Review', 'Under Review', 'Hardcopy Received - For Initial Review'])
-            ->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
-
-        $trendInRevision = (clone $baseQuery)
-            ->whereIn('Status', ['Waiting for Revision', 'Revision Submitted'])
-            ->whereNotIn('Review_Type', ['Exempt', 'Exempt Review'])->count();
+        // 8. Extract Approval Status Trends in a single aggregate query (saves 5 database queries)
+        $trendStats = (clone $baseQuery)
+            ->selectRaw("
+                SUM(CASE WHEN Review_Type IN ('Exempt', 'Exempt Review') THEN 1 ELSE 0 END) as exempt_count,
+                SUM(CASE WHEN Status = 'Approved' AND (Review_Type IS NULL OR Review_Type NOT IN ('Exempt', 'Exempt Review')) THEN 1 ELSE 0 END) as approved_count,
+                SUM(CASE WHEN Status = 'Disapproved' THEN 1 ELSE 0 END) as rejected_count,
+                SUM(CASE WHEN Status IN ('Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy') AND (Review_Type IS NULL OR Review_Type NOT IN ('Exempt', 'Exempt Review')) THEN 1 ELSE 0 END) as intake_count,
+                SUM(CASE WHEN Status IN ('For Initial Review', 'Under Review', 'Hardcopy Received - For Initial Review') AND (Review_Type IS NULL OR Review_Type NOT IN ('Exempt', 'Exempt Review')) THEN 1 ELSE 0 END) as active_review_count,
+                SUM(CASE WHEN Status IN ('Waiting for Revision', 'Revision Submitted') AND (Review_Type IS NULL OR Review_Type NOT IN ('Exempt', 'Exempt Review')) THEN 1 ELSE 0 END) as revision_count
+            ")
+            ->first();
 
         $approvalTrends = [
-            'Approved' => $trendApproved,
-            'Intake / New' => $trendIntake,
-            'Active Review' => $trendActiveReview,
-            'In Revision' => $trendInRevision,
-            'Exempt' => $trendExempt,
-            'Rejected' => $trendRejected,
+            'Approved' => (int) ($trendStats->approved_count ?? 0),
+            'Intake / New' => (int) ($trendStats->intake_count ?? 0),
+            'Active Review' => (int) ($trendStats->active_review_count ?? 0),
+            'In Revision' => (int) ($trendStats->revision_count ?? 0),
+            'Exempt' => (int) ($trendStats->exempt_count ?? 0),
+            'Rejected' => (int) ($trendStats->rejected_count ?? 0),
         ];
 
         // Calculate Completion Rate (Example: Done / Total)
         $completionRate = $totalSubmissions > 0 ? round(($doneCount / $totalSubmissions) * 100) : 0;
 
-        // 6. AI Compliance Metrics
-        $avgAiScore = round((clone $baseQuery)->avg('ai_score') ?? 0);
-        $humanVerifiedCount = (clone $baseQuery)->where('is_human_verified', true)->count();
+        // 9. AI Compliance Metrics (Single combined query saves 1 database query)
+        $aiMetrics = (clone $baseQuery)
+            ->selectRaw("
+                AVG(ai_score) as avg_score,
+                SUM(CASE WHEN is_human_verified = 1 THEN 1 ELSE 0 END) as verified_count
+            ")
+            ->first();
+
+        $avgAiScore = round($aiMetrics->avg_score ?? 0);
+        $humanVerifiedCount = (int) ($aiMetrics->verified_count ?? 0);
         $humanVerifiedRate = $totalSubmissions > 0 ? round(($humanVerifiedCount / $totalSubmissions) * 100) : 0;
 
         // Get unique values for filter dropdowns (exclude N/A and null)
@@ -786,14 +839,37 @@ class AdminController extends Controller
             "Clinical trials"
         ];
 
-        $colleges = \App\Models\College::all();
-
         $stuckProposals = (clone $baseQuery)
             ->with(['researcher.user'])
             ->whereNotIn('Status', ['Approved', 'Disapproved', 'Completed', 'Returned', 'Withdraw', 'Withdrawn'])
             ->orderBy('updated_at', 'desc')
             ->paginate(6, ['*'], 'pipeline_page')
             ->withQueryString();
+
+        // Clean Human-Readable Date Range Subtitle
+        if ($hasExactDates) {
+            $dateRangeSubtitle = Carbon::parse($exactStart)->format('M d, Y') . ' — ' . Carbon::parse($exactEnd)->format('M d, Y');
+        } elseif ($isAllTime) {
+            $minYear = !empty($availableYears) && $availableYears->count() > 0 ? $availableYears->min() : date('Y');
+            $maxYear = !empty($availableYears) && $availableYears->count() > 0 ? $availableYears->max() : date('Y');
+            $dateRangeSubtitle = $minYear === $maxYear 
+                ? 'All Submissions recorded in ' . $minYear 
+                : 'All Recorded Submissions (' . $minYear . ' – ' . $maxYear . ')';
+        } elseif ($startYear === $endYear) {
+            $mStartName = DateTime::createFromFormat('!m', $startMonth)->format('F');
+            $mEndName = DateTime::createFromFormat('!m', $endMonth)->format('F');
+            if ($startMonth == 1 && $endMonth == 12) {
+                $dateRangeSubtitle = 'Full Calendar Year ' . $startYear;
+            } elseif ($startMonth == $endMonth) {
+                $dateRangeSubtitle = $mStartName . ' ' . $startYear;
+            } else {
+                $dateRangeSubtitle = $mStartName . ' — ' . $mEndName . ' ' . $startYear;
+            }
+        } else {
+            $mStartName = DateTime::createFromFormat('!m', $startMonth)->format('M');
+            $mEndName = DateTime::createFromFormat('!m', $endMonth)->format('M');
+            $dateRangeSubtitle = "{$mStartName} {$startYear} — {$mEndName} {$endYear}";
+        }
 
         return view('admin.Analytics', compact(
             'totalSubmissions',
@@ -836,7 +912,9 @@ class AdminController extends Controller
             'colleges',
             'stuckProposals',
             'overviewTitle',
-            'approvalTrends'
+            'approvalTrends',
+            'dateRangeSubtitle',
+            'isAllTime'
         ));
     }
 
@@ -1304,14 +1382,54 @@ class AdminController extends Controller
 
         // Fetch Reviewers for the modal including their specific configurations
         $reviewers = User::with('reviewer')->where('role', 'reviewer')->get();
+        $reviewersById = $reviewers->keyBy('id');
+
+        // Preload active titles count per reviewer to eliminate N+1 in Assign Modal
+        $activeReviewProtocols = Research_title::whereIn('Status', ['Reviewer Assigned', 'Under Review'])
+            ->select('id', 'Study_Protocol_title', 'assigned_reviewers')
+            ->get();
+
+        $reviewerActiveTitles = [];
+        foreach ($activeReviewProtocols as $protocol) {
+            $assignedList = is_array($protocol->assigned_reviewers) 
+                ? $protocol->assigned_reviewers 
+                : json_decode($protocol->assigned_reviewers ?? '[]', true);
+            if (is_array($assignedList)) {
+                foreach ($assignedList as $revId) {
+                    $reviewerActiveTitles[(string)$revId][] = [
+                        'id' => $protocol->id,
+                        'title' => $protocol->Study_Protocol_title,
+                    ];
+                }
+            }
+        }
+
+        // Preload deficiencies and notifications for current page protocols to eliminate N+1 in Table Rows
+        $protocolIds = $datas->pluck('id');
+        $latestDeficiencies = SubmissionFeedback::whereIn('research_title_id', $protocolIds)
+            ->where('type', 'hardcopy_deficiency')
+            ->latest()
+            ->get()
+            ->unique('research_title_id')
+            ->keyBy('research_title_id');
+
+        $recentReminders = UserNotification::whereIn('research_id', $protocolIds)
+            ->where('type', 'receipt_reminder')
+            ->where('is_read', false)
+            ->where('created_at', '>=', now()->subHours(24))
+            ->pluck('research_id')
+            ->flip()
+            ->toArray();
+
+        $viewData = compact('datas', 'reviewers', 'reviewersById', 'reviewerActiveTitles', 'latestDeficiencies', 'recentReminders');
 
         if ($request->ajax()) {
             return response()->json([
-                'html' => view('admin.partials.active_protocols_list', compact('datas', 'reviewers'))->render()
+                'html' => view('admin.partials.active_protocols_list', $viewData)->render()
             ]);
         }
 
-        return view('admin.applications', compact('datas', 'reviewers'));
+        return view('admin.applications', $viewData);
     }
 
 
@@ -1381,65 +1499,98 @@ class AdminController extends Controller
         // Adjust 'Pending' to the exact string you use in your DB (e.g., 'For Initial Review' or 'Submitted')
 
 
+        $target = $request->input('target', 'all');
+        if ($target === 'all' && $request->ajax()) {
+            $hasRecentParam = $request->filled('recent_search') || $request->filled('recent_review_types') || $request->filled('recent_sort') || $request->filled('pending_page');
+            $hasIncompleteParam = $request->filled('incomplete_search') || $request->filled('incomplete_review_types') || $request->filled('incomplete_sort') || $request->filled('incomplete_page');
+
+            if ($hasRecentParam && !$hasIncompleteParam) {
+                $target = 'recent';
+            } elseif ($hasIncompleteParam && !$hasRecentParam) {
+                $target = 'incomplete';
+            }
+        }
+
+        $pendingSubmissions = null;
+        $incompleteSubmissions = null;
+
         // 2. Fetch Pending Submissions (Recent Submissions: Pending)
-        $pendingQuery = Research_title::with(['revisionLogs', 'researcher.user'])->whereIn('Status', ['Pending']);
+        if (!$request->ajax() || $target === 'all' || $target === 'recent') {
+            $pendingQuery = Research_title::with([
+                'researcher:id,user_id',
+                'researcher.user:id,first_name,last_name,email',
+                'revisionLogs:id,research_title_id,message,created_at',
+                'files' => function ($q) {
+                    $q->select('researcher_files.id', 'researcher_files.filepath', 'researcher_files.category')
+                        ->where('category', 'Official Receipt (OR)');
+                },
+            ])->whereIn('Status', ['Pending']);
 
-        // Search Filter
-        if ($request->filled('recent_search')) {
-            $pendingQuery->where('Study_Protocol_title', 'like', '%' . $request->recent_search . '%');
+            // Search Filter
+            if ($request->filled('recent_search')) {
+                $pendingQuery->where('Study_Protocol_title', 'like', '%' . $request->recent_search . '%');
+            }
+
+            // Review Type Filter (Array)
+            if ($request->filled('recent_review_types') && is_array($request->recent_review_types)) {
+                $pendingQuery->whereIn('Review_Type', $request->recent_review_types);
+            }
+
+            // Sort Filter
+            if ($request->recent_sort == 'Title') {
+                $pendingQuery->orderBy('Study_Protocol_title', 'asc');
+            } else {
+                $pendingQuery->orderBy('created_at', 'desc');
+            }
+
+            $pendingSubmissions = $pendingQuery->paginate(5, ['*'], 'pending_page')->withQueryString();
         }
-
-        // Review Type Filter (Array)
-        if ($request->filled('recent_review_types') && is_array($request->recent_review_types)) {
-            $pendingQuery->whereIn('Review_Type', $request->recent_review_types);
-        }
-
-        // Sort Filter
-        if ($request->recent_sort == 'Title') {
-            $pendingQuery->orderBy('Study_Protocol_title', 'asc');
-        } else {
-            $pendingQuery->orderBy('created_at', 'desc');
-        }
-
-        $pendingSubmissions = $pendingQuery->paginate(3, ['*'], 'pending_page')->withQueryString();
-
 
         // 3. Fetch Incomplete Submissions
-        $incompleteQuery = Research_title::with(['files', 'researcher.user'])->whereIn('Status', ['Incomplete', 'Incomplete Resubmitted', 'Rejected']);
+        if (!$request->ajax() || $target === 'all' || $target === 'incomplete') {
+            $incompleteQuery = Research_title::with([
+                'researcher:id,user_id',
+                'researcher.user:id,first_name,last_name,email',
+                'files' => function ($q) {
+                    $q->select('researcher_files.id', 'researcher_files.filepath', 'researcher_files.category')
+                        ->where('category', 'Official Receipt (OR)');
+                },
+            ])->whereIn('Status', ['Incomplete', 'Incomplete Resubmitted', 'Rejected']);
 
-        // Search Filter
-        if ($request->filled('incomplete_search')) {
-            $incompleteQuery->where('Study_Protocol_title', 'like', '%' . $request->incomplete_search . '%');
+            // Search Filter
+            if ($request->filled('incomplete_search')) {
+                $incompleteQuery->where('Study_Protocol_title', 'like', '%' . $request->incomplete_search . '%');
+            }
+
+            // Review Type Filter (Array)
+            if ($request->filled('incomplete_review_types') && is_array($request->incomplete_review_types)) {
+                $incompleteQuery->whereIn('Review_Type', $request->incomplete_review_types);
+            }
+
+            // Sort Filter
+            if ($request->incomplete_sort == 'Title') {
+                $incompleteQuery->orderBy('Study_Protocol_title', 'asc');
+            } else {
+                $incompleteQuery->orderBy('created_at', 'desc');
+            }
+
+            $incompleteSubmissions = $incompleteQuery->paginate(5, ['*'], 'incomplete_page')->withQueryString();
         }
-
-        // Review Type Filter (Array)
-        if ($request->filled('incomplete_review_types') && is_array($request->incomplete_review_types)) {
-            $incompleteQuery->whereIn('Review_Type', $request->incomplete_review_types);
-        }
-
-        // Sort Filter
-        if ($request->incomplete_sort == 'Title') {
-            $incompleteQuery->orderBy('Study_Protocol_title', 'asc');
-        } else {
-            $incompleteQuery->orderBy('created_at', 'desc');
-        }
-
-        $incompleteSubmissions = $incompleteQuery->paginate(3, ['*'], 'incomplete_page')->withQueryString();
-
-        // Fallback to DB if needed, or just use mock for demo
-        // $pendingSubmissions = Research_title::with('author')->where('Status', 'Pending')->get();
-        // $incompleteSubmissions = Research_title::with('author')->where('Status', 'Incomplete')->get();
 
         // Check for AJAX Request
         if ($request->ajax()) {
-            return response()->json([
-                'recent' => view('admin.partials.recent_submissions_list', compact('pendingSubmissions', 'incompleteSubmissions'))->render(),
-                'incomplete' => view('admin.partials.incomplete_submissions_list', compact('pendingSubmissions', 'incompleteSubmissions'))->render(),
-            ]);
+            $response = [];
+            if ($pendingSubmissions !== null) {
+                $response['recent'] = view('admin.partials.recent_submissions_list', compact('pendingSubmissions', 'incompleteSubmissions'))->render();
+            }
+            if ($incompleteSubmissions !== null) {
+                $response['incomplete'] = view('admin.partials.incomplete_submissions_list', compact('pendingSubmissions', 'incompleteSubmissions'))->render();
+            }
+            return response()->json($response);
         }
 
-        // Fetch Requirements for the Triage Modal
-        $requirements = DocumentRequirement::all();
+        // Fetch Requirements for the Triage Modal (Optimized projection)
+        $requirements = DocumentRequirement::select('id', 'name')->orderBy('name')->get();
 
         return view('admin.NewSubmissions', compact('pendingSubmissions', 'incompleteSubmissions', 'requirements'));
     }

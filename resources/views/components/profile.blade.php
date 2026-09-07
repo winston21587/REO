@@ -1,32 +1,3 @@
-<script>
-  tailwind.config = {
-    darkMode: "class",
-    theme: {
-      extend: {
-        colors: {
-          primary: "#ea2a2a",
-          "background-light": "#f8f6f6",
-          "background-dark": "#211111",
-          "content-light": "#111827",
-          "content-dark": "#f9fafb",
-          "subtle-light": "#6b7280",
-          "subtle-dark": "#9ca3af",
-          "border-light": "#e5e7eb",
-          "border-dark": "#374151",
-        },
-        fontFamily: {
-          display: ["Inter", "sans-serif"],
-        },
-        borderRadius: {
-          DEFAULT: "0.25rem",
-          lg: "0.5rem",
-          xl: "0.75rem",
-          full: "9999px",
-        },
-      },
-    },
-  };
-</script>
 <style>
   .accordion-content {
     max-height: 0;

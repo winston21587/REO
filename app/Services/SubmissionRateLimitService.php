@@ -113,6 +113,9 @@ class SubmissionRateLimitService
         Cache::forget("submission_hourly:{$researcherId}");
         Cache::forget("submission_daily:{$researcherId}");
         Cache::forget("submission_cooldown:{$researcherId}");
+        Cache::forget("submission_cooldown_time:{$researcherId}");
+        Cache::forget("submission_times:{$researcherId}");
+        Cache::forget("submission_attempts:{$researcherId}");
     }
 
     /**

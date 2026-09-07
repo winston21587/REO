@@ -20,7 +20,8 @@ class AuthController extends Controller
     public function showLogin()
     {
         $contents = CmsContent::all()->pluck('value', 'key');
-        return view('auth.login', compact('contents'));
+        $cms = $contents;
+        return view('auth.login', compact('contents', 'cms'));
     }
 
     public function login(Request $request)
@@ -30,7 +31,9 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
+        $remember = $request->boolean('remember');
+
+        if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
 
             // Check if account is deactivated

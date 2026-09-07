@@ -47,11 +47,12 @@
                 isOpen = !isOpen;
 
                 if (isOpen) {
-                    // Opening panel - hide red dots
+                    // Opening panel - update ARIA & hide red dots
                     btns.forEach(btn => {
+                        btn.setAttribute('aria-expanded', 'true');
                         const dot = btn.querySelector('span.animate-pulse');
                         if (dot) {
-                            dot.classList.add('hidden');
+                             dot.classList.add('hidden');
                         }
                     });
                     
@@ -61,9 +62,9 @@
                         panel.classList.add('opacity-100', 'scale-100');
                     }, 10);
                 } else {
-                    // Closing panel - always hide red dots (they stay hidden)
-                    // They only reappear when NEW notifications actually arrive
+                    // Closing panel - update ARIA
                     btns.forEach(btn => {
+                        btn.setAttribute('aria-expanded', 'false');
                         const dot = btn.querySelector('span.animate-pulse');
                         if (dot) {
                             dot.classList.add('hidden');
@@ -81,6 +82,21 @@
             // Attach event to all buttons
             btns.forEach(btn => btn.addEventListener('click', toggleNotifications));
 
+            // Mobile close button handler
+            const closeBtn = document.getElementById('close-notifications-panel');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function(e) {
+                    if (isOpen) toggleNotifications(e);
+                });
+            }
+
+            // Accessible Escape key dismissal
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isOpen) {
+                    toggleNotifications(e);
+                }
+            });
+
             document.addEventListener('click', function (e) {
                 // Check if click is outside panel AND outside ANY trigger button
                 let clickedInsideButton = false;
@@ -89,9 +105,6 @@
                 });
 
                 if (isOpen && !panel.contains(e.target) && !clickedInsideButton) {
-                    // Close it
-                    isOpen = true; // wait, logic was: toggle(e) toggles layout. 
-                    // If we are open, we want to close.
                     toggleNotifications(e);
                 }
             });

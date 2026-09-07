@@ -22,7 +22,8 @@
                         </div>
                     </div>
                     <button type="button" onclick="closeStatusModal()"
-                        class="text-slate-400 hover:text-slate-500 transition-colors">
+                        aria-label="Close status modal"
+                        class="text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 rounded-lg p-1 transition-colors">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
@@ -85,12 +86,15 @@
                                         value = ''; 
                                         if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; 
                                         open = false;
-                                    "
+                                    @keydown.escape.window="if (open) open = false"
                                     class="relative w-full">
 
                                    <button type="button" @click="open = !open" 
-                                       class="flex items-center justify-between w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 hover:border-slate-300 hover:bg-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-all">
-                                       <span x-text="displayValue" class="font-bold text-slate-700 truncate pr-2" :class="{ 'text-slate-400 font-medium': !value }"></span>
+                                       :aria-expanded="open ? 'true' : 'false'"
+                                       aria-haspopup="listbox"
+                                       aria-label="Change review classification"
+                                       class="flex items-center justify-between w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 hover:border-slate-300 hover:bg-slate-100 rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-all">
+                                       <span x-text="displayValue" class="font-semibold text-slate-700 truncate pr-2" :class="{ 'text-slate-400 font-medium': !value }"></span>
                                        <i class="fas fa-chevron-down text-slate-400 text-[10px] transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
                                    </button>
 
@@ -107,32 +111,32 @@
 
                                        <!-- Option: Exempt Review -->
                                        <button type="button" @click="selectOption('Exempt Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Exempt Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Exempt Review' && value !== 'Exempt Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Exempt Review' && lockedType !== 'Exempt Review', 'ring-2 ring-inset ring-purple-300 bg-purple-50': aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review' }"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Exempt Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Exempt Review' && value !== 'Exempt Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Exempt Review' && lockedType !== 'Exempt Review', 'ring-2 ring-inset ring-red-200 bg-red-50/50': aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
                                            <span class="text-left flex-1" x-text="lockedType === 'Exempt Review' ? 'Exempt Review (Current)' : 'Exempt Review'"></span>
-                                           <span x-show="aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
+                                           <span x-show="aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-red-100/90 text-[#8B0000] px-1.5 py-0.5 rounded-full border border-red-200/90 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
                                            <i x-show="lockedType === 'Exempt Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
                                        </button>
 
                                        <!-- Option: Expedited Review -->
                                        <button type="button" @click="selectOption('Expedited Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Expedited Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Expedited Review' && value !== 'Expedited Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Expedited Review' && lockedType !== 'Expedited Review', 'ring-2 ring-inset ring-purple-300 bg-purple-50': aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review' }"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Expedited Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Expedited Review' && value !== 'Expedited Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Expedited Review' && lockedType !== 'Expedited Review', 'ring-2 ring-inset ring-red-200 bg-red-50/50': aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
                                            <span class="text-left flex-1" x-text="lockedType === 'Expedited Review' ? 'Expedited Review (Current)' : 'Expedited Review'"></span>
-                                           <span x-show="aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
+                                           <span x-show="aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-red-100/90 text-[#8B0000] px-1.5 py-0.5 rounded-full border border-red-200/90 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
                                            <i x-show="lockedType === 'Expedited Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
                                        </button>
 
                                        <!-- Option: Full Board Review -->
                                        <button type="button" @click="selectOption('Full Board Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Full Board Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Full Board Review' && value !== 'Full Board Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Full Board Review' && lockedType !== 'Full Board Review', 'ring-2 ring-inset ring-purple-300 bg-purple-50': aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review' }"
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Full Board Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Full Board Review' && value !== 'Full Board Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Full Board Review' && lockedType !== 'Full Board Review', 'ring-2 ring-inset ring-red-200 bg-red-50/50': aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review' }"
                                            class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
                                            <span class="text-left flex-1" x-text="lockedType === 'Full Board Review' ? 'Full Board Review (Current)' : 'Full Board Review'"></span>
-                                           <span x-show="aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
+                                           <span x-show="aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-red-100/90 text-[#8B0000] px-1.5 py-0.5 rounded-full border border-red-200/90 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
                                            <i x-show="lockedType === 'Full Board Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
                                        </button>
 
-                                   </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -146,12 +150,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <!-- Needs Revision -->
                             <div onclick="selectStatus('Modifications Required', this)"
-                                class="status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-orange-400 hover:shadow-md transition-all group">
+                                class="status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-amber-400 hover:shadow-md transition-all group">
                                 <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
-                                    <i class="fas fa-check-circle text-orange-500"></i>
+                                    <i class="fas fa-check-circle text-amber-700"></i>
                                 </div>
                                 <div
-                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-orange-500">
+                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-amber-700">
                                     <i class="fas fa-edit text-lg"></i>
                                 </div>
                                 <h4 class="font-bold text-slate-800 text-sm">Needs Revision</h4>
@@ -162,28 +166,28 @@
                             <div onclick="selectStatus('Panel Deliberation', this)"
                                 class="status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-blue-400 hover:shadow-md transition-all group">
                                 <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
-                                    <i class="fas fa-check-circle text-blue-500"></i>
+                                    <i class="fas fa-check-circle text-blue-700"></i>
                                 </div>
                                 <div
-                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-blue-500">
+                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-blue-700">
                                     <i class="fas fa-gavel text-lg"></i>
                                 </div>
                                 <h4 class="font-bold text-slate-800 text-sm">Panel Deliberation</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Schedule meeting</p>
+                                <p class="text-[10px] text-slate-500 mt-1">Schedule panel review</p>
                             </div>
 
                             <!-- Approve -->
                             <div onclick="selectStatus('Approved', this)"
-                                class="status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-green-400 hover:shadow-md transition-all group">
+                                class="status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-emerald-400 hover:shadow-md transition-all group">
                                 <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
-                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <i class="fas fa-check-circle text-emerald-700"></i>
                                 </div>
                                 <div
-                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-green-500">
+                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-emerald-700">
                                     <i class="fas fa-award text-lg"></i>
                                 </div>
                                 <h4 class="font-bold text-slate-800 text-sm">Approve</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Issue Clearance</p>
+                                <p class="text-[10px] text-slate-500 mt-1">Issue ethical clearance</p>
                             </div>
                         </div>
                     </div>
@@ -214,13 +218,13 @@
                     <!-- Actions -->
                     <div class="flex gap-3 pt-4 border-t border-slate-100">
                         <button type="button" onclick="closeStatusModal()"
-                            class="flex-1 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors">
+                            class="flex-1 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-colors">
                             Cancel
                         </button>
                         <button type="submit" id="submitStatusBtn"
-                            class="flex-1 px-4 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] transition-colors shadow-lg shadow-red-900/20 flex justify-center items-center gap-2">
+                            class="flex-1 px-4 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-semibold hover:bg-[#6d0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 transition-colors shadow-2xs flex justify-center items-center gap-2">
                             <span>{{ request()->routeIs('admin.applications') ? 'Update Status' : 'Update & Notify' }}</span>
-                            <i class="fas fa-paper-plane"></i>
+                            <i class="fas fa-paper-plane text-xs"></i>
                         </button>
                     </div>
                 </form>
@@ -238,12 +242,12 @@
         document.getElementById('reviewTypeSelect').value = ''; // Clear review type dropdown selection
         // Remove active class from all options (Status Actions)
         document.querySelectorAll('.status-option').forEach(el => {
-            el.classList.remove('border-orange-400', 'bg-orange-50', 'border-blue-400', 'bg-blue-50', 'border-green-400', 'bg-green-50');
+            el.classList.remove('border-amber-400', 'bg-amber-50/60', 'ring-1', 'ring-amber-400', 'border-blue-400', 'bg-blue-50/60', 'ring-blue-400', 'border-emerald-400', 'bg-emerald-50/60', 'ring-emerald-400', 'border-orange-400', 'bg-orange-50', 'border-green-400', 'bg-green-50');
             el.classList.add('border-slate-200');
             el.querySelector('.check-icon').classList.add('opacity-0');
             // Reset icon colors
             const iconBox = el.querySelector('.icon-box');
-            iconBox.classList.remove('text-orange-500', 'text-blue-500', 'text-green-500');
+            iconBox.classList.remove('text-amber-700', 'text-blue-700', 'text-emerald-700', 'text-orange-500', 'text-blue-500', 'text-green-500');
             iconBox.classList.add('text-slate-400');
         });
 
@@ -254,14 +258,14 @@
         let activeText = '';
 
         if (status === 'Modifications Required') {
-            activeClass = 'border-orange-400 bg-orange-50';
-            activeText = 'text-orange-500';
+            activeClass = 'border-amber-400 bg-amber-50/60 ring-1 ring-amber-400';
+            activeText = 'text-amber-700';
         } else if (status === 'Panel Deliberation') {
-            activeClass = 'border-blue-400 bg-blue-50';
-            activeText = 'text-blue-500';
+            activeClass = 'border-blue-400 bg-blue-50/60 ring-1 ring-blue-400';
+            activeText = 'text-blue-700';
         } else if (status === 'Approved') {
-            activeClass = 'border-green-400 bg-green-50';
-            activeText = 'text-green-500';
+            activeClass = 'border-emerald-400 bg-emerald-50/60 ring-1 ring-emerald-400';
+            activeText = 'text-emerald-700';
         }
 
         const classes = activeClass.split(' ');
@@ -356,6 +360,16 @@
         setTimeout(() => modal.classList.add('hidden'), 300);
     }
 
+    // Global Escape key dismiss listener for Status Modal
+    window.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('statusModal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeStatusModal();
+            }
+        }
+    });
+
     // Handle Form Submission via AJAX for better UX
     document.getElementById('statusForm').addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -392,7 +406,7 @@
                 title: 'Classification Required',
                 text: 'Please select a Review Classification (Expedited, Exempt, or Full Board) to proceed.',
                 icon: 'warning',
-                confirmButtonText: 'Continue', // Changed to Continue
+                confirmButtonText: 'Select Classification',
                 confirmButtonColor: '#8B0000',
             });
             return;
@@ -405,7 +419,7 @@
                 title: 'Date Required',
                 text: 'Please set an Appointment Date or Deadline for this action.',
                 icon: 'warning',
-                confirmButtonText: 'Okay',
+                confirmButtonText: 'Set Date',
                 confirmButtonColor: '#8B0000',
             });
             return;
@@ -434,10 +448,10 @@
 
                 await Swal.fire({
                     ...commonSwalConfig,
-                    title: 'Status Updated!',
-                    text: 'The protocol status has been successfully updated.',
+                    title: 'Status Updated',
+                    text: 'The protocol review classification and status have been successfully updated.',
                     icon: 'success',
-                    confirmButtonText: 'Great!',
+                    confirmButtonText: 'Close',
                     confirmButtonColor: '#8B0000',
                 });
 
@@ -458,7 +472,7 @@
                     title: 'Update Failed',
                     text: errorMsg,
                     icon: 'error',
-                    confirmButtonText: 'Okay',
+                    confirmButtonText: 'Dismiss',
                     confirmButtonColor: '#334155',
                 });
             }

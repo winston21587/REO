@@ -1,24 +1,27 @@
 <x-user_layout>
     <x-skeleton-loader />
 
-    <main id="page-content" style="display: none;" class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <main id="page-content" style="display: none;" class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-8 pb-28 sm:pb-16 relative">
+
+        <!-- Atmospheric Maroon Canopy Glow -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-72 bg-gradient-to-b from-red-100/40 via-red-50/20 to-transparent pointer-events-none -z-10 rounded-full blur-3xl" aria-hidden="true"></div>
 
         <!-- Header Section -->
         <div
-            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-slate-200 pb-8">
-            <div class="space-y-2">
+            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 sm:mb-10 gap-4 border-b border-slate-200/80 pb-6 sm:pb-8">
+            <div class="space-y-2 max-w-2xl">
                 <a href="{{ route('home') }}"
-                    class="group inline-flex items-center gap-2 text-slate-500 hover:text-[#8B0000] transition-colors mb-2 text-sm font-medium">
+                    class="group inline-flex items-center gap-2 text-slate-500 hover:text-brand-primary transition-colors mb-1 text-xs sm:text-sm font-bold min-h-[44px]">
                     <div
-                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-red-50 transition-colors">
-                        <i class="fas fa-arrow-left text-xs"></i>
+                        class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-red-50 transition-colors">
+                        <i class="fas fa-arrow-left text-xs text-slate-500 group-hover:text-brand-primary transition-colors"></i>
                     </div>
-                    Back to Titles
+                    <span>Back to Titles</span>
                 </a>
-                <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Document Manager</h2>
-                <div class="flex items-center gap-2 text-slate-500 text-sm">
-                    <span>Manage uploads for:</span>
-                    <span class="font-bold text-[#8B0000] bg-red-50 px-3 py-1 rounded-full border border-red-100">
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">Document Manager</h1>
+                <div class="flex flex-wrap items-center gap-2 text-slate-500 text-xs sm:text-sm">
+                    <span class="font-medium">Manage uploads for:</span>
+                    <span class="font-bold text-brand-primary bg-red-50/80 px-3 py-1 rounded-full border border-red-100 max-w-full break-words">
                         {{ $researchTitle->Study_Protocol_title }}
                     </span>
                 </div>
@@ -33,8 +36,8 @@
 
             @if($canSubmit)
                 <button onclick="document.getElementById('revisionModal').classList.remove('hidden')"
-                    class="group relative inline-flex items-center gap-3 bg-[#8B0000] text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-red-900/30 hover:-translate-y-1 transition-all duration-300">
-                    <i class="fas {{ $submitIcon }} text-lg group-hover:rotate-12 transition-transform"></i>
+                    class="group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-brand-primary text-white px-7 py-3.5 sm:py-4 min-h-[44px] rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-brand-secondary hover:shadow-red-900/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer">
+                    <i class="fas {{ $submitIcon }} text-base sm:text-lg group-hover:rotate-12 transition-transform"></i>
                     <span>{{ $submitLabel }}</span>
                 </button>
             @endif
@@ -44,8 +47,8 @@
 
         <!-- Revision/Correction Modal -->
         @if($canSubmit)
-            <div id="revisionModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
-                aria-modal="true">
+            <div id="revisionModal" class="fixed inset-0 z-50 hidden" aria-labelledby="revision-modal-heading" role="dialog"
+                aria-modal="true" x-data @keydown.escape.window="document.getElementById('revisionModal').classList.add('hidden')">
                 <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
                     onclick="document.getElementById('revisionModal').classList.add('hidden')"></div>
 
@@ -57,7 +60,7 @@
                                 @csrf
 
                                 <!-- Premium Header -->
-                                <div class="px-8 py-6 bg-[#8B0000] relative overflow-hidden">
+                                <div class="px-8 py-6 bg-brand-primary relative overflow-hidden">
                                     <!-- Background Pattern/Icon -->
                                     <div class="absolute -right-6 -top-6 text-white/10 pointer-events-none">
                                         <i class="fas fa-paper-plane text-[150px] rotate-12"></i>
@@ -65,7 +68,7 @@
 
                                     <div class="relative z-10 flex justify-between items-start">
                                         <div>
-                                            <h3
+                                            <h3 id="revision-modal-heading"
                                                 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
                                                 <span class="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
                                                     <i class="fas fa-paper-plane text-lg text-white"></i>
@@ -82,7 +85,8 @@
                                         </div>
                                         <button type="button"
                                             onclick="document.getElementById('revisionModal').classList.add('hidden')"
-                                            class="text-white/70 hover:text-white hover:bg-white/20 rounded-lg p-1 transition-all">
+                                            class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all cursor-pointer"
+                                            aria-label="Close revision modal">
                                             <i class="fas fa-times text-xl"></i>
                                         </button>
                                     </div>
@@ -119,10 +123,10 @@
                                             </label>
                                             <div class="relative group">
                                                 <textarea name="revision_message" id="revision_message" rows="3"
-                                                    class="w-full rounded-xl border-slate-200 bg-white shadow-sm focus:border-[#8B0000] focus:ring-[#8B0000] text-sm placeholder-slate-400 py-3 px-4 resize-none transition-all group-hover:border-slate-300"
+                                                    class="w-full rounded-xl border-slate-200 bg-white shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm placeholder-slate-400 py-3 px-4 resize-none transition-all group-hover:border-slate-300"
                                                     placeholder="{{ $isRevision ? 'Briefly describe your changes...' : 'E.g., Added missing signature page...' }}"></textarea>
                                                 <div
-                                                    class="absolute bottom-3 right-3 text-slate-300 pointer-events-none group-focus-within:text-[#8B0000] transition-colors">
+                                                    class="absolute bottom-3 right-3 text-slate-300 pointer-events-none group-focus-within:text-brand-primary transition-colors">
                                                     <i class="fas fa-pen text-xs"></i>
                                                 </div>
                                             </div>
@@ -139,7 +143,7 @@
                                         Cancel
                                     </button>
                                     <button type="submit"
-                                        class="inline-flex w-full justify-center items-center gap-2 rounded-xl bg-[#8B0000] px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-900/20 hover:bg-red-800 hover:shadow-red-900/40 hover:-translate-y-0.5 sm:w-auto transition-all duration-300">
+                                        class="inline-flex w-full justify-center items-center gap-2 rounded-xl bg-brand-primary px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-900/20 hover:bg-brand-secondary hover:shadow-red-900/40 hover:-translate-y-0.5 sm:w-auto transition-all duration-300">
                                         <span>Confirm Submission</span>
                                         <i class="fas fa-arrow-right text-xs opacity-70"></i>
                                     </button>
@@ -348,51 +352,57 @@
         <!-- Recommendation Letters Section -->
         @if($letters->isNotEmpty() || $archivedLetters->isNotEmpty())
             <div class="mb-10">
-                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-black text-slate-800 mb-5 flex items-center gap-2 font-heading tracking-tight">
                     <i class="fas fa-envelope-open-text text-emerald-600"></i>
-                    Recommendation Letters
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <span>Recommendation Letters</span>
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
                     {{-- Active Letters --}}
                     @foreach($letters as $file)
                         <div
-                            class="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-lg hover:border-emerald-200 transition-all duration-300">
-                            <div class="p-5 flex items-start gap-4 border-b border-emerald-50 bg-emerald-50/30">
+                            class="bg-white rounded-2xl border border-emerald-200/80 shadow-xs overflow-hidden flex flex-col group hover:shadow-md hover:border-emerald-300 transition-all duration-200">
+                            <div class="p-4 sm:p-5 flex items-start gap-3.5 border-b border-emerald-100/70 bg-emerald-50/40">
                                 <div
-                                    class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
-                                    <i class="fas fa-certificate text-xl"></i>
+                                    class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-certificate text-lg"></i>
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <h4 class="font-bold text-slate-800 text-sm leading-snug truncate mb-1"
+                                    <h4 class="font-black text-slate-900 text-sm leading-snug truncate mb-1"
                                         title="{{ $file->filename }}">
                                         {{ $file->filename }}
                                     </h4>
                                     <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
+                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700">
                                         Official Document
                                     </span>
                                 </div>
                             </div>
 
-                            <!-- Preview Area -->
+                            <!-- Document Visual / Preview Area -->
                             <div
-                                class="relative bg-slate-50 flex-1 min-h-[150px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
-                                <iframe loading="lazy" src="{{ asset($file->filepath) }}#toolbar=0&navpanes=0&scrollbar=0"
-                                    class="w-full h-full border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
-                                <div
-                                    class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
+                                class="relative bg-gradient-to-b from-slate-50 to-slate-100/50 flex-1 min-h-[160px] border-b border-slate-100 group-hover:bg-slate-100/70 transition-colors overflow-hidden flex flex-col items-center justify-center p-6 text-center">
+                                <div class="w-14 h-14 rounded-2xl bg-white shadow-xs border border-emerald-100 flex items-center justify-center text-emerald-600 mb-2.5 group-hover:scale-105 transition-transform duration-200">
+                                    <i class="fas fa-file-shield text-2xl"></i>
+                                </div>
+                                <p class="text-xs font-bold text-slate-700 max-w-[200px] truncate mb-1">{{ $file->filename }}</p>
+                                <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">Verified Admin Copy</span>                                <div
+                                    class="absolute inset-0 bg-slate-900/0 sm:group-hover:bg-slate-900/10 transition-colors flex items-center justify-center p-4">
                                     <a href="{{ asset($file->filepath) }}" target="_blank"
-                                        class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur-sm text-slate-900 px-5 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-emerald-600 hover:text-white flex items-center gap-2">
-                                        <i class="fas fa-external-link-alt"></i> View Fullscreen
+                                        class="opacity-90 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-2 sm:group-hover:translate-y-0 transition-all duration-200 bg-white/95 backdrop-blur-sm text-slate-900 hover:text-emerald-700 px-4 py-2 min-h-[38px] rounded-xl font-bold text-xs shadow-md flex items-center gap-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary"
+                                        aria-label="View {{ $file->filename }} in fullscreen">
+                                        <i class="fas fa-external-link-alt text-[11px]"></i>
+                                        <span>View Fullscreen</span>
                                     </a>
                                 </div>
                             </div>
 
                             <!-- Read-Only Actions -->
-                            <div class="p-4 bg-white">
+                            <div class="p-3.5 sm:p-4 bg-white">
                                 <a href="{{ asset($file->filepath) }}" download
-                                    class="block w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-900 rounded-xl text-sm font-bold text-center transition-colors flex items-center justify-center gap-2">
-                                    <i class="fas fa-download"></i> Download File
+                                    class="block w-full py-2.5 px-4 min-h-[44px] bg-emerald-50 hover:bg-emerald-100 text-emerald-800 hover:text-emerald-900 rounded-xl text-xs sm:text-sm font-bold text-center transition-colors flex items-center justify-center gap-2 active:scale-[0.98] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+                                    aria-label="Download {{ $file->filename }}">
+                                    <i class="fas fa-download"></i>
+                                    <span>Download File</span>
                                 </a>
                             </div>
                         </div>
@@ -401,11 +411,11 @@
                     {{-- Archived (Previous) Letters --}}
                     @foreach($archivedLetters as $file)
                         <div
-                            class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:shadow-lg hover:border-slate-300 transition-all duration-300">
-                            <div class="p-5 flex items-start gap-4 border-b border-slate-100 bg-slate-50/50">
+                            class="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden flex flex-col group hover:shadow-md hover:border-slate-300 transition-all duration-200">
+                            <div class="p-4 sm:p-5 flex items-start gap-3.5 border-b border-slate-100 bg-slate-50/50">
                                 <div
-                                    class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-400">
-                                    <i class="fas fa-history text-xl"></i>
+                                    class="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 text-slate-400">
+                                    <i class="fas fa-history text-lg"></i>
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <h4 class="font-bold text-slate-700 text-sm leading-snug truncate mb-1"
@@ -413,34 +423,42 @@
                                         {{ $file->filename }}
                                     </h4>
                                     <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500">
+                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
                                         Previous Version
                                     </span>
-                                    <p class="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-                                        <i class="far fa-clock"></i> {{ $file->created_at->format('M d, Y') }}
+                                    <p class="text-[10px] text-slate-400 mt-1 flex items-center gap-1 font-medium">
+                                        <i class="far fa-clock text-[9px]"></i> {{ $file->created_at->format('M d, Y') }}
                                     </p>
                                 </div>
                             </div>
 
-                            <!-- Preview Area -->
+                            <!-- Document Visual / Preview Area -->
                             <div
-                                class="relative bg-slate-50 flex-1 min-h-[150px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
-                                <iframe loading="lazy" src="{{ asset($file->filepath) }}#toolbar=0&navpanes=0&scrollbar=0"
-                                    class="w-full h-full border-0 pointer-events-none opacity-60 group-hover:opacity-90 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
+                                class="relative bg-gradient-to-b from-slate-50 to-slate-100/50 flex-1 min-h-[160px] border-b border-slate-100 group-hover:bg-slate-100/70 transition-colors overflow-hidden flex flex-col items-center justify-center p-6 text-center">
+                                <div class="w-14 h-14 rounded-2xl bg-white shadow-xs border border-slate-200/80 flex items-center justify-center text-slate-400 mb-2.5 group-hover:scale-105 transition-transform duration-200">
+                                    <i class="fas fa-history text-2xl"></i>
+                                </div>
+                                <p class="text-xs font-bold text-slate-600 max-w-[200px] truncate mb-1">{{ $file->filename }}</p>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60">Archived Version</span>
+
                                 <div
-                                    class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
+                                    class="absolute inset-0 bg-slate-900/0 sm:group-hover:bg-slate-900/10 transition-colors flex items-center justify-center p-4">
                                     <a href="{{ asset($file->filepath) }}" target="_blank"
-                                        class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur-sm text-slate-900 px-5 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-slate-600 hover:text-white flex items-center gap-2">
-                                        <i class="fas fa-external-link-alt"></i> View Fullscreen
+                                        class="opacity-90 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-2 sm:group-hover:translate-y-0 transition-all duration-200 bg-white/95 backdrop-blur-sm text-slate-900 hover:text-slate-700 px-4 py-2 min-h-[38px] rounded-xl font-bold text-xs shadow-md flex items-center gap-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary"
+                                        aria-label="View {{ $file->filename }} in fullscreen">
+                                        <i class="fas fa-external-link-alt text-[11px]"></i>
+                                        <span>View Fullscreen</span>
                                     </a>
                                 </div>
                             </div>
 
                             <!-- Read-Only Actions -->
-                            <div class="p-4 bg-white">
+                            <div class="p-3.5 sm:p-4 bg-white">
                                 <a href="{{ asset($file->filepath) }}" download
-                                    class="block w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-xl text-sm font-bold text-center transition-colors flex items-center justify-center gap-2">
-                                    <i class="fas fa-download"></i> Download File
+                                    class="block w-full py-2.5 px-4 min-h-[44px] bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl text-xs sm:text-sm font-bold text-center transition-colors flex items-center justify-center gap-2 active:scale-[0.98] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+                                    aria-label="Download {{ $file->filename }}">
+                                    <i class="fas fa-download"></i>
+                                    <span>Download File</span>
                                 </a>
                             </div>
                         </div>
@@ -458,65 +476,88 @@
                     this.activeTab = 'draft';
                 }
             }" class="mb-10">
-                <!-- Action Bar -->
+                <!-- Responsive Action Bar -->
                 @if($isWaitingForRevision && !$hasDraftFiles)
                     <div x-show="!isDrafting"
-                        class="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between shadow-sm">
+                        class="mb-6 sm:mb-8 p-5 sm:p-6 bg-blue-50/80 border border-blue-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
                         <div>
-                            <h4 class="text-lg font-bold text-blue-900 mb-1">Revisions Required</h4>
-                            <p class="text-blue-700 text-sm">Please create a new Revision Workspace to upload your corrected
-                                documents.</p>
+                            <h3 class="text-base sm:text-lg font-black text-blue-900 mb-1 font-heading">Revisions Required</h3>
+                            <p class="text-blue-700 text-xs sm:text-sm leading-relaxed">Please create a new Revision Workspace to upload your corrected documents.</p>
                         </div>
                         <button @click="startDrafting()" type="button"
-                            class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2">
-                            <i class="fas fa-plus"></i> Create Revision {{ $nextRevisionNumber }}
+                            class="shrink-0 w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm">
+                            <i class="fas fa-plus"></i>
+                            <span>Create Revision {{ $nextRevisionNumber }}</span>
                         </button>
                     </div>
                 @endif
 
-                <!-- Tabs Navigation -->
-                <div class="flex gap-2 border-b border-slate-200 mb-8 overflow-x-auto custom-scrollbar">
+                <!-- Tabs Navigation (Responsive Horizontal Track) -->
+                <div role="tablist" aria-label="Document workspace tabs" class="flex gap-2 border-b border-slate-200/80 mb-6 sm:mb-8 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
 
-                    {{-- Original Documents tab: always shown when files with revision_number=null exist or when Incomplete
-                    --}}
+                    {{-- Original Documents tab: always shown when files with revision_number=null exist or when Incomplete --}}
                     @if($originalFiles->isNotEmpty() || $researchTitle->Status === 'Incomplete')
                         <button @click="activeTab = 'original'"
-                            :class="activeTab === 'original' ? 'border-[#8B0000] text-[#8B0000]' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-                            class="pb-3 px-5 text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2">
-                            <i class="fas fa-box-archive"></i> Original Documents
+                            role="tab"
+                            id="tab-original"
+                            aria-controls="panel-original"
+                            :aria-selected="activeTab === 'original' ? 'true' : 'false'"
+                            :tabindex="activeTab === 'original' ? 0 : -1"
+                            :class="activeTab === 'original' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+                            class="pb-3 px-4 sm:px-5 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                            <i class="fas fa-box-archive"></i>
+                            <span>Original Documents</span>
                         </button>
                     @endif
 
                     {{-- Revision Folder tabs --}}
                     @foreach($revisionFolders->sortKeys() as $revNum => $files)
                         <button @click="activeTab = 'rev_{{ $revNum }}'"
-                            :class="activeTab === 'rev_{{ $revNum }}' ? 'border-[#8B0000] text-[#8B0000]' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-                            class="pb-3 px-5 text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2">
-                            <i class="fas fa-folder"></i> Revision {{ $revNum }}
+                            role="tab"
+                            id="tab-rev-{{ $revNum }}"
+                            aria-controls="panel-rev-{{ $revNum }}"
+                            :aria-selected="activeTab === 'rev_{{ $revNum }}' ? 'true' : 'false'"
+                            :tabindex="activeTab === 'rev_{{ $revNum }}' ? 0 : -1"
+                            :class="activeTab === 'rev_{{ $revNum }}' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+                            class="pb-3 px-4 sm:px-5 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                            <i class="fas fa-folder"></i>
+                            <span>Revision {{ $revNum }}</span>
                         </button>
                     @endforeach
 
                     {{-- Current Documents tab: only shown when revisions exist, to show the latest --}}
                     @if($revisionFolders->isNotEmpty() && $activeFiles->isNotEmpty())
                         <button @click="activeTab = 'active'"
-                            :class="activeTab === 'active' ? 'border-[#8B0000] text-[#8B0000]' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-                            class="pb-3 px-5 text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2">
-                            <i class="fas fa-file-signature"></i> Current Documents
+                            role="tab"
+                            id="tab-active"
+                            aria-controls="panel-active"
+                            :aria-selected="activeTab === 'active' ? 'true' : 'false'"
+                            :tabindex="activeTab === 'active' ? 0 : -1"
+                            :class="activeTab === 'active' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+                            class="pb-3 px-4 sm:px-5 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                            <i class="fas fa-file-signature"></i>
+                            <span>Current Documents</span>
                         </button>
                     @endif
 
                     @if($isWaitingForRevision)
                         <button x-show="isDrafting" @click="activeTab = 'draft'"
+                            role="tab"
+                            id="tab-draft"
+                            aria-controls="panel-draft"
+                            :aria-selected="activeTab === 'draft' ? 'true' : 'false'"
+                            :tabindex="activeTab === 'draft' ? 0 : -1"
                             :class="activeTab === 'draft' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-                            class="pb-3 px-5 text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2">
-                            <i class="fas fa-edit"></i> Drafting Revision {{ $nextRevisionNumber }}
+                            class="pb-3 px-4 sm:px-5 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                            <i class="fas fa-edit"></i>
+                            <span>Drafting Revision {{ $nextRevisionNumber }}</span>
                         </button>
                     @endif
                 </div>
 
                 <!-- ORIGINAL DOCUMENTS VIEW: always shown, always the default tab -->
                 @if($originalFiles->isNotEmpty() || $researchTitle->Status === 'Incomplete')
-                    <div x-show="activeTab === 'original'" class="space-y-6">
+                    <div x-show="activeTab === 'original'" role="tabpanel" id="panel-original" aria-labelledby="tab-original" class="space-y-6">
                         @php
                             $filesByCategory = $originalFiles->groupBy('category');
                             $renderedCategories = [];
@@ -535,33 +576,40 @@
                                     class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                                     <!-- Header (Collapsible trigger) -->
                                     <button @click="expanded = !expanded"
-                                        class="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-100 text-left">
-                                        <div class="flex items-center gap-4">
+                                        :aria-expanded="expanded ? 'true' : 'false'"
+                                        class="w-full px-5 sm:px-6 py-4 flex items-center justify-between bg-white hover:bg-slate-50/90 transition-all border-b border-slate-100 text-left group cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                                        <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
                                             <div
-                                                class="w-10 h-10 rounded-full flex items-center justify-center {{ $categoryFiles->isNotEmpty() ? 'bg-indigo-100 text-indigo-600' : 'bg-red-50 text-red-500' }}">
-                                                <i
-                                                    class="fas {{ $categoryFiles->isNotEmpty() ? 'fa-folder-open' : 'fa-exclamation-triangle' }}"></i>
+                                                class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 {{ $categoryFiles->isNotEmpty() ? 'bg-slate-100 text-brand-primary' : 'bg-red-50 text-red-600' }}">
+                                                <i class="fas {{ $categoryFiles->isNotEmpty() ? 'fa-folder-open' : 'fa-triangle-exclamation' }} text-base"></i>
                                             </div>
-                                            <div>
-                                                <h4 class="text-sm font-extrabold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                                                    {{ $req->name }}
+                                            <div class="min-w-0">
+                                                <div class="flex flex-wrap items-center gap-2 mb-0.5">
+                                                    <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-primary transition-colors">
+                                                        {{ $req->name }}
+                                                    </h3>
                                                     @if(in_array($req->name, $missingDocs))
-                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 tracking-normal normal-case border border-amber-200" title="The Admin requested you to re-upload or fix this document">
-                                                            <i class="fas fa-exclamation-circle text-[8px]"></i> Reupload Needed
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-300" title="The Admin requested you to re-upload or fix this document">
+                                                            <i class="fas fa-exclamation-circle text-[9px]"></i> Reupload Needed
                                                         </span>
                                                     @endif
-                                                </h4>
+                                                </div>
                                                 @if($categoryFiles->isNotEmpty())
-                                                    <p class="text-[10px] font-bold text-slate-400">{{ $categoryFiles->count() }} doc(s)
-                                                        submitted</p>
+                                                    <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                        <span>{{ $categoryFiles->count() }} {{ Str::plural('document', $categoryFiles->count()) }} submitted</span>
+                                                    </p>
                                                 @else
-                                                    <p class="text-[10px] font-bold text-red-400">Missing Requirement</p>
+                                                    <p class="text-[11px] font-black text-red-600 flex items-center gap-1.5">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                                        <span>Missing Required Document</span>
+                                                    </p>
                                                 @endif
                                             </div>
                                         </div>
                                         <div
-                                            class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm group">
-                                            <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300 group-hover:text-slate-600"
+                                            class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-200/80 shadow-2xs group-hover:bg-brand-primary group-hover:border-brand-primary group-hover:text-white text-slate-400 transition-all">
+                                            <i class="fas fa-chevron-down text-xs transition-transform duration-300"
                                                 :class="expanded ? 'rotate-180' : ''"></i>
                                         </div>
                                     </button>
@@ -690,7 +738,7 @@
 
                                                         <label class="block cursor-pointer w-full">
                                                             <div class="w-full py-2.5 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors flex items-center justify-center gap-2 group/upload" :class="isUploading ? 'opacity-50 pointer-events-none' : ''">
-                                                                <i class="fas fa-upload group-hover/upload:animate-bounce"></i>
+                                                                <i class="fas fa-upload group-hover/upload:-translate-y-0.5 transition-transform"></i>
                                                                 <span>Upload Additional</span>
                                                             </div>
                                                             @php
@@ -803,8 +851,8 @@
                                                             <!-- Loading Overlay -->
                                                             <div x-show="isUploading" class="absolute inset-0 z-20 bg-white/90 backdrop-blur-sm flex items-center justify-center pointer-events-none transition-opacity duration-300" style="display: none;">
                                                                 <div class="flex flex-col items-center gap-2">
-                                                                    <i class="fas fa-spinner fa-spin text-[#8B0000] text-2xl"></i>
-                                                                    <span class="text-[10px] font-bold text-[#8B0000] uppercase tracking-wider">Uploading...</span>
+                                                                    <i class="fas fa-spinner fa-spin text-brand-primary text-2xl"></i>
+                                                                    <span class="text-[10px] font-bold text-brand-primary uppercase tracking-wider">Uploading...</span>
                                                                 </div>
                                                             </div>
 
@@ -821,7 +869,7 @@
 
                                                             <label class="block cursor-pointer w-full">
                                                                 <div class="w-full py-2.5 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors flex items-center justify-center gap-2 group/upload" :class="isUploading ? 'opacity-50 pointer-events-none' : ''">
-                                                                    <i class="fas fa-upload group-hover/upload:animate-bounce"></i>
+                                                                    <i class="fas fa-upload group-hover/upload:-translate-y-0.5 transition-transform"></i>
                                                                     <span>Upload File</span>
                                                                 </div>
                                                                 @php
@@ -847,18 +895,25 @@
                             @if(!in_array($category, $renderedCategories))
                                 @php $pKey = 'rt_' . $researchTitle->id . '_orig_' . Str::slug($category ?? 'uncat'); @endphp
                                 <div x-data="{ expanded: $persist(false).as('{{ $pKey }}') }" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                                    <button @click="expanded = !expanded" class="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-100 text-left">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                                                <i class="fas fa-folder-open"></i>
+                                    <button @click="expanded = !expanded"
+                                        :aria-expanded="expanded ? 'true' : 'false'"
+                                        class="w-full px-5 sm:px-6 py-4 flex items-center justify-between bg-white hover:bg-slate-50/90 transition-all border-b border-slate-100 text-left group cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                                        <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                                            <div class="w-11 h-11 rounded-xl bg-slate-100 text-brand-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                                <i class="fas fa-folder-open text-base"></i>
                                             </div>
-                                            <div>
-                                                <h4 class="text-sm font-extrabold text-slate-800 uppercase tracking-widest">{{ $category ?? 'Uncategorized' }}</h4>
-                                                <p class="text-[10px] font-bold text-slate-400">{{ $categoryFiles->count() }} doc(s)</p>
+                                            <div class="min-w-0">
+                                                <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-primary transition-colors">
+                                                    {{ $category ?? 'Uncategorized' }}
+                                                </h3>
+                                                <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    <span>{{ $categoryFiles->count() }} {{ Str::plural('document', $categoryFiles->count()) }}</span>
+                                                </p>
                                             </div>
                                         </div>
-                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm group">
-                                            <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300 group-hover:text-slate-600" :class="expanded ? 'rotate-180' : ''"></i>
+                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-200/80 shadow-2xs group-hover:bg-brand-primary group-hover:border-brand-primary group-hover:text-white text-slate-400 transition-all">
+                                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="expanded ? 'rotate-180' : ''"></i>
                                         </div>
                                     </button>
                                     <div x-show="expanded" x-transition class="p-6 bg-slate-50/30" style="display: none;">
@@ -875,7 +930,7 @@
                 @endif
                 <!-- Active Documents (Current) View: only shows when revisions exist -->
                 @if($revisionFolders->isNotEmpty() && $activeFiles->isNotEmpty())
-                    <div x-show="activeTab === 'active'">
+                    <div x-show="activeTab === 'active'" role="tabpanel" id="panel-active" aria-labelledby="tab-active">
                         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         @foreach($activeFiles as $file)
                             @php 
@@ -891,7 +946,7 @@
                                 };
 
                                 if ($isPdf) {
-                                    $iconClass = 'fa-file-pdf text-[#8B0000]';
+                                    $iconClass = 'fa-file-pdf text-brand-primary';
                                     $bgClass = 'bg-red-50';
                                 } elseif (in_array($ext, ['doc', 'docx'])) {
                                     $iconClass = 'fa-file-word text-blue-600';
@@ -908,7 +963,7 @@
                                 }
                             @endphp
 
-                            <div class="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-300 transition-all duration-300 flex flex-col">
+                            <div class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col relative overflow-hidden">
                                 <!-- Header -->
                                 <div class="p-5 flex items-start gap-4 border-b border-slate-50 bg-white relative z-10">
                                     <div class="w-12 h-12 rounded-xl {{ $bgClass }} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
@@ -924,30 +979,23 @@
                                     </div>
                                 </div>
 
-                                <!-- Preview Area -->
-                                <div class="relative bg-slate-50 flex-1 min-h-[200px] border-b border-slate-100 group-hover:bg-slate-100 transition-colors overflow-hidden">
-                                    @if($isPdf)
-                                        <iframe loading="lazy" src="{{ asset($file->filepath) }}#toolbar=0&navpanes=0&scrollbar=0" class="w-full h-full border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
-                                        <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
-                                            <a href="{{ asset($file->filepath) }}" target="_blank" class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur-sm text-slate-900 px-5 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-[#8B0000] hover:text-white flex items-center gap-2">
-                                                <i class="fas fa-external-link-alt"></i> View Fullscreen
-                                            </a>
-                                        </div>
-                                    @elseif($isOffice)
-                                        <iframe loading="lazy" src="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(asset($file->filepath)) }}" width="100%" height="100%" class="border-0 pointer-events-none opacity-80 group-hover:opacity-100 scale-[1.02] group-hover:scale-100 transition-all duration-500"></iframe>
-                                        <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-center justify-center p-6">
-                                            <a href="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(asset($file->filepath)) }}" target="_blank" class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur-sm text-slate-900 px-5 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-[#8B0000] hover:text-white flex items-center gap-2">
-                                                <i class="fas fa-external-link-alt"></i> View Fullscreen
-                                            </a>
-                                        </div>
-                                    @else
-                                        <div class="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center">
-                                            <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-3">
-                                                <i class="fas fa-eye-slash text-2xl text-slate-300"></i>
-                                            </div>
-                                            <span class="text-xs font-medium text-slate-500">Preview not available</span>
-                                        </div>
-                                    @endif
+                                <!-- Document Visual / Preview Area -->
+                                <div class="relative bg-gradient-to-b from-slate-50 to-slate-100/50 flex-1 min-h-[160px] border-b border-slate-100 group-hover:bg-slate-100/70 transition-colors overflow-hidden flex flex-col items-center justify-center p-6 text-center">
+                                    <div class="w-14 h-14 rounded-2xl bg-white shadow-xs border border-slate-200/80 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform duration-200">
+                                        <i class="fas {{ $iconClass }} text-2xl"></i>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-700 max-w-[220px] truncate mb-1">{{ $file->filename }}</p>
+                                    <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md {{ $isPdf ? 'bg-red-50 text-brand-primary border border-red-100' : 'bg-blue-50 text-blue-700 border border-blue-100' }}">
+                                        {{ strtoupper($file->filetype ?: 'DOC') }} File
+                                    </span>
+
+                                    <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center p-4">
+                                        <a href="{{ asset($file->filepath) }}" target="_blank"
+                                            class="transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 bg-white/95 backdrop-blur-sm text-slate-900 hover:text-brand-primary px-4 py-2 rounded-xl font-bold text-xs shadow-md flex items-center gap-2">
+                                            <i class="fas fa-external-link-alt text-[11px]"></i>
+                                            <span>View Fullscreen</span>
+                                        </a>
+                                    </div>
                                 </div>
 
                                 <!-- Actions -->
@@ -961,8 +1009,8 @@
                                             @method('PUT')
                                             <input type="hidden" name="file_id" value="{{ $file->id }}">
                                             <label class="block cursor-pointer">
-                                                <div class="w-full py-2.5 px-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-[#8B0000] hover:bg-red-50 text-slate-500 hover:text-[#8B0000] text-sm font-bold text-center transition-all duration-200 flex items-center justify-center gap-2 group/upload">
-                                                    <i class="fas fa-cloud-upload-alt group-hover/upload:animate-bounce"></i>
+                                                <div class="w-full py-2.5 px-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-brand-primary hover:bg-slate-50 text-slate-700 hover:text-brand-primary text-sm font-bold text-center transition-all duration-200 flex items-center justify-center gap-2 group/upload">
+                                                    <i class="fas fa-cloud-upload-alt group-hover/upload:-translate-y-0.5 transition-transform"></i>
                                                     <span>Upload New Version</span>
                                                 </div>
                                                 <input type="file" name="file" class="hidden" onchange="this.form.submit()" accept=".{{ $file->filetype }}">
@@ -981,11 +1029,11 @@
 
                 <!-- Revision Folders View -->
                 @foreach($revisionFolders->sortKeys() as $revNum => $files)
-                    <div x-show="activeTab === 'rev_{{ $revNum }}'" style="display: none;" class="space-y-6">
+                    <div x-show="activeTab === 'rev_{{ $revNum }}'" role="tabpanel" id="panel-rev-{{ $revNum }}" aria-labelledby="tab-rev-{{ $revNum }}" style="display: none;" class="space-y-6">
                         <!-- Revision Header -->
                         <div class="bg-slate-50 rounded-3xl border border-slate-200 p-6 flex items-center justify-between mb-2 pb-4 border-b border-slate-200/60 shadow-sm">
                             <h4 class="text-lg font-bold text-slate-700 flex items-center gap-3">
-                                <i class="fas fa-folder text-indigo-400 text-2xl"></i>
+                                <i class="fas fa-folder text-brand-primary text-2xl"></i>
                                 Revision {{ $revNum }}
                             </h4>
                             <span class="text-xs font-bold text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
@@ -1007,18 +1055,25 @@
                             @if($categoryFiles->isNotEmpty())
                                 @php $pKey = 'rt_' . $researchTitle->id . '_rev_' . $revNum . '_' . Str::slug($req->name); @endphp
                                 <div x-data="{ expanded: $persist(false).as('{{ $pKey }}') }" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                                    <button @click="expanded = !expanded" class="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-100 text-left">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                                                <i class="fas fa-folder-open"></i>
+                                    <button @click="expanded = !expanded"
+                                        :aria-expanded="expanded ? 'true' : 'false'"
+                                        class="w-full px-5 sm:px-6 py-4 flex items-center justify-between bg-white hover:bg-slate-50/90 transition-all border-b border-slate-100 text-left group cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                                        <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                                            <div class="w-11 h-11 rounded-xl bg-slate-100 text-brand-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                                <i class="fas fa-folder-open text-base"></i>
                                             </div>
-                                            <div>
-                                                <h4 class="text-sm font-extrabold text-slate-800 uppercase tracking-widest">{{ $req->name }}</h4>
-                                                <p class="text-[10px] font-bold text-slate-400">{{ $categoryFiles->count() }} doc(s)</p>
+                                            <div class="min-w-0">
+                                                <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-primary transition-colors">
+                                                    {{ $req->name }}
+                                                </h3>
+                                                <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    <span>{{ $categoryFiles->count() }} {{ Str::plural('document', $categoryFiles->count()) }}</span>
+                                                </p>
                                             </div>
                                         </div>
-                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm group">
-                                            <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300 group-hover:text-slate-600" :class="expanded ? 'rotate-180' : ''"></i>
+                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-200/80 shadow-2xs group-hover:bg-brand-primary group-hover:border-brand-primary group-hover:text-white text-slate-400 transition-all">
+                                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="expanded ? 'rotate-180' : ''"></i>
                                         </div>
                                     </button>
                                     <div x-show="expanded" x-transition class="p-6 bg-slate-50/30" style="display: none;">
@@ -1036,18 +1091,25 @@
                             @if(!in_array($category, $renderedRevCategories))
                                 @php $pKey = 'rt_' . $researchTitle->id . '_rev_' . $revNum . '_' . Str::slug($category ?? 'uncat'); @endphp
                                 <div x-data="{ expanded: $persist(false).as('{{ $pKey }}') }" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                                    <button @click="expanded = !expanded" class="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-100 text-left">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                                                <i class="fas fa-folder-open"></i>
+                                    <button @click="expanded = !expanded"
+                                        :aria-expanded="expanded ? 'true' : 'false'"
+                                        class="w-full px-5 sm:px-6 py-4 flex items-center justify-between bg-white hover:bg-slate-50/90 transition-all border-b border-slate-100 text-left group cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                                        <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                                            <div class="w-11 h-11 rounded-xl bg-slate-100 text-brand-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                                <i class="fas fa-folder-open text-base"></i>
                                             </div>
-                                            <div>
-                                                <h4 class="text-sm font-extrabold text-slate-800 uppercase tracking-widest">{{ $category ?? 'Uncategorized' }}</h4>
-                                                <p class="text-[10px] font-bold text-slate-400">{{ $categoryFiles->count() }} doc(s)</p>
+                                            <div class="min-w-0">
+                                                <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-primary transition-colors">
+                                                    {{ $category ?? 'Uncategorized' }}
+                                                </h3>
+                                                <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    <span>{{ $categoryFiles->count() }} {{ Str::plural('document', $categoryFiles->count()) }}</span>
+                                                </p>
                                             </div>
                                         </div>
-                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm group">
-                                            <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300 group-hover:text-slate-600" :class="expanded ? 'rotate-180' : ''"></i>
+                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-200/80 shadow-2xs group-hover:bg-brand-primary group-hover:border-brand-primary group-hover:text-white text-slate-400 transition-all">
+                                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="expanded ? 'rotate-180' : ''"></i>
                                         </div>
                                     </button>
                                     <div x-show="expanded" x-transition class="p-6 bg-slate-50/30" style="display: none;">
@@ -1065,7 +1127,7 @@
 
                 <!-- DRAFT WORKSPACE VIEW -->
                 @if($isWaitingForRevision)
-                    <div x-show="activeTab === 'draft'" style="display: none;">
+                    <div x-show="activeTab === 'draft'" role="tabpanel" id="panel-draft" aria-labelledby="tab-draft" style="display: none;">
                         <div class="bg-orange-50/50 rounded-3xl border border-orange-200 p-8 shadow-sm mb-6">
                             <div class="mb-8">
                                 <h3 class="text-xl font-bold text-orange-900 flex items-center gap-2 mb-2">
@@ -1341,22 +1403,22 @@
                             <!-- Animated Icon -->
                             <div class="relative w-24 h-24 mb-8">
                                 <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
-                                <div class="absolute inset-0 border-4 border-[#8B0000] rounded-full border-t-transparent animate-spin"></div>
+                                <div class="absolute inset-0 border-4 border-brand-primary rounded-full border-t-transparent animate-spin"></div>
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <i class="fas fa-cloud-upload-alt text-3xl text-[#8B0000] animate-bounce"></i>
+                                    <i class="fas fa-cloud-upload-alt text-3xl text-brand-primary animate-pulse"></i>
                                 </div>
                             </div>
                             <h3 class="text-2xl font-bold text-slate-900 mb-2">Uploading Research Files</h3>
                             <p class="text-slate-500 text-sm mb-8 max-w-sm">Please do not close this window or refresh the page. We are securely transferring your documents to our servers.</p>
                             <!-- Progress Bar Container -->
                             <div class="w-full bg-slate-100 rounded-full h-4 mb-4 relative overflow-hidden shadow-inner">
-                                <div id="upload-progress-bar" class="bg-gradient-to-r from-[#8B0000] to-red-600 h-full w-0 transition-all duration-300 ease-out shadow-lg relative">
+                                <div id="upload-progress-bar" class="bg-gradient-to-r from-brand-primary to-brand-secondary h-full w-0 transition-all duration-300 ease-out shadow-lg relative">
                                     <div class="absolute inset-0 bg-white/20 animate-shimmer"></div>
                                 </div>
                             </div>
                             <!-- Progress Stats -->
                             <div class="flex justify-between w-full text-sm font-bold">
-                                <span id="upload-percentage" class="text-[#8B0000]">0%</span>
+                                <span id="upload-percentage" class="text-brand-primary">0%</span>
                                 <span id="upload-size" class="text-slate-400">0 KB / 0 KB</span>
                             </div>
                         </div>

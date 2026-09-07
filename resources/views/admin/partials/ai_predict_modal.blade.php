@@ -1,5 +1,5 @@
 <!-- AI Predict Modal -->
-<div id="aiPredictModal" class="fixed inset-0 z-[60] hidden group" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-data="{ open: false }" @open-ai-predict-modal.window="open = true; setTimeout(() => $el.classList.remove('opacity-0'), 10);" @close-ai-predict-modal.window="open = false; $el.classList.add('opacity-0'); setTimeout(() => $el.classList.add('hidden'), 300);" :class="open ? '' : 'opacity-0'">
+<div id="aiPredictModal" class="fixed inset-0 z-[60] hidden group" aria-labelledby="ai-predict-modal-heading" role="dialog" aria-modal="true" x-data="{ open: false }" @open-ai-predict-modal.window="open = true; setTimeout(() => $el.classList.remove('opacity-0'), 10);" @close-ai-predict-modal.window="open = false; $el.classList.add('opacity-0'); setTimeout(() => $el.classList.add('hidden'), 300);" @keydown.escape.window="if (open) $dispatch('close-ai-predict-modal')" :class="open ? '' : 'opacity-0'">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300" aria-hidden="true" @click="$dispatch('close-ai-predict-modal')"></div>
 
@@ -10,10 +10,10 @@
                  :class="open ? 'scale-100 opacity-100' : 'scale-95 opacity-0'">
                 
                 <div class="bg-[#0f172a] px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2" id="ai-predict-modal-heading">
                         <i class="fas fa-magic text-[#8B0000]"></i> AI Review Prediction
                     </h3>
-                    <button type="button" @click="$dispatch('close-ai-predict-modal')" class="text-slate-400 hover:text-white transition-colors">
+                    <button type="button" @click="$dispatch('close-ai-predict-modal')" aria-label="Close AI prediction modal" class="text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-slate-400 rounded-lg p-1 transition-colors">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
@@ -30,23 +30,25 @@
                             <div class="absolute inset-0 border-4 border-[#8B0000] rounded-full border-t-transparent animate-spin"></div>
                             <i class="fas fa-robot absolute inset-0 flex items-center justify-center text-lg text-[#8B0000] animate-pulse"></i>
                         </div>
-                        <span class="text-xs font-extrabold uppercase tracking-widest text-[#8B0000] leading-tight">Analyzing Title...</span>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-600 leading-tight">Analyzing Title...</span>
                     </div>
 
                     <div id="ai-predict-result" class="hidden">
-                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-5 mb-6 text-center">
-                            <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-wider mb-2">Suggested Review Type</p>
-                            <h4 class="text-xl font-black text-indigo-900" id="ai-predict-suggested-label">Exempt Review</h4>
+                        <div class="bg-red-50/60 border border-red-100/90 rounded-xl p-5 mb-6 text-center">
+                            <span class="inline-flex items-center gap-1.5 text-[11px] text-[#8B0000] font-semibold uppercase tracking-wider mb-2">
+                                <i class="fas fa-magic text-[10px]"></i> Suggested Review Type
+                            </span>
+                            <h4 class="text-lg font-bold text-slate-900" id="ai-predict-suggested-label">Exempt Review</h4>
                         </div>
                         
                         <input type="hidden" id="ai-predict-protocol-id" value="">
                         
                         <div class="flex gap-3">
-                            <button type="button" id="ai-predict-cancel-btn" @click="$dispatch('close-ai-predict-modal')" class="flex-1 py-2.5 px-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all text-center">
+                            <button type="button" id="ai-predict-cancel-btn" @click="$dispatch('close-ai-predict-modal')" class="flex-1 py-2.5 px-4 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all text-center">
                                 Cancel
                             </button>
-                            <button type="button" onclick="saveAiPrediction()" id="ai-predict-save-btn" class="flex-1 flex py-2.5 px-4 bg-[#8B0000] text-white rounded-xl text-sm font-bold shadow-lg shadow-red-900/20 hover:bg-red-800 hover:-translate-y-0.5 transition-all justify-center items-center gap-2">
-                                Save Prediction <i class="fas fa-save"></i>
+                            <button type="button" onclick="saveAiPrediction()" id="ai-predict-save-btn" class="flex-1 flex py-2.5 px-4 bg-[#8B0000] text-white rounded-xl text-sm font-semibold shadow-2xs hover:bg-[#6d0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 transition-all justify-center items-center gap-2">
+                                Save Prediction <i class="fas fa-save text-xs"></i>
                             </button>
                         </div>
                     </div>
@@ -55,8 +57,8 @@
                         <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3">
                             <i class="fas fa-exclamation-triangle text-xl"></i>
                         </div>
-                        <h4 class="text-sm font-bold text-slate-900 mb-1">Prediction Failed</h4>
-                        <p class="text-xs text-slate-500" id="ai-predict-error-msg">The AI service is currently unavailable.</p>
+                        <h4 class="text-sm font-bold text-slate-900 mb-1">Prediction Unavailable</h4>
+                        <p class="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed" id="ai-predict-error-msg">The AI prediction service is temporarily unavailable. You can still set the review classification manually.</p>
                     </div>
                 </div>
             </div>
@@ -120,7 +122,7 @@
             if (res.status === 503 && retryCount < maxRetries) {
                 // Model is loading, retry after delay
                 retryCount++;
-                loader.querySelector('span').innerHTML = `Model Loading... (Attempt ${retryCount}/${maxRetries})`;
+                loader.querySelector('span').innerHTML = `Model Initializing... (Attempt ${retryCount}/${maxRetries})`;
                 setTimeout(makePrediction, 3000);
                 return;
             }
@@ -137,14 +139,14 @@
             } else {
                 errorContainer.classList.remove('hidden');
                 if (data.message) document.getElementById('ai-predict-error-msg').innerText = data.message;
-                else if (data.loading) document.getElementById('ai-predict-error-msg').innerText = 'Model is still loading. Please try again in a moment.';
+                else if (data.loading) document.getElementById('ai-predict-error-msg').innerText = 'The AI review model is initializing. Please try again in a few moments.';
             }
         })
         .catch(err => {
             console.error('AI Predict Error:', err);
             loader.classList.add('hidden');
             errorContainer.classList.remove('hidden');
-            document.getElementById('ai-predict-error-msg').innerText = 'Network error. Please check your connection and try again.';
+            document.getElementById('ai-predict-error-msg').innerText = 'Unable to reach the prediction service. Please verify your connection and try again.';
         });
     }
     

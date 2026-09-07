@@ -32,6 +32,27 @@ Route::post('/admin/predict/suggest-reviewer', [App\Http\Controllers\PredictCont
 
 Route::post('/predict-model', [\App\Http\Controllers\PredictionController::class, 'predict'])->name('predict.model');
 
+if (app()->environment('local')) {
+    Route::get('/dev-login-reviewer', function () {
+        $user = \App\Models\User::where('role', 'reviewer')->first();
+        if ($user) {
+            Auth::login($user);
+            return redirect()->route('reviewer.dashboard');
+        }
+        return 'No reviewer user found';
+    });
+
+    Route::get('/dev-login-researcher', function () {
+        $user = \App\Models\User::where('email', 'jdom@gmail.com')->first()
+            ?? \App\Models\User::where('role', 'researcher')->first();
+        if ($user) {
+            Auth::login($user);
+            return redirect()->route('submit');
+        }
+        return 'No researcher user found';
+    });
+}
+
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login');

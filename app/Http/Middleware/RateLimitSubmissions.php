@@ -124,11 +124,34 @@ class RateLimitSubmissions
         $dailyCount = Cache::get($dailyKey, 0);
         Cache::put($dailyKey, $dailyCount + 1, 86400);
 
-        // Log submission attempt for audit trail
-        $this->logSubmissionAttempt($researcher->id, 'attempted', null);
-
         // Proceed with request
-        return $next($request);
+        $response = $next($request);
+
+        // If submission failed due to validation (422) or client-side form issues,
+        // rollback quota counters so researchers are not locked out for fixing form errors
+        if ($response->getStatusCode() === 422) {
+            $currHourly = Cache::get($hourlyKey, 1);
+            Cache::put($hourlyKey, max(0, $currHourly - 1), 3600);
+
+            $currDaily = Cache::get($dailyKey, 1);
+            Cache::put($dailyKey, max(0, $currDaily - 1), 86400);
+
+            // Roll back the latest timestamp
+            $submissionTimes = Cache::get("submission_times:{$researcher->id}", []);
+            if (!empty($submissionTimes)) {
+                array_pop($submissionTimes);
+                Cache::put("submission_times:{$researcher->id}", $submissionTimes, 86400);
+            }
+
+            // Remove cooldown so they can immediately correct and resubmit
+            Cache::forget($cooldownKey);
+            Cache::forget("submission_cooldown_time:{$researcher->id}");
+        }
+
+        // Log submission attempt for audit trail with actual status code
+        $this->logSubmissionAttempt($researcher->id, $response->isSuccessful() ? 'completed' : 'failed', $response->getStatusCode());
+
+        return $response;
     }
 
     /**

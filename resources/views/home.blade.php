@@ -1,25 +1,25 @@
 <x-user_layout>
     <x-skeleton-loader />
     
-    <div id="page-content" style="display: none;" class="max-w-5xl mx-auto animate-[fadeInUp_0.5s_ease-out]">
+    <div id="page-content" style="display: none;" class="max-w-5xl mx-auto pb-28 sm:pb-12 animate-[fadeInUp_0.5s_ease-out]">
 
-        <!-- Welcome Section & Primary Action (Adapted for Mobile & Desktop) -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8 pt-3 md:pt-5">
+        <!-- Welcome Section & Primary Action (Desktop/Tablet Only) -->
+        <div class="flex items-center justify-between gap-4 mb-6 md:mb-8 pt-3 md:pt-5 border-b border-slate-200/80 pb-4 md:pb-6">
             <div>
                 <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 font-heading tracking-tight leading-tight">
                     Welcome back, <span class="text-brand-primary">{{ explode(' ', Auth::user()->first_name)[0] }}</span>!
                 </h1>
                 <p class="text-slate-500 mt-1 md:mt-2 text-sm md:text-base">Here is the status of your research submissions.</p>
             </div>
-            
-            <a href="{{ route('submit') }}" class="group inline-flex items-center justify-center gap-2 bg-brand-primary text-white px-5 py-3 sm:py-2.5 rounded-xl font-bold shadow-md shadow-brand-primary/20 hover:bg-brand-secondary hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shrink-0 text-sm md:text-base min-h-[44px]">
+
+            <a href="{{ route('submit') }}" class="hidden sm:inline-flex group items-center justify-center gap-2 bg-brand-primary text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-brand-primary/20 hover:bg-brand-secondary hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shrink-0 text-sm md:text-base min-h-[44px]">
                 <i class="fas fa-plus-circle text-base group-hover:rotate-90 transition-transform duration-300" aria-hidden="true"></i>
                 <span>New Submission</span>
             </a>
         </div>
 
         <!-- Global Validation Errors (e.g., OR Upload failures) -->
-        @if($errors->any())
+        @if(isset($errors) && $errors->any())
             <div role="alert" class="mb-8 p-5 bg-red-50/90 border border-red-200/80 rounded-2xl shadow-xs animate-[fadeIn_0.3s_ease-out] motion-reduce:animate-none">
                 <div class="flex items-start gap-3.5">
                     <div class="w-9 h-9 rounded-xl bg-red-100 text-brand-primary flex items-center justify-center shrink-0" aria-hidden="true">
@@ -57,11 +57,11 @@
                     @php
                         // Tracker Logic
                         $steps = [
-                            1 => ['label' => 'Submission', 'icon' => 'fa-paper-plane'],
-                            2 => ['label' => 'Review', 'icon' => 'fa-search'],
-                            3 => ['label' => 'Revision', 'icon' => 'fa-edit'],
-                            4 => ['label' => 'Deliberation', 'icon' => 'fa-clipboard-check'],
-                            5 => ['label' => 'Certificate', 'icon' => 'fa-certificate'],
+                            1 => ['label' => 'Submission', 'short' => 'Submit', 'icon' => 'fa-paper-plane'],
+                            2 => ['label' => 'Review', 'short' => 'Review', 'icon' => 'fa-search'],
+                            3 => ['label' => 'Revision', 'short' => 'Revise', 'icon' => 'fa-edit'],
+                            4 => ['label' => 'Deliberation', 'short' => 'Panel', 'icon' => 'fa-clipboard-check'],
+                            5 => ['label' => 'Certificate', 'short' => 'Cert', 'icon' => 'fa-certificate'],
                         ];
 
                         $currentStep = 1;
@@ -124,24 +124,40 @@
                             <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-2 md:mb-4">
                                 <!-- Left Content -->
                                 <div class="flex-1">
-                                    <h2 class="text-xl md:text-3xl font-extrabold text-slate-900 leading-snug md:leading-tight tracking-tight max-w-3xl mb-3 pl-1 mt-1 break-words hyphens-auto">
-                                        {{ $title->Study_Protocol_title }}
-                                    </h2>
-                                    
-                                    <div class="flex items-center flex-wrap gap-2 pl-1 mt-2">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-{{ $statusColor }}-50 text-{{ $statusColor }}-700 tracking-wide uppercase mr-2 shadow-sm border border-{{ $statusColor }}-100/50">
-                                            <i class="fas {{ $statusIcon }}" aria-hidden="true"></i>
-                                            {{ $title->Status ?? $title->status ?? 'Pending' }}
-                                        </span>
+                                    <div class="flex items-start justify-between gap-3 mb-2 md:mb-3">
+                                        <h2 class="text-xl md:text-3xl font-extrabold text-slate-900 leading-snug md:leading-tight tracking-tight max-w-3xl pl-1 mt-0.5 break-words hyphens-auto flex-1">
+                                            {{ $title->Study_Protocol_title }}
+                                        </h2>
                                         
-                                        <span class="text-slate-500 font-medium text-sm flex items-center gap-1.5 mr-3" title="Date Submitted">
+                                        <!-- Status Badge (Mobile Top-Right) -->
+                                        <div class="md:hidden shrink-0 pt-0.5">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-{{ $statusColor }}-50 text-{{ $statusColor }}-700 tracking-wide uppercase shadow-2xs border border-{{ $statusColor }}-100/60 whitespace-nowrap">
+                                                <i class="fas {{ $statusIcon }}" aria-hidden="true"></i>
+                                                {{ $title->Status ?? $title->status ?? 'Pending' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center flex-wrap gap-2.5 sm:gap-2 pl-1 mt-1 sm:mt-2">
+                                        <!-- Desktop Status Badge -->
+                                        <div class="hidden md:flex items-center shrink-0">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-{{ $statusColor }}-50 text-{{ $statusColor }}-700 tracking-wide uppercase shadow-2xs border border-{{ $statusColor }}-100/50">
+                                                <i class="fas {{ $statusIcon }}" aria-hidden="true"></i>
+                                                {{ $title->Status ?? $title->status ?? 'Pending' }}
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- Date, Details, and Logs -->
+                                        <span class="text-slate-500 font-medium text-xs sm:text-sm flex items-center gap-1.5 sm:mr-2 shrink-0" title="Date Submitted">
                                             <i class="far fa-calendar-alt text-slate-400" aria-hidden="true"></i> {{ $title->created_at->format('M d, Y') }}
                                         </span>
-                                        <button type="button" aria-haspopup="dialog" aria-expanded="false" onclick="document.getElementById('info-modal-{{ $title->id }}').showModal()" class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 bg-transparent px-3 py-1.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors min-h-[36px] focus-visible:ring-2 focus-visible:ring-brand-primary focus:outline-none cursor-pointer">
-                                            <i class="fas fa-info-circle text-slate-400" aria-hidden="true"></i> Details
+                                        <button type="button" aria-haspopup="dialog" aria-expanded="false" onclick="document.getElementById('info-modal-{{ $title->id }}').showModal()" class="text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200/80 sm:bg-transparent sm:hover:bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors min-h-[32px] sm:min-h-[36px] focus-visible:ring-2 focus-visible:ring-brand-primary focus:outline-none cursor-pointer border border-slate-200/60 sm:border-transparent">
+                                            <i class="fas fa-info-circle text-slate-400 text-xs sm:text-sm" aria-hidden="true"></i>
+                                            <span>Details</span>
                                         </button>
-                                        <button type="button" aria-haspopup="dialog" aria-expanded="false" onclick="document.getElementById('log-modal-{{ $title->id }}').showModal()" class="text-slate-600 hover:text-indigo-700 hover:bg-slate-100 bg-transparent px-3 py-1.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors min-h-[36px] focus-visible:ring-2 focus-visible:ring-brand-primary focus:outline-none cursor-pointer">
-                                            <i class="fas fa-history text-slate-400" aria-hidden="true"></i> Logs
+                                        <button type="button" aria-haspopup="dialog" aria-expanded="false" onclick="document.getElementById('log-modal-{{ $title->id }}').showModal()" class="text-slate-600 hover:text-indigo-700 bg-slate-100/80 hover:bg-slate-200/80 sm:bg-transparent sm:hover:bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors min-h-[32px] sm:min-h-[36px] focus-visible:ring-2 focus-visible:ring-brand-primary focus:outline-none cursor-pointer border border-slate-200/60 sm:border-transparent">
+                                            <i class="fas fa-history text-slate-400 text-xs sm:text-sm" aria-hidden="true"></i>
+                                            <span>Logs</span>
                                         </button>
                                     </div>
                                 </div>
@@ -182,65 +198,51 @@
                                 </div>
                             </div>
 
-                            <!-- Original Mobile Tracker (2 rows) -->
-                            <!-- Mobile Tracker -->
-                            <div class="md:hidden pt-2 relative mt-0">
-                                <!-- First Row (3 steps: Submission, Review, Revision) -->
-                                <div class="relative px-1 mb-6">
-                                    <!-- Background Line -->
-                                    <div class="absolute top-3 left-4 right-4 h-1.5 bg-slate-100 rounded-full z-0"></div>
-                                    <!-- Progress Line -->
-                                    <div class="absolute top-3 left-4 h-1.5 bg-brand-primary rounded-full z-0 transition-all duration-1000 ease-out"
-                                         style="width: calc({{ min($currentStep, 3) === 1 ? 0 : ($currentStep >= 3 ? 100 : (($currentStep - 1) / 2 * 100)) }}%)"></div>
-
-                                    <!-- Steps -->
-                                    <div class="flex justify-between relative z-10 w-full px-2">
-                                        @foreach([1, 2, 3] as $step)
-                                             @php 
-                                                $data = $steps[$step];
-                                                $isActive = $step <= $currentStep; 
-                                                $isCurrent = $step === $currentStep; 
-                                            @endphp
-                                            <div class="flex flex-col items-center gap-0.5 group">
-                                                <div class="w-6 h-6 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 bg-white relative z-10 {{ $isActive ? 'border-brand-primary text-brand-primary' : 'border-slate-200 text-slate-300' }} {{ $isCurrent ? 'scale-105 shadow-md shadow-brand-primary/20 ring-2 ring-brand-primary/10' : '' }}">
-                                                    <i class="fas {{ $data['icon'] }} {{ $isActive ? '' : 'text-slate-300' }} text-[7px]" aria-hidden="true"></i>
-                                                </div>
-                                                <span class="block text-[8px] font-bold uppercase tracking-wide transition-colors duration-300 text-center {{ $isActive ? 'text-brand-primary' : 'text-slate-500' }} leading-tight max-w-[45px] line-clamp-2">
-                                                    {{ $data['label'] }}
-                                                </span>
-                                            </div>
-                                        @endforeach
+                            <!-- Mobile Progress Stepper (Single Fluid Track) -->
+                            <div class="md:hidden pt-4 pb-2 border-t border-slate-100/80 mt-3">
+                                <!-- Horizontal Track & Nodes -->
+                                <div class="relative">
+                                    <!-- Background Track Line (centered through 28px nodes at top: 14px) -->
+                                    <div class="absolute top-[14px] left-[20px] right-[20px] h-1 bg-slate-200/70 rounded-full z-0 overflow-hidden">
+                                        <!-- Animated Progress Fill -->
+                                        <div class="h-full bg-brand-primary rounded-full transition-all duration-700 ease-out"
+                                             style="width: {{ ($currentStep - 1) / 4 * 100 }}%"></div>
                                     </div>
-                                </div>
 
-                                <!-- Second Row (2 steps: Deliberation, Certificate) -->
-                                <div class="relative px-1">
-                                    <!-- Background Line -->
-                                    <div class="absolute top-3 left-4 right-4 h-1.5 bg-slate-100 rounded-full z-0"></div>
-                                    <!-- Progress Line -->
-                                    <div class="absolute top-3 left-4 h-1.5 bg-brand-primary rounded-full z-0 transition-all duration-1000 ease-out"
-                                         style="width: calc({{ $currentStep <= 3 ? 0 : (($currentStep - 3) / 2 * 100) }}%)"></div>
-
-                                    <!-- Steps -->
-                                    <div class="flex justify-between relative z-10 w-full px-8">
-                                        @foreach([4, 5] as $step)
+                                    <!-- 5 Connected Step Nodes -->
+                                    <div class="flex justify-between items-start relative z-10 w-full">
+                                        @foreach($steps as $step => $data)
                                             @php 
-                                                $data = $steps[$step];
-                                                $isActive = $step <= $currentStep; 
-                                                $isCurrent = $step === $currentStep; 
+                                                $isPassed = $step < $currentStep;
+                                                $isCurrent = $step === $currentStep;
+                                                $isUpcoming = $step > $currentStep;
                                             @endphp
-                                            <div class="flex flex-col items-center gap-0.5 group">
-                                                <div class="w-6 h-6 shrink-0 rounded-full flex items-center justify-center border-2 transition-all duration-300 bg-white relative z-10 {{ $isActive ? 'border-brand-primary text-brand-primary' : 'border-slate-200 text-slate-300' }} {{ $isCurrent ? 'scale-105 shadow-md shadow-brand-primary/20 ring-2 ring-brand-primary/10' : '' }}">
-                                                    <i class="fas {{ $data['icon'] }} {{ $isActive ? '' : 'text-slate-300' }} text-[7px]" aria-hidden="true"></i>
+                                            <div class="flex flex-col items-center group w-10 shrink-0">
+                                                <!-- Step Node Icon Bubble (28px) -->
+                                                <div class="w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 relative z-10 shadow-2xs
+                                                    @if($isPassed)
+                                                        bg-brand-primary border-brand-primary text-white
+                                                    @elseif($isCurrent)
+                                                        bg-white border-brand-primary text-brand-primary ring-4 ring-red-100 shadow-md scale-110
+                                                    @else
+                                                        bg-white border-slate-200 text-slate-300
+                                                    @endif">
+                                                    @if($isPassed)
+                                                        <i class="fas fa-check text-[9px]" aria-hidden="true"></i>
+                                                    @else
+                                                        <i class="fas {{ $data['icon'] }} text-[9px]" aria-hidden="true"></i>
+                                                    @endif
                                                 </div>
-                                                <span class="block text-[8px] font-bold uppercase tracking-wide transition-colors duration-300 text-center {{ $isActive ? 'text-brand-primary' : 'text-slate-500' }} leading-tight max-w-[45px] line-clamp-2">
-                                                    {{ $data['label'] }}
+
+                                                <!-- Compact Step Label -->
+                                                <span class="block text-[9px] font-bold uppercase tracking-wider mt-1.5 text-center leading-tight transition-colors
+                                                    {{ $isCurrent ? 'text-brand-primary font-black scale-105' : ($isPassed ? 'text-slate-700 font-semibold' : 'text-slate-400') }}">
+                                                    {{ $data['short'] }}
                                                 </span>
                                             </div>
                                         @endforeach
                                     </div>
                                 </div>
-                                <div class="h-4"></div>
                             </div>
 
                             <!-- Original Desktop Tracker -->
@@ -408,7 +410,7 @@
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                                                     @foreach($title->assigned_reviewers as $reviewerId)
                                                         @php
-                                                            $reviewerUser = \App\Models\User::find($reviewerId);
+                                                            $reviewerUser = isset($reviewers) ? ($reviewers[$reviewerId] ?? null) : \App\Models\User::find($reviewerId);
                                                         @endphp
                                                         @if($reviewerUser)
                                                             <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100">

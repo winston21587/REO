@@ -49,8 +49,19 @@ class Research_title_Controller extends Controller
 
         // 2. Dynamic Validation for Files
         $requirements = DocumentRequirement::all();
+        $customAttributes = [
+            'Study_Protocol_title' => 'Study Protocol Title',
+            'Research_Category' => 'Research Category',
+            'research_type' => 'Research Type',
+            'project_type' => 'Project Type',
+            'Adviser' => 'Adviser Name',
+        ];
+        $customMessages = [];
+
         foreach ($requirements as $req) {
             $field = 'files.' . $req->id;
+            $customAttributes[$field] = $req->name;
+            $customAttributes[$field . '.*'] = $req->name;
 
             // Build Validation Rules
             $fileRules = ['file', 'max:25600']; // Max 25MB
@@ -60,16 +71,24 @@ class Research_title_Controller extends Controller
             $types = explode(',', $req->file_type);
             foreach ($types as $type) {
                 $type = trim($type);
-                if ($type === 'PDF')
+                if (strcasecmp($type, 'PDF') === 0)
                     $mimes[] = 'pdf';
-                if ($type === 'Word')
+                if (strcasecmp($type, 'Word') === 0)
                     array_push($mimes, 'doc', 'docx');
-                if ($type === 'Others')
+                if (strcasecmp($type, 'Others') === 0)
                     array_push($mimes, 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp');
             }
             if (!empty($mimes)) {
+                $mimes = array_values(array_unique($mimes));
                 $fileRules[] = 'mimes:' . implode(',', $mimes);
             }
+
+            $readableMimes = !empty($mimes) ? implode(', ', array_map('strtoupper', $mimes)) : 'PDF, DOC, DOCX';
+            $customMessages[$field . '.required'] = "The {$req->name} document is required.";
+            $customMessages[$field . '.mimes'] = "The {$req->name} must be a file of type: {$readableMimes}.";
+            $customMessages[$field . '.max'] = "The {$req->name} must not exceed 25MB.";
+            $customMessages[$field . '.*.mimes'] = "Each file for {$req->name} must be of type: {$readableMimes}.";
+            $customMessages[$field . '.*.max'] = "Each file for {$req->name} must not exceed 25MB.";
 
             // Required / Array checks
             if ($req->is_multiple) {
@@ -88,7 +107,7 @@ class Research_title_Controller extends Controller
             }
         }
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, $customMessages, $customAttributes);
 
 
         // Handle "Other" category
@@ -165,6 +184,14 @@ class Research_title_Controller extends Controller
         // ✅ Attach files to pivot table
         $research->files()->attach($uploadedFileIds);
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Research title and all required documents successfully submitted!',
+                'redirect' => route('home'),
+            ]);
+        }
+
         return redirect(route('home'))->with('success', 'Research title and all required documents successfully submitted!');
     }
 
@@ -181,7 +208,11 @@ class Research_title_Controller extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(9);
 
-        return view('home', compact('titles'));
+        // Preload assigned reviewer users to prevent N+1 queries in details modal
+        $allReviewerIds = $titles->pluck('assigned_reviewers')->flatten()->filter()->unique();
+        $reviewers = \App\Models\User::whereIn('id', $allReviewerIds)->get()->keyBy('id');
+
+        return view('home', compact('titles', 'reviewers'));
     }
 
     // Show all files for a specific research title

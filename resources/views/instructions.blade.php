@@ -1,220 +1,318 @@
 <x-user_layout>
-    <x-skeleton-loader />
-    
-    <div id="page-content" style="display: none;" class="max-w-5xl mx-auto py-12 px-4 sm:px-6 animate-[fadeInUp_0.5s_ease-out]">
+    <div class="max-w-5xl mx-auto pt-2 pb-28 sm:py-12 px-4 sm:px-6 animate-[fadeInUp_0.5s_ease-out] relative">
 
-        <div class="text-center mb-10 md:mb-16">
+        <!-- Subtle Atmospheric Maroon Glow -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-72 bg-gradient-to-b from-red-100/40 via-red-50/20 to-transparent pointer-events-none -z-10 rounded-full blur-3xl" aria-hidden="true"></div>
+
+        <!-- Page Header -->
+        <header class="text-center mb-8 md:mb-16">
             @if(isset($contents['instructions_header_image']))
                 <img src="{{ asset($contents['instructions_header_image']) }}"
-                    class="w-full h-48 object-cover rounded-2xl mb-8 shadow-sm">
+                    class="w-full h-48 object-cover rounded-2xl mb-8 shadow-sm" 
+                    alt="{{ $contents['instructions_title'] ?? 'Submission Roadmap' }} Banner">
             @endif
-            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 font-heading">
-                {{ $contents['instructions_title'] ?? 'Submission Roadmap' }}</h1>
-            <p class="text-slate-500 mt-4 text-base md:text-lg max-w-2xl mx-auto">
+
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+                {{ $contents['instructions_title'] ?? 'Submission Roadmap' }}
+            </h1>
+
+            <p class="text-slate-600 font-medium mt-3 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
                 {{ $contents['instructions_intro'] ?? 'Follow these steps to ensure a smooth and successful ethics review process.' }}
             </p>
-        </div>
+        </header>
 
-        <!-- MOBILE VIEW (Vertical Stack) -->
+        <!-- MOBILE VIEW (Touch-Optimized Adaptive Cards with Connected Roadmap) -->
         <div class="md:hidden space-y-4">
 
             <!-- Step 1 Mobile -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <div class="flex items-center gap-3 mb-3">
-                    <span class="bg-[#8B0000] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">STEP
-                        1</span>
-                    <h3 class="font-bold text-slate-900 text-lg">Download Resources</h3>
+            <article class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 relative overflow-hidden">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                    <span class="inline-flex items-center justify-center bg-brand-primary text-white text-[11px] font-black px-3 py-1 rounded-full shadow-2xs tracking-wider">
+                        STAGE 01
+                    </span>
+                    <span class="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider">Initial Step</span>
                 </div>
-                <p class="text-sm text-slate-500 mb-4">Get copies of the Application Form and applicable Assessment
-                    Forms from our library.</p>
+                <h2 class="font-black text-slate-900 text-lg leading-snug mb-1.5">
+                    Download Resources
+                </h2>
+                <p class="text-xs text-slate-600 mb-4 leading-relaxed font-medium">
+                    Get copies of the Application Form and applicable Assessment Forms from our library.
+                </p>
                 <a href="{{ route('resources') }}"
-                    class="w-full flex items-center justify-center gap-2 text-sm font-bold text-[#8B0000] bg-red-50 px-4 py-3 rounded-lg hover:bg-[#8B0000] hover:text-white transition-colors">
-                    <span class="material-symbols-outlined text-lg">source</span> Go to Resources
+                   aria-label="Navigate to Resource Library to download application and assessment forms"
+                   class="w-full min-h-[44px] flex items-center justify-center gap-2.5 text-sm font-extrabold text-brand-primary bg-red-50/90 border border-red-200/80 hover:bg-brand-primary hover:text-white px-5 py-3 rounded-xl transition-all duration-200 active:scale-[0.98] shadow-2xs group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                    <i class="fas fa-folder-open text-sm" aria-hidden="true"></i>
+                    <span>Go to Resources</span>
+                    <i class="fas fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform" aria-hidden="true"></i>
                 </a>
-            </div>
+            </article>
 
             <!-- Step 2 Mobile -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <div class="flex items-center gap-3 mb-3">
-                    <span
-                        class="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full border border-slate-200">STEP
-                        2</span>
-                    <h3 class="font-bold text-slate-900 text-lg">Prepare Documents</h3>
+            <article class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                    <span class="inline-flex items-center justify-center bg-slate-900 text-white text-[11px] font-black px-3 py-1 rounded-full shadow-2xs tracking-wider">
+                        STAGE 02
+                    </span>
+                    <span class="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider">Documentation</span>
                 </div>
-                <p class="text-sm text-slate-500 mb-4">Ensure all files are PDF (unless specified) and formatted
-                    correctly.</p>
-                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                    <ul class="space-y-2 text-sm text-slate-700 font-medium">
-                        <li class="flex items-center gap-2"><span class="text-green-500 text-lg">●</span> Application
-                            Form (Signed)</li>
-                        <li class="flex items-center gap-2"><span class="text-green-500 text-lg">●</span> Research
-                            Protocol (Lines)</li>
-                        <li class="flex items-center gap-2"><span class="text-green-500 text-lg">●</span> Technical
-                            Clearance</li>
-                        <li class="flex items-center gap-2"><span class="text-green-500 text-lg">●</span> Consent Forms
-                        </li>
-                        <li class="flex items-center gap-2"><span class="text-green-500 text-lg">●</span> CV of
-                            Researcher/s</li>
-                        <li class="flex items-center gap-2"><span class="text-green-500 text-lg">●</span> Assessment
-                            Forms (Word)</li>
-                    </ul>
+                <h2 class="font-black text-slate-900 text-lg leading-snug mb-1.5">
+                    Prepare Documents
+                </h2>
+                <p class="text-xs text-slate-600 mb-3.5 leading-relaxed font-medium">
+                    Ensure all files match format requirements before uploading to the portal.
+                </p>
+                <div class="grid grid-cols-1 gap-2 bg-slate-50/80 p-3 rounded-xl border border-slate-200/70">
+                    @php
+                        $mobileRequirements = [
+                            ['title' => 'Application Form (Signed)', 'ext' => 'PDF', 'isPdf' => true],
+                            ['title' => 'Research Protocol (Lines)', 'ext' => 'PDF', 'isPdf' => true],
+                            ['title' => 'Technical Clearance', 'ext' => 'PDF', 'isPdf' => true],
+                            ['title' => 'Consent Forms', 'ext' => 'PDF', 'isPdf' => true],
+                            ['title' => 'CV of Researcher/s', 'ext' => 'PDF', 'isPdf' => true],
+                            ['title' => 'Assessment Forms', 'ext' => 'DOCX', 'isPdf' => false]
+                        ];
+                    @endphp
+                    @foreach($mobileRequirements as $req)
+                        <div class="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200/80 shadow-2xs">
+                            <div class="flex items-center gap-2 min-w-0 pr-1">
+                                <i class="fas fa-check-circle text-emerald-500 text-xs shrink-0" aria-hidden="true"></i>
+                                <span class="text-xs font-bold text-slate-800 truncate">{{ $req['title'] }}</span>
+                            </div>
+                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded border shrink-0 {{ $req['isPdf'] ? 'bg-red-50 text-red-700 border-red-200/80' : 'bg-blue-50 text-blue-700 border-blue-200/80' }}">
+                                {{ $req['ext'] }}
+                            </span>
+                        </div>
+                    @endforeach
                 </div>
-            </div>
+            </article>
 
             <!-- Step 3 Mobile -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-[#8B0000]">
-                <div class="flex items-center gap-3 mb-3">
-                    <span
-                        class="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full border border-slate-200">STEP
-                        3</span>
-                    <h3 class="font-bold text-slate-900 text-lg">Upload Submission</h3>
+            <article class="bg-gradient-to-br from-white via-red-50/20 to-white p-5 rounded-2xl shadow-sm border border-red-200/90 ring-1 ring-red-100/90 relative overflow-hidden">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                    <span class="inline-flex items-center justify-center bg-brand-primary text-white text-[11px] font-black px-3 py-1 rounded-full shadow-2xs tracking-wider">
+                        STAGE 03 • CORE
+                    </span>
+                    <span class="text-[10px] font-black uppercase text-brand-primary tracking-wider">Key Action</span>
                 </div>
-                <p class="text-sm text-slate-500 mb-4">Upload your complied files to the portal.</p>
+                <h2 class="font-black text-slate-900 text-lg leading-snug mb-1.5">
+                    Upload Submission
+                </h2>
+                <p class="text-xs text-slate-600 mb-4 leading-relaxed font-medium">
+                    Upload your compiled files to the portal. Our AI will pre-screen for formatting errors.
+                </p>
                 <a href="{{ route('submit') }}"
-                    class="w-full flex items-center justify-center gap-2 text-sm font-bold text-white bg-[#8B0000] px-4 py-3 rounded-lg shadow-md shadow-red-900/20 active:scale-95 transition-transform">
-                    <span class="material-symbols-outlined text-lg">upload_file</span> Start Submission
+                   aria-label="Proceed to protocol submission page"
+                   class="w-full min-h-[44px] flex items-center justify-center gap-2.5 text-sm font-extrabold text-white bg-brand-primary hover:bg-brand-secondary px-5 py-3.5 rounded-xl shadow-md shadow-brand-primary/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                    <i class="fas fa-cloud-arrow-up text-base" aria-hidden="true"></i>
+                    <span>Start Submission</span>
+                    <i class="fas fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform" aria-hidden="true"></i>
                 </a>
-            </div>
+            </article>
 
             <!-- Step 4 Mobile -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <div class="flex items-center gap-3 mb-3">
-                    <span
-                        class="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full border border-slate-200">STEP
-                        4</span>
-                    <h3 class="font-bold text-slate-900 text-lg">Payment & Hard Copies</h3>
+            <article class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                    <span class="inline-flex items-center justify-center bg-slate-900 text-white text-[11px] font-black px-3 py-1 rounded-full shadow-2xs tracking-wider">
+                        STAGE 04
+                    </span>
+                    <span class="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider">Physical Copy</span>
                 </div>
-                <div class="text-sm text-slate-600 space-y-2">
-                    <p>1. Secure a Payment Slip from the REO Office and pay at the University Cashier.</p>
-                    <p>2. Submit hard copies in an <strong class="text-[#8B0000]">expanded long envelope</strong>
-                        (color-coded by college) with the Official Receipt.</p>
+                <h2 class="font-black text-slate-900 text-lg leading-snug mb-1.5">
+                    Payment & Hard Copies
+                </h2>
+                <div class="text-xs text-slate-600 space-y-2 leading-relaxed font-medium">
+                    <p>
+                        <span class="font-black text-slate-800">1.</span> Secure a Payment Slip from the REO Office and pay at the University Cashier.
+                    </p>
+                    <p>
+                        <span class="font-black text-slate-800">2.</span> Submit hard copies with the Official Receipt.
+                    </p>
                 </div>
-            </div>
+                <div class="mt-3 p-3 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-start gap-2.5">
+                    <i class="fas fa-envelope-open-text text-amber-600 text-sm shrink-0 mt-0.5" aria-hidden="true"></i>
+                    <p class="text-[11px] text-amber-900 leading-relaxed font-semibold">
+                        Use an <strong class="text-brand-primary font-black">expanded long envelope</strong> color-coded by college.
+                    </p>
+                </div>
+            </article>
 
-            <!-- Final Step Mobile -->
-            <div class="bg-green-50 p-5 rounded-xl border border-green-200 flex gap-4 items-start">
-                <span class="material-symbols-outlined text-3xl text-green-600 shrink-0 mt-1">flag</span>
+            <!-- Step 5 Mobile -->
+            <article class="bg-emerald-50/70 p-5 rounded-2xl border border-emerald-200/90 flex gap-3.5 items-start">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                    <i class="fas fa-flag-checkered text-base" aria-hidden="true"></i>
+                </div>
                 <div>
-                    <h3 class="font-bold text-green-900 text-lg mb-1">Wait for Review</h3>
-                    <p class="text-sm text-green-800">Monitor your dashboard for status updates. You will be notified if
-                        an appointment is needed.</p>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-emerald-800 block mb-0.5">Final Stage</span>
+                    <h2 class="font-black text-emerald-950 text-base sm:text-lg mb-1">
+                        Wait for Review
+                    </h2>
+                    <p class="text-xs text-emerald-800 font-medium leading-relaxed">
+                        Monitor your dashboard for status updates. You will be notified if an appointment or revisions are needed.
+                    </p>
                 </div>
-            </div>
+            </article>
 
         </div>
 
-        <!-- DESKTOP VIEW (Original Timeline) -->
+        <!-- DESKTOP VIEW (Connected Timeline Roadmap) -->
         <div class="hidden md:block relative">
-            <!-- Vertical Line -->
-            <div
-                class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-slate-200 via-slate-200 to-transparent">
-            </div>
 
-            <!-- Step 1 -->
-            <div class="relative flex gap-8 mb-16 group">
-                <div
-                    class="w-16 h-16 bg-white border-4 border-[#8B0000] rounded-full flex items-center justify-center z-10 shrink-0 shadow-lg shadow-red-900/10 transition-transform duration-300 group-hover:scale-110">
-                    <span class="text-2xl font-bold text-[#8B0000]">1</span>
+            <!-- Step 1 Desktop -->
+            <div class="relative flex gap-8 mb-12 group">
+                <!-- Connector to Stage 02 -->
+                <div class="absolute left-8 top-16 -bottom-12 w-0.5 -translate-x-1/2 bg-gradient-to-b from-brand-primary to-slate-300 pointer-events-none" aria-hidden="true"></div>
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-primary to-brand-secondary text-white flex items-center justify-center z-10 shrink-0 shadow-md shadow-brand-primary/25 transition-transform duration-300 group-hover:scale-105">
+                    <span class="text-xl font-black tracking-tight">01</span>
                 </div>
-                <div
-                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
-                    <div
-                        class="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-bl-full -mr-4 -mt-4 opacity-50 transition-transform group-hover:scale-150">
+                <article class="bg-white p-7 sm:p-8 rounded-2xl shadow-sm border border-slate-200/90 flex-1 hover:shadow-xl hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-28 h-28 bg-red-50/50 rounded-bl-full pointer-events-none -mr-4 -mt-4 transition-transform duration-300 group-hover:scale-125" aria-hidden="true"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-brand-primary bg-red-50 px-2.5 py-0.5 rounded-md border border-red-200/60">Stage 01 • Preparatory</span>
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-2.5 tracking-tight">
+                            Download Resources
+                        </h2>
+                        <p class="text-sm text-slate-600 mb-6 max-w-xl leading-relaxed font-medium">
+                            Get copies of the Application Form and applicable Assessment Forms from our library.
+                        </p>
+                        <a href="{{ route('resources') }}"
+                           aria-label="Navigate to Resource Library to download application and assessment forms"
+                           class="inline-flex items-center gap-2.5 text-sm font-extrabold text-brand-primary bg-red-50/90 border border-red-200/80 hover:bg-brand-primary hover:text-white px-5 py-2.5 rounded-xl transition-all duration-200 shadow-2xs hover:shadow-md group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                            <i class="fas fa-folder-open text-sm" aria-hidden="true"></i>
+                            <span>Go to Resources</span>
+                            <i class="fas fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform" aria-hidden="true"></i>
+                        </a>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3 relative z-10">Download Resources</h3>
-                    <p class="text-slate-600 mb-6 relative z-10">Get copies of the Application Form and applicable
-                        Assessment Forms from our library.</p>
-                    <a href="{{ route('resources') }}"
-                        class="inline-flex items-center gap-2 text-sm font-bold text-[#8B0000] bg-red-50 px-5 py-2.5 rounded-xl hover:bg-[#8B0000] hover:text-white transition-all duration-300 relative z-10">
-                        <span class="material-symbols-outlined text-lg">source</span> Go to Resources
-                    </a>
-                </div>
+                </article>
             </div>
 
-            <!-- Step 2 -->
-            <div class="relative flex gap-8 mb-16 group">
-                <div
-                    class="w-16 h-16 bg-white border-4 border-slate-200 group-hover:border-[#8B0000] rounded-full flex items-center justify-center z-10 shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110">
-                    <span
-                        class="text-2xl font-bold text-slate-400 group-hover:text-[#8B0000] transition-colors">2</span>
+            <!-- Step 2 Desktop -->
+            <div class="relative flex gap-8 mb-12 group">
+                <!-- Connector to Stage 03 -->
+                <div class="absolute left-8 top-16 -bottom-12 w-0.5 -translate-x-1/2 bg-gradient-to-b from-slate-300 to-brand-primary pointer-events-none" aria-hidden="true"></div>
+                <div class="w-16 h-16 rounded-2xl bg-white border-2 border-slate-300 group-hover:border-slate-900 text-slate-800 flex items-center justify-center z-10 shrink-0 shadow-sm transition-all duration-300 group-hover:scale-105">
+                    <span class="text-xl font-black tracking-tight">02</span>
                 </div>
-                <div
-                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Prepare Documents</h3>
-                    <p class="text-slate-600 mb-6">Ensure all files are PDF (unless specified) and formatted correctly.
-                    </p>
-                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
-                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700 font-medium">
-                            <li class="flex items-center gap-3"><i
-                                    class="fas fa-check-circle text-green-500 text-lg"></i> Application Form (Signed)
-                            </li>
-                            <li class="flex items-center gap-3"><i
-                                    class="fas fa-check-circle text-green-500 text-lg"></i> Research Protocol (Lines)
-                            </li>
-                            <li class="flex items-center gap-3"><i
-                                    class="fas fa-check-circle text-green-500 text-lg"></i> Technical Clearance</li>
-                            <li class="flex items-center gap-3"><i
-                                    class="fas fa-check-circle text-green-500 text-lg"></i> Consent Forms</li>
-                            <li class="flex items-center gap-3"><i
-                                    class="fas fa-check-circle text-green-500 text-lg"></i> CV of Researcher/s</li>
-                            <li class="flex items-center gap-3"><i
-                                    class="fas fa-check-circle text-green-500 text-lg"></i> Assessment Forms (Word)</li>
-                        </ul>
+                <article class="bg-white p-7 sm:p-8 rounded-2xl shadow-sm border border-slate-200/90 flex-1 hover:shadow-xl hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200/80">Stage 02 • Documentation</span>
                     </div>
-                </div>
-            </div>
-
-            <!-- Step 3 -->
-            <div class="relative flex gap-8 mb-16 group">
-                <div
-                    class="w-16 h-16 bg-white border-4 border-slate-200 group-hover:border-[#8B0000] rounded-full flex items-center justify-center z-10 shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110">
-                    <span
-                        class="text-2xl font-bold text-slate-400 group-hover:text-[#8B0000] transition-colors">3</span>
-                </div>
-                <div
-                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-l-4 border-l-transparent hover:border-l-[#8B0000]">
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Upload Submission</h3>
-                    <p class="text-slate-600 mb-6">Upload your complied files to the portal. Our AI will pre-screen for
-                        formatting errors.</p>
-                    <a href="{{ route('submit') }}"
-                        class="inline-flex items-center gap-2 text-sm font-bold text-white bg-[#8B0000] px-6 py-3 rounded-xl hover:bg-red-800 hover:shadow-lg hover:shadow-red-900/30 transition-all duration-300 transform hover:-translate-y-0.5">
-                        <span class="material-symbols-outlined text-lg">upload_file</span> Start Submission
-                    </a>
-                </div>
-            </div>
-
-            <!-- Step 4 -->
-            <div class="relative flex gap-8 mb-16 group">
-                <div
-                    class="w-16 h-16 bg-white border-4 border-slate-200 group-hover:border-[#8B0000] rounded-full flex items-center justify-center z-10 shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110">
-                    <span
-                        class="text-2xl font-bold text-slate-400 group-hover:text-[#8B0000] transition-colors">4</span>
-                </div>
-                <div
-                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Payment & Hard Copies</h3>
-                    <p class="text-slate-600 leading-relaxed">
-                        1. Secure a Payment Slip from the REO Office and pay at the University Cashier.<br>
-                        2. Submit hard copies in an <strong class="text-[#8B0000]">expanded long envelope</strong>
-                        (color-coded by college) with the Official Receipt.
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-2.5 tracking-tight">
+                        Prepare Documents
+                    </h2>
+                    <p class="text-sm text-slate-600 mb-5 leading-relaxed font-medium">
+                        Ensure all files adhere to mandatory formatting and file type requirements.
                     </p>
-                </div>
+                    
+                    <!-- Tactile Document Grid -->
+                    <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            @php
+                                $desktopRequirements = [
+                                    ['title' => 'Application Form (Signed)', 'ext' => 'PDF', 'isPdf' => true],
+                                    ['title' => 'Research Protocol (Lines)', 'ext' => 'PDF', 'isPdf' => true],
+                                    ['title' => 'Technical Clearance', 'ext' => 'PDF', 'isPdf' => true],
+                                    ['title' => 'Consent Forms', 'ext' => 'PDF', 'isPdf' => true],
+                                    ['title' => 'CV of Researcher/s', 'ext' => 'PDF', 'isPdf' => true],
+                                    ['title' => 'Assessment Forms', 'ext' => 'DOCX', 'isPdf' => false]
+                                ];
+                            @endphp
+                            @foreach($desktopRequirements as $req)
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+                                    <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                                        <i class="fas fa-check-circle text-emerald-500 text-sm shrink-0" aria-hidden="true"></i>
+                                        <span class="text-xs font-bold text-slate-800 truncate">{{ $req['title'] }}</span>
+                                    </div>
+                                    <span class="text-[9px] font-black px-2 py-0.5 rounded border shrink-0 {{ $req['isPdf'] ? 'bg-red-50 text-red-700 border-red-200/80' : 'bg-blue-50 text-blue-700 border-blue-200/80' }}">
+                                        {{ $req['ext'] }}
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </article>
             </div>
 
-            <!-- Final Step -->
+            <!-- Step 3 Desktop -->
+            <div class="relative flex gap-8 mb-12 group">
+                <!-- Connector to Stage 04 -->
+                <div class="absolute left-8 top-16 -bottom-12 w-0.5 -translate-x-1/2 bg-gradient-to-b from-brand-primary to-slate-300 pointer-events-none" aria-hidden="true"></div>
+                <div class="w-16 h-16 rounded-2xl bg-brand-primary border-2 border-brand-primary text-white flex items-center justify-center z-10 shrink-0 shadow-md shadow-brand-primary/25 ring-4 ring-red-100 transition-transform duration-300 group-hover:scale-105">
+                    <span class="text-xl font-black tracking-tight">03</span>
+                </div>
+                <article class="bg-gradient-to-br from-white via-red-50/20 to-white p-7 sm:p-8 rounded-2xl shadow-sm border border-red-200/90 ring-1 ring-red-100/90 flex-1 hover:shadow-xl hover:border-red-300 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-red-100/40 rounded-bl-full pointer-events-none -mr-4 -mt-4 transition-transform duration-300 group-hover:scale-125" aria-hidden="true"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-brand-primary bg-red-50 px-2.5 py-0.5 rounded-md border border-red-200/60">Stage 03 • Core Action</span>
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-2.5 tracking-tight">
+                            Upload Submission
+                        </h2>
+                        <p class="text-sm text-slate-600 mb-6 max-w-xl leading-relaxed font-medium">
+                            Upload your compiled files to the portal. Our AI will pre-screen for formatting errors.
+                        </p>
+                        <a href="{{ route('submit') }}"
+                           aria-label="Proceed to protocol submission page"
+                           class="inline-flex items-center gap-2.5 text-sm font-extrabold text-white bg-brand-primary hover:bg-brand-secondary px-6 py-3.5 rounded-xl shadow-md shadow-brand-primary/20 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95 group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
+                            <i class="fas fa-cloud-arrow-up text-base" aria-hidden="true"></i>
+                            <span>Start Submission</span>
+                            <i class="fas fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Step 4 Desktop -->
+            <div class="relative flex gap-8 mb-12 group">
+                <!-- Connector to Stage 05 -->
+                <div class="absolute left-8 top-16 -bottom-12 w-0.5 -translate-x-1/2 bg-gradient-to-b from-slate-300 to-emerald-500 pointer-events-none" aria-hidden="true"></div>
+                <div class="w-16 h-16 rounded-2xl bg-white border-2 border-slate-300 group-hover:border-slate-900 text-slate-800 flex items-center justify-center z-10 shrink-0 shadow-sm transition-all duration-300 group-hover:scale-105">
+                    <span class="text-xl font-black tracking-tight">04</span>
+                </div>
+                <article class="bg-white p-7 sm:p-8 rounded-2xl shadow-sm border border-slate-200/90 flex-1 hover:shadow-xl hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200/80">Stage 04 • Physical Copy</span>
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-2.5 tracking-tight">
+                        Payment & Hard Copies
+                    </h2>
+                    <div class="text-sm text-slate-600 space-y-2 leading-relaxed font-medium">
+                        <p>
+                            <span class="font-black text-slate-900">1.</span> Secure a Payment Slip from the REO Office and pay at the University Cashier.
+                        </p>
+                        <p>
+                            <span class="font-black text-slate-900">2.</span> Submit hard copies accompanied by the Official Receipt.
+                        </p>
+                    </div>
+                    <div class="mt-4 p-4 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-start gap-3">
+                        <i class="fas fa-envelope-open-text text-amber-600 text-base shrink-0 mt-0.5" aria-hidden="true"></i>
+                        <p class="text-xs text-amber-900 leading-relaxed font-semibold">
+                            Physical copies must be packaged in an <strong class="text-brand-primary font-black">expanded long envelope</strong> color-coded by college.
+                        </p>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Step 5 Desktop -->
             <div class="relative flex gap-8 group">
-                <div
-                    class="w-16 h-16 bg-green-50 border-4 border-green-500 rounded-full flex items-center justify-center z-10 shrink-0 shadow-lg shadow-green-900/10 transition-transform duration-300 group-hover:scale-110">
-                    <span class="material-symbols-outlined text-3xl text-green-600">flag</span>
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white flex items-center justify-center z-10 shrink-0 shadow-md shadow-emerald-600/25 transition-transform duration-300 group-hover:scale-105">
+                    <i class="fas fa-flag-checkered text-xl" aria-hidden="true"></i>
                 </div>
-                <div
-                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex-1 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Wait for Review</h3>
-                    <p class="text-slate-600">Monitor your dashboard for status updates. You will be notified if an
-                        appointment is needed.</p>
-                </div>
+                <article class="bg-emerald-50/70 p-7 sm:p-8 rounded-2xl border border-emerald-200/90 flex-1 hover:shadow-xl hover:border-emerald-300 hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-md border border-emerald-200/80">Final Stage</span>
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-black text-emerald-950 mb-2.5 tracking-tight">
+                        Wait for Review
+                    </h2>
+                    <p class="text-sm text-emerald-800 leading-relaxed font-medium">
+                        Monitor your dashboard for status updates. You will be notified if an appointment or revisions are needed.
+                    </p>
+                </article>
             </div>
         </div>
-    </div>
+
     </div>
 </x-user_layout>

@@ -183,10 +183,12 @@
 
                 <!-- Notification Trigger Only (No Hamburger) -->
                 <button
-                    class="notification-trigger w-12 h-12 flex items-center justify-center text-slate-500 hover:text-[#8B0000] rounded-full hover:bg-slate-50 transition-all relative focus:outline-none active:scale-95 group">
+                    class="notification-trigger w-12 h-12 flex items-center justify-center text-slate-500 hover:text-brand-primary rounded-full hover:bg-slate-50 transition-all relative focus:outline-none active:scale-95 group"
+                    aria-label="View notifications"
+                    aria-haspopup="true">
                     <i class="fas fa-bell text-2xl group-hover:scale-110 transition-transform"></i>
                     <span
-                        class="absolute top-1 right-1 w-3 h-3 bg-[#8B0000] border-2 border-white rounded-full animate-pulse shadow-lg hidden"></span>
+                        class="absolute top-1 right-1 w-3 h-3 bg-brand-primary border-2 border-white rounded-full animate-pulse shadow-lg hidden"></span>
                 </button>
             </div>
         </header>
@@ -202,10 +204,12 @@
                     <div class="flex items-center gap-4 relative">
                         <!-- Desktop Notification Trigger -->
                         <button
-                            class="notification-trigger w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-[#8B0000] transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 group">
+                            class="notification-trigger w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-brand-primary transition-colors relative focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 group"
+                            aria-label="View notifications"
+                            aria-haspopup="true">
                             <i class="fas fa-bell text-2xl group-hover:scale-110 transition-transform"></i>
                             <span
-                                class="absolute top-1 right-1 w-3 h-3 bg-[#8B0000] border-2 border-white rounded-full animate-pulse shadow-lg hidden"></span>
+                                class="absolute top-1 right-1 w-3 h-3 bg-brand-primary border-2 border-white rounded-full animate-pulse shadow-lg hidden"></span>
                         </button>
                     </div>
                 </header>
@@ -214,7 +218,7 @@
             <!-- Notification Toast Card (Appears on First Login Only) -->
             <div id="notification-toast" class="fixed top-24 right-6 hidden bg-white border border-slate-200 rounded-xl shadow-lg p-4 z-40 opacity-0 scale-95 transition-all duration-300 max-w-xs cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all group">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-[#8B0000] rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                    <div class="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center text-white flex-shrink-0">
                         <i class="fas fa-bell text-lg"></i>
                     </div>
                     <div class="flex-1 min-w-0">
@@ -243,7 +247,7 @@
         <div class="flex w-full h-16 items-end pb-2 relative">
             <!-- Home -->
             <a href="{{ route('home') }}"
-                class="flex-1 flex flex-col items-center justify-center h-full text-slate-500 hover:text-[#8B0000] {{ request()->routeIs('home') ? 'text-[#8B0000]' : '' }} transition-colors group">
+                class="flex-1 flex flex-col items-center justify-center h-full text-slate-500 hover:text-brand-primary {{ request()->routeIs('home') ? 'text-brand-primary font-bold' : '' }} transition-colors group">
                 <i
                     class="fas fa-home text-xl mb-1 transform group-active:scale-90 transition-transform {{ request()->routeIs('home') ? 'scale-110' : '' }}"></i>
                 <span class="text-[10px] font-medium">Home</span>
@@ -251,7 +255,7 @@
 
             <!-- Resources -->
             <a href="{{ route('resources') }}"
-                class="flex-1 flex flex-col items-center justify-center h-full text-slate-500 hover:text-[#8B0000] {{ request()->routeIs('resources') ? 'text-[#8B0000]' : '' }} transition-colors group">
+                class="flex-1 flex flex-col items-center justify-center h-full text-slate-500 hover:text-brand-primary {{ request()->routeIs('resources') ? 'text-brand-primary font-bold' : '' }} transition-colors group">
                 <i
                     class="fas fa-folder-open text-xl mb-1 transform group-active:scale-90 transition-transform {{ request()->routeIs('resources') ? 'scale-110' : '' }}"></i>
                 <span class="text-[10px] font-medium">Resources</span>
@@ -260,14 +264,14 @@
             <!-- New Submission (Floating Center) -->
             <div class="flex-1 relative h-full flex items-center justify-center">
                 <a href="{{ route('submit') }}"
-                    class="absolute -top-5 bg-[#8B0000] text-white w-14 h-14 rounded-full shadow-lg shadow-red-900/40 flex items-center justify-center ring-4 ring-white transform active:scale-95 transition-all hover:-translate-y-1 z-50">
+                    class="absolute -top-5 bg-brand-primary text-white w-14 h-14 rounded-full shadow-lg shadow-red-900/40 flex items-center justify-center ring-4 ring-white transform active:scale-95 transition-all hover:-translate-y-1 z-50">
                     <i class="fas fa-plus text-2xl"></i>
                 </a>
             </div>
 
             <!-- Guidelines (Converted from Alerts) -->
             <a href="{{ route('instructions') }}"
-                class="flex-1 flex flex-col items-center justify-center h-full text-slate-500 hover:text-[#8B0000] {{ request()->routeIs('instructions') ? 'text-[#8B0000]' : '' }} transition-colors group">
+                class="flex-1 flex flex-col items-center justify-center h-full text-slate-500 hover:text-brand-primary {{ request()->routeIs('instructions') ? 'text-brand-primary font-bold' : '' }} transition-colors group">
                 <i
                     class="fas fa-book text-xl mb-1 transform group-active:scale-90 transition-transform {{ request()->routeIs('instructions') ? 'scale-110' : '' }}"></i>
                 <span class="text-[10px] font-medium">Guidelines</span>
@@ -275,7 +279,7 @@
 
             <!-- Menu Toggle -->
             <button @click="mobileMenuOpen = !mobileMenuOpen"
-                class="flex-1 flex flex-col items-center justify-center h-full text-slate-500 hover:text-[#8B0000] transition-colors group appearance-none focus:outline-none">
+                class="flex-1 flex flex-col items-center justify-center h-full text-slate-500 hover:text-brand-primary transition-colors group appearance-none focus:outline-none cursor-pointer">
                 <div class="w-6 h-6 rounded-full bg-slate-200 overflow-hidden mb-1 ring-1 ring-slate-100">
                     @if(Auth::check())
                         <span
@@ -360,9 +364,9 @@
                         <span class="font-bold text-slate-700 text-sm">Guidelines</span>
                     </a>
                     <a href="{{ route('settings') }}"
-                        class="flex flex-col items-center p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-indigo-200 hover:shadow-lg hover:-translate-y-0.5 transition-all group active:scale-95">
+                        class="flex flex-col items-center p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-slate-300 hover:shadow-lg hover:-translate-y-0.5 transition-all group active:scale-95">
                         <div
-                            class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-md">
+                            class="w-12 h-12 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform shadow-xs group-hover:shadow-md">
                             <i class="fas fa-cog"></i>
                         </div>
                         <span class="font-bold text-slate-700 text-sm">Settings</span>
@@ -373,7 +377,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                        class="w-full py-4 rounded-xl border-2 border-slate-100 text-slate-600 font-bold hover:bg-red-50 hover:text-[#8B0000] hover:border-red-100 transition-all flex items-center justify-center gap-2 group active:scale-95">
+                        class="w-full py-4 rounded-xl border-2 border-slate-100 text-slate-600 font-bold hover:bg-red-50 hover:text-brand-primary hover:border-red-100 transition-all flex items-center justify-center gap-2 group active:scale-95 cursor-pointer">
                         <span
                             class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors group-hover:bg-white">
                             <i class="fas fa-sign-out-alt"></i>
@@ -445,8 +449,9 @@
                     isOpen = !isOpen;
 
                     if (isOpen) {
-                        // Opening panel - hide red dots
+                        // Opening panel - update ARIA & hide red dots
                         btns.forEach(btn => {
+                            btn.setAttribute('aria-expanded', 'true');
                             const dot = btn.querySelector('span.animate-pulse');
                             if (dot) {
                                 dot.classList.add('hidden');
@@ -459,9 +464,9 @@
                             panel.classList.add('opacity-100', 'scale-100');
                         }, 10);
                     } else {
-                        // Closing panel - always hide red dots (they stay hidden)
-                        // They only reappear when NEW notifications actually arrive
+                        // Closing panel - update ARIA
                         btns.forEach(btn => {
+                            btn.setAttribute('aria-expanded', 'false');
                             const dot = btn.querySelector('span.animate-pulse');
                             if (dot) {
                                 dot.classList.add('hidden');
@@ -479,6 +484,21 @@
                 // Attach event to all buttons
                 btns.forEach(btn => btn.addEventListener('click', toggleNotifications));
 
+                // Mobile close button handler
+                const closeBtn = document.getElementById('close-notifications-panel');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function(e) {
+                        if (isOpen) toggleNotifications(e);
+                    });
+                }
+
+                // Accessible Escape key dismissal
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && isOpen) {
+                        toggleNotifications(e);
+                    }
+                });
+
                 document.addEventListener('click', function (e) {
                     // Check if click is outside panel AND outside ANY trigger button
                     let clickedInsideButton = false;
@@ -487,9 +507,6 @@
                     });
 
                     if (isOpen && !panel.contains(e.target) && !clickedInsideButton) {
-                        // Close it
-                        isOpen = true; // wait, logic was: toggle(e) toggles layout. 
-                        // If we are open, we want to close.
                         toggleNotifications(e);
                     }
                 });

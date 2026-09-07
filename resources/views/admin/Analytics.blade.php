@@ -1,83 +1,129 @@
 <x-admin_layout>
     <div id="analytics-dashboard" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
         
-        <div class="flex flex-col md:flex-row justify-between items-end pb-6 border-b border-slate-200">
+        <style>
+            #analytics-dashboard ::selection,
+            #filterModal ::selection,
+            #seeAllModal ::selection,
+            #detailsModal ::selection {
+                background-color: rgba(139, 0, 0, 0.15);
+                color: #8B0000;
+            }
+            #filterModal input,
+            #filterModal select {
+                caret-color: #8B0000;
+            }
+            .tabular-nums,
+            #analytics-dashboard table td,
+            #analytics-dashboard table th,
+            #detailsModal table td,
+            #detailsModal table th {
+                font-variant-numeric: tabular-nums;
+                -moz-font-feature-settings: "tnum";
+                -webkit-font-feature-settings: "tnum";
+                font-feature-settings: "tnum";
+            }
+            #filterModalPanel::-webkit-scrollbar,
+            #seeAllModalPanel::-webkit-scrollbar,
+            #detailsModalContent::-webkit-scrollbar,
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            #filterModalPanel::-webkit-scrollbar-track,
+            #seeAllModalPanel::-webkit-scrollbar-track,
+            #detailsModalContent::-webkit-scrollbar-track,
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            #filterModalPanel::-webkit-scrollbar-thumb,
+            #seeAllModalPanel::-webkit-scrollbar-thumb,
+            #detailsModalContent::-webkit-scrollbar-thumb,
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 9999px;
+            }
+            #filterModalPanel::-webkit-scrollbar-thumb:hover,
+            #seeAllModalPanel::-webkit-scrollbar-thumb:hover,
+            #detailsModalContent::-webkit-scrollbar-thumb:hover,
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+        </style>
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-slate-200 gap-4">
             <div>
-                <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Analytics & Reports</h1>
-                <p class="text-slate-500 mt-2 text-sm">Real-time insights into research submission performance.</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Analytics & Reports</h1>
+                <p class="text-slate-500 mt-1 sm:mt-2 text-xs sm:text-sm">Real-time insights into research submission performance.</p>
             </div>
-            <div class="flex gap-3 mt-4 md:mt-0 items-center flex-wrap justify-end">
-                <button onclick="openFilterModal()" class="px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:shadow-lg transition-all flex items-center gap-2 shadow-sm">
-                    <i class="fas fa-filter"></i> Filter Data
+            <div class="flex gap-2.5 sm:gap-3 mt-4 md:mt-0 items-center flex-wrap justify-start md:justify-end w-full md:w-auto">
+                <button onclick="openFilterModal()" aria-label="Open filter options" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:shadow-lg active:scale-[0.98] transition-all flex items-center gap-2 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
+                    <i class="fas fa-filter" aria-hidden="true"></i> Filter Data
                 </button>
 
-                <div class="h-8 w-px bg-slate-200"></div>
+                <div class="hidden sm:block h-8 w-px bg-slate-200"></div>
 
-                <button id="exportPdfBtn" onclick="exportToPdf()" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
-                    <i class="fas fa-download"></i> Export PDF
+                <button id="exportPdfBtn" onclick="exportToPdf()" aria-label="Export report as PDF" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2">
+                    <i class="fas fa-download" aria-hidden="true"></i> Export PDF
                 </button>
 
-                <a href="{{ route('admin.analytics.export', request()->query()) }}" id="exportCsvBtn" class="px-4 py-2 bg-white border border-slate-200 text-[#8B0000] rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
-                    <i class="fas fa-download"></i> EXPORT TO CSV
+                <a href="{{ route('admin.analytics.export', request()->query()) }}" id="exportCsvBtn" aria-label="Export report data as CSV file" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-[#8B0000] rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
+                    <i class="fas fa-file-csv text-sm" aria-hidden="true"></i> Export CSV
                 </a>
                 <!-- EXPORT TO WORD BTN -->
-                <a href="{{ route('admin.analytics.export_word', request()->query()) }}" id="exportWordBtn" class="px-4 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-50 transition-colors shadow-sm flex items-center gap-2">
-                    <i class="fas fa-file-word"></i> EXPORT TO WORD
+                <a href="{{ route('admin.analytics.export_word', request()->query()) }}" id="exportWordBtn" aria-label="Export report data as Word document" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:text-[#8B0000] hover:border-[#8B0000]/30 hover:bg-slate-50 active:scale-[0.98] rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
+                    <i class="fas fa-file-word text-[#8B0000]" aria-hidden="true"></i> Export Word
                 </a>
             </div>
         </div>
         
         <!-- Active Filters Display -->
         <div class="flex flex-wrap gap-2 -mt-4 mb-2">
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
-                <i class="fas fa-calendar-alt text-slate-400"></i>
-                @if($startMonth === 'all' && $endMonth === 'all' && $startYear === 'all' && $endYear === 'all')
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+                <i class="fas fa-calendar-alt text-slate-400" aria-hidden="true"></i>
+                @if($isAllTime ?? ($startMonth == 1 && $endMonth == 12 && $startYear === 'all' && $endYear === 'all'))
                     All Time
                 @else
-                    {{ $startMonth === 'all' ? 'Jan' : DateTime::createFromFormat('!m', $startMonth)->format('M') }}
-                    {{ $startYear === 'all' ? 'All' : $startYear }}
-                    - 
-                    {{ $endMonth === 'all' ? 'Dec' : DateTime::createFromFormat('!m', $endMonth)->format('M') }}
-                    {{ $endYear === 'all' ? 'All' : $endYear }}
+                    {{ $dateRangeSubtitle ?? 'Custom Period' }}
                 @endif
-                @if($startMonth !== 'all' || $endMonth !== 'all' || $startYear !== 'all' || $endYear !== 'all')
-                    <button type="button" onclick="clearFilter('date')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+                @if(!($isAllTime ?? ($startMonth == 1 && $endMonth == 12 && $startYear === 'all' && $endYear === 'all')))
+                    <button type="button" onclick="clearFilter('date')" aria-label="Remove date filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
                 @endif
             </div>
             @if($selectedStatus) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
-                <i class="fas fa-info-circle text-slate-400"></i> {{ $selectedStatus }}
-                <button type="button" onclick="clearFilter('status')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+                <i class="fas fa-info-circle text-slate-400" aria-hidden="true"></i> {{ $selectedStatus }}
+                <button type="button" onclick="clearFilter('status')" aria-label="Remove status filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedReviewType) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
-                <i class="fas fa-clipboard-check text-slate-400"></i> {{ $selectedReviewType }}
-                <button type="button" onclick="clearFilter('review_type')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+                <i class="fas fa-clipboard-check text-slate-400" aria-hidden="true"></i> {{ $selectedReviewType }}
+                <button type="button" onclick="clearFilter('review_type')" aria-label="Remove review type filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedThesisType) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
-                <i class="fas fa-book text-slate-400"></i> {{ $selectedThesisType }}
-                <button type="button" onclick="clearFilter('thesis_type')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+                <i class="fas fa-book text-slate-400" aria-hidden="true"></i> {{ $selectedThesisType }}
+                <button type="button" onclick="clearFilter('thesis_type')" aria-label="Remove thesis type filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedCategory) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
-                <i class="fas fa-tags text-slate-400"></i> {{ $selectedCategory }}
-                <button type="button" onclick="clearFilter('category')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+                <i class="fas fa-tags text-slate-400" aria-hidden="true"></i> {{ $selectedCategory }}
+                <button type="button" onclick="clearFilter('category')" aria-label="Remove category filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedAffiliation) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
-                <i class="fas fa-users text-slate-400"></i> {{ $selectedAffiliation }}
-                <button type="button" onclick="clearFilter('affiliation')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+                <i class="fas fa-users text-slate-400" aria-hidden="true"></i> {{ $selectedAffiliation }}
+                <button type="button" onclick="clearFilter('affiliation')" aria-label="Remove affiliation filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedCollege && $selectedAffiliation !== 'External') 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200">
-                <i class="fas fa-university text-slate-400"></i> {{ $selectedCollege }}
-                <button type="button" onclick="clearFilter('college')" class="text-slate-400 hover:text-red-500 transition-colors ml-1 focus:outline-none"><i class="fas fa-times"></i></button>
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+                <i class="fas fa-university text-slate-400" aria-hidden="true"></i> {{ $selectedCollege }}
+                <button type="button" onclick="clearFilter('college')" aria-label="Remove college filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
             </div> 
             @endif
         </div>
@@ -87,55 +133,72 @@
         <!-- Key Metrics Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Metric Card 1 -->
-            <div onclick="openDetailsModal('submissions', 'Total Submissions')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:shadow-md hover:border-slate-300 transition-all">
-                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <div role="button" tabindex="0"
+                 aria-label="View Total Submissions details"
+                 onclick="openDetailsModal('submissions', 'Total Submissions')"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('submissions', 'Total Submissions');}"
+                 class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200">
+                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
                     <i class="fas fa-file-alt text-6xl text-[#8B0000]"></i>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Submissions</p>
+                <p class="text-xs font-bold text-slate-600 uppercase tracking-wider">Total Submissions</p>
                 <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($totalSubmissions) }}</h3>
+                    <h3 class="text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($totalSubmissions) }}</h3>
                     @if($submissionsGrowthRate > 0)
-                        <span class="text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-arrow-up"></i> {{ $submissionsGrowthRate }}%</span>
+                        <span class="text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mb-1 tabular-nums" title="Increase compared to previous period"><i class="fas fa-arrow-up" aria-hidden="true"></i> {{ $submissionsGrowthRate }}% vs prev</span>
                     @elseif($submissionsGrowthRate < 0)
-                        <span class="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-arrow-down"></i> {{ abs($submissionsGrowthRate) }}%</span>
+                        <span class="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded mb-1 tabular-nums" title="Decrease compared to previous period"><i class="fas fa-arrow-down" aria-hidden="true"></i> {{ abs($submissionsGrowthRate) }}% vs prev</span>
                     @else
-                        <span class="text-xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mb-1"><i class="fas fa-minus"></i> 0%</span>
+                        <span class="text-xs font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded mb-1 tabular-nums" title="No change compared to previous period"><i class="fas fa-minus" aria-hidden="true"></i> 0% vs prev</span>
                     @endif
                 </div>
             </div>
             
             <!-- Metric Card 2 -->
-            <div onclick="openDetailsModal('approved', 'Approved Submissions')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:shadow-md hover:border-slate-300 transition-all">
-                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <div role="button" tabindex="0"
+                 aria-label="View Approved Protocols details"
+                 onclick="openDetailsModal('approved', 'Approved Protocols')"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('approved', 'Approved Protocols');}"
+                 class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200">
+                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
                     <i class="fas fa-check-circle text-6xl text-green-600"></i>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Approved</p>
+                <p class="text-xs font-bold text-slate-600 uppercase tracking-wider">Approved Protocols</p>
                 <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($approvedCount) }}</h3>
-                    <span class="text-xs font-bold text-slate-400 mb-1">{{ $approvalRate }}% Rate</span>
+                    <h3 class="text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($approvedCount) }}</h3>
+                    <span class="text-xs font-bold text-slate-500 mb-1 tabular-nums">{{ $approvalRate }}% Approval Rate</span>
                 </div>
             </div>
 
             <!-- Metric Card 3 -->
-            <div onclick="openDetailsModal('revisions', 'Submissions Requiring Revisions')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:shadow-md hover:border-slate-300 transition-all">
-                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <div role="button" tabindex="0"
+                 aria-label="View Revisions Required details"
+                 onclick="openDetailsModal('revisions', 'Revisions Required')"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('revisions', 'Revisions Required');}"
+                 class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200">
+                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
                     <i class="fas fa-exclamation-triangle text-6xl text-orange-500"></i>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Revisions</p>
+                <p class="text-xs font-bold text-slate-600 uppercase tracking-wider">Revisions Required</p>
                 <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($revisionsCount) }}</h3>
-                    <span class="text-xs font-bold text-slate-400 mb-1">{{ $revisionsRate }}% Bounce Rate</span>
+                    <h3 class="text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($revisionsCount) }}</h3>
+                    <span class="text-xs font-bold text-slate-500 mb-1 tabular-nums">{{ $revisionsRate }}% Revision Rate</span>
                 </div>
             </div>
 
             <!-- Metric Card 4 -->
-            <div onclick="openDetailsModal('researchers', 'Active Researchers')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:shadow-md hover:border-slate-300 transition-all">
-                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <div role="button" tabindex="0"
+                 aria-label="View Active Researchers details"
+                 onclick="openDetailsModal('researchers', 'Active Researchers')"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('researchers', 'Active Researchers');}"
+                 class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200">
+                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
                     <i class="fas fa-users text-6xl text-blue-600"></i>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Researchers</p>
+                <p class="text-xs font-bold text-slate-600 uppercase tracking-wider">Active Researchers</p>
                 <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800">{{ number_format($activeResearchers) }}</h3>
+                    <h3 class="text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($activeResearchers) }}</h3>
+                    <span class="text-xs font-bold text-slate-500 mb-1">Registered Investigators</span>
                 </div>
             </div>
         </div>
@@ -148,46 +211,72 @@
                 </div>
                 
                 <div class="relative z-10 flex flex-col flex-1 w-full h-full" x-data="{ viewMode: 'timeline' }">
-                    <div class="flex justify-between items-start mb-8">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
                         <div>
-                            <h2 class="text-sm font-bold text-[#8B0000] uppercase tracking-widest mb-1" x-text="viewMode === 'timeline' ? 'Submission Trends' : 'Approval Status Trends'">Submission Trends</h2>
-                            <div class="flex items-end gap-4">
-                                <p class="text-3xl font-extrabold text-slate-900" x-text="viewMode === 'timeline' ? '{{ addslashes($overviewTitle) }}' : 'Visual Overview'"></p>
-                                <p class="text-sm text-slate-500 font-medium mb-1.5" x-show="viewMode === 'timeline'">
-                                    @if($startMonth === 'all' && $endMonth === 'all' && $startYear === 'all' && $endYear === 'all')
-                                        All Years
-                                    @else
-                                        {{ $startMonth === 'all' ? 'January' : DateTime::createFromFormat('!m', $startMonth)->format('F') }} {{ $startYear === 'all' ? 'All' : $startYear }}
-                                        to 
-                                        {{ $endMonth === 'all' ? 'December' : DateTime::createFromFormat('!m', $endMonth)->format('F') }} {{ $endYear === 'all' ? 'All' : $endYear }}
-                                    @endif
-                                </p>
-                            </div>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" x-text="viewMode === 'timeline' ? '{{ addslashes($overviewTitle) }}' : 'Approval Status Distribution'">{{ $overviewTitle }}</h2>
+                            <p class="text-xs text-slate-500 font-medium mt-1" x-text="viewMode === 'timeline' ? '{{ addslashes($dateRangeSubtitle ?? 'All Recorded Submissions') }}' : 'Visual breakdown across review statuses'">
+                                {{ $dateRangeSubtitle ?? 'All Recorded Submissions' }}
+                            </p>
                         </div>
                         
-                        <!-- Toggle Button -->
-                        <button @click="viewMode = viewMode === 'timeline' ? 'pie' : 'timeline'" class="group relative inline-flex items-center justify-center bg-slate-100 rounded-xl p-1 shrink-0 z-20 hover:bg-slate-200 transition-colors shadow-inner outline-none">
-                            <div class="absolute inset-y-1 left-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-transform duration-300 ease-out" 
-                                 :class="viewMode === 'pie' ? 'translate-x-full' : 'translate-x-0'"></div>
-                            
-                            <span class="relative z-10 flex items-center justify-center w-10 h-8 text-slate-600 transition-colors" 
-                                  :class="viewMode === 'timeline' ? 'text-[#8B0000]' : ''" title="Timeline Chart">
-                                <i class="fas fa-chart-line"></i>
-                            </span>
-                            <span class="relative z-10 flex items-center justify-center w-10 h-8 text-slate-600 transition-colors" 
-                                  :class="viewMode === 'pie' ? 'text-[#8B0000]' : ''" title="Pie Chart">
-                                <i class="fas fa-chart-pie"></i>
-                            </span>
-                        </button>
+                        <!-- Accessible View Mode Tablist -->
+                        <div role="tablist" aria-label="Chart view mode" class="relative inline-flex items-center bg-slate-100 rounded-xl p-1 shrink-0 z-20 shadow-inner">
+                            <button type="button"
+                                    role="tab"
+                                    id="chart-tab-timeline"
+                                    aria-controls="chart-panel-timeline"
+                                    :aria-selected="viewMode === 'timeline'"
+                                    :tabindex="viewMode === 'timeline' ? 0 : -1"
+                                    @click="viewMode = 'timeline'"
+                                    @keydown.arrow-right.prevent="viewMode = 'pie'; $nextTick(() => document.getElementById('chart-tab-pie')?.focus())"
+                                    @keydown.arrow-left.prevent="viewMode = 'pie'; $nextTick(() => document.getElementById('chart-tab-pie')?.focus())"
+                                    class="relative z-10 flex items-center justify-center px-3 h-8 rounded-lg text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]"
+                                    :class="viewMode === 'timeline' ? 'bg-white text-[#8B0000] shadow-sm' : 'text-slate-600 hover:text-slate-900'">
+                                <i class="fas fa-chart-line mr-1.5" aria-hidden="true"></i> Timeline
+                            </button>
+                            <button type="button"
+                                    role="tab"
+                                    id="chart-tab-pie"
+                                    aria-controls="chart-panel-pie"
+                                    :aria-selected="viewMode === 'pie'"
+                                    :tabindex="viewMode === 'pie' ? 0 : -1"
+                                    @click="viewMode = 'pie'"
+                                    @keydown.arrow-right.prevent="viewMode = 'timeline'; $nextTick(() => document.getElementById('chart-tab-timeline')?.focus())"
+                                    @keydown.arrow-left.prevent="viewMode = 'timeline'; $nextTick(() => document.getElementById('chart-tab-timeline')?.focus())"
+                                    class="relative z-10 flex items-center justify-center px-3 h-8 rounded-lg text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]"
+                                    :class="viewMode === 'pie' ? 'bg-white text-[#8B0000] shadow-sm' : 'text-slate-600 hover:text-slate-900'">
+                                <i class="fas fa-chart-pie mr-1.5" aria-hidden="true"></i> Distribution
+                            </button>
+                        </div>
                     </div>
 
                     <div class="flex-1 w-full relative min-h-[320px]">
-                        <div x-show="viewMode === 'timeline'" x-transition:enter="transition-opacity duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 w-full h-full">
-                            <canvas id="dailyTrendChart" class="w-full h-full"></canvas>
+                        <div id="chart-panel-timeline" role="tabpanel" aria-labelledby="chart-tab-timeline" x-show="viewMode === 'timeline'" x-transition:enter="transition-opacity duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 w-full h-full">
+                            <canvas id="dailyTrendChart" role="img" aria-label="Submission Trend Chart over time" class="w-full h-full">
+                                <p class="sr-only">Submission trend timeline displaying research protocol volume across the selected timeframe.</p>
+                                <table class="sr-only" aria-label="Submission Trend Data Table">
+                                    <thead><tr><th scope="col">Time Period</th><th scope="col">Submissions</th></tr></thead>
+                                    <tbody>
+                                        @foreach($dayLabels as $idx => $lbl)
+                                        <tr><td>{{ $lbl }}</td><td>{{ $dailyData[$idx] ?? 0 }}</td></tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </canvas>
                         </div>
                         
-                        <div x-show="viewMode === 'pie'" style="display: none;" x-transition:enter="transition-opacity duration-500 delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 w-full h-full flex items-center justify-center">
-                            <canvas id="approvalPieChart" class="max-h-full"></canvas>
+                        <div id="chart-panel-pie" role="tabpanel" aria-labelledby="chart-tab-pie" x-show="viewMode === 'pie'" style="display: none;" x-transition:enter="transition-opacity duration-500 delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 w-full h-full flex items-center justify-center">
+                            <canvas id="approvalPieChart" role="img" aria-label="Approval Status Distribution Chart" class="max-h-full">
+                                <p class="sr-only">Distribution of research submissions across approval statuses.</p>
+                                <table class="sr-only" aria-label="Approval Status Distribution Table">
+                                    <thead><tr><th scope="col">Status</th><th scope="col">Count</th></tr></thead>
+                                    <tbody>
+                                        @foreach($approvalTrends as $statusKey => $statusCount)
+                                        <tr><td>{{ $statusKey }}</td><td>{{ $statusCount }}</td></tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </canvas>
                         </div>
                     </div>
                 </div>
@@ -208,16 +297,20 @@
                     <div class="space-y-4">
                         @forelse($topSubmitters as $index => $item)
                         <div>
-                            <div class="flex justify-between items-center mb-1.5 cursor-pointer group hover:text-[#8B0000]" onclick="openDetailsModal('college_specific', '{{ addslashes($item->name ?? 'Unspecified') }}', { college_name: '{{ addslashes($item->name ?? 'Unspecified') }}' })">
+                            <div role="button" tabindex="0"
+                                 aria-label="View {{ $item->name ?? 'Unspecified' }} submissions"
+                                 class="flex justify-between items-center mb-1.5 cursor-pointer group hover:text-[#8B0000] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] rounded-lg px-1 transition-colors"
+                                 onclick="openDetailsModal('college_specific', '{{ addslashes($item->name ?? 'Unspecified') }}', { college_name: '{{ addslashes($item->name ?? 'Unspecified') }}' })"
+                                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('college_specific', '{{ addslashes($item->name ?? 'Unspecified') }}', { college_name: '{{ addslashes($item->name ?? 'Unspecified') }}' });}">
                                 <span class="text-sm font-semibold text-slate-700 truncate pr-3 group-hover:text-[#8B0000] transition-colors">{{ $item->name ?? 'Unspecified' }}</span>
-                                <span class="text-sm font-extrabold text-slate-800 group-hover:text-[#8B0000] transition-colors">{{ $item->count }}</span>
+                                <span class="text-sm font-extrabold text-slate-800 group-hover:text-[#8B0000] transition-colors tabular-nums">{{ $item->count }}</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-1.5">
                                 <div class="bg-[#8B0000] h-1.5 rounded-full transition-all duration-500" style="width: {{ round(($item->count / $topSubmittersMax) * 100) }}%"></div>
                             </div>
                         </div>
                         @empty
-                        <p class="text-sm text-slate-400 text-center py-6">No submission data available</p>
+                        <p class="text-sm text-slate-500 text-center py-6">No submission data available for this timeframe.</p>
                         @endforelse
                     </div>
                 </section>
@@ -228,13 +321,27 @@
                     <div class="space-y-4">
                         @foreach($pipelineStages as $stage)
                         <div>
-                            <div class="flex justify-between items-center mb-1.5 cursor-pointer group hover:opacity-80 transition-opacity" onclick="openDetailsModal('pipeline', '{{ addslashes($stage['label']) }}', { pipeline_stage: '{{ addslashes($stage['label']) }}' })">
+                            <div role="button" tabindex="0"
+                                 aria-label="View {{ $stage['label'] }} stage protocols"
+                                 class="flex justify-between items-center mb-1.5 cursor-pointer group hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] rounded-lg px-1 transition-all"
+                                 onclick="openDetailsModal('pipeline', '{{ addslashes($stage['label']) }}', { pipeline_stage: '{{ addslashes($stage['label']) }}' })"
+                                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('pipeline', '{{ addslashes($stage['label']) }}', { pipeline_stage: '{{ addslashes($stage['label']) }}' });}">
                                 <span class="text-xs font-semibold text-slate-600 group-hover:text-[#8B0000] transition-colors">{{ $stage['label'] }}</span>
                                 @php
-                                    $colorMap = ['slate' => 'bg-slate-200 text-slate-700', 'blue' => 'bg-blue-100 text-blue-700', 'amber' => 'bg-amber-100 text-amber-700', 'emerald' => 'bg-emerald-100 text-emerald-700'];
-                                    $barMap = ['slate' => 'bg-slate-400', 'blue' => 'bg-blue-500', 'amber' => 'bg-amber-500', 'emerald' => 'bg-emerald-500'];
+                                    $colorMap = [
+                                        'slate' => 'bg-slate-100 text-slate-700 border border-slate-200/80',
+                                        'blue' => 'bg-blue-50 text-blue-700 border border-blue-200/80',
+                                        'amber' => 'bg-amber-50 text-amber-800 border border-amber-200/80',
+                                        'emerald' => 'bg-emerald-50 text-emerald-800 border border-emerald-200/80'
+                                    ];
+                                    $barMap = [
+                                        'slate' => 'bg-slate-400',
+                                        'blue' => 'bg-blue-500',
+                                        'amber' => 'bg-amber-500',
+                                        'emerald' => 'bg-emerald-500'
+                                    ];
                                 @endphp
-                                <span class="text-xs font-extrabold px-2 py-0.5 rounded-full {{ $colorMap[$stage['color']] }}">{{ $stage['count'] }}</span>
+                                <span class="text-xs font-extrabold px-2 py-0.5 rounded-full tabular-nums {{ $colorMap[$stage['color']] }}">{{ $stage['count'] }}</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2">
                                 <div class="{{ $barMap[$stage['color']] }} h-2 rounded-full transition-all duration-500" style="width: {{ $pipelineMax > 0 ? round(($stage['count'] / $pipelineMax) * 100) : 0 }}%"></div>
@@ -247,7 +354,7 @@
         </div>
 
         <!-- Pending / Ongoing Proposals Table -->
-        <section class="bg-white rounded-2xl shadow-lg border border-slate-100 mt-8 overflow-hidden animate-[fadeInUp_0.7s_ease-out]">
+        <section id="pipeline-proposals-section" class="bg-white rounded-2xl shadow-lg border border-slate-100 mt-8 overflow-hidden animate-[fadeInUp_0.7s_ease-out]" style="content-visibility: auto; contain-intrinsic-size: 1px 400px;">
             <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 relative overflow-hidden">
                 <div class="absolute right-0 top-0 opacity-5 p-4 transform translate-x-4 -translate-y-4">
                     <i class="fas fa-tasks text-6xl text-[#8b0000]"></i>
@@ -257,14 +364,64 @@
                     <p class="text-xs text-slate-500 font-medium mt-0.5">Quick-access list of submissions currently requiring action.</p>
                 </div>
                 <div class="flex items-center gap-2 relative z-10">
-                    <span class="px-3 py-1 bg-[#8B0000] text-white text-xs font-bold rounded-lg shadow-sm">{{ $stuckProposals->total() }} Pending</span>
+                    <span class="px-3 py-1 bg-[#8B0000] text-white text-xs font-bold rounded-lg shadow-sm tabular-nums">{{ $stuckProposals->total() }} Pending</span>
                 </div>
             </div>
             
-            <div class="overflow-x-auto">
+            <!-- Mobile Card Layout (md:hidden) -->
+            <div class="md:hidden divide-y divide-slate-100">
+                @forelse($stuckProposals as $proposal)
+                    <div class="p-4 space-y-3 hover:bg-slate-50 transition-colors">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="font-bold text-slate-800 text-sm line-clamp-2" title="{{ $proposal->Study_Protocol_title }}">
+                                {{ $proposal->Study_Protocol_title }}
+                            </div>
+                            @if(Auth::user()->role === 'super_admin' || Auth::user()->role === 'admin')
+                            <a href="{{ route('admin.view_files', $proposal->id) }}" class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-[#8B0000] hover:border-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000]" aria-label="View submission {{ $proposal->Study_Protocol_title }}">
+                                <i class="fas fa-external-link-alt text-xs" aria-hidden="true"></i>
+                            </a>
+                            @endif
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+                            <div class="flex items-center gap-2 font-semibold text-slate-700">
+                                <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600 shrink-0">
+                                    {{ substr($proposal->researcher->user->first_name ?? 'U', 0, 1) }}
+                                </div>
+                                <span class="truncate max-w-[140px]">{{ $proposal->researcher->user->first_name ?? '' }} {{ $proposal->researcher->user->last_name ?? 'Unknown' }}</span>
+                            </div>
+                            <span class="tabular-nums">{{ $proposal->updated_at->diffForHumans() }}</span>
+                        </div>
+                        <div>
+                            @php
+                                $statusFormat = match($proposal->Status) {
+                                    'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-700 border border-slate-200/80',
+                                    'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-50 text-blue-700 border border-blue-200/80',
+                                    'Waiting for Revision' => 'bg-amber-50 text-amber-800 border border-amber-200/80',
+                                    'Complete - Awaiting Hardcopy' => 'bg-emerald-50 text-emerald-800 border border-emerald-200/80',
+                                    default => 'bg-slate-100 text-slate-700 border border-slate-200/80'
+                                };
+                            @endphp
+                            <span class="inline-block px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider {{ $statusFormat }}">
+                                {{ $proposal->Status }}
+                            </span>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-8 text-center">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 mb-3 shadow-xs">
+                            <i class="fas fa-check-circle text-2xl" aria-hidden="true"></i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-800">The pipeline is completely clear</p>
+                        <p class="text-xs text-slate-500 mt-1">All active protocols are progressing normally.</p>
+                    </div>
+                @endforelse
+            </div>
+
+            <!-- Desktop & Tablet Table (hidden md:block) -->
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider font-bold border-y border-slate-100">
+                        <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider font-bold border-y border-slate-200">
                             <th class="px-6 py-4">Protocol Title</th>
                             <th class="px-6 py-4">Researcher</th>
                             <th class="px-6 py-4">Status</th>
@@ -291,33 +448,36 @@
                                 <td class="px-6 py-4">
                                     @php
                                         $statusFormat = match($proposal->Status) {
-                                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-600',
-                                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-100 text-blue-700',
-                                            'Waiting for Revision' => 'bg-amber-100 text-amber-700',
-                                            'Complete - Awaiting Hardcopy' => 'bg-emerald-100 text-emerald-700',
-                                            default => 'bg-slate-100 text-slate-600'
+                                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-700 border border-slate-200/80',
+                                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-50 text-blue-700 border border-blue-200/80',
+                                            'Waiting for Revision' => 'bg-amber-50 text-amber-800 border border-amber-200/80',
+                                            'Complete - Awaiting Hardcopy' => 'bg-emerald-50 text-emerald-800 border border-emerald-200/80',
+                                            default => 'bg-slate-100 text-slate-700 border border-slate-200/80'
                                         };
                                     @endphp
                                     <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest {{ $statusFormat }}">
                                         {{ $proposal->Status }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-slate-500 font-medium">
+                                <td class="px-6 py-4 text-sm text-slate-500 font-medium tabular-nums">
                                     {{ $proposal->updated_at->diffForHumans() }}
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     @if(Auth::user()->role === 'super_admin' || Auth::user()->role === 'admin')
-                                    <a href="{{ route('admin.view_files', $proposal->id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-[#8B0000] hover:border-[#8B0000] hover:shadow-sm transition-all focus:outline-none" title="View Submission">
-                                        <i class="fas fa-external-link-alt text-xs"></i>
+                                    <a href="{{ route('admin.view_files', $proposal->id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-[#8B0000] hover:border-[#8B0000] hover:shadow-sm transition-all focus:outline-none" title="View Submission" aria-label="View submission {{ $proposal->Study_Protocol_title }}">
+                                        <i class="fas fa-external-link-alt text-xs" aria-hidden="true"></i>
                                     </a>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center text-slate-400">
-                                    <i class="fas fa-check-circle text-4xl mb-3 text-slate-200"></i>
-                                    <p class="text-sm font-semibold">The pipeline is completely clear!</p>
+                                <td colspan="5" class="px-6 py-12 text-center">
+                                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 mb-3 shadow-xs">
+                                        <i class="fas fa-check-circle text-2xl" aria-hidden="true"></i>
+                                    </div>
+                                    <p class="text-sm font-bold text-slate-800">The pipeline is completely clear</p>
+                                    <p class="text-xs text-slate-500 mt-1">All active protocols are progressing normally with no pending actions required.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -326,21 +486,21 @@
             </div>
 
             @if ($stuckProposals->hasPages())
-                <div class="px-6 py-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500 bg-slate-50">
+                <div class="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 bg-slate-50">
                     <div>
                         Showing <span class="font-bold text-slate-700">{{ $stuckProposals->firstItem() ?? 0 }}</span> - <span class="font-bold text-slate-700">{{ $stuckProposals->lastItem() ?? 0 }}</span> of <span class="font-bold text-slate-700">{{ $stuckProposals->total() }}</span>
                     </div>
                     <div class="flex gap-2">
                         @if ($stuckProposals->onFirstPage())
-                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-left"></i></span>
+                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-left" aria-hidden="true"></i></span>
                         @else
-                            <a href="{{ $stuckProposals->previousPageUrl() }}" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-left"></i></a>
+                            <a href="{{ $stuckProposals->previousPageUrl() }}" aria-label="Previous proposals page" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
                         @endif
 
                         @if ($stuckProposals->hasMorePages())
-                            <a href="{{ $stuckProposals->nextPageUrl() }}" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-right"></i></a>
+                            <a href="{{ $stuckProposals->nextPageUrl() }}" aria-label="Next proposals page" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
                         @else
-                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-right"></i></span>
+                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-right" aria-hidden="true"></i></span>
                         @endif
                     </div>
                 </div>
@@ -359,8 +519,19 @@
             });
 
             function toggleExactDates() {
-                const exactStart = document.getElementById('filter_exact_start').value;
-                const exactEnd = document.getElementById('filter_exact_end').value;
+                const exactStartInput = document.getElementById('filter_exact_start');
+                const exactEndInput = document.getElementById('filter_exact_end');
+                const exactStart = exactStartInput ? exactStartInput.value : '';
+                const exactEnd = exactEndInput ? exactEndInput.value : '';
+
+                if (exactStart && exactEndInput) {
+                    exactEndInput.min = exactStart;
+                    if (exactEnd && exactEnd < exactStart) {
+                        exactEndInput.value = exactStart;
+                    }
+                } else if (exactEndInput) {
+                    exactEndInput.removeAttribute('min');
+                }
                 
                 const startMonth = document.getElementById('filter_start_month');
                 const endMonth = document.getElementById('filter_end_month');
@@ -427,10 +598,32 @@
             }
 
             function prepareFilterSubmit() {
-                // All filters are always visible in the drawer — no clearing needed
+                const applyBtn = document.getElementById('applyFilterBtn');
+                const resetBtn = document.getElementById('resetFilterBtn');
+                if (applyBtn) {
+                    applyBtn.disabled = true;
+                    applyBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                    applyBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1.5" aria-hidden="true"></i> Applying...';
+                }
+                if (resetBtn) {
+                    resetBtn.disabled = true;
+                    resetBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
             }
 
             function resetFilters() {
+                const resetBtn = document.getElementById('resetFilterBtn');
+                const applyBtn = document.getElementById('applyFilterBtn');
+                if (resetBtn) {
+                    resetBtn.disabled = true;
+                    resetBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                    resetBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1.5" aria-hidden="true"></i> Resetting...';
+                }
+                if (applyBtn) {
+                    applyBtn.disabled = true;
+                    applyBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+
                 document.getElementById('filter_start_month').value = '1';
                 document.getElementById('filter_end_month').value = '12';
                 document.getElementById('filter_start_year').value = 'all';
@@ -588,7 +781,7 @@
                     filteredColors.push('#E2E8F0'); // Light Slate
                 }
 
-                new Chart(ctxPie, {
+                const pieChartInstance = new Chart(ctxPie, {
                     type: 'doughnut',
                     data: {
                         labels: filteredLabels,
@@ -605,12 +798,12 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                position: 'right',
+                                position: window.innerWidth < 768 ? 'bottom' : 'right',
                                 labels: {
                                     usePointStyle: true,
-                                    padding: 25,
-                                    font: { family: 'Inter', size: 14, weight: '600' },
-                                    color: '#475569'
+                                    padding: window.innerWidth < 768 ? 12 : 25,
+                                    font: { family: 'Inter', size: window.innerWidth < 768 ? 12 : 14, weight: '600' },
+                                    color: '#1a0505'
                                 }
                             },
                         },
@@ -622,61 +815,88 @@
                     }
                 });
 
+                let doughnutResizeTimer;
+                window.addEventListener('resize', () => {
+                    clearTimeout(doughnutResizeTimer);
+                    doughnutResizeTimer = setTimeout(() => {
+                        const newPos = window.innerWidth < 768 ? 'bottom' : 'right';
+                        if (pieChartInstance && pieChartInstance.options.plugins.legend.position !== newPos) {
+                            pieChartInstance.options.plugins.legend.position = newPos;
+                            pieChartInstance.options.plugins.legend.labels.padding = window.innerWidth < 768 ? 12 : 25;
+                            pieChartInstance.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 12 : 14;
+                            pieChartInstance.update();
+                        }
+                    }, 150);
+                });
+
             });
 
-            // --- Export to PDF Function ---
-            function exportToPdf() {
+            // --- On-Demand PDF Export Script Loader ---
+            function loadExternalScript(src) {
+                return new Promise((resolve, reject) => {
+                    if (document.querySelector(`script[src="${src}"]`)) return resolve();
+                    const s = document.createElement('script');
+                    s.src = src;
+                    s.onload = resolve;
+                    s.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+                    document.head.appendChild(s);
+                });
+            }
+
+            // --- Export to PDF Function (On-Demand Loading Saves >550KB initial payload) ---
+            async function exportToPdf() {
                 const element = document.getElementById('analytics-dashboard');
                 const btn = document.getElementById('exportPdfBtn');
                 
                 // Visual feedback
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Generating...';
                 btn.disabled = true;
 
-                // Use html2canvas to capture the element
-                html2canvas(element, {
-                    scale: 2, // Higher quality
-                    useCORS: true, // Handle external images if any
-                    logging: false
-                }).then(canvas => {
+                try {
+                    // Load heavy libraries only when requested
+                    if (typeof html2canvas === 'undefined') {
+                        await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+                    }
+                    if (typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined') {
+                        await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+                    }
+
+                    // Capture element via html2canvas
+                    const canvas = await html2canvas(element, {
+                        scale: 2, // Higher quality
+                        useCORS: true,
+                        logging: false
+                    });
+
                     const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); // Landscape, mm, A4
+                    const pdfConstructor = window.jspdf?.jsPDF || window.jsPDF;
+                    const pdf = new pdfConstructor('l', 'mm', 'a4'); // Landscape, mm, A4
                     
                     const pageWidth = pdf.internal.pageSize.getWidth();
-                    const pageHeight = pdf.internal.pageSize.getHeight();
-                    
                     const imgWidth = pageWidth;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
                     
-                    // Add image to PDF
                     pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                     pdf.save('Analytics_Report_{{ date("Y-m-d") }}.pdf');
-                    
-                    // Reset button
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }).catch(err => {
+                } catch (err) {
                     console.error('PDF Generation Error:', err);
-                    alert('Failed to generate PDF. Please check console for details.');
+                    alert('Failed to generate PDF. Please try again.');
+                } finally {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                });
+                }
             }
         </script>
 
-        <!-- PDF Export Libraries -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
         <!-- Filter Drawer -->
-        <div id="filterModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex justify-end backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" onclick="if(event.target===this) closeFilterModal()">
+        <div id="filterModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex justify-end backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="filterModalTitle" role="dialog" aria-modal="true" onclick="if(event.target===this) closeFilterModal()">
             <div class="bg-white shadow-2xl w-full max-w-md h-full overflow-y-auto transform transition-transform translate-x-full duration-300 flex flex-col" id="filterModalPanel">
                 <!-- Modal Header -->
                 <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
-                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-filter text-[#8B0000]"></i> Global Filters</h3>
-                    <button type="button" onclick="closeFilterModal()" class="text-slate-400 hover:text-[#8B0000] focus:outline-none transition-colors">
-                        <i class="fas fa-times text-xl"></i>
+                    <h3 id="filterModalTitle" class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-filter text-[#8B0000]" aria-hidden="true"></i> Global Filters</h3>
+                    <button type="button" onclick="closeFilterModal()" aria-label="Close filter drawer" class="text-slate-400 hover:text-[#8B0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-lg p-1 transition-colors">
+                        <i class="fas fa-times text-xl" aria-hidden="true"></i>
                     </button>
                 </div>
 
@@ -687,42 +907,45 @@
                         <div>
                             <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Time & Status</h4>
                             <div class="grid grid-cols-1 gap-5">
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Month Range <span class="text-[10px] text-slate-400 font-normal">(Start to End)</span></label>
+                                <fieldset>
+                                    <legend class="block text-xs font-semibold text-slate-600 mb-2">Month Range <span class="text-[10px] text-slate-400 font-normal">(Start to End)</span></legend>
                                     <div class="flex items-center gap-2">
                                         <div class="relative flex-1">
-                                            <select name="start_month" id="filter_start_month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <label for="filter_start_month" class="sr-only">Start Month</label>
+                                            <select name="start_month" id="filter_start_month" aria-label="Start Month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
                                                 @foreach(range(1, 12) as $m)
                                                     <option value="{{ $m }}" {{ $startMonth == $m ? 'selected' : '' }}>
                                                         {{ DateTime::createFromFormat('!m', $m)->format('M') }}
                                                     </option>
                                                 @endforeach
                                             </select>
-                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true">
                                                 <i class="fas fa-chevron-down text-xs"></i>
                                             </div>
                                         </div>
-                                        <span class="text-slate-400 font-bold">-</span>
+                                        <span class="text-slate-400 font-bold" aria-hidden="true">-</span>
                                         <div class="relative flex-1">
-                                            <select name="end_month" id="filter_end_month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <label for="filter_end_month" class="sr-only">End Month</label>
+                                            <select name="end_month" id="filter_end_month" aria-label="End Month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
                                                 @foreach(range(1, 12) as $m)
                                                     <option value="{{ $m }}" {{ $endMonth == $m ? 'selected' : '' }}>
                                                         {{ DateTime::createFromFormat('!m', $m)->format('M') }}
                                                     </option>
                                                 @endforeach
                                             </select>
-                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true">
                                                 <i class="fas fa-chevron-down text-xs"></i>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </fieldset>
                                 
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Year Range <span class="text-[10px] text-slate-400 font-normal">(Start to End)</span></label>
+                                <fieldset>
+                                    <legend class="block text-xs font-semibold text-slate-600 mb-2">Year Range <span class="text-[10px] text-slate-400 font-normal">(Start to End)</span></legend>
                                     <div class="flex items-center gap-2">
                                         <div class="relative flex-1">
-                                            <select name="start_year" id="filter_start_year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <label for="filter_start_year" class="sr-only">Start Year</label>
+                                            <select name="start_year" id="filter_start_year" aria-label="Start Year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
                                                 <option value="all" {{ $startYear === 'all' ? 'selected' : '' }}>Earliest</option>
                                                 @foreach($availableYears as $year)
                                                     <option value="{{ $year }}" {{ $startYear == $year ? 'selected' : '' }}>{{ $year }}</option>
@@ -731,11 +954,12 @@
                                                     <option value="{{ date('Y') }}" {{ $startYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
                                                 @endif
                                             </select>
-                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true"><i class="fas fa-chevron-down text-xs"></i></div>
                                         </div>
-                                        <span class="text-slate-400 font-bold">-</span>
+                                        <span class="text-slate-400 font-bold" aria-hidden="true">-</span>
                                         <div class="relative flex-1">
-                                            <select name="end_year" id="filter_end_year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
+                                            <label for="filter_end_year" class="sr-only">End Year</label>
+                                            <select name="end_year" id="filter_end_year" aria-label="End Year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
                                                 <option value="all" {{ $endYear === 'all' ? 'selected' : '' }}>Latest</option>
                                                 @foreach($availableYears as $year)
                                                     <option value="{{ $year }}" {{ $endYear == $year ? 'selected' : '' }}>{{ $year }}</option>
@@ -744,26 +968,30 @@
                                                     <option value="{{ date('Y') }}" {{ $endYear == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
                                                 @endif
                                             </select>
-                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true"><i class="fas fa-chevron-down text-xs"></i></div>
                                         </div>
                                     </div>
-                                </div>
+                                </fieldset>
                                 
                                 <!-- Exact Date Range (Overrides Dropdowns) -->
-                                <div>
-                                    <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000]">Specific Date <span class="text-[10px] text-slate-400 font-normal normal-case tracking-normal">(Start to End)</span></h4>
+                                <fieldset>
+                                    <legend class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000]">Specific Date <span class="text-[10px] text-slate-400 font-normal normal-case tracking-normal">(Start to End)</span></legend>
+                                    <p class="text-[11px] text-slate-500 mb-2 font-normal leading-relaxed">Selecting a specific date range automatically overrides month and year dropdowns.</p>
                                     <div class="flex items-center gap-2 mt-2">
                                         <div class="relative flex-1">
-                                            <input type="date" name="exact_start" id="filter_exact_start" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value; toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
+                                            <label for="filter_exact_start" class="sr-only">Specific Start Date</label>
+                                            <input type="date" name="exact_start" id="filter_exact_start" aria-label="Specific Start Date" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value; toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
                                         </div>
-                                        <span class="text-slate-400 font-bold">-</span>
+                                        <span class="text-slate-400 font-bold" aria-hidden="true">-</span>
                                         <div class="relative flex-1">
-                                            <input type="date" name="exact_end" id="filter_exact_end" value="{{ request('exact_end') }}" onchange="toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
+                                            <label for="filter_exact_end" class="sr-only">Specific End Date</label>
+                                            <input type="date" name="exact_end" id="filter_exact_end" aria-label="Specific End Date" value="{{ request('exact_end') }}" onchange="toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
                                         </div>
                                     </div>
-                                </div>
+                                </fieldset>
+
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-2">Status</label>
+                                    <label for="filter_status" class="block text-xs font-semibold text-slate-600 mb-2">Status</label>
                                     <div class="relative">
                                         <select name="status" id="filter_status" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
                                             <option value="">All Statuses</option>
@@ -777,7 +1005,7 @@
                                                 </optgroup>
                                             @endforeach
                                         </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true">
                                             <i class="fas fa-chevron-down text-xs"></i>
                                         </div>
                                     </div>
@@ -790,8 +1018,8 @@
                             <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Advanced Attributes</h4>
                             <div class="grid grid-cols-1 gap-5">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i class="fas fa-clipboard-check text-slate-400"></i> Review Type
+                                    <label for="filter_review_type" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-clipboard-check text-slate-400" aria-hidden="true"></i> Review Type
                                     </label>
                                     <div class="relative">
                                         <select name="review_type" id="filter_review_type" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
@@ -802,12 +1030,12 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true"><i class="fas fa-chevron-down text-xs"></i></div>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i class="fas fa-book text-slate-400"></i> Thesis Type
+                                    <label for="filter_thesis_type" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-book text-slate-400" aria-hidden="true"></i> Thesis Type
                                     </label>
                                     <div class="relative">
                                         <select name="thesis_type" id="filter_thesis_type" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
@@ -818,12 +1046,12 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true"><i class="fas fa-chevron-down text-xs"></i></div>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i class="fas fa-tags text-slate-400"></i> Research Type
+                                    <label for="filter_category" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-tags text-slate-400" aria-hidden="true"></i> Research Type
                                     </label>
                                     <div class="relative">
                                         <select name="category" id="filter_category" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
@@ -834,12 +1062,12 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true"><i class="fas fa-chevron-down text-xs"></i></div>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i class="fas fa-users text-slate-400"></i> Affiliation
+                                    <label for="filter_affiliation" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-users text-slate-400" aria-hidden="true"></i> Affiliation
                                     </label>
                                     <div class="relative">
                                         <select name="affiliation" id="filter_affiliation" onchange="toggleCollegeFilter()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
@@ -847,12 +1075,12 @@
                                             <option value="Internal" {{ $selectedAffiliation == 'Internal' ? 'selected' : '' }}>Internal</option>
                                             <option value="External" {{ $selectedAffiliation == 'External' ? 'selected' : '' }}>External</option>
                                         </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true"><i class="fas fa-chevron-down text-xs"></i></div>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i class="fas fa-university text-slate-400"></i> College
+                                    <label for="filter_college" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="fas fa-university text-slate-400" aria-hidden="true"></i> College
                                     </label>
                                     <div class="relative">
                                         <select name="college" id="filter_college" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
@@ -863,7 +1091,7 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true"><i class="fas fa-chevron-down text-xs"></i></div>
                                     </div>
                                 </div>
                             </div>
@@ -871,13 +1099,13 @@
                     </div>
 
                     <!-- Modal Actions -->
-                    <div class="p-6 bg-slate-50 border-t border-slate-200 sticky bottom-0">
+                    <div class="p-6 bg-slate-50 border-t border-slate-200 sticky bottom-0 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                         <div class="flex gap-3 justify-end">
-                            <button type="button" onclick="resetFilters()" class="flex-1 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm">
-                                Reset
+                            <button type="button" id="resetFilterBtn" onclick="resetFilters()" class="flex-1 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400">
+                                Reset All Filters
                             </button>
-                            <button type="submit" onclick="prepareFilterSubmit()" class="flex-1 py-3 bg-[#8B0000] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2">
-                                <i class="fas fa-check"></i> Apply
+                            <button type="submit" id="applyFilterBtn" onclick="prepareFilterSubmit()" class="flex-1 py-3 bg-[#8B0000] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                <i class="fas fa-check" aria-hidden="true"></i> Apply Filters
                             </button>
                         </div>
                     </div>
@@ -887,23 +1115,27 @@
     </div>
     
     <!-- See All Submitters Modal -->
-    <div id="seeAllModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex justify-end backdrop-blur-sm transition-opacity opacity-0 duration-300" onclick="if(event.target===this) closeSeeAllModal()">
+    <div id="seeAllModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex justify-end backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="seeAllModalTitle" role="dialog" aria-modal="true" onclick="if(event.target===this) closeSeeAllModal()">
         <div class="bg-white shadow-2xl w-full max-w-md h-full overflow-y-auto transform transition-transform translate-x-full duration-300 flex flex-col" id="seeAllModalPanel">
             <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fas fa-university text-[#8B0000]"></i> {{ $topSubmittersLabel }}
+                <h3 id="seeAllModalTitle" class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-university text-[#8B0000]" aria-hidden="true"></i> {{ $topSubmittersLabel }}
                 </h3>
-                <button type="button" onclick="closeSeeAllModal()" class="text-slate-400 hover:text-[#8B0000] focus:outline-none transition-colors">
-                    <i class="fas fa-times text-xl"></i>
+                <button type="button" onclick="closeSeeAllModal()" aria-label="Close all submitters modal" class="text-slate-400 hover:text-[#8B0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-lg p-1 transition-colors">
+                    <i class="fas fa-times text-xl" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="p-6 space-y-3 flex-1">
                 @foreach($allSubmitters as $index => $item)
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-bold text-slate-400 w-5 text-right">{{ $index + 1 }}</span>
-                    <div class="flex-1 cursor-pointer group hover:text-[#8B0000]" onclick="openDetailsModal('college_specific', '{{ addslashes($item->name ?? 'Unspecified') }}', { college_name: '{{ addslashes($item->name ?? 'Unspecified') }}' })">
+                    <div role="button" tabindex="0"
+                         aria-label="View {{ $item->name ?? 'Unspecified' }} details"
+                         class="flex-1 cursor-pointer group hover:text-[#8B0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-lg p-1 transition-colors"
+                         onclick="openDetailsModal('college_specific', '{{ addslashes($item->name ?? 'Unspecified') }}', { college_name: '{{ addslashes($item->name ?? 'Unspecified') }}' })"
+                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('college_specific', '{{ addslashes($item->name ?? 'Unspecified') }}', { college_name: '{{ addslashes($item->name ?? 'Unspecified') }}' });}">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-sm font-semibold text-slate-700 truncate pr-3 group-hover:text-[#8B0000] transition-colors">{{ $item->name ?? 'Unspecified' }}</span>
+                            <span class="text-sm font-semibold text-slate-700 truncate pr-3 group-hover:text-[#8B0000] transition-colors" title="{{ $item->name ?? 'Unspecified' }}">{{ $item->name ?? 'Unspecified' }}</span>
                             <span class="text-sm font-extrabold text-slate-800 group-hover:text-[#8B0000] transition-colors">{{ $item->count }}</span>
                         </div>
                         <div class="w-full bg-slate-100 rounded-full h-1.5">
@@ -917,119 +1149,79 @@
     </div>
 
     <!-- Details Modal -->
-    <div id="detailsModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0 duration-300" onclick="if(event.target===this) closeDetailsModal()">
-        <div class="bg-white shadow-2xl rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden transform transition-transform scale-95 duration-300 flex flex-col" id="detailsModalPanel">
-            <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
-                <h3 id="detailsModalTitle" class="text-xl font-bold text-slate-800 flex items-center gap-2"></h3>
-                <button type="button" onclick="closeDetailsModal()" class="text-slate-400 hover:text-[#8B0000] focus:outline-none transition-colors">
-                    <i class="fas fa-times text-xl"></i>
+    <div id="detailsModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="detailsModalTitle" role="dialog" aria-modal="true" onclick="if(event.target===this) closeDetailsModal()">
+        <div class="bg-white shadow-2xl rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden transform transition-transform scale-95 duration-300 flex flex-col" id="detailsModalPanel">
+            <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
+                <h3 id="detailsModalTitle" class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2"></h3>
+                <button type="button" onclick="closeDetailsModal()" aria-label="Close details modal" class="text-slate-400 hover:text-[#8B0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-lg p-1 transition-colors">
+                    <i class="fas fa-times text-xl" aria-hidden="true"></i>
                 </button>
             </div>
-            <div class="p-6 overflow-y-auto flex-1 h-full min-h-[300px]" id="detailsModalContent">
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 h-full min-h-[250px]" id="detailsModalContent">
                 <div class="flex items-center justify-center py-20">
-                    <i class="fas fa-spinner fa-spin text-4xl text-[#8B0000]"></i>
+                    <i class="fas fa-spinner fa-spin text-4xl text-[#8B0000]" aria-hidden="true"></i>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        function openDetailsModal(type, title, extraParams = {}) {
-            const modal = document.getElementById('detailsModal');
-            const panel = document.getElementById('detailsModalPanel');
-            const titleElem = document.getElementById('detailsModalTitle');
-            const contentElem = document.getElementById('detailsModalContent');
+        let lastFocusedElement = null;
 
-            titleElem.innerText = title;
-            contentElem.innerHTML = '<div class="flex items-center justify-center py-20"><i class="fas fa-spinner fa-spin text-4xl text-[#8B0000]"></i></div>';
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                panel.classList.remove('scale-95');
-                panel.classList.add('scale-100');
-            }, 10);
-
-            // Fetch data
-            const params = new URLSearchParams(window.location.search);
-            params.set('type', type);
-            Object.entries(extraParams).forEach(([key, value]) => params.set(key, value));
-            
-            fetch(`{{ route('admin.analytics.details') }}?${params.toString()}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length === 0) {
-                        contentElem.innerHTML = '<div class="text-center py-20 text-slate-400">No data available for this category.</div>';
-                        return;
-                    }
-
-                    let html = '<table class="w-full text-left border-collapse">';
-                    if (type === 'researchers') {
-                        html += `
-                            <thead>
-                                <tr class="text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
-                                    <th class="px-4 py-3">Name</th>
-                                    <th class="px-4 py-3">Email</th>
-                                    <th class="px-4 py-3">Affiliation</th>
-                                    <th class="px-4 py-3">College</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50">
-                        `;
-                        data.forEach(item => {
-                            html += `
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-4 py-3 text-sm font-semibold text-slate-700">${item.name}</td>
-                                    <td class="px-4 py-3 text-sm text-slate-600">${item.email}</td>
-                                    <td class="px-4 py-3 text-sm"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${item.affiliation === 'Internal' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}">${item.affiliation}</span></td>
-                                    <td class="px-4 py-3 text-sm text-slate-500">${item.college}</td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        html += `
-                            <thead>
-                                <tr class="text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
-                                    <th class="px-4 py-3">Protocol Title</th>
-                                    <th class="px-4 py-3">Researcher</th>
-                                    <th class="px-4 py-3">Status</th>
-                                    <th class="px-4 py-3">Date</th>
-                                    ${type === 'revisions' ? '<th class="px-4 py-3 text-center">Revision #</th>' : ''}
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50">
-                        `;
-                        data.forEach(item => {
-                            html += `
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-xs truncate" title="${item.title}">${item.title}</td>
-                                    <td class="px-4 py-3 text-sm text-slate-600">${item.researcher}</td>
-                                    <td class="px-4 py-3 text-sm"><span class="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">${item.status}</span></td>
-                                    <td class="px-4 py-3 text-sm text-slate-500">${item.date}</td>
-                                    ${type === 'revisions' ? `<td class="px-4 py-3 text-sm text-center font-bold text-[#8B0000]">${item.revisions}</td>` : ''}
-                                </tr>
-                            `;
-                        });
-                    }
-                    html += '</tbody></table>';
-                    contentElem.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Error fetching details:', error);
-                    contentElem.innerHTML = '<div class="text-center py-20 text-red-500">Failed to load data. Please try again.</div>';
-                });
+        function trapFocusInModal(modalElem, e) {
+            if (e.key !== 'Tab') return;
+            const focusable = modalElem.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey) {
+                if (document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                }
+            } else {
+                if (document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
         }
 
-        function closeDetailsModal() {
-            const modal = document.getElementById('detailsModal');
-            const panel = document.getElementById('detailsModalPanel');
-            modal.classList.add('opacity-0');
-            panel.classList.remove('scale-100');
-            panel.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        function openFilterModal() {
+            lastFocusedElement = document.activeElement;
+            const filterModal = document.getElementById('filterModal');
+            const filterModalPanel = document.getElementById('filterModalPanel');
+            if (!filterModal) return;
+            
+            filterModal.classList.remove('hidden');
+            setTimeout(() => {
+                filterModal.classList.remove('opacity-0');
+                filterModalPanel.classList.remove('translate-x-full');
+                filterModalPanel.classList.add('translate-x-0');
+                const firstBtn = filterModal.querySelector('button[aria-label="Close filter drawer"]');
+                if (firstBtn) firstBtn.focus();
+            }, 10);
+        }
+
+        function closeFilterModal() {
+            const filterModal = document.getElementById('filterModal');
+            const filterModalPanel = document.getElementById('filterModalPanel');
+            if (!filterModal) return;
+
+            filterModal.classList.add('opacity-0');
+            filterModalPanel.classList.remove('translate-x-0');
+            filterModalPanel.classList.add('translate-x-full');
+            
+            setTimeout(() => {
+                filterModal.classList.add('hidden');
+                if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                    lastFocusedElement.focus();
+                }
+            }, 300);
         }
 
         function openSeeAllModal() {
+            lastFocusedElement = document.activeElement;
             const modal = document.getElementById('seeAllModal');
             const panel = document.getElementById('seeAllModalPanel');
             modal.classList.remove('hidden');
@@ -1037,15 +1229,211 @@
                 modal.classList.remove('opacity-0');
                 panel.classList.remove('translate-x-full');
                 panel.classList.add('translate-x-0');
+                const closeBtn = modal.querySelector('button[aria-label="Close all submitters modal"]');
+                if (closeBtn) closeBtn.focus();
             }, 10);
         }
+
         function closeSeeAllModal() {
             const modal = document.getElementById('seeAllModal');
             const panel = document.getElementById('seeAllModalPanel');
             modal.classList.add('opacity-0');
             panel.classList.remove('translate-x-0');
             panel.classList.add('translate-x-full');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                    lastFocusedElement.focus();
+                }
+            }, 300);
+        }
+
+        // Client-side in-memory details cache for instant 0ms modal re-renders
+        const detailsCache = new Map();
+        let detailsAbortController = null;
+
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function renderDetailsTable(data, type, contentElem) {
+            if (data.length === 0) {
+                contentElem.innerHTML = `
+                    <div class="text-center py-16 px-4">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-400 mb-3 shadow-xs">
+                            <i class="fas fa-folder-open text-xl" aria-hidden="true"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-slate-700">No Submissions Found</h4>
+                        <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">There are no records matching this category in the selected timeframe. Try broadening your date or status filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const getStatusBadge = (status) => {
+                const s = (status || '').toLowerCase();
+                if (s.includes('approved') || s.includes('complete') || s.includes('exempt')) {
+                    return 'bg-emerald-50 text-emerald-800 border border-emerald-200/80';
+                }
+                if (s.includes('review') || s.includes('received')) {
+                    return 'bg-blue-50 text-blue-700 border border-blue-200/80';
+                }
+                if (s.includes('revis')) {
+                    return 'bg-amber-50 text-amber-800 border border-amber-200/80';
+                }
+                return 'bg-slate-100 text-slate-700 border border-slate-200/80';
+            };
+
+            let html = '<div class="overflow-x-auto w-full"><table class="w-full text-left border-collapse">';
+            if (type === 'researchers') {
+                html += `
+                    <thead>
+                        <tr class="text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/75">
+                            <th scope="col" class="px-4 py-3">Name</th>
+                            <th scope="col" class="px-4 py-3">Email</th>
+                            <th scope="col" class="px-4 py-3">Affiliation</th>
+                            <th scope="col" class="px-4 py-3">College</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                `;
+                data.forEach(item => {
+                    const safeName = escapeHtml(item.name || 'Unspecified');
+                    const safeEmail = escapeHtml(item.email || '—');
+                    const safeAffil = escapeHtml(item.affiliation || '—');
+                    const safeCollege = escapeHtml(item.college || '—');
+                    html += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-[200px] truncate" title="${safeName}">${safeName}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600 max-w-[220px] truncate" title="${safeEmail}">${safeEmail}</td>
+                            <td class="px-4 py-3 text-sm"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.affiliation === 'Internal' ? 'bg-blue-50 text-blue-700 border-blue-200/80' : 'bg-orange-50 text-orange-700 border-orange-200/80'}">${safeAffil}</span></td>
+                            <td class="px-4 py-3 text-sm text-slate-500 max-w-[180px] truncate" title="${safeCollege}">${safeCollege}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                html += `
+                    <thead>
+                        <tr class="text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/75">
+                            <th scope="col" class="px-4 py-3">Protocol Title</th>
+                            <th scope="col" class="px-4 py-3">Researcher</th>
+                            <th scope="col" class="px-4 py-3">Status</th>
+                            <th scope="col" class="px-4 py-3">Date</th>
+                            ${type === 'revisions' ? '<th scope="col" class="px-4 py-3 text-center">Revision #</th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                `;
+                data.forEach(item => {
+                    const safeTitle = escapeHtml(item.title || 'Untitled');
+                    const safeResearcher = escapeHtml(item.researcher || 'Unknown');
+                    const safeStatus = escapeHtml(item.status || 'Unknown');
+                    const safeDate = escapeHtml(item.date || '—');
+                    const safeRevisions = escapeHtml(item.revisions || '0');
+                    html += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-xs truncate" title="${safeTitle}">${safeTitle}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600 max-w-[180px] truncate" title="${safeResearcher}">${safeResearcher}</td>
+                            <td class="px-4 py-3 text-sm"><span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">${safeStatus}</span></td>
+                            <td class="px-4 py-3 text-sm text-slate-500 tabular-nums whitespace-nowrap">${safeDate}</td>
+                            ${type === 'revisions' ? `<td class="px-4 py-3 text-sm text-center font-bold text-[#8B0000] tabular-nums">${safeRevisions}</td>` : ''}
+                        </tr>
+                    `;
+                });
+            }
+            html += '</tbody></table></div>';
+            contentElem.innerHTML = html;
+        }
+
+        function openDetailsModal(type, title, extraParams = {}) {
+            lastFocusedElement = document.activeElement;
+            const modal = document.getElementById('detailsModal');
+            const panel = document.getElementById('detailsModalPanel');
+            const titleElem = document.getElementById('detailsModalTitle');
+            const contentElem = document.getElementById('detailsModalContent');
+
+            titleElem.innerText = title;
+
+            // Generate deterministic cache key
+            const params = new URLSearchParams(window.location.search);
+            params.set('type', type);
+            Object.entries(extraParams).forEach(([key, value]) => params.set(key, value));
+            const cacheKey = params.toString();
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                panel.classList.remove('scale-95');
+                panel.classList.add('scale-100');
+                const closeBtn = modal.querySelector('button[aria-label="Close details modal"]');
+                if (closeBtn) closeBtn.focus();
+            }, 10);
+
+            // Instant 0ms cache retrieval if already fetched
+            if (detailsCache.has(cacheKey)) {
+                renderDetailsTable(detailsCache.get(cacheKey), type, contentElem);
+                return;
+            }
+
+            // Abort previous in-flight request to avoid race condition
+            if (detailsAbortController) {
+                detailsAbortController.abort();
+            }
+            detailsAbortController = new AbortController();
+            const signal = detailsAbortController.signal;
+
+            contentElem.innerHTML = '<div class="flex items-center justify-center py-20"><i class="fas fa-spinner fa-spin text-4xl text-[#8B0000]" aria-hidden="true"></i></div>';
+
+            fetch(`{{ route('admin.analytics.details') }}?${cacheKey}`, { signal })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    detailsCache.set(cacheKey, data);
+                    renderDetailsTable(data, type, contentElem);
+                })
+                .catch(error => {
+                    if (error.name === 'AbortError') return;
+                    console.error('Error fetching details:', error);
+                    const safeTitle = title.replace(/'/g, "\\'");
+                    const safeParams = JSON.stringify(extraParams).replace(/"/g, '&quot;');
+                    contentElem.innerHTML = `
+                        <div class="text-center py-16 px-4">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-50 text-red-600 mb-3 shadow-xs">
+                                <i class="fas fa-exclamation-triangle text-xl" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="text-base font-bold text-slate-800 mb-1">Unable to Load Category Details</h4>
+                            <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">A network error or timeout occurred while retrieving records. Please check your connection and try again.</p>
+                            <button type="button" onclick="openDetailsModal('${type}', '${safeTitle}', ${safeParams})" class="inline-flex items-center gap-2 px-4 py-2 bg-[#8B0000] hover:bg-red-900 text-white rounded-xl text-xs font-bold tracking-wider transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                <i class="fas fa-redo-alt text-xs" aria-hidden="true"></i> Retry Request
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+
+        function closeDetailsModal() {
+            if (detailsAbortController) {
+                detailsAbortController.abort();
+            }
+            const modal = document.getElementById('detailsModal');
+            const panel = document.getElementById('detailsModalPanel');
+            modal.classList.add('opacity-0');
+            panel.classList.remove('scale-100');
+            panel.classList.add('scale-95');
+            setTimeout(() => { 
+                modal.classList.add('hidden'); 
+                if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                    lastFocusedElement.focus();
+                }
+            }, 300);
         }
 
         // Move modals to body to avoid stacking context issues with header
@@ -1056,6 +1444,27 @@
             if (filterModal) document.body.appendChild(filterModal);
             if (seeAllModal) document.body.appendChild(seeAllModal);
             if (detailsModal) document.body.appendChild(detailsModal);
+        });
+
+        // Global Modal Keyboard Management (Escape to dismiss, Tab to trap)
+        document.addEventListener('keydown', function(e) {
+            const filterModal = document.getElementById('filterModal');
+            const seeAllModal = document.getElementById('seeAllModal');
+            const detailsModal = document.getElementById('detailsModal');
+
+            const activeModal = [filterModal, seeAllModal, detailsModal].find(
+                m => m && !m.classList.contains('hidden') && !m.classList.contains('opacity-0')
+            );
+
+            if (!activeModal) return;
+
+            if (e.key === 'Escape') {
+                if (activeModal === filterModal) closeFilterModal();
+                if (activeModal === seeAllModal) closeSeeAllModal();
+                if (activeModal === detailsModal) closeDetailsModal();
+            } else if (e.key === 'Tab') {
+                trapFocusInModal(activeModal, e);
+            }
         });
     </script>
 </x-admin_layout>

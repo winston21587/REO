@@ -20,19 +20,13 @@
 </head>
 
 <body class="bg-slate-50 text-slate-800 antialiased">
+    <x-toast />
     <div class="min-h-screen flex items-center justify-center p-8 bg-white relative">
         <div class="w-full max-w-md relative z-10">
             <div class="text-center md:text-left mb-10">
                 <h2 class="text-3xl font-bold text-slate-900 font-heading">Change Your Password</h2>
                 <p class="mt-2 text-slate-500">For security reasons, please change your password before continuing to your account.</p>
             </div>
-
-            @if(session('error'))
-                <div class="bg-red-50 border border-red-200 text-red-800 text-xs font-bold px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
-                    <i class="fas fa-exclamation-circle text-red-600"></i>
-                    {{ session('error') }}
-                </div>
-            @endif
 
             <form method="POST" action="{{ route('password.updateFirstLogin') }}" class="space-y-6">
                 @csrf

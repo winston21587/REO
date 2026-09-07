@@ -11,6 +11,7 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('images/reoc-nobg.png') }}" >
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -18,6 +19,7 @@
     </style>
 </head>
 <body class="antialiased h-screen flex items-center justify-center overflow-hidden bg-[#1a0505]">
+    <x-toast />
 
     <div class="fixed inset-0 z-0">
         <img src="{{ asset('images/wmsu2.jpg') }}" alt="WMSU Background" class="w-full h-full object-cover opacity-40">
@@ -40,16 +42,6 @@
             </div>
 
             <div class="p-8 md:p-10">
-                @if ($errors->any())
-                    <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-                        <ul class="list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <form action="{{ route('password.update') }}" method="POST" class="space-y-5">
                     @csrf
                     <input type="hidden" name="email" value="{{ request()->email }}">

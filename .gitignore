@@ -29,11 +29,12 @@ Thumbs.db
 /storage/app/public/recommendation_letters/*.pdf
 /storage/app/public/recommendation_letters/generated/
 
-# AI Skills
-/.agents/skills/
-/.claude/skills/
+# AI Skills & Agent Configurations
+/.agents/
+/.claude/
 /skills-lock.json
+/.impeccable
 /DESIGN.md
 /PRODUCT.md
 design.json
-.impeccable
+/scratch/

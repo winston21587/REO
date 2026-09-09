@@ -32,12 +32,21 @@
 
                 <!-- Modal Body -->
                 <div class="p-6">
-                    <!-- Protocol Title Card -->
-                    <div class="mb-5 bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1 block flex items-center gap-1">
-                            <i class="fas fa-file-alt text-[10px] text-slate-400"></i> Protocol Title
-                        </span>
-                        <p class="text-xs sm:text-sm font-semibold text-slate-800 leading-snug break-words" id="ai-predict-modal-title">Loading...</p>
+                    <!-- Protocol Title & Context Card -->
+                    <div class="mb-5 bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 space-y-2">
+                        <div>
+                            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1 block flex items-center gap-1">
+                                <i class="fas fa-file-alt text-[10px] text-slate-400"></i> Protocol Title
+                            </span>
+                            <p class="text-xs sm:text-sm font-semibold text-slate-800 leading-snug break-words" id="ai-predict-modal-title">Loading...</p>
+                        </div>
+                        <!-- Dynamic Metadata Badges -->
+                        <div id="ai-predict-metadata-badges" class="hidden flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-200/60">
+                            <span id="ai-meta-category" class="hidden px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-700"></span>
+                            <span id="ai-meta-project" class="hidden px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 border border-blue-200 text-blue-800"></span>
+                            <span id="ai-meta-course" class="hidden px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-800"></span>
+                            <span id="ai-meta-consent" class="hidden px-2 py-0.5 rounded-md text-[10px] font-bold"></span>
+                        </div>
                     </div>
 
                     <!-- Loader State -->
@@ -174,6 +183,7 @@
         resultContainer.classList.add('hidden');
         errorContainer.classList.add('hidden');
         reasoningWrapper.classList.add('hidden');
+        document.getElementById('ai-predict-metadata-badges').classList.add('hidden');
 
         // Check if there is an existing prediction cached in the database
         if (existingSuggestion && existingSuggestion !== 'null' && existingSuggestion !== '') {
@@ -226,7 +236,7 @@
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ text: title })
+            body: JSON.stringify({ text: title, protocol_id: currentPredictId })
         })
         .then(res => res.json())
         .then(data => {
@@ -242,6 +252,53 @@
                 // Set model tag if provided
                 if (data.model) {
                     modelTag.innerText = data.model;
+                }
+
+                // Render Metadata Badges
+                const metaContainer = document.getElementById('ai-predict-metadata-badges');
+                const metaCategory = document.getElementById('ai-meta-category');
+                const metaProject = document.getElementById('ai-meta-project');
+                const metaCourse = document.getElementById('ai-meta-course');
+                const metaConsent = document.getElementById('ai-meta-consent');
+
+                if (data.metadata && Object.keys(data.metadata).length > 0) {
+                    metaContainer.classList.remove('hidden');
+
+                    if (data.metadata.category) {
+                        metaCategory.innerText = data.metadata.category;
+                        metaCategory.classList.remove('hidden');
+                    } else {
+                        metaCategory.classList.add('hidden');
+                    }
+
+                    if (data.metadata.project_type) {
+                        metaProject.innerText = data.metadata.project_type;
+                        metaProject.classList.remove('hidden');
+                    } else {
+                        metaProject.classList.add('hidden');
+                    }
+
+                    if (data.metadata.course_type) {
+                        metaCourse.innerText = data.metadata.course_type;
+                        metaCourse.classList.remove('hidden');
+                    } else {
+                        metaCourse.classList.add('hidden');
+                    }
+
+                    if (typeof data.metadata.has_consent_form !== 'undefined') {
+                        metaConsent.classList.remove('hidden');
+                        if (data.metadata.has_consent_form) {
+                            metaConsent.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-1';
+                            metaConsent.innerHTML = '<i class="fas fa-file-signature text-[9px]"></i> Consent Form (FR.005) Attached';
+                        } else {
+                            metaConsent.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1';
+                            metaConsent.innerHTML = '<i class="fas fa-info-circle text-[9px]"></i> No Consent Form (FR.005)';
+                        }
+                    } else {
+                        metaConsent.classList.add('hidden');
+                    }
+                } else {
+                    metaContainer.classList.add('hidden');
                 }
 
                 // Set reason

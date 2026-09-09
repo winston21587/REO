@@ -39,6 +39,29 @@ Thumbs.db
 design.json
 /scratch/
 /design-system
+# Manuals, Flowcharts & Internal Ethics Reference Documents
+REOC_MANUAL.*
+REOC_MANUAL.md
+PROCEDURE_FLOWCHART.*
+PROCEDURE_FLOWCHART.pdf
+PROCEDURE_FLOWCHART.md
+
+# Local Environment & Secrets
+.env.local
+.env.*.local
+
+# IDE, Agent & Tool Artifacts
+.gemini/
+.antigravity/
+
+# Temporary, Backup & OS Files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+Desktop.ini
+ehthumbs.db
 
 # Impeccable runtime & visual review artifacts
 .impeccable/config.local.json
@@ -48,6 +71,8 @@ design.json
 !.impeccable/config.json
 !.impeccable/design.json
 
-# Playwright review screenshots
+# Playwright & Testing Reports
 tests/screenshots/
 test-results/
+playwright-report/
+blob-report/

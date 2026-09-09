@@ -16,24 +16,83 @@ class PredictController extends Controller
      */
     public function predict(Request $request)
     {
+        @set_time_limit(120);
+        @ini_set('max_execution_time', '120');
+
         $request->validate([
             'text' => 'required|string',
+            'protocol_id' => 'nullable|integer',
         ]);
 
         $title = $request->text;
+        $protocolId = $request->input('protocol_id');
+        $protocolMetadata = [];
+        $contextLines = [];
+
+        if ($protocolId) {
+            $protocol = \App\Models\Research_title::with(['adminFiles', 'files'])->find($protocolId);
+            if ($protocol) {
+                if (empty($title) || $title === 'Loading...') {
+                    $title = $protocol->Study_Protocol_title;
+                }
+
+                if (!empty($protocol->Research_Category)) {
+                    $protocolMetadata['category'] = $protocol->Research_Category;
+                    $contextLines[] = "- Research Category: " . $protocol->Research_Category;
+                }
+                if (!empty($protocol->project_type)) {
+                    $protocolMetadata['project_type'] = $protocol->project_type;
+                    $contextLines[] = "- Project Type: " . $protocol->project_type;
+                }
+                if (!empty($protocol->course_type)) {
+                    $protocolMetadata['course_type'] = $protocol->course_type;
+                    $contextLines[] = "- Academic Level / Course: " . $protocol->course_type;
+                }
+
+                $files = $protocol->adminFiles->isNotEmpty() ? $protocol->adminFiles : $protocol->files;
+                if ($files && $files->isNotEmpty()) {
+                    $docCategories = $files->map(function ($f) {
+                        return trim($f->category ?: pathinfo($f->filename, PATHINFO_FILENAME));
+                    })->filter()->unique()->values()->all();
+
+                    if (!empty($docCategories)) {
+                        $protocolMetadata['attached_documents'] = $docCategories;
+                        $contextLines[] = "- Submitted Protocol Documents: " . implode(', ', $docCategories);
+
+                        $hasConsent = collect($docCategories)->contains(function ($cat) {
+                            return stripos($cat, 'consent') !== false || stripos($cat, 'icf') !== false;
+                        });
+                        $protocolMetadata['has_consent_form'] = $hasConsent;
+                        $contextLines[] = "- Human Informed Consent Form (FR.005) Present: " . ($hasConsent ? "YES (Direct human participant interaction confirmed)" : "NO / Not attached");
+                    }
+                }
+            }
+        }
+
+        $contextStr = "Research Title: \"$title\"\n";
+        if (!empty($contextLines)) {
+            $contextStr .= "Protocol Context & Submission Metadata (from WMSU REOC Submission):\n" . implode("\n", $contextLines) . "\n";
+        }
         
-        $prompt = "Based ONLY on the research title, categorize it into EXACTLY ONE IRB Review Type.\n\n"
-            . "DEFINITIONS:\n"
-            . "- EXEMPT: Research with NO risk or MINIMAL risk, AND no identifiable data. Examples: anonymous surveys on non-sensitive topics, educational tests, analysis of existing public data, research in normal educational settings, anonymous interviews. NO vulnerable populations. NO identifiable private information.\n\n"
-            . "- EXPEDITED: Research with MINIMAL risk BUT involves identifiable data OR specific procedures. Examples: collection of blood samples, non-invasive procedures (MRI, EKG, ultrasound, EEG), moderate exercise, voice recordings, focus groups with sensitive topics, collection of hair/saliva/nails, existing identifiable data, studies with pregnant women (minimal risk only).\n\n"
-            . "- FULL BOARD: Research with MORE THAN MINIMAL risk OR involves high-risk VULNERABLE POPULATIONS. Examples: studies with children (unless minimal risk + educational setting), prisoners, cognitively impaired persons, invasive procedures (biopsies, surgery, catheters), experimental drugs/devices, deception studies causing distress, collection of highly sensitive data (HIV status, illegal activities, sexual abuse history).\n\n"
-            . "KEY INDICATORS:\n"
-            . "- EXEMPT: anonymous, public data, educational tests, normal educational practices, no identifiers\n"
-            . "- EXPEDITED: blood draw, MRI, EEG, EKG, ultrasound, saliva, hair, nails, focus group, identifiable survey, voice recording, moderate exercise, existing identifiable data, pregnant women\n"
-            . "- FULL BOARD: children, prisoners, cognitively impaired, invasive procedure, biopsy, surgery, experimental drug, deception, trauma, abuse, HIV, illegal behavior, more than minimal risk\n\n"
-            . "IMPORTANT: Default to EXEMPT for truly anonymous minimal risk studies. Use EXPEDITED for minimal risk studies with identifiable data or specific allowed procedures. Use FULL BOARD for anything exceeding minimal risk.\n\n"
-            . "Research Title: \"$title\"\n\n"
-            . "Respond with ONLY the category name (EXEMPT, EXPEDITED, or FULL BOARD) followed by a colon and a one-sentence reason.\n"
+        $prompt = "Evaluate and classify the research protocol into EXACTLY ONE WMSU REOC Review Type pursuant to the Philippine National Ethical Guidelines for Research Involving Human Participants (NEGRIHP 2022) and the WMSU REOC Standard Operating Procedures Manual (SOP 04, SOP 05, SOP 06).\n\n"
+            . "WMSU REOC CRITERIA & PATHWAYS:\n"
+            . "1. EXEMPT (SOP 04 - Exempt from Review):\n"
+            . "   - Protocols with no human participants, OR studies not involving more than minimal risk/harm.\n"
+            . "   - Educational evaluations, curriculum analysis, institutional quality assurance, consumer acceptability, public health surveillance without individual identifiers.\n"
+            . "   - Surveys, interviews, or observations of public behavior where responses do NOT place participants at legal, financial, or reputational liability, AND identity cannot be readily ascertained directly or through linked identifiers.\n"
+            . "   - Secondary analysis of publicly available data or archived unidentifiable records.\n"
+            . "   - Participants do NOT belong to vulnerable groups and no vulnerability issues arise.\n\n"
+            . "2. EXPEDITED (SOP 05 - Expedited Review):\n"
+            . "   - Research involving human participants that entails NO MORE than MINIMAL RISK.\n"
+            . "   - Participants do NOT belong to vulnerable groups, and study procedures do NOT generate vulnerability.\n"
+            . "   - Standard non-invasive biological/physiological data collection (e.g., blood pressure, saliva, hair, non-invasive imaging, physical fitness tests, routine clinical measurements without added hazard).\n"
+            . "   - Primary data collection with human respondents (surveys, interviews, focus groups) where identifiable private data is collected but risk remains minimal.\n\n"
+            . "3. FULL BOARD (SOP 06 - Full Review):\n"
+            . "   - Research that entails MORE THAN MINIMAL RISK to participants.\n"
+            . "   - Participants BELONG TO VULNERABLE GROUPS (e.g., children/minors, pregnant women with fetal risk, prisoners/inmates, indigenous cultural communities, persons with mental/cognitive disabilities, victims of trauma/abuse, institutionalized persons, severely impoverished/marginalized populations).\n"
+            . "   - Study procedures GENERATE VULNERABILITY (e.g., clinical trials, experimental drugs/devices, invasive medical procedures, surgical/biopsy interventions, highly sensitive topics like HIV/STDs, domestic violence, illicit drug use, suicide, criminal acts).\n\n"
+            . $contextStr . "\n"
+            . "Respond with ONLY the category name (EXEMPT, EXPEDITED, or FULL BOARD) followed by a colon and a concise justification citing the risk level, participant vulnerability, or procedures according to NEGRIHP 2022 / WMSU REOC SOP guidelines. Keep reasoning brief and concise.\n"
             . "Category:";
 
         $openRouterKey = config('services.openrouter.api_key', env('OPENROUTER_API_KEY'));
@@ -45,7 +104,7 @@ class PredictController extends Controller
             if (!empty($openRouterKey)) {
                 Log::info('Attempting OpenRouter AI Prediction for: ' . $title);
 
-                $response = Http::timeout(60)->withHeaders([
+                $response = Http::timeout(25)->withHeaders([
                     'Authorization' => 'Bearer ' . $openRouterKey,
                     'Content-Type' => 'application/json',
                     'HTTP-Referer' => config('app.url', 'http://reo.test'),
@@ -55,7 +114,7 @@ class PredictController extends Controller
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => 'You are an IRB classification expert. Analyze research titles and categorize them as EXEMPT, EXPEDITED, or FULL BOARD review types based on federal guidelines. Always respond with EXACTLY the category name followed by a colon and a brief reason.'
+                            'content' => 'You are the AI Ethics Review Specialist for the Western Mindanao State University Research Ethics Oversight Committee (WMSU REOC). You classify research protocols into EXEMPT, EXPEDITED, or FULL BOARD review types strictly in accordance with the Philippine National Ethical Guidelines for Research Involving Human Participants (NEGRIHP 2022) and the WMSU REOC SOP Manual (SOP 04, SOP 05, SOP 06). Always respond with EXACTLY the category name followed by a colon and a clear ethical rationale.'
                         ],
                         [
                             'role' => 'user',
@@ -64,13 +123,13 @@ class PredictController extends Controller
                     ],
                     'reasoning' => ['enabled' => true],
                     'temperature' => 0.1,
-                    'max_tokens' => 300,
+                    'max_tokens' => 450,
                 ]);
 
                 if ($response->successful()) {
                     $json = $response->json();
                     $choice = $json['choices'][0]['message'] ?? [];
-                    $rawOutput = $choice['content'] ?? '';
+                    $rawOutput = trim($choice['content'] ?? '');
                     $reasoning = $choice['reasoning'] ?? ($choice['reasoning_details'] ?? null);
                     if (is_array($reasoning)) {
                         $reasoning = json_encode($reasoning, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -79,6 +138,13 @@ class PredictController extends Controller
 
                     $label = $this->extractLabelFromOutput($rawOutput ?: ($reasoning ?? ''));
                     $reasonText = $this->extractReasonFromOutput($rawOutput);
+                    
+                    if (empty($reasonText) && !empty($reasoning)) {
+                        $reasonText = $this->extractReasonFromOutput($reasoning);
+                    }
+                    if (empty($reasonText)) {
+                        $reasonText = "Evaluated pursuant to WMSU REOC SOP guidelines based on protocol metadata and risk indicators.";
+                    }
 
                     return response()->json([
                         'success' => true,
@@ -88,6 +154,7 @@ class PredictController extends Controller
                         'reasoning' => $reasoning,
                         'provider' => 'OpenRouter',
                         'model' => $openRouterModel,
+                        'metadata' => $protocolMetadata,
                     ]);
                 } else {
                     Log::warning('OpenRouter API returned error: ' . $response->status() . ' - ' . $response->body());
@@ -104,7 +171,7 @@ class PredictController extends Controller
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => 'You are an IRB classification expert. Analyze research titles and categorize them as EXEMPT, EXPEDITED, or FULL BOARD review types based on federal guidelines. Always respond with EXACTLY the category name followed by a colon and a brief reason.'
+                            'content' => 'You are the AI Ethics Review Specialist for the Western Mindanao State University Research Ethics Oversight Committee (WMSU REOC). You classify research protocols into EXEMPT, EXPEDITED, or FULL BOARD review types strictly in accordance with the Philippine National Ethical Guidelines for Research Involving Human Participants (NEGRIHP 2022) and the WMSU REOC SOP Manual (SOP 04, SOP 05, SOP 06). Always respond with EXACTLY the category name followed by a colon and a clear ethical rationale.'
                         ],
                         [
                             'role' => 'user',
@@ -125,29 +192,34 @@ class PredictController extends Controller
                     'raw_prediction' => $rawOutput,
                     'reason' => $reasonText,
                     'provider' => 'Groq',
+                    'metadata' => $protocolMetadata,
                 ]);
             }
 
             // 3. Resilient heuristic fallback
-            $label = $this->heuristicPredict($title);
+            $label = $this->heuristicPredict($title, $protocolMetadata);
             return response()->json([
                 'success' => true,
                 'label' => $label,
                 'raw_prediction' => $label . ': Heuristic classification based on keyword indicators.',
                 'reason' => 'Heuristic classification based on protocol title indicators.',
                 'provider' => 'Heuristic',
+                'metadata' => $protocolMetadata,
             ]);
 
         } catch (\Exception $e) {
             Log::error('AI Prediction Error: ' . $e->getMessage());
             
-            $fallbackLabel = $this->heuristicPredict($title);
+            $fallbackLabel = $this->heuristicPredict($title, $protocolMetadata);
             return response()->json([
                 'success' => true,
                 'label' => $fallbackLabel,
                 'raw_prediction' => 'Fallback: ' . $e->getMessage(),
-                'reason' => 'Estimated based on protocol keywords.',
+                'reason' => 'Estimated based on WMSU REOC SOP guidelines and protocol keywords.',
                 'fallback' => true,
+                'provider' => 'Heuristic Fallback',
+                'model' => 'REOC Guideline Engine',
+                'metadata' => $protocolMetadata,
             ]);
         }
     }
@@ -181,21 +253,44 @@ class PredictController extends Controller
     private function extractReasonFromOutput($rawOutput)
     {
         if (empty($rawOutput)) return '';
-        if (preg_match('/^(?:EXEMPT|EXPEDITED|FULL BOARD)\s*:\s*(.+)$/is', trim($rawOutput), $matches)) {
-            return trim($matches[1]);
+        $clean = trim($rawOutput);
+
+        // Match standard format: "EXEMPT: <reason>" or "**EXEMPT**: <reason>"
+        if (preg_match('/(?:\*\*|#)*(?:EXEMPT|EXPEDITED|FULL BOARD)(?:\*\*|#)*\s*:\s*([^\n\r]+)/i', $clean, $matches)) {
+            $reason = trim($matches[1]);
+            return preg_replace('/[*_`]+$/', '', $reason);
         }
-        return trim($rawOutput);
+
+        // If it's a long reasoning stream, extract a concise summary sentence
+        if (strlen($clean) > 250) {
+            if (preg_match('/(?:therefore|in conclusion|hence|conservative classification|recommendation is to classify as)\s*([^.\n]+\.)/i', $clean, $matches)) {
+                return ucfirst(trim($matches[0]));
+            }
+            if (preg_match('/^([^.\n]{20,200}\.)/s', $clean, $matches)) {
+                return trim($matches[1]);
+            }
+            return "Evaluated under WMSU REOC SOP guidelines and NEGRIHP 2022 standards based on protocol risk and participant vulnerability.";
+        }
+
+        return $clean;
     }
 
-    private function heuristicPredict($title)
+    private function heuristicPredict($title, $protocolMetadata = [])
     {
         $lower = strtolower($title);
-        if (preg_match('/\b(child|children|pediatric|prisoner|prison|inmate|biopsy|surgery|clinical trial|experimental drug|hiv|trauma|abuse|vulnerable|suicide)\b/i', $lower)) {
+        // Vulnerable groups or procedures generating vulnerability (SOP 06 / NEGRIHP 2022)
+        if (preg_match('/\b(child|children|pediatric|minor|minors|infant|infants|prisoner|prisoners|prison|inmate|inmates|indigenous|ip|tribal|pregnant|fetus|fetal|mental health|psychiatric|cognitive|impaired|disability|disabled|hiv|aids|trauma|abuse|violence|suicide|addiction|illicit|drug use|clinical trial|experimental drug|novel drug|therapy|intervention|surgery|surgical|biopsy|catheter|invasive)\b/i', $lower)) {
             return 'Full Board Review';
         }
-        if (preg_match('/\b(blood|serum|saliva|dna|genetic|mri|eeg|ekg|ultrasound|exercise|patient|identifiable|interview|focus group|audio|video|pregnant)\b/i', $lower)) {
+        // Minimal risk with human interaction / physiological measures (SOP 05 / NEGRIHP 2022)
+        if (preg_match('/\b(patient|patients|nurses|teachers|students|employees|farmers|consumers|respondents|participants|survey|interview|questionnaire|focus group|perception|lived experience|attitude|satisfaction|blood pressure|cortisol|saliva|biomarker|eeg|ekg|mri|ultrasound|exercise|fitness|anthropometric)\b/i', $lower)) {
             return 'Expedited Review';
         }
+        // If human informed consent form is explicitly attached, human interaction is present -> Expedited minimum
+        if (!empty($protocolMetadata['has_consent_form'])) {
+            return 'Expedited Review';
+        }
+        // Non-human, secondary data, curriculum, public evaluation (SOP 04 / NEGRIHP 2022)
         return 'Exempt Review';
     }
 
@@ -227,6 +322,9 @@ class PredictController extends Controller
  */
     public function suggestReviewer(Request $request)
     {
+        @set_time_limit(120);
+        @ini_set('max_execution_time', '120');
+
         $request->validate([
             'title' => 'required|string',
         ]);
@@ -282,15 +380,15 @@ class PredictController extends Controller
             $reviewerOptions .= ($index + 1) . ". " . $reviewer['name'] . "\n   Expertise: " . $reviewer['expertise'] . "\n\n";
         }
         
-        $systemPrompt = "You are an expert research coordinator. Your task is to assign the most appropriate reviewer for a research project.\n\n"
-            . "Available reviewers and their ACTUAL EXPERTISE (from their profiles):\n{$reviewerOptions}\n"
+        $systemPrompt = "You are the REOC Reviewer Assignment Coordinator for the Western Mindanao State University Research Ethics Oversight Committee (WMSU REOC).\n\n"
+            . "Pursuant to WMSU REOC SOP 05 (Expedited Review) and SOP 06 (Full Review), the assignment of primary reviewers must be based on the alignment of the research protocol topic with the actual field of expertise of the reviewers to ensure appropriate and knowledgeable evaluation.\n\n"
+            . "Available REOC Reviewers and their ACTUAL EXPERTISE:\n{$reviewerOptions}\n"
             . "INSTRUCTIONS:\n"
-            . "1. Read the research title carefully\n"
-            . "2. Compare the research topic with each reviewer's EXPERTISE (listed above)\n"
-            . "3. Choose the reviewer whose expertise MOST CLOSELY matches the research topic\n"
-            . "4. Consider keywords in the title and match them to the expertise areas\n"
-            . "5. Respond with ONLY the reviewer's FULL NAME exactly as written above\n"
-            . "6. Do not add any extra text, punctuation, or explanation\n\n"
+            . "1. Read the research title carefully.\n"
+            . "2. Compare the research topic with each reviewer's field of expertise.\n"
+            . "3. Choose the reviewer whose expertise MOST CLOSELY aligns with the research subject matter.\n"
+            . "4. Respond with ONLY the reviewer's FULL NAME exactly as listed above.\n"
+            . "5. Do not include extra explanation or punctuation.\n\n"
             . "Valid reviewer names: " . implode(', ', array_column($reviewerList, 'name'));
         
         $userPrompt = "Research Title: \"$title\"\n\n"
@@ -301,7 +399,7 @@ class PredictController extends Controller
             $response = null;
 
             if (!empty($openRouterKey)) {
-                $response = Http::timeout(45)->withHeaders([
+                $response = Http::timeout(25)->withHeaders([
                     'Authorization' => 'Bearer ' . $openRouterKey,
                     'Content-Type' => 'application/json',
                     'HTTP-Referer' => config('app.url', 'http://reo.test'),
@@ -317,7 +415,7 @@ class PredictController extends Controller
                     'max_tokens' => 80,
                 ]);
             } elseif (!empty($groqKey)) {
-                $response = Http::timeout(45)->withHeaders([
+                $response = Http::timeout(25)->withHeaders([
                     'Authorization' => 'Bearer ' . $groqKey,
                     'Content-Type' => 'application/json',
                 ])->post('https://api.groq.com/openai/v1/chat/completions', [

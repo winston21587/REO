@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Research_title;
 use App\Models\researcher_files;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 use App\Models\Appointment;
@@ -1399,6 +1400,7 @@ class AdminController extends Controller
                     $reviewerActiveTitles[(string)$revId][] = [
                         'id' => $protocol->id,
                         'title' => $protocol->Study_Protocol_title,
+                        'Study_Protocol_title' => $protocol->Study_Protocol_title,
                     ];
                 }
             }
@@ -1543,7 +1545,7 @@ class AdminController extends Controller
                 $pendingQuery->orderBy('created_at', 'desc');
             }
 
-            $pendingSubmissions = $pendingQuery->paginate(5, ['*'], 'pending_page')->withQueryString();
+            $pendingSubmissions = $pendingQuery->paginate(4, ['*'], 'pending_page')->withQueryString();
         }
 
         // 3. Fetch Incomplete Submissions
@@ -1574,7 +1576,7 @@ class AdminController extends Controller
                 $incompleteQuery->orderBy('created_at', 'desc');
             }
 
-            $incompleteSubmissions = $incompleteQuery->paginate(5, ['*'], 'incomplete_page')->withQueryString();
+            $incompleteSubmissions = $incompleteQuery->paginate(4, ['*'], 'incomplete_page')->withQueryString();
         }
 
         // Check for AJAX Request
@@ -1751,367 +1753,370 @@ class AdminController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        $submission = Research_title::findOrFail($id);
-        $user = Researcher::find($submission->researcher_id);
+        return DB::transaction(function () use ($request, $id) {
+            $submission = Research_title::where('id', $id)->lockForUpdate()->firstOrFail();
+            $user = Researcher::find($submission->researcher_id);
 
-        $message = "";
-        $newStatus = "";
+            $message = "";
+            $newStatus = "";
 
-        // ---------------------------------------------------------
-        // CASE A: Request coming from Triage Modal (has 'classification')
-        // ---------------------------------------------------------
-        if ($request->has('classification')) {
-            // ... (Existing Triage Logic - Keep as is or modify if needed) ...
-            // For now, I'll assume this part remains for the "Initial Intake" page.
-            // If you want to unify, we can, but the user asked for "Applications" page update.
+            // ---------------------------------------------------------
+            // CASE A: Request coming from Triage Modal (has 'classification')
+            // ---------------------------------------------------------
+            if ($request->has('classification')) {
+                // ... (Existing Triage Logic - Keep as is or modify if needed) ...
+                // For now, I'll assume this part remains for the "Initial Intake" page.
+                // If you want to unify, we can, but the user asked for "Applications" page update.
 
-            if ($request->classification === 'Complete') {
-                $request->validate(['appointment_date' => 'required|date|after:tomorrow']);
-                $newStatus = 'Incomplete - Awaiting Hardcopy';
-                $submission->Status = $newStatus;
-                $submission->save();
-                $appointment = Appointment::create([
-                    'research_title_id' => $submission->id,
-                    'user_id' => $user->user_id,
-                    'appointment_date' => $request->appointment_date,
-                    'stage' => 'Hardcopy Submission',
-                ]);
-
-                // Auto-verify OR if admin checked the verify box
-                if ($request->has('verify_or') && !$submission->is_or_verified) {
-                    $submission->is_or_verified = true;
+                if ($request->classification === 'Complete') {
+                    $request->validate(['appointment_date' => 'required|date|after:tomorrow']);
+                    $newStatus = 'Incomplete - Awaiting Hardcopy';
+                    $submission->Status = $newStatus;
                     $submission->save();
-
-                    TitleLog::create([
-                        'research_title_id' => $submission->id,
-                        'user_id' => auth()->id(),
-                        'action' => 'Official Receipt Verified',
-                        'description' => "Admin verified the Official Receipt file during Initial Intake.",
-                    ]);
-                }
-
-                // Handle CV Verification action (can be done alongside Complete or Incomplete)
-                $this->handleCvAction($request, $submission);
-
-                $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
-                $message = "Your submission \"{$submission->Study_Protocol_title}\" document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
-
-            } elseif ($request->classification === 'Incomplete') {
-                $request->validate(['remarks' => 'nullable|string']);
-                $newStatus = 'Incomplete';
-                $submission->Status = $newStatus;
-                $submission->save();
-                $missingDocs = $request->input('missing_requirements', []);
-
-                // Store in Feedbacks Table
-                SubmissionFeedback::create([
-                    'research_title_id' => $submission->id,
-                    'user_id' => auth()->id(),
-                    'type' => 'admin_deficiency',
-                    'message' => $request->remarks,
-                    'missing_requirements' => $missingDocs,
-                ]);
-
-                $message = "Your submission \"{$submission->Study_Protocol_title}\" has been marked as Incomplete.";
-                if ($request->remarks) {
-                    $message .= "\n\nGeneral Remarks: " . $request->remarks;
-                }
-                if (!empty($missingDocs)) {
-                    $message .= "\n\nMissing Requirements / Actions Needed:";
-                    foreach ($missingDocs as $doc) {
-                        $message .= "\n- " . $doc;
-                    }
-                }
-
-                // Auto-verify OR if admin checked the verify box
-                if ($request->has('verify_or') && !$submission->is_or_verified) {
-                    $submission->is_or_verified = true;
-                    $submission->save();
-
-                    TitleLog::create([
-                        'research_title_id' => $submission->id,
-                        'user_id' => auth()->id(),
-                        'action' => 'Official Receipt Verified',
-                        'description' => "Admin verified the Official Receipt file during Initial Intake (Marked as Incomplete).",
-                    ]);
-                }
-
-                // Handle CV Verification action (can be done alongside Incomplete)
-                $this->handleCvAction($request, $submission);
-
-            } elseif ($request->classification === 'Undo') {
-                $newStatus = 'Pending';
-                $submission->Status = $newStatus;
-                $submission->save();
-                $message = "Your submission \"{$submission->Study_Protocol_title}\" status has been reverted to Pending.";
-
-                // Optional: Delete the "Incomplete" notification if you want to be clean
-                // UserNotification::where('research_id', $submission->id)
-                //     ->where('message', 'like', '%marked as Incomplete%')
-                //     ->delete();
-
-            } elseif ($request->classification === 'Revert Phase') {
-                $currentStatus = $submission->Status;
-
-                switch ($currentStatus) {
-                    case 'Reviewed':
-                        $newStatus = 'Under Review';
-                        $message = "Submission reverted back to Under Review.";
-                        break;
-                    case 'Under Review':
-                        $newStatus = 'Reviewer Assigned';
-                        $message = "Submission reverted back to Reviewer Assigned.";
-                        break;
-                    case 'Reviewer Assigned':
-                        $newStatus = 'Hardcopy Received';
-                        $submission->assigned_reviewers = null; // Unassign reviewers
-                        $message = "Reviewers successfully unassigned. Status reverted to Hardcopy Received.";
-                        break;
-                    case 'Hardcopy Received':
-                        $newStatus = 'Incomplete - Awaiting Hardcopy';
-                        $message = "Submission reverted back to Incomplete - Awaiting Hardcopy.";
-                        break;
-                    case 'Incomplete Hardcopy':
-                        $newStatus = 'Incomplete - Awaiting Hardcopy';
-                        $message = "Submission reverted back to Incomplete - Awaiting Hardcopy.";
-                        break;
-                    case 'Incomplete - Awaiting Hardcopy':
-                    default:
-                        $newStatus = 'Pending';
-                        // Delete the appointment
-                        Appointment::where('research_title_id', $submission->id)
-                            ->where('stage', 'Hardcopy Submission')
-                            ->delete();
-                        $message = "Submission completely reverted to Initial Intake (Pending). Appointment cancelled.";
-                        break;
-                }
-
-                $submission->Status = $newStatus;
-                $submission->save();
-
-
-            } elseif ($request->classification === 'Hardcopy Complete') {
-                $newStatus = 'Hardcopy Received';
-                $submission->Status = $newStatus;
-                if ($submission->Review_Type === 'N/A') {
-                    $submission->Review_Type = 'Unassigned';
-                }
-                $submission->save();
-
-                $message = "Your hardcopy for \"{$submission->Study_Protocol_title}\" has been received and verified.";
-
-            } elseif ($request->classification === 'Hardcopy Incomplete') {
-                $request->validate([
-                    'appointment_date' => 'required|date',
-                    'remarks' => 'nullable|string',
-                    'missing_requirements' => 'nullable|array',
-                ]);
-
-                $newStatus = 'Incomplete Hardcopy';
-                $submission->Status = $newStatus;
-                $submission->save();
-
-                $missingDocs = $request->input('missing_requirements', []);
-
-                SubmissionFeedback::create([
-                    'research_title_id' => $submission->id,
-                    'user_id' => auth()->id(),
-                    'type' => 'hardcopy_deficiency',
-                    'message' => $request->remarks,
-                    'missing_requirements' => $missingDocs,
-                ]);
-
-                $appointment = Appointment::where('research_title_id', $submission->id)
-                    ->where('stage', 'Hardcopy Submission')
-                    ->first();
-
-                if ($appointment) {
-                    $appointment->appointment_date = $request->appointment_date;
-                    $appointment->save();
-                } else {
-                    Appointment::create([
+                    $appointment = Appointment::create([
                         'research_title_id' => $submission->id,
                         'user_id' => $user->user_id,
                         'appointment_date' => $request->appointment_date,
                         'stage' => 'Hardcopy Submission',
                     ]);
-                }
 
-                $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
-                $message = "Your hardcopy submission for \"{$submission->Study_Protocol_title}\" is incomplete. Please submit the missing requirements by: {$dateFormatted}.";
+                    // Auto-verify OR if admin checked the verify box
+                    if ($request->has('verify_or') && !$submission->is_or_verified) {
+                        $submission->is_or_verified = true;
+                        $submission->save();
 
-                if ($request->remarks) {
-                    $message .= "\n\nGeneral Remarks: " . $request->remarks;
-                }
-                if (!empty($missingDocs)) {
-                    $message .= "\n\nMissing Requirements / Actions Needed:";
-                    foreach ($missingDocs as $doc) {
-                        $message .= "\n- " . $doc;
+                        TitleLog::create([
+                            'research_title_id' => $submission->id,
+                            'user_id' => auth()->id(),
+                            'action' => 'Official Receipt Verified',
+                            'description' => "Admin verified the Official Receipt file during Initial Intake.",
+                        ]);
                     }
-                }
-            }
-        }
-        // ---------------------------------------------------------
-        // CASE B: NEW Update Status Logic (Review Type + Appointment)
-        // Only fires when a non-empty review_type is actually submitted
-        // (prevents intercepting status-action-only submissions from the Revisions modal)
-        // ---------------------------------------------------------
-        elseif ($request->filled('review_type')) {
-            $request->validate([
-                'review_type' => 'required|string', // Expedited, Exempt, Full Review
-                'appointment_date' => 'required|date|after:tomorrow',
-            ]);
 
-            $submission->Review_Type = $request->review_type;
+                    // Handle CV Verification action (can be done alongside Complete or Incomplete)
+                    $this->handleCvAction($request, $submission);
 
-            // Only update system status if a definitive Status Action is selected.
-            // Apply the same action->status mapping as CASE C to avoid saving raw action names.
-            if ($request->filled('status_action')) {
-                $action = $request->status_action;
-                if ($action === 'Modifications Required') {
-                    $submission->Status = 'Waiting for Revision';
-                } elseif ($action === 'Approved') {
-                    $submission->Status = 'Approved';
-                } else {
-                    $submission->Status = $action; // fallback for any future actions
-                }
-            }
+                    $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
+                    $message = "Your submission \"{$submission->Study_Protocol_title}\" document check is Complete. Please submit the hardcopies by: {$dateFormatted}.";
 
-            $submission->save();
+                } elseif ($request->classification === 'Incomplete') {
+                    $request->validate(['remarks' => 'nullable|string']);
+                    $newStatus = 'Incomplete';
+                    $submission->Status = $newStatus;
+                    $submission->save();
+                    $missingDocs = $request->input('missing_requirements', []);
 
-            // Create Appointment
-            Appointment::create([
-                'research_title_id' => $submission->id,
-                'user_id' => $user->user_id,
-                'appointment_date' => $request->appointment_date,
-                'stage' => $request->review_type, // e.g., 'Expedited Review'
-            ]);
+                    // Store in Feedbacks Table
+                    SubmissionFeedback::create([
+                        'research_title_id' => $submission->id,
+                        'user_id' => auth()->id(),
+                        'type' => 'admin_deficiency',
+                        'message' => $request->remarks,
+                        'missing_requirements' => $missingDocs,
+                    ]);
 
-            $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
-            // Notify the user about the Review Type assignment
-            UserNotification::create([
-                'user_id' => $user->user_id,
-                'research_id' => $submission->id,
-                'title' => 'Status Update: Under Review',
-                'message' => "Your research protocol \"{$submission->Study_Protocol_title}\" has been assigned for {$request->review_type}.",
-                'type' => 'status_update',
-                'is_read' => false
-            ]);
+                    $message = "Your submission \"{$submission->Study_Protocol_title}\" has been marked as Incomplete.";
+                    if ($request->remarks) {
+                        $message .= "\n\nGeneral Remarks: " . $request->remarks;
+                    }
+                    if (!empty($missingDocs)) {
+                        $message .= "\n\nMissing Requirements / Actions Needed:";
+                        foreach ($missingDocs as $doc) {
+                            $message .= "\n- " . $doc;
+                        }
+                    }
 
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                ]);
-            }
+                    // Auto-verify OR if admin checked the verify box
+                    if ($request->has('verify_or') && !$submission->is_or_verified) {
+                        $submission->is_or_verified = true;
+                        $submission->save();
 
-            return redirect()->back()->with('success', 'Review Type updated. Please proceed to generate the Recommendation Letter.');
-        }
-        // ---------------------------------------------------------
-        // CASE C: Status Actions (Revision, Approved, Disapproved)
-        // Panel Deliberation removed — deliberation is the process, not a vote result
-        // ---------------------------------------------------------
-        elseif ($request->has('status_action') && $request->status_action) {
-            $action = $request->status_action;
-            $newStatus = $action;
+                        TitleLog::create([
+                            'research_title_id' => $submission->id,
+                            'user_id' => auth()->id(),
+                            'action' => 'Official Receipt Verified',
+                            'description' => "Admin verified the Official Receipt file during Initial Intake (Marked as Incomplete).",
+                        ]);
+                    }
 
-            // Store deliberation notes if provided
-            if ($request->filled('scientific_soundness') || $request->filled('ethical_issues') || $request->filled('icf_issues') || $request->filled('summary_of_issues')) {
-                $deliberationMsg = "=== DELIBERATION NOTES (Admin) ===\n";
-                $deliberationMsg .= "Scientific Soundness: " . $request->input('scientific_soundness', 'N/A') . "\n\n";
-                $deliberationMsg .= "Ethical Issues: " . $request->input('ethical_issues', 'N/A') . "\n\n";
-                $deliberationMsg .= "ICF Issues: " . $request->input('icf_issues', 'N/A') . "\n\n";
-                $deliberationMsg .= "Summary of Issues & Resolutions: " . $request->input('summary_of_issues', 'N/A') . "\n\n";
-                $deliberationMsg .= "Action Taken: " . $action;
+                    // Handle CV Verification action (can be done alongside Incomplete)
+                    $this->handleCvAction($request, $submission);
 
-                \App\Models\SubmissionFeedback::create([
-                    'research_title_id' => $submission->id,
-                    'user_id' => auth()->id(),
-                    'type' => 'admin_deliberation',
-                    'message' => $deliberationMsg
-                ]);
-            }
+                } elseif ($request->classification === 'Undo') {
+                    $newStatus = 'Pending';
+                    $submission->Status = $newStatus;
+                    $submission->save();
+                    $message = "Your submission \"{$submission->Study_Protocol_title}\" status has been reverted to Pending.";
 
-            if ($action === 'Modifications Required') {
-                // DO NOT update status or send notifications yet.
-                // The status will be formally updated to 'Waiting for Revision' 
-                // when the Recommendation Letter is actually generated and submitted.
-                $skipSaveAndNotify = true;
+                } elseif ($request->classification === 'Revert Phase') {
+                    $currentStatus = $submission->Status;
 
-            } elseif ($action === 'Disapproved') {
-                $newStatus = 'Disapproved'; // Explicitly set just in case
+                    switch ($currentStatus) {
+                        case 'Approved':
+                            $newStatus = 'Reviewed';
+                            $message = "Submission approval reverted back to Reviewed for re-deliberation.";
+                            break;
+                        case 'Reviewed':
+                            $newStatus = 'Under Review';
+                            $message = "Submission reverted back to Under Review.";
+                            break;
+                        case 'Under Review':
+                            $newStatus = 'Reviewer Assigned';
+                            $message = "Submission reverted back to Reviewer Assigned.";
+                            break;
+                        case 'Reviewer Assigned':
+                            $newStatus = 'Hardcopy Received';
+                            $submission->assigned_reviewers = null; // Unassign reviewers
+                            $submission->reviewers()->detach();
+                            $message = "Reviewers successfully unassigned. Status reverted to Hardcopy Received.";
+                            break;
+                        case 'Hardcopy Received':
+                            $newStatus = 'Incomplete - Awaiting Hardcopy';
+                            $message = "Submission reverted back to Incomplete - Awaiting Hardcopy.";
+                            break;
+                        case 'Incomplete Hardcopy':
+                            $newStatus = 'Incomplete - Awaiting Hardcopy';
+                            $message = "Submission reverted back to Incomplete - Awaiting Hardcopy.";
+                            break;
+                        case 'Incomplete - Awaiting Hardcopy':
+                        default:
+                            $newStatus = 'Pending';
+                            // Delete the appointment
+                            Appointment::where('research_title_id', $submission->id)
+                                ->where('stage', 'Hardcopy Submission')
+                                ->delete();
+                            $message = "Submission completely reverted to Initial Intake (Pending). Appointment cancelled.";
+                            break;
+                    }
 
-                $message = "Your research protocol \"{$submission->Study_Protocol_title}\" has been Disapproved.";
-                if ($request->remarks) {
-                    $message .= "\n\nReason: " . $request->remarks;
+                    $submission->Status = $newStatus;
+                    $submission->save();
+
+                } elseif ($request->classification === 'Hardcopy Complete') {
+                    $newStatus = 'Hardcopy Received';
+                    $submission->Status = $newStatus;
+                    if ($submission->Review_Type === 'N/A') {
+                        $submission->Review_Type = 'Unassigned';
+                    }
+                    $submission->save();
+
+                    $message = "Your hardcopy for \"{$submission->Study_Protocol_title}\" has been received and verified.";
+
+                } elseif ($request->classification === 'Hardcopy Incomplete') {
+                    $request->validate([
+                        'appointment_date' => 'required|date',
+                        'remarks' => 'nullable|string',
+                        'missing_requirements' => 'nullable|array',
+                    ]);
+
+                    $newStatus = 'Incomplete Hardcopy';
+                    $submission->Status = $newStatus;
+                    $submission->save();
+
+                    $missingDocs = $request->input('missing_requirements', []);
 
                     SubmissionFeedback::create([
                         'research_title_id' => $submission->id,
+                        'user_id' => auth()->id(),
+                        'type' => 'hardcopy_deficiency',
                         'message' => $request->remarks,
-                        'type' => 'disapproval_remark'
+                        'missing_requirements' => $missingDocs,
+                    ]);
+
+                    $appointment = Appointment::where('research_title_id', $submission->id)
+                        ->where('stage', 'Hardcopy Submission')
+                        ->first();
+
+                    if ($appointment) {
+                        $appointment->appointment_date = $request->appointment_date;
+                        $appointment->save();
+                    } else {
+                        Appointment::create([
+                            'research_title_id' => $submission->id,
+                            'user_id' => $user->user_id,
+                            'appointment_date' => $request->appointment_date,
+                            'stage' => 'Hardcopy Submission',
+                        ]);
+                    }
+
+                    $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
+                    $message = "Your hardcopy submission for \"{$submission->Study_Protocol_title}\" is incomplete. Please submit the missing requirements by: {$dateFormatted}.";
+
+                    if ($request->remarks) {
+                        $message .= "\n\nGeneral Remarks: " . $request->remarks;
+                    }
+                    if (!empty($missingDocs)) {
+                        $message .= "\n\nMissing Requirements / Actions Needed:";
+                        foreach ($missingDocs as $doc) {
+                            $message .= "\n- " . $doc;
+                        }
+                    }
+                }
+            }
+            // ---------------------------------------------------------
+            // CASE B: NEW Update Status Logic (Review Type + Appointment)
+            // Only fires when a non-empty review_type is actually submitted
+            // (prevents intercepting status-action-only submissions from the Revisions modal)
+            // ---------------------------------------------------------
+            elseif ($request->filled('review_type')) {
+                $request->validate([
+                    'review_type' => 'required|string', // Expedited, Exempt, Full Review
+                    'appointment_date' => 'required|date|after:tomorrow',
+                ]);
+
+                $submission->Review_Type = $request->review_type;
+
+                // Only update system status if a definitive Status Action is selected.
+                // Apply the same action->status mapping as CASE C to avoid saving raw action names.
+                if ($request->filled('status_action')) {
+                    $action = $request->status_action;
+                    if ($action === 'Modifications Required') {
+                        $submission->Status = 'Waiting for Revision';
+                    } elseif ($action === 'Approved') {
+                        $submission->Status = 'Approved';
+                    } else {
+                        $submission->Status = $action; // fallback for any future actions
+                    }
+                }
+
+                $submission->save();
+
+                // Create Appointment
+                Appointment::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => $user->user_id,
+                    'appointment_date' => $request->appointment_date,
+                    'stage' => $request->review_type, // e.g., 'Expedited Review'
+                ]);
+
+                $dateFormatted = Carbon::parse($request->appointment_date)->format('F j, Y');
+                // Notify the user about the Review Type assignment
+                UserNotification::create([
+                    'user_id' => $user->user_id,
+                    'research_id' => $submission->id,
+                    'title' => 'Status Update: Under Review',
+                    'message' => "Your research protocol \"{$submission->Study_Protocol_title}\" has been assigned for {$request->review_type}.",
+                    'type' => 'status_update',
+                    'is_read' => false
+                ]);
+
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
                     ]);
                 }
-            } elseif ($action === 'Approved') {
-                $message = "Congratulations! Your research \"{$submission->Study_Protocol_title}\" has been Approved.";
-                $message .= "\n\nYour Research Ethics Clearance Certificate is ready. Please check with the Research Ethics Office.";
-            }
 
-            // Save the final status
-            if (!isset($skipSaveAndNotify)) {
+                return redirect()->back()->with('success', 'Review Type updated. Please proceed to generate the Recommendation Letter.');
+            }
+            // ---------------------------------------------------------
+            // CASE C: Status Actions (Revision, Approved, Disapproved)
+            // Panel Deliberation removed — deliberation is the process, not a vote result
+            // ---------------------------------------------------------
+            elseif ($request->has('status_action') && $request->status_action) {
+                $action = $request->status_action;
+                $newStatus = $action;
+
+                // Store deliberation notes if provided
+                if ($request->filled('scientific_soundness') || $request->filled('ethical_issues') || $request->filled('icf_issues') || $request->filled('summary_of_issues')) {
+                    $deliberationMsg = "=== DELIBERATION NOTES (Admin) ===\n";
+                    $deliberationMsg .= "Scientific Soundness: " . $request->input('scientific_soundness', 'N/A') . "\n\n";
+                    $deliberationMsg .= "Ethical Issues: " . $request->input('ethical_issues', 'N/A') . "\n\n";
+                    $deliberationMsg .= "ICF Issues: " . $request->input('icf_issues', 'N/A') . "\n\n";
+                    $deliberationMsg .= "Summary of Issues & Resolutions: " . $request->input('summary_of_issues', 'N/A') . "\n\n";
+                    $deliberationMsg .= "Action Taken: " . $action;
+
+                    \App\Models\SubmissionFeedback::create([
+                        'research_title_id' => $submission->id,
+                        'user_id' => auth()->id(),
+                        'type' => 'admin_deliberation',
+                        'message' => $deliberationMsg
+                    ]);
+                }
+
+                if ($action === 'Modifications Required') {
+                    // DO NOT update status or send notifications yet.
+                    // The status will be formally updated to 'Waiting for Revision' 
+                    // when the Recommendation Letter is actually generated and submitted.
+                    $skipSaveAndNotify = true;
+
+                } elseif ($action === 'Disapproved') {
+                    $newStatus = 'Disapproved'; // Explicitly set just in case
+
+                    $message = "Your research protocol \"{$submission->Study_Protocol_title}\" has been Disapproved.";
+                    if ($request->remarks) {
+                        $message .= "\n\nReason: " . $request->remarks;
+
+                        SubmissionFeedback::create([
+                            'research_title_id' => $submission->id,
+                            'message' => $request->remarks,
+                            'type' => 'disapproval_remark'
+                        ]);
+                    }
+                } elseif ($action === 'Approved') {
+                    $message = "Congratulations! Your research \"{$submission->Study_Protocol_title}\" has been Approved.";
+                    $message .= "\n\nYour Research Ethics Clearance Certificate is ready. Please check with the Research Ethics Office.";
+                }
+
+                // Save the final status
+                if (!isset($skipSaveAndNotify)) {
+                    $submission->Status = $newStatus;
+                    $submission->save();
+                }
+
+            }
+            // ---------------------------------------------------------
+            // CASE C: Generic Status Update (Fallback)
+            // ---------------------------------------------------------
+            else {
+                $request->validate(['status' => 'required|string']);
+                $newStatus = $request->status;
                 $submission->Status = $newStatus;
                 $submission->save();
+                $message = "The status of your research \"{$submission->Study_Protocol_title}\" has been updated to: {$newStatus}.";
+                if ($request->reason) {
+                    $message .= " Remarks: {$request->reason}";
+                }
             }
 
-        }
-        // ---------------------------------------------------------
-        // CASE C: Generic Status Update (Fallback)
-        // ---------------------------------------------------------
-        else {
-            $request->validate(['status' => 'required|string']);
-            $newStatus = $request->status;
-            $submission->Status = $newStatus;
-            $submission->save();
-            $message = "The status of your research \"{$submission->Study_Protocol_title}\" has been updated to: {$newStatus}.";
-            if ($request->reason) {
-                $message .= " Remarks: {$request->reason}";
+            // Notification Logic
+            if (!isset($skipSaveAndNotify)) {
+                UserNotification::create([
+                    'user_id' => $user->user_id,
+                    'research_id' => $submission->id,
+                    'title' => 'Status Update: ' . $newStatus,
+                    'message' => $message ?? "The status of your research \"{$submission->Study_Protocol_title}\" has been updated to: {$newStatus}.",
+                    'type' => 'status_update',
+                    'is_read' => false
+                ]);
             }
-        }
 
-        // Notification Logic
-        if (!isset($skipSaveAndNotify)) {
-            UserNotification::create([
-                'user_id' => $user->user_id,
-                'research_id' => $submission->id,
-                'title' => 'Status Update: ' . $newStatus,
-                'message' => $message ?? "The status of your research \"{$submission->Study_Protocol_title}\" has been updated to: {$newStatus}.",
-                'type' => 'status_update',
-                'is_read' => false
-            ]);
-        }
+            if ($request->ajax() || $request->wantsJson()) {
+                if (isset($action) && $action === 'Modifications Required') {
+                    return response()->json(['success' => true, 'redirect' => route('admin.recommendation.form', $submission->id)]);
+                }
+                return response()->json(['success' => true, 'message' => 'Status and Review Type updated successfully']);
+            }
 
-        if ($request->ajax() || $request->wantsJson()) {
             if (isset($action) && $action === 'Modifications Required') {
-                return response()->json(['success' => true, 'redirect' => route('admin.recommendation.form', $submission->id)]);
+                return redirect()->route('admin.recommendation.form', $submission->id)
+                    ->with('success', 'Deliberation saved. Proceeding to Recommendation Letter Generation.');
             }
-            return response()->json(['success' => true, 'message' => 'Status and Review Type updated successfully']);
-        }
 
-        if (isset($action) && $action === 'Modifications Required') {
-            return redirect()->route('admin.recommendation.form', $submission->id)
-                ->with('success', 'Deliberation saved. Proceeding to Recommendation Letter Generation.');
-        }
-
-        return redirect()->back()->with('success', 'Status updated successfully');
+            return redirect()->back()->with('success', 'Status updated successfully');
+        });
     }
 
     public function verifyCvIsolated(Request $request, $id)
     {
-        $submission = Research_title::findOrFail($id);
-        $this->handleCvAction($request, $submission);
+        return DB::transaction(function () use ($request, $id) {
+            $submission = Research_title::where('id', $id)->lockForUpdate()->firstOrFail();
+            $this->handleCvAction($request, $submission);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'CV Verification status updated successfully.'
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'CV Verification status updated successfully.'
+            ]);
+        });
     }
 
     /**
@@ -2174,46 +2179,48 @@ class AdminController extends Controller
             'reviewers.*' => 'exists:users,id',
         ]);
 
-        $submission = Research_title::findOrFail($id);
+        return DB::transaction(function () use ($request, $id) {
+            $submission = Research_title::where('id', $id)->lockForUpdate()->firstOrFail();
 
-        if (empty($request->reviewers)) {
-            $submission->assigned_reviewers = null;
-            $submission->reviewers()->detach();
+            if (empty($request->reviewers)) {
+                $submission->assigned_reviewers = null;
+                $submission->reviewers()->detach();
 
-            // If they are unassigning reviewers mid-way, it reverts to Hardcopy Received
-            if (in_array($submission->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed'])) {
-                $submission->Status = 'Hardcopy Received';
+                // If they are unassigning reviewers mid-way, it reverts to Hardcopy Received
+                if (in_array($submission->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed'])) {
+                    $submission->Status = 'Hardcopy Received';
+                }
+                $actionMessage = 'Reviewers unassigned successfully.';
+            } else {
+                $submission->assigned_reviewers = $request->reviewers;
+
+                // Attach via pivot table. If multiple, all are Primary Reviewer for now.
+                $submission->reviewers()->syncWithPivotValues($request->reviewers, [
+                    'role' => 'Primary Reviewer',
+                    'status' => 'Pending'
+                ]);
+
+                // Even if mid-review, changing reviewers resets to Reviewer Assigned
+                if (in_array($submission->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review', 'Reviewed'])) {
+                    $submission->Status = 'Reviewer Assigned';
+                }
+                $actionMessage = 'Reviewers assigned successfully.';
             }
-            $actionMessage = 'Reviewers unassigned successfully.';
-        } else {
-            $submission->assigned_reviewers = $request->reviewers;
 
-            // Attach via pivot table. If multiple, all are Primary Reviewer for now.
-            $submission->reviewers()->syncWithPivotValues($request->reviewers, [
-                'role' => 'Primary Reviewer',
-                'status' => 'Pending'
-            ]);
+            $submission->save();
 
-            // Even if mid-review, changing reviewers resets to Reviewer Assigned
-            if (in_array($submission->Status, ['Hardcopy Received', 'Reviewer Assigned', 'Under Review', 'Reviewed'])) {
-                $submission->Status = 'Reviewer Assigned';
+            if (!empty($request->reviewers)) {
+                $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function ($user) {
+                    return $user->first_name . ' ' . $user->last_name;
+                })->implode(', ');
             }
-            $actionMessage = 'Reviewers assigned successfully.';
-        }
 
-        $submission->save();
+            if ($request->ajax()) {
+                return response()->json(['success' => true, 'message' => $actionMessage]);
+            }
 
-        if (!empty($request->reviewers)) {
-            $reviewerNames = User::whereIn('id', $request->reviewers)->get()->map(function ($user) {
-                return $user->first_name . ' ' . $user->last_name;
-            })->implode(', ');
-        }
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => $actionMessage]);
-        }
-
-        return redirect()->back()->with('success', $actionMessage);
+            return redirect()->back()->with('success', $actionMessage);
+        });
     }
     public function setInitialReview(Request $request, $id)
     {
@@ -2350,14 +2357,10 @@ class AdminController extends Controller
         ])->findOrFail($id);
         $backUrl = url()->previous(route('admin.analytics'));
 
-        // Load all reviewer file remarks for this title's files, grouped by researcher_file_id
+        // Load all reviewer file remarks for this title's files, grouped by file_id
         try {
-            $allFileRemarks = \App\Models\ReviewerFileRemark::with('reviewer')
-                ->whereIn('file_id', function ($query) use ($id) {
-                    $query->select('id')
-                        ->from('researcher_files')
-                        ->where('research_title_id', $id);
-                })
+            $allFileRemarks = \App\Models\ReviewerFileRemark::with(['reviewer', 'file'])
+                ->where('research_title_id', $id)
                 ->get()
                 ->groupBy('file_id');
         } catch (\Exception $e) {
@@ -2434,31 +2437,83 @@ class AdminController extends Controller
         return view('admin.view_files', compact('researchTitle', 'backUrl', 'allFileRemarks', 'reviewerAssignments', 'auditTrail'));
     }
 
-    public function serveFile($id)
+    public function serveFile(Request $request, $id)
     {
         $file = researcher_files::findOrFail($id);
 
-        // Normalize path: remove 'storage/' prefix if present
-        $path = str_replace('storage/', '', $file->filepath);
+        $path = ltrim(str_replace('storage/', '', $file->filepath), '/');
+
+        $respondWithFile = function (string $fullPath) use ($file, $request) {
+            $mimeType = \Illuminate\Support\Facades\File::mimeType($fullPath) ?: 'application/octet-stream';
+            $isDownload = $request->has('download') || $request->boolean('download') || $request->query('download') == '1';
+
+            if ($isDownload) {
+                return response()->download($fullPath, $file->filename, [
+                    'Content-Type' => $mimeType,
+                ]);
+            }
+
+            return response()->file($fullPath, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => "inline; filename=\"{$file->filename}\"",
+            ]);
+        };
 
         // 1. Check Storage (Public Disk)
         if (Storage::disk('public')->exists($path)) {
-            return response()->file(storage_path('app/public/' . $path));
+            return $respondWithFile(storage_path('app/public/' . $path));
         }
 
-        // 2. Check Public Directory (Direct Access)
+        // 2. Check public_uploads disk (root is public_path())
+        if (Storage::disk('public_uploads')->exists($path)) {
+            return $respondWithFile(public_path($path));
+        }
+
+        // 3. Check Public Directory (Direct Access)
         $publicPath = public_path($file->filepath);
         if (file_exists($publicPath)) {
-            return response()->file($publicPath);
+            return $respondWithFile($publicPath);
         }
 
-        // 3. Check Storage Path directly (Absolute)
+        // 4. Check Storage Path directly (Absolute fallback)
         $storagePath = storage_path('app/public/' . $path);
         if (file_exists($storagePath)) {
-            return response()->file($storagePath);
+            return $respondWithFile($storagePath);
         }
 
-        return abort(404, 'File not found.');
+        // 5. Check uploads/research_files/ directly by basename
+        $basename = basename($file->filepath);
+        if ($basename && file_exists(public_path('uploads/research_files/' . $basename))) {
+            return $respondWithFile(public_path('uploads/research_files/' . $basename));
+        }
+
+        // 6. Institutional fallback view if physical binary missing from disk
+        return response(
+            '<!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Document Unavailable</title>
+                <script src="https://cdn.tailwindcss.com"></script>
+            </head>
+            <body class="bg-slate-50 flex items-center justify-center min-h-screen p-4 font-sans text-slate-700 antialiased">
+                <div class="max-w-sm w-full bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-xs">
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto mb-3 text-slate-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <h3 class="text-xs font-semibold text-slate-900 mb-1">Document Unavailable on Disk</h3>
+                    <p class="text-[11px] text-slate-500 mb-3 leading-relaxed break-all font-mono">' . htmlspecialchars($file->filename) . '</p>
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200/60">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span>Archived or Hardcopy Record</span>
+                    </div>
+                </div>
+            </body>
+            </html>',
+            200,
+            ['Content-Type' => 'text/html']
+        );
     }
 
     public function manageDocuments()
@@ -2680,55 +2735,59 @@ class AdminController extends Controller
                 'Content-Disposition' => 'inline; filename="Result_of_Review.pdf"',
             ]);
         } else {
-            // Save and Send
-            $filename = "Result_of_Review_{$submission->id}_" . time() . ".pdf";
-            $path = "uploads/research_{$submission->id}/" . $filename;
+            return DB::transaction(function () use ($request, $pdf) {
+                $submission = Research_title::where('id', $request->id)->lockForUpdate()->firstOrFail();
 
-            // Ensure directory exists
-            if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
-                Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
-            }
+                // Save and Send
+                $filename = "Result_of_Review_{$submission->id}_" . time() . ".pdf";
+                $path = "uploads/research_{$submission->id}/" . $filename;
 
-            Storage::disk('public_uploads')->put($path, $pdf->Output('S'));
+                // Ensure directory exists
+                if (!Storage::disk('public_uploads')->exists("uploads/research_{$submission->id}")) {
+                    Storage::disk('public_uploads')->makeDirectory("uploads/research_{$submission->id}");
+                }
 
-            // Archive existing recommendation letters to maintain history
-            \App\Models\researcher_files::where('research_title_id', $submission->id)
-                ->where('filetype', 'Result of Review (Admin Generated)')
-                ->update(['filetype' => 'Archived Result of Review']);
+                Storage::disk('public_uploads')->put($path, $pdf->Output('S'));
 
-            // Save to DB
-            researcher_files::create([
-                'research_title_id' => $submission->id,
-                'filename' => $filename,
-                'filepath' => $path,
-                'filetype' => 'Result of Review (Admin Generated)',
-            ]);
+                // Archive existing recommendation letters to maintain history
+                \App\Models\researcher_files::where('research_title_id', $submission->id)
+                    ->where('filetype', 'Result of Review (Admin Generated)')
+                    ->update(['filetype' => 'Archived Result of Review']);
 
-            // Build notification message with optional deadline
-            $notifMessage = "Your Result of Review letter for \"{$submission->Study_Protocol_title}\" has been generated. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.";
+                // Save to DB
+                researcher_files::create([
+                    'research_title_id' => $submission->id,
+                    'filename' => $filename,
+                    'filepath' => $path,
+                    'filetype' => 'Result of Review (Admin Generated)',
+                ]);
 
-            if ($request->has('deadline') && !empty($request->deadline)) {
-                $formattedDate = \Carbon\Carbon::parse($request->deadline)->format('F j, Y');
-                $notifMessage .= "\n\nDeadline for Revision: " . $formattedDate;
-            }
+                // Build notification message with optional deadline
+                $notifMessage = "Your Result of Review letter for \"{$submission->Study_Protocol_title}\" has been generated. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.";
 
-            // Notify the user
-            $user = $submission->researcher->user;
-            UserNotification::create([
-                'user_id' => $user->id,
-                'research_id' => $submission->id,
-                'title' => 'Result of Review Available',
-                'message' => $notifMessage,
-                'type' => 'document_upload',
-                'is_read' => false
-            ]);
+                if ($request->has('deadline') && !empty($request->deadline)) {
+                    $formattedDate = \Carbon\Carbon::parse($request->deadline)->format('F j, Y');
+                    $notifMessage .= "\n\nDeadline for Revision: " . $formattedDate;
+                }
 
-            // Transition to "Waiting for Revision"
-            $submission->Status = 'Waiting for Revision';
-            $submission->save();
+                // Notify the user
+                $user = $submission->researcher->user;
+                UserNotification::create([
+                    'user_id' => $user->id,
+                    'research_id' => $submission->id,
+                    'title' => 'Result of Review Available',
+                    'message' => $notifMessage,
+                    'type' => 'document_upload',
+                    'is_read' => false
+                ]);
 
-            // Redirect to the Revisions page
-            return redirect()->route('admin.revisions')->with('success', 'Recommendation Letter generated and sent successfully. The protocol has been moved to Revisions.');
+                // Transition to "Waiting for Revision"
+                $submission->Status = 'Waiting for Revision';
+                $submission->save();
+
+                // Redirect to the Revisions page
+                return redirect()->route('admin.revisions')->with('success', 'Recommendation Letter generated and sent successfully. The protocol has been moved to Revisions.');
+            });
         }
     }
 
@@ -2745,36 +2804,36 @@ class AdminController extends Controller
 
     public function finalizeReview(Request $request, $id)
     {
-        $submission = Research_title::with('researcher')->findOrFail($id);
+        return DB::transaction(function () use ($request, $id) {
+            $submission = Research_title::where('id', $id)->lockForUpdate()->firstOrFail();
 
-        $userMessage = '';
+            // Update status to Waiting for Revision for ALL review types
+            $submission->Status = 'Waiting for Revision';
+            $message = 'Status updated to Waiting for Revision.';
+            $redirectRoute = 'admin.revisions';
 
-        // Update status to Waiting for Revision for ALL review types
-        $submission->Status = 'Waiting for Revision';
-        $message = 'Status updated to Waiting for Revision.';
-        $redirectRoute = 'admin.revisions';
+            // Custom notification message
+            $userMessage = "Your research protocol status has been updated to Waiting for Revision. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.";
 
-        // Custom notification message
-        $userMessage = "Your research protocol status has been updated to Waiting for Revision. Please check the recommendation letter and submit the necessary revisions based on the feedback provided.";
+            if ($request->has('deadline') && !empty($request->deadline)) {
+                $formattedDate = \Carbon\Carbon::parse($request->deadline)->format('F j, Y');
+                $userMessage .= "\n\nDeadline for Revision: " . $formattedDate;
+            }
 
-        if ($request->has('deadline') && !empty($request->deadline)) {
-            $formattedDate = \Carbon\Carbon::parse($request->deadline)->format('F j, Y');
-            $userMessage .= "\n\nDeadline for Revision: " . $formattedDate;
-        }
+            $submission->save();
 
-        $submission->save();
+            // Notify the user
+            UserNotification::create([
+                'user_id' => $submission->researcher->user_id,
+                'research_id' => $submission->id,
+                'title' => 'Status Update: Waiting for Revision',
+                'message' => $userMessage,
+                'type' => 'status_update',
+                'is_read' => false
+            ]);
 
-        // Notify the user
-        UserNotification::create([
-            'user_id' => $submission->researcher->user_id,
-            'research_id' => $submission->id,
-            'title' => 'Status Update: Waiting for Revision',
-            'message' => $userMessage,
-            'type' => 'status_update',
-            'is_read' => false
-        ]);
-
-        return redirect()->route($redirectRoute)->with('success', $message);
+            return redirect()->route($redirectRoute)->with('success', $message);
+        });
     }
 
 
@@ -2794,6 +2853,23 @@ class AdminController extends Controller
     public function generateCertificate(Request $request, $id)
     {
         $action = $request->input('action', 'generate');
+
+        // Defensive input normalization: support both quick modal (upload_certificate_modal) and dedicated page inputs
+        if (!$request->filled('shared_title') && $request->filled('protocol_title')) {
+            $request->merge(['shared_title' => $request->protocol_title]);
+        }
+        if (!$request->filled('shared_researchers') && $request->filled('researcher_name')) {
+            $request->merge(['shared_researchers' => $request->researcher_name]);
+        }
+        if (!$request->filled('shared_reo_code') && $request->filled('protocol_code')) {
+            $request->merge(['shared_reo_code' => $request->protocol_code]);
+        }
+        if (!$request->filled('cover_approved_period') && $request->filled('approval_date')) {
+            $request->merge(['cover_approved_period' => $request->approval_date]);
+        }
+        if (!$request->filled('cover_expiry_date') && $request->filled('expiry_date')) {
+            $request->merge(['cover_expiry_date' => $request->expiry_date]);
+        }
 
         $rules = [];
 
@@ -2821,7 +2897,6 @@ class AdminController extends Controller
 
         $request->validate($rules);
 
-
         $submission = Research_title::with('researcher.user')->findOrFail($id);
 
         // Ensure output directory exists (Force strict linux-style forward slashes for cross-platform compatibility)
@@ -2841,6 +2916,9 @@ class AdminController extends Controller
         if (!defined('K_PATH_FONTS')) {
             define('K_PATH_FONTS', public_path('fonts' . DIRECTORY_SEPARATOR . 'tcpdf' . DIRECTORY_SEPARATOR));
         }
+
+        $coverRecord = null;
+        $certRecord = null;
 
         // ----------------------------------------------------------------
         // 1. Generate Cover Letter
@@ -2907,7 +2985,7 @@ class AdminController extends Controller
             // Write file using public_uploads to guarantee it is served directly from /public/uploads/ bypassing /storage symlinks
             Storage::disk('public_uploads')->put($coverPath, $coverPdf->Output($coverFilename, 'S'));
 
-            researcher_files::create([
+            $coverRecord = researcher_files::create([
                 'research_title_id' => $submission->id,
                 'filename' => 'Cover Letter of Approval',
                 'filetype' => 'Approval Letter',
@@ -3002,7 +3080,7 @@ class AdminController extends Controller
             // Write file using public_uploads disk
             Storage::disk('public_uploads')->put($certPath, $certPdf->Output($certFilename, 'S'));
 
-            researcher_files::create([
+            $certRecord = researcher_files::create([
                 'research_title_id' => $submission->id,
                 'filename' => 'Ethics Clearance Certificate',
                 'filetype' => 'certificate',
@@ -3011,29 +3089,44 @@ class AdminController extends Controller
         }
 
         if ($action === 'generate') {
-            // ----------------------------------------------------------------
-            // 3. Appointment & Notification
-            // ----------------------------------------------------------------
-            $pickupDate = Carbon::parse($request->pickup_date);
-            Appointment::create([
-                'research_title_id' => $submission->id,
-                'user_id' => $submission->researcher->user_id,
-                'appointment_date' => $pickupDate->setTime(9, 0),
-                'stage' => 'Certificate Pickup',
-            ]);
+            return DB::transaction(function () use ($request, $submission, $formattedPickup, $coverRecord, $certRecord) {
+                // Ensure bidirectional file relationship in pivot table
+                $fileIds = array_filter([$coverRecord->id ?? null, $certRecord->id ?? null]);
+                if (!empty($fileIds)) {
+                    $submission->files()->syncWithoutDetaching($fileIds);
+                }
 
-            UserNotification::create([
-                'user_id' => $submission->researcher->user_id,
-                'research_id' => $submission->id,
-                'title' => 'Certification Documents Ready',
-                'message' => "Your Cover Letter of Approval and Research Ethics Clearance Certificate for \"{$submission->Study_Protocol_title}\" have been generated and are ready for pickup at the REO building on {$formattedPickup}.",
-                'type' => 'status_update',
-                'is_read' => false,
-            ]);
+                // ----------------------------------------------------------------
+                // 3. Appointment & Notification
+                // ----------------------------------------------------------------
+                $pickupDate = Carbon::parse($request->pickup_date);
+                Appointment::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => $submission->researcher->user_id,
+                    'appointment_date' => $pickupDate->setTime(9, 0),
+                    'stage' => 'Certificate Pickup',
+                ]);
 
-            return redirect()
-                ->route('admin.certifications')
-                ->with('success', 'Certification documents generated and researcher notified successfully.');
+                UserNotification::create([
+                    'user_id' => $submission->researcher->user_id,
+                    'research_id' => $submission->id,
+                    'title' => 'Certification Documents Ready',
+                    'message' => "Your Cover Letter of Approval and Research Ethics Clearance Certificate for \"{$submission->Study_Protocol_title}\" have been generated and are ready for pickup at the REO building on {$formattedPickup}.",
+                    'type' => 'status_update',
+                    'is_read' => false,
+                ]);
+
+                TitleLog::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'Certification Documents Issued',
+                    'description' => "Cover Letter of Approval and Ethics Clearance Certificate generated. Pickup scheduled for {$formattedPickup}.",
+                ]);
+
+                return redirect()
+                    ->route('admin.certifications')
+                    ->with('success', 'Certification documents generated and researcher notified successfully.');
+            });
         }
     }
 

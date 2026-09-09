@@ -1,55 +1,55 @@
-<x-admin_layout>
-    <div id="analytics-dashboard" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
-        
-        <style>
-            #analytics-dashboard ::selection,
-            #filterModal ::selection,
-            #seeAllModal ::selection,
-            #detailsModal ::selection {
-                background-color: rgba(139, 0, 0, 0.15);
-                color: #8B0000;
-            }
-            #filterModal input,
-            #filterModal select {
-                caret-color: #8B0000;
-            }
-            .tabular-nums,
-            #analytics-dashboard table td,
-            #analytics-dashboard table th,
-            #detailsModal table td,
-            #detailsModal table th {
-                font-variant-numeric: tabular-nums;
-                -moz-font-feature-settings: "tnum";
-                -webkit-font-feature-settings: "tnum";
-                font-feature-settings: "tnum";
-            }
-            #filterModalPanel::-webkit-scrollbar,
-            #seeAllModalPanel::-webkit-scrollbar,
-            #detailsModalContent::-webkit-scrollbar,
-            .custom-scrollbar::-webkit-scrollbar {
-                width: 6px;
-                height: 6px;
-            }
-            #filterModalPanel::-webkit-scrollbar-track,
-            #seeAllModalPanel::-webkit-scrollbar-track,
-            #detailsModalContent::-webkit-scrollbar-track,
-            .custom-scrollbar::-webkit-scrollbar-track {
-                background: transparent;
-            }
-            #filterModalPanel::-webkit-scrollbar-thumb,
-            #seeAllModalPanel::-webkit-scrollbar-thumb,
-            #detailsModalContent::-webkit-scrollbar-thumb,
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #cbd5e1;
-                border-radius: 9999px;
-            }
-            #filterModalPanel::-webkit-scrollbar-thumb:hover,
-            #seeAllModalPanel::-webkit-scrollbar-thumb:hover,
-            #detailsModalContent::-webkit-scrollbar-thumb:hover,
-            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                background: #94a3b8;
-            }
-        </style>
+<x-admin_layout :title="'Analytics & Reports'">
+    <style>
+        #analytics-dashboard ::selection,
+        #filterModal ::selection,
+        #seeAllModal ::selection,
+        #detailsModal ::selection {
+            background-color: rgba(139, 0, 0, 0.15);
+            color: #8B0000;
+        }
+        #filterModal input,
+        #filterModal select {
+            caret-color: #8B0000;
+        }
+        .tabular-nums,
+        #analytics-dashboard table td,
+        #analytics-dashboard table th,
+        #detailsModal table td,
+        #detailsModal table th {
+            font-variant-numeric: tabular-nums;
+            -moz-font-feature-settings: "tnum";
+            -webkit-font-feature-settings: "tnum";
+            font-feature-settings: "tnum";
+        }
+        #filterModalPanel::-webkit-scrollbar,
+        #seeAllModalPanel::-webkit-scrollbar,
+        #detailsModalContent::-webkit-scrollbar,
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        #filterModalPanel::-webkit-scrollbar-track,
+        #seeAllModalPanel::-webkit-scrollbar-track,
+        #detailsModalContent::-webkit-scrollbar-track,
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #filterModalPanel::-webkit-scrollbar-thumb,
+        #seeAllModalPanel::-webkit-scrollbar-thumb,
+        #detailsModalContent::-webkit-scrollbar-thumb,
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        #filterModalPanel::-webkit-scrollbar-thumb:hover,
+        #seeAllModalPanel::-webkit-scrollbar-thumb:hover,
+        #detailsModalContent::-webkit-scrollbar-thumb:hover,
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+
+    <div id="analytics-dashboard" class="max-w-7xl mx-auto w-full space-y-8 animate-[fadeInUp_0.5s_ease-out] selection:bg-[#8B0000] selection:text-white pt-3 sm:pt-4">
 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-slate-200 gap-4">
             <div>
@@ -57,29 +57,29 @@
                 <p class="text-slate-500 mt-1 sm:mt-2 text-xs sm:text-sm">Real-time insights into research submission performance.</p>
             </div>
             <div class="flex gap-2.5 sm:gap-3 mt-4 md:mt-0 items-center flex-wrap justify-start md:justify-end w-full md:w-auto">
-                <button onclick="openFilterModal()" aria-label="Open filter options" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:shadow-lg active:scale-[0.98] transition-all flex items-center gap-2 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
-                    <i class="fas fa-filter" aria-hidden="true"></i> Filter Data
+                <button onclick="openFilterModal()" aria-label="Open filter options" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-2 shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
+                    <i class="fas fa-filter text-xs" aria-hidden="true"></i> Filter Data
                 </button>
 
                 <div class="hidden sm:block h-8 w-px bg-slate-200"></div>
 
-                <button id="exportPdfBtn" onclick="exportToPdf()" aria-label="Export report as PDF" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2">
-                    <i class="fas fa-download" aria-hidden="true"></i> Export PDF
+                <button id="exportPdfBtn" onclick="exportToPdf()" aria-label="Export report as PDF" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:text-[#8B0000] hover:border-[#8B0000]/40 hover:bg-slate-50 active:scale-[0.98] rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-2xs flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
+                    <i class="fas fa-download text-xs text-slate-400" aria-hidden="true"></i> Export PDF
                 </button>
 
-                <a href="{{ route('admin.analytics.export', request()->query()) }}" id="exportCsvBtn" aria-label="Export report data as CSV file" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-[#8B0000] rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
-                    <i class="fas fa-file-csv text-sm" aria-hidden="true"></i> Export CSV
+                <a href="{{ route('admin.analytics.export', request()->query()) }}" id="exportCsvBtn" aria-label="Export report data as CSV file" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-[#8B0000] rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 active:scale-[0.98] transition-all shadow-2xs flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
+                    <i class="fas fa-file-csv text-sm text-[#8B0000]" aria-hidden="true"></i> Export CSV
                 </a>
                 <!-- EXPORT TO WORD BTN -->
-                <a href="{{ route('admin.analytics.export_word', request()->query()) }}" id="exportWordBtn" aria-label="Export report data as Word document" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:text-[#8B0000] hover:border-[#8B0000]/30 hover:bg-slate-50 active:scale-[0.98] rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
-                    <i class="fas fa-file-word text-[#8B0000]" aria-hidden="true"></i> Export Word
+                <a href="{{ route('admin.analytics.export_word', request()->query()) }}" id="exportWordBtn" aria-label="Export report data as Word document" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:text-[#8B0000] hover:border-[#8B0000]/40 hover:bg-slate-50 active:scale-[0.98] rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-2xs flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
+                    <i class="fas fa-file-word text-sm text-blue-600" aria-hidden="true"></i> Export Word
                 </a>
             </div>
         </div>
         
         <!-- Active Filters Display -->
         <div class="flex flex-wrap gap-2 -mt-4 mb-2">
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs border border-slate-200 min-h-[30px]">
                 <i class="fas fa-calendar-alt text-slate-400" aria-hidden="true"></i>
                 @if($isAllTime ?? ($startMonth == 1 && $endMonth == 12 && $startYear === 'all' && $endYear === 'all'))
                     All Time
@@ -87,43 +87,43 @@
                     {{ $dateRangeSubtitle ?? 'Custom Period' }}
                 @endif
                 @if(!($isAllTime ?? ($startMonth == 1 && $endMonth == 12 && $startYear === 'all' && $endYear === 'all')))
-                    <button type="button" onclick="clearFilter('date')" aria-label="Remove date filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
+                    <button type="button" onclick="clearFilter('date')" aria-label="Remove date filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
                 @endif
             </div>
             @if($selectedStatus) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs border border-slate-200 min-h-[30px]">
                 <i class="fas fa-info-circle text-slate-400" aria-hidden="true"></i> {{ $selectedStatus }}
-                <button type="button" onclick="clearFilter('status')" aria-label="Remove status filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
+                <button type="button" onclick="clearFilter('status')" aria-label="Remove status filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedReviewType) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs border border-slate-200 min-h-[30px]">
                 <i class="fas fa-clipboard-check text-slate-400" aria-hidden="true"></i> {{ $selectedReviewType }}
-                <button type="button" onclick="clearFilter('review_type')" aria-label="Remove review type filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
+                <button type="button" onclick="clearFilter('review_type')" aria-label="Remove review type filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedThesisType) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs border border-slate-200 min-h-[30px]">
                 <i class="fas fa-book text-slate-400" aria-hidden="true"></i> {{ $selectedThesisType }}
-                <button type="button" onclick="clearFilter('thesis_type')" aria-label="Remove thesis type filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
+                <button type="button" onclick="clearFilter('thesis_type')" aria-label="Remove thesis type filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedCategory) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs border border-slate-200 min-h-[30px]">
                 <i class="fas fa-tags text-slate-400" aria-hidden="true"></i> {{ $selectedCategory }}
-                <button type="button" onclick="clearFilter('category')" aria-label="Remove category filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
+                <button type="button" onclick="clearFilter('category')" aria-label="Remove category filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedAffiliation) 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs border border-slate-200 min-h-[30px]">
                 <i class="fas fa-users text-slate-400" aria-hidden="true"></i> {{ $selectedAffiliation }}
-                <button type="button" onclick="clearFilter('affiliation')" aria-label="Remove affiliation filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
+                <button type="button" onclick="clearFilter('affiliation')" aria-label="Remove affiliation filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
             </div> 
             @endif
             @if($selectedCollege && $selectedAffiliation !== 'External') 
-            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-slate-200 min-h-[30px]">
+            <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs border border-slate-200 min-h-[30px]">
                 <i class="fas fa-university text-slate-400" aria-hidden="true"></i> {{ $selectedCollege }}
-                <button type="button" onclick="clearFilter('college')" aria-label="Remove college filter" class="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-600 transition-colors ml-1 focus:outline-none focus:ring-1 focus:ring-red-400"><i class="fas fa-times text-[10px]" aria-hidden="true"></i></button>
+                <button type="button" onclick="clearFilter('college')" aria-label="Remove college filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
             </div> 
             @endif
         </div>
@@ -289,8 +289,8 @@
                     <div class="flex justify-between items-center mb-5">
                         <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">{{ $topSubmittersLabel }}</h3>
                         @if($allSubmitters->count() > 0)
-                        <button type="button" onclick="openSeeAllModal()" class="text-xs font-semibold text-[#8B0000] hover:text-red-700 transition-colors flex items-center gap-1">
-                            See All <i class="fas fa-arrow-right text-[10px]"></i>
+                        <button type="button" onclick="openSeeAllModal()" aria-label="See all submitting entities" class="min-h-[36px] px-2.5 py-1 text-xs font-bold text-[#8B0000] hover:text-[#6e0000] hover:bg-red-50/60 rounded-lg cursor-pointer transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]">
+                            See All <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
                         </button>
                         @endif
                     </div>
@@ -377,14 +377,14 @@
                                 {{ $proposal->Study_Protocol_title }}
                             </div>
                             @if(Auth::user()->role === 'super_admin' || Auth::user()->role === 'admin')
-                            <a href="{{ route('admin.view_files', $proposal->id) }}" class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-[#8B0000] hover:border-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000]" aria-label="View submission {{ $proposal->Study_Protocol_title }}">
+                            <a href="{{ route('admin.view_files', $proposal->id) }}" class="shrink-0 inline-flex items-center justify-center w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#8B0000] hover:border-[#8B0000] hover:shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1" aria-label="View submission {{ $proposal->Study_Protocol_title }}">
                                 <i class="fas fa-external-link-alt text-xs" aria-hidden="true"></i>
                             </a>
                             @endif
                         </div>
                         <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
                             <div class="flex items-center gap-2 font-semibold text-slate-700">
-                                <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600 shrink-0">
+                                <div class="w-6 h-6 rounded-full bg-slate-200/80 flex items-center justify-center text-[11px] font-bold text-slate-600 shrink-0">
                                     {{ substr($proposal->researcher->user->first_name ?? 'U', 0, 1) }}
                                 </div>
                                 <span class="truncate max-w-[140px]">{{ $proposal->researcher->user->first_name ?? '' }} {{ $proposal->researcher->user->last_name ?? 'Unknown' }}</span>
@@ -394,15 +394,24 @@
                         <div>
                             @php
                                 $statusFormat = match($proposal->Status) {
-                                    'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-700 border border-slate-200/80',
-                                    'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-50 text-blue-700 border border-blue-200/80',
-                                    'Waiting for Revision' => 'bg-amber-50 text-amber-800 border border-amber-200/80',
-                                    'Complete - Awaiting Hardcopy' => 'bg-emerald-50 text-emerald-800 border border-emerald-200/80',
-                                    default => 'bg-slate-100 text-slate-700 border border-slate-200/80'
+                                    'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                    'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-50 text-blue-700 border-blue-200/80',
+                                    'Waiting for Revision' => 'bg-amber-50 text-amber-800 border-amber-200/80',
+                                    'Complete - Awaiting Hardcopy' => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+                                    default => 'bg-slate-100 text-slate-700 border-slate-200/80'
                                 };
+                                $dotFormat = match($proposal->Status) {
+                                    'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-400',
+                                    'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-500',
+                                    'Waiting for Revision' => 'bg-amber-500',
+                                    'Complete - Awaiting Hardcopy' => 'bg-emerald-500',
+                                    default => 'bg-slate-400'
+                                };
+                                $cleanStatus = str_replace(' - ', ': ', $proposal->Status);
                             @endphp
-                            <span class="inline-block px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider {{ $statusFormat }}">
-                                {{ $proposal->Status }}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border {{ $statusFormat }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $dotFormat }} shrink-0" aria-hidden="true"></span>
+                                <span>{{ $cleanStatus }}</span>
                             </span>
                         </div>
                     </div>
@@ -439,7 +448,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                                        <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                        <div class="w-6 h-6 rounded-full bg-slate-200/80 flex items-center justify-center text-[11px] font-bold text-slate-600 shrink-0">
                                             {{ substr($proposal->researcher->user->first_name ?? 'U', 0, 1) }}
                                         </div>
                                         {{ $proposal->researcher->user->first_name ?? '' }} {{ $proposal->researcher->user->last_name ?? 'Unknown' }}
@@ -448,15 +457,24 @@
                                 <td class="px-6 py-4">
                                     @php
                                         $statusFormat = match($proposal->Status) {
-                                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-700 border border-slate-200/80',
-                                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-50 text-blue-700 border border-blue-200/80',
-                                            'Waiting for Revision' => 'bg-amber-50 text-amber-800 border border-amber-200/80',
-                                            'Complete - Awaiting Hardcopy' => 'bg-emerald-50 text-emerald-800 border border-emerald-200/80',
-                                            default => 'bg-slate-100 text-slate-700 border border-slate-200/80'
+                                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-50 text-blue-700 border-blue-200/80',
+                                            'Waiting for Revision' => 'bg-amber-50 text-amber-800 border-amber-200/80',
+                                            'Complete - Awaiting Hardcopy' => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+                                            default => 'bg-slate-100 text-slate-700 border-slate-200/80'
                                         };
+                                        $dotFormat = match($proposal->Status) {
+                                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-400',
+                                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-500',
+                                            'Waiting for Revision' => 'bg-amber-500',
+                                            'Complete - Awaiting Hardcopy' => 'bg-emerald-500',
+                                            default => 'bg-slate-400'
+                                        };
+                                        $cleanStatus = str_replace(' - ', ': ', $proposal->Status);
                                     @endphp
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest {{ $statusFormat }}">
-                                        {{ $proposal->Status }}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border {{ $statusFormat }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $dotFormat }} shrink-0" aria-hidden="true"></span>
+                                        <span>{{ $cleanStatus }}</span>
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-500 font-medium tabular-nums">
@@ -464,7 +482,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     @if(Auth::user()->role === 'super_admin' || Auth::user()->role === 'admin')
-                                    <a href="{{ route('admin.view_files', $proposal->id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-[#8B0000] hover:border-[#8B0000] hover:shadow-sm transition-all focus:outline-none" title="View Submission" aria-label="View submission {{ $proposal->Study_Protocol_title }}">
+                                    <a href="{{ route('admin.view_files', $proposal->id) }}" class="inline-flex items-center justify-center w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#8B0000] hover:border-[#8B0000] hover:shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1" title="View Submission" aria-label="View submission {{ $proposal->Study_Protocol_title }}">
                                         <i class="fas fa-external-link-alt text-xs" aria-hidden="true"></i>
                                     </a>
                                     @endif
@@ -506,8 +524,9 @@
                 </div>
             @endif
         </section>
+    </div>
 
-        <!-- Chart.js CDN -->
+    <!-- Chart.js CDN -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script>
@@ -895,8 +914,8 @@
                 <!-- Modal Header -->
                 <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
                     <h3 id="filterModalTitle" class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-filter text-[#8B0000]" aria-hidden="true"></i> Global Filters</h3>
-                    <button type="button" onclick="closeFilterModal()" aria-label="Close filter drawer" class="text-slate-400 hover:text-[#8B0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-lg p-1 transition-colors">
-                        <i class="fas fa-times text-xl" aria-hidden="true"></i>
+                    <button type="button" onclick="closeFilterModal()" aria-label="Close filter drawer" class="w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl flex items-center justify-center text-slate-400 hover:text-[#8B0000] hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer transition-colors">
+                        <i class="fas fa-times text-lg" aria-hidden="true"></i>
                     </button>
                 </div>
 
@@ -908,7 +927,7 @@
                             <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 text-[#8B0000]">Time & Status</h4>
                             <div class="grid grid-cols-1 gap-5">
                                 <fieldset>
-                                    <legend class="block text-xs font-semibold text-slate-600 mb-2">Month Range <span class="text-[10px] text-slate-400 font-normal">(Start to End)</span></legend>
+                                    <legend class="block text-xs font-semibold text-slate-600 mb-2">Month Range <span class="text-xs text-slate-400 font-normal">(Start to End)</span></legend>
                                     <div class="flex items-center gap-2">
                                         <div class="relative flex-1">
                                             <label for="filter_start_month" class="sr-only">Start Month</label>
@@ -923,7 +942,7 @@
                                                 <i class="fas fa-chevron-down text-xs"></i>
                                             </div>
                                         </div>
-                                        <span class="text-slate-400 font-bold" aria-hidden="true">-</span>
+                                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 shrink-0" aria-hidden="true">to</span>
                                         <div class="relative flex-1">
                                             <label for="filter_end_month" class="sr-only">End Month</label>
                                             <select name="end_month" id="filter_end_month" aria-label="End Month" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
@@ -941,7 +960,7 @@
                                 </fieldset>
                                 
                                 <fieldset>
-                                    <legend class="block text-xs font-semibold text-slate-600 mb-2">Year Range <span class="text-[10px] text-slate-400 font-normal">(Start to End)</span></legend>
+                                    <legend class="block text-xs font-semibold text-slate-600 mb-2">Year Range <span class="text-xs text-slate-400 font-normal">(Start to End)</span></legend>
                                     <div class="flex items-center gap-2">
                                         <div class="relative flex-1">
                                             <label for="filter_start_year" class="sr-only">Start Year</label>
@@ -956,7 +975,7 @@
                                             </select>
                                             <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400" aria-hidden="true"><i class="fas fa-chevron-down text-xs"></i></div>
                                         </div>
-                                        <span class="text-slate-400 font-bold" aria-hidden="true">-</span>
+                                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 shrink-0" aria-hidden="true">to</span>
                                         <div class="relative flex-1">
                                             <label for="filter_end_year" class="sr-only">End Year</label>
                                             <select name="end_year" id="filter_end_year" aria-label="End Year" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors appearance-none pr-10">
@@ -975,14 +994,14 @@
                                 
                                 <!-- Exact Date Range (Overrides Dropdowns) -->
                                 <fieldset>
-                                    <legend class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000]">Specific Date <span class="text-[10px] text-slate-400 font-normal normal-case tracking-normal">(Start to End)</span></legend>
+                                    <legend class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-[#8B0000]">Specific Date <span class="text-xs text-slate-400 font-normal normal-case tracking-normal">(Start to End)</span></legend>
                                     <p class="text-[11px] text-slate-500 mb-2 font-normal leading-relaxed">Selecting a specific date range automatically overrides month and year dropdowns.</p>
                                     <div class="flex items-center gap-2 mt-2">
                                         <div class="relative flex-1">
                                             <label for="filter_exact_start" class="sr-only">Specific Start Date</label>
                                             <input type="date" name="exact_start" id="filter_exact_start" aria-label="Specific Start Date" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value; toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
                                         </div>
-                                        <span class="text-slate-400 font-bold" aria-hidden="true">-</span>
+                                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 shrink-0" aria-hidden="true">to</span>
                                         <div class="relative flex-1">
                                             <label for="filter_exact_end" class="sr-only">Specific End Date</label>
                                             <input type="date" name="exact_end" id="filter_exact_end" aria-label="Specific End Date" value="{{ request('exact_end') }}" onchange="toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
@@ -1101,10 +1120,10 @@
                     <!-- Modal Actions -->
                     <div class="p-6 bg-slate-50 border-t border-slate-200 sticky bottom-0 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                         <div class="flex gap-3 justify-end">
-                            <button type="button" id="resetFilterBtn" onclick="resetFilters()" class="flex-1 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400">
+                            <button type="button" id="resetFilterBtn" onclick="resetFilters()" class="flex-1 min-h-[44px] py-3 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-400">
                                 Reset All Filters
                             </button>
-                            <button type="submit" id="applyFilterBtn" onclick="prepareFilterSubmit()" class="flex-1 py-3 bg-[#8B0000] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                            <button type="submit" id="applyFilterBtn" onclick="prepareFilterSubmit()" class="flex-1 min-h-[44px] py-3 bg-[#8B0000] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
                                 <i class="fas fa-check" aria-hidden="true"></i> Apply Filters
                             </button>
                         </div>
@@ -1112,7 +1131,6 @@
                 </form>
             </div>
         </div>
-    </div>
     
     <!-- See All Submitters Modal -->
     <div id="seeAllModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex justify-end backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="seeAllModalTitle" role="dialog" aria-modal="true" onclick="if(event.target===this) closeSeeAllModal()">
@@ -1121,8 +1139,8 @@
                 <h3 id="seeAllModalTitle" class="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <i class="fas fa-university text-[#8B0000]" aria-hidden="true"></i> {{ $topSubmittersLabel }}
                 </h3>
-                <button type="button" onclick="closeSeeAllModal()" aria-label="Close all submitters modal" class="text-slate-400 hover:text-[#8B0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-lg p-1 transition-colors">
-                    <i class="fas fa-times text-xl" aria-hidden="true"></i>
+                <button type="button" onclick="closeSeeAllModal()" aria-label="Close all submitters modal" class="w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl flex items-center justify-center text-slate-400 hover:text-[#8B0000] hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer transition-colors">
+                    <i class="fas fa-times text-lg" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="p-6 space-y-3 flex-1">
@@ -1153,8 +1171,8 @@
         <div class="bg-white shadow-2xl rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden transform transition-transform scale-95 duration-300 flex flex-col" id="detailsModalPanel">
             <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
                 <h3 id="detailsModalTitle" class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2"></h3>
-                <button type="button" onclick="closeDetailsModal()" aria-label="Close details modal" class="text-slate-400 hover:text-[#8B0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-lg p-1 transition-colors">
-                    <i class="fas fa-times text-xl" aria-hidden="true"></i>
+                <button type="button" onclick="closeDetailsModal()" aria-label="Close details modal" class="w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl flex items-center justify-center text-slate-400 hover:text-[#8B0000] hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer transition-colors">
+                    <i class="fas fa-times text-lg" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto flex-1 h-full min-h-[250px]" id="detailsModalContent">
@@ -1305,14 +1323,14 @@
                 `;
                 data.forEach(item => {
                     const safeName = escapeHtml(item.name || 'Unspecified');
-                    const safeEmail = escapeHtml(item.email || '—');
-                    const safeAffil = escapeHtml(item.affiliation || '—');
-                    const safeCollege = escapeHtml(item.college || '—');
+                    const safeEmail = escapeHtml(item.email || 'Not Provided');
+                    const safeAffil = escapeHtml(item.affiliation || 'Not Provided');
+                    const safeCollege = escapeHtml(item.college || 'Not Provided');
                     html += `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-[200px] truncate" title="${safeName}">${safeName}</td>
                             <td class="px-4 py-3 text-sm text-slate-600 max-w-[220px] truncate" title="${safeEmail}">${safeEmail}</td>
-                            <td class="px-4 py-3 text-sm"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.affiliation === 'Internal' ? 'bg-blue-50 text-blue-700 border-blue-200/80' : 'bg-orange-50 text-orange-700 border-orange-200/80'}">${safeAffil}</span></td>
+                            <td class="px-4 py-3 text-sm"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${item.affiliation === 'Internal' ? 'bg-blue-50 text-blue-700 border-blue-200/80' : 'bg-orange-50 text-orange-700 border-orange-200/80'}">${safeAffil}</span></td>
                             <td class="px-4 py-3 text-sm text-slate-500 max-w-[180px] truncate" title="${safeCollege}">${safeCollege}</td>
                         </tr>
                     `;
@@ -1334,13 +1352,13 @@
                     const safeTitle = escapeHtml(item.title || 'Untitled');
                     const safeResearcher = escapeHtml(item.researcher || 'Unknown');
                     const safeStatus = escapeHtml(item.status || 'Unknown');
-                    const safeDate = escapeHtml(item.date || '—');
+                    const safeDate = escapeHtml(item.date || 'Not Provided');
                     const safeRevisions = escapeHtml(item.revisions || '0');
                     html += `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-xs truncate" title="${safeTitle}">${safeTitle}</td>
                             <td class="px-4 py-3 text-sm text-slate-600 max-w-[180px] truncate" title="${safeResearcher}">${safeResearcher}</td>
-                            <td class="px-4 py-3 text-sm"><span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">${safeStatus}</span></td>
+                            <td class="px-4 py-3 text-sm"><span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">${safeStatus}</span></td>
                             <td class="px-4 py-3 text-sm text-slate-500 tabular-nums whitespace-nowrap">${safeDate}</td>
                             ${type === 'revisions' ? `<td class="px-4 py-3 text-sm text-center font-bold text-[#8B0000] tabular-nums">${safeRevisions}</td>` : ''}
                         </tr>

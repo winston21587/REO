@@ -51,6 +51,24 @@ if (app()->environment('local')) {
         }
         return 'No researcher user found';
     });
+
+    Route::get('/dev-login-admin', function () {
+        $user = \App\Models\User::where('role', 'admin')->first();
+        if ($user) {
+            Auth::login($user);
+            return redirect()->route('admin.applications');
+        }
+        return 'No admin user found';
+    });
+
+    Route::get('/dev-login-superadmin', function () {
+        $user = \App\Models\User::where('role', 'super_admin')->first();
+        if ($user) {
+            Auth::login($user);
+            return redirect()->route('admin.applications');
+        }
+        return 'No super_admin user found';
+    });
 }
 
 Route::middleware('guest')->group(function () {
@@ -203,8 +221,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/submissions/upload-revision-document/{id}', [Research_title_Controller::class, 'uploadRevisionDocument'])->middleware('rate_limit_submissions')->name('upload.revision.document');
         Route::delete('/submissions/delete-revision-document/{file_id}', [Research_title_Controller::class, 'deleteRevisionDocument'])->name('delete.revision.document');
         Route::post('/home/{id}/files/submit', [Research_title_Controller::class, 'submitRevisions'])->middleware('rate_limit_submissions')->name('submit.revisions');
-        // Route::post('/submit/ai-check', [AiCheckController::class, 'checkDocuments'])->name('submit.ai_check');
         Route::get('/home/{id}/recommendation-letter', [Research_title_Controller::class, 'viewRecommendationLetter'])->name('recommendation.view');
+        Route::get('/submissions/file-serve/{id}', [Research_title_Controller::class, 'serveFile'])->name('researcher.serve_file');
 
         // Official Receipt Upload Route for Researchers (DEPRECATED: OR is now required at submission time)
         // Route::post('/researcher/submit-or/{id}', [\App\Http\Controllers\ORNumberController::class, 'researcherSubmitOR'])->name('researcher.submit_or');

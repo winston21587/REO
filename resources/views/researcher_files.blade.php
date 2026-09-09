@@ -1,1440 +1,1605 @@
 <x-user_layout>
-    <x-skeleton-loader />
-
-    <main id="page-content" style="display: none;" class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-8 pb-28 sm:pb-16 relative">
-
-        <!-- Atmospheric Maroon Canopy Glow -->
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-72 bg-gradient-to-b from-red-100/40 via-red-50/20 to-transparent pointer-events-none -z-10 rounded-full blur-3xl" aria-hidden="true"></div>
-
-        <!-- Header Section -->
-        <div
-            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 sm:mb-10 gap-4 border-b border-slate-200/80 pb-6 sm:pb-8">
-            <div class="space-y-2 max-w-2xl">
-                <a href="{{ route('home') }}"
-                    class="group inline-flex items-center gap-2 text-slate-500 hover:text-brand-primary transition-colors mb-1 text-xs sm:text-sm font-bold min-h-[44px]">
-                    <div
-                        class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-red-50 transition-colors">
-                        <i class="fas fa-arrow-left text-xs text-slate-500 group-hover:text-brand-primary transition-colors"></i>
-                    </div>
-                    <span>Back to Titles</span>
-                </a>
-                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">Document Manager</h1>
-                <div class="flex flex-wrap items-center gap-2 text-slate-500 text-xs sm:text-sm">
-                    <span class="font-medium">Manage uploads for:</span>
-                    <span class="font-bold text-brand-primary bg-red-50/80 px-3 py-1 rounded-full border border-red-100 max-w-full break-words">
-                        {{ $researchTitle->Study_Protocol_title }}
-                    </span>
-                </div>
-            </div>
-
-            @php
-                $canSubmit = in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete']);
-                $isRevision = $researchTitle->Status === 'Waiting for Revision';
-                $submitLabel = $isRevision ? 'Submit Revisions' : 'Submit Corrections';
-                $submitIcon = $isRevision ? 'fa-paper-plane' : 'fa-check-circle';
-            @endphp
-
-            @if($canSubmit)
-                <button onclick="document.getElementById('revisionModal').classList.remove('hidden')"
-                    class="group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-brand-primary text-white px-7 py-3.5 sm:py-4 min-h-[44px] rounded-xl font-bold shadow-lg shadow-red-900/20 hover:bg-brand-secondary hover:shadow-red-900/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer">
-                    <i class="fas {{ $submitIcon }} text-base sm:text-lg group-hover:rotate-12 transition-transform"></i>
-                    <span>{{ $submitLabel }}</span>
-                </button>
-            @endif
-        </div>
-
-
-
-        <!-- Revision/Correction Modal -->
-        @if($canSubmit)
-            <div id="revisionModal" class="fixed inset-0 z-50 hidden" aria-labelledby="revision-modal-heading" role="dialog"
-                aria-modal="true" x-data @keydown.escape.window="document.getElementById('revisionModal').classList.add('hidden')">
-                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
-                    onclick="document.getElementById('revisionModal').classList.add('hidden')"></div>
-
-                <div class="fixed inset-0 z-10 overflow-y-auto">
-                    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                        <div
-                            class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
-                            <form action="{{ route('submit.revisions', $researchTitle->id) }}" method="POST">
-                                @csrf
-
-                                <!-- Premium Header -->
-                                <div class="px-8 py-6 bg-brand-primary relative overflow-hidden">
-                                    <!-- Background Pattern/Icon -->
-                                    <div class="absolute -right-6 -top-6 text-white/10 pointer-events-none">
-                                        <i class="fas fa-paper-plane text-[150px] rotate-12"></i>
-                                    </div>
-
-                                    <div class="relative z-10 flex justify-between items-start">
-                                        <div>
-                                            <h3 id="revision-modal-heading"
-                                                class="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-                                                <span class="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                                                    <i class="fas fa-paper-plane text-lg text-white"></i>
-                                                </span>
-                                                {{ $submitLabel }}
-                                            </h3>
-                                            <p class="text-red-100 text-sm mt-2 font-medium opacity-90">
-                                                @if($isRevision)
-                                                    Upload revised documents & submit.
-                                                @else
-                                                    Submit corrected documents for review.
-                                                @endif
-                                            </p>
-                                        </div>
-                                        <button type="button"
-                                            onclick="document.getElementById('revisionModal').classList.add('hidden')"
-                                            class="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all cursor-pointer"
-                                            aria-label="Close revision modal">
-                                            <i class="fas fa-times text-xl"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Body -->
-                                <div class="px-8 py-8 bg-white">
-                                    <div class="space-y-6">
-                                        <div
-                                            class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex gap-4 items-start">
-                                            <div
-                                                class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 text-blue-600">
-                                                <i class="fas fa-info-circle text-lg"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="font-bold text-slate-800 text-sm">Review Process</h4>
-                                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-                                                    @if($isRevision)
-                                                        Your submission will be marked as <strong>Waiting for Approval</strong>
-                                                        until reviewed.
-                                                    @else
-                                                        Submitting will notify the Research Ethics Office to process your
-                                                        corrections.
-                                                    @endif
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div class="space-y-2">
-                                            <label for="revision_message"
-                                                class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                                Add a Note <span
-                                                    class="text-slate-400 font-normal normal-case">(Optional)</span>
-                                            </label>
-                                            <div class="relative group">
-                                                <textarea name="revision_message" id="revision_message" rows="3"
-                                                    class="w-full rounded-xl border-slate-200 bg-white shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm placeholder-slate-400 py-3 px-4 resize-none transition-all group-hover:border-slate-300"
-                                                    placeholder="{{ $isRevision ? 'Briefly describe your changes...' : 'E.g., Added missing signature page...' }}"></textarea>
-                                                <div
-                                                    class="absolute bottom-3 right-3 text-slate-300 pointer-events-none group-focus-within:text-brand-primary transition-colors">
-                                                    <i class="fas fa-pen text-xs"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Footer -->
-                                <div
-                                    class="bg-slate-50 px-8 py-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 border-t border-slate-100">
-                                    <button type="button"
-                                        onclick="document.getElementById('revisionModal').classList.add('hidden')"
-                                        class="inline-flex w-full justify-center items-center rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:text-slate-800 sm:w-auto transition-all">
-                                        Cancel
-                                    </button>
-                                    <button type="submit"
-                                        class="inline-flex w-full justify-center items-center gap-2 rounded-xl bg-brand-primary px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-900/20 hover:bg-brand-secondary hover:shadow-red-900/40 hover:-translate-y-0.5 sm:w-auto transition-all duration-300">
-                                        <span>Confirm Submission</span>
-                                        <i class="fas fa-arrow-right text-xs opacity-70"></i>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        @if(session('success'))
-            <div
-                class="animate-[fadeInUp_0.3s_ease-out] bg-emerald-50 border border-emerald-200 text-emerald-800 px-6 py-4 rounded-2xl mb-8 flex items-center gap-4 shadow-sm">
-                <div
-                    class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0 text-emerald-600">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div>
-                    <h4 class="font-bold text-emerald-900">Success</h4>
-                    <p class="text-emerald-700 text-sm">{{ session('success') }}</p>
-                </div>
-            </div>
-        @endif
-
-        @php
-            $disapprovalFeedback = $researchTitle->feedbacks()->where('type', 'disapproval_remark')->first();
-        @endphp
-
-        @if($researchTitle->Status === 'Disapproved' && $disapprovalFeedback)
-            <div
-                class="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4 shadow-sm animate-[fadeInUp_0.5s_ease-out]">
-                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 text-red-600">
-                    <i class="fas fa-times-circle text-lg"></i>
-                </div>
-                <div>
-                    <h4 class="text-lg font-bold text-red-900 mb-1">Protocol Disapproved</h4>
-                    <p class="text-red-800 text-sm font-medium mb-3">This research protocol has been disapproved due to the
-                        following reason:</p>
-                    <div class="bg-white p-4 rounded-xl border border-red-100 shadow-sm">
-                        <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ $disapprovalFeedback->message }}</p>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        {{-- Stage-Specific Admin Remarks Banner --}}
-        @if($stageRemark)
-            @php
-                $isRevisionStage = $researchTitle->Status === 'Waiting for Revision';
-                $isHardcopyStage = in_array($researchTitle->Status, ['Incomplete Hardcopy', 'Incomplete - Awaiting Hardcopy']);
-                $missingDocs = is_array($stageRemark->missing_requirements) ? $stageRemark->missing_requirements : [];
-                
-                if ($isRevisionStage) {
-                    $bannerColor = 'bg-indigo-50 border-indigo-200';
-                    $iconBg = 'bg-indigo-100 text-indigo-600';
-                    $iconClass = 'fa-file-alt';
-                    $titleColor = 'text-indigo-900';
-                    $badgeColor = 'bg-indigo-100 text-indigo-700';
-                    $dividerColor = 'border-indigo-100';
-                    $remarkLabel = 'Revision Remarks from Panel';
-                    $remarkDesc = 'The following deliberation notes were provided by the review panel. Please address all issues in your revision:';
-                    $missingBg = 'bg-white border-indigo-100';
-                } elseif ($isHardcopyStage) {
-                    $bannerColor = 'bg-amber-50 border-amber-200';
-                    $iconBg = 'bg-amber-100 text-amber-600';
-                    $iconClass = 'fa-file-invoice';
-                    $titleColor = 'text-amber-900';
-                    $badgeColor = 'bg-amber-100 text-amber-700';
-                    $dividerColor = 'border-amber-100';
-                    $remarkLabel = 'Hardcopy Submission Remarks';
-                    $remarkDesc = 'The admin has flagged the following issues with your hardcopy submission:';
-                    $missingBg = 'bg-white border-amber-100';
-                } else {
-                    $bannerColor = 'bg-amber-50 border-amber-200';
-                    $iconBg = 'bg-amber-100 text-amber-600';
-                    $iconClass = 'fa-exclamation-triangle';
-                    $titleColor = 'text-amber-900';
-                    $badgeColor = 'bg-amber-100 text-amber-700';
-                    $dividerColor = 'border-amber-100';
-                    $remarkLabel = 'Admin Remarks — Action Required';
-                    $remarkDesc = 'The admin has reviewed your submission and provided the following remarks. Please review and comply:';
-                    $missingBg = 'bg-white border-amber-100';
-                }
-            @endphp
-            <div class="mb-8 p-6 {{ $bannerColor }} border rounded-2xl flex items-start gap-4 shadow-sm animate-[fadeInUp_0.5s_ease-out]">
-                <div class="w-10 h-10 rounded-full {{ $iconBg }} flex items-center justify-center flex-shrink-0">
-                    <i class="fas {{ $iconClass }} text-lg"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
-                        <h4 class="text-sm font-extrabold {{ $titleColor }} uppercase tracking-wider flex items-center gap-2">
-                            <span>{{ $remarkLabel }}</span>
-                        </h4>
-                        <span class="text-[10px] font-bold {{ $badgeColor }} px-2.5 py-1 rounded-full">
-                            <i class="far fa-clock mr-1"></i>{{ $stageRemark->created_at->timezone('Asia/Manila')->format('M d, Y \a\t h:i A') }}
-                        </span>
-                    </div>
-                    <p class="text-xs {{ $titleColor }} opacity-75 mb-3">{{ $remarkDesc }}</p>
-
-                    @if($stageRemark->message)
-                        <div class="bg-white rounded-xl border {{ $dividerColor }} p-4 shadow-sm mb-3">
-                            @if($isRevisionStage)
-                                {{-- Parse the deliberation format for revision remarks --}}
-                                @php
-                                    $rawMsg = $stageRemark->message;
-                                    $sections = [
-                                        'Scientific Soundness' => ['key' => 'Scientific Soundness: ', 'next' => 'Ethical Issues: ', 'color' => 'text-indigo-600'],
-                                        'Ethical Issues'       => ['key' => 'Ethical Issues: ', 'next' => 'ICF Issues: ', 'color' => 'text-amber-600'],
-                                        'ICF Issues'           => ['key' => 'ICF Issues: ', 'next' => 'Summary of Issues & Resolutions: ', 'color' => 'text-emerald-600'],
-                                        'Summary'              => ['key' => 'Summary of Issues & Resolutions: ', 'next' => '=== FINAL DECISION ===', 'color' => 'text-rose-600'],
-                                    ];
-                                    $parsed = [];
-                                    foreach ($sections as $label => $sec) {
-                                        $start = strpos($rawMsg, $sec['key']);
-                                        $end   = strpos($rawMsg, $sec['next']);
-                                        if ($start !== false && $end !== false) {
-                                            $val = trim(substr($rawMsg, $start + strlen($sec['key']), $end - ($start + strlen($sec['key']))));
-                                            if ($val && $val !== 'N/A') {
-                                                $parsed[$label] = ['text' => $val, 'color' => $sec['color']];
-                                            }
-                                        }
-                                    }
-                                @endphp
-                                @if(!empty($parsed))
-                                    <div class="space-y-3">
-                                        @foreach($parsed as $label => $item)
-                                            <div>
-                                                <p class="text-[10px] font-extrabold {{ $item['color'] }} uppercase tracking-widest mb-1">{{ $label }}</p>
-                                                <p class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed border-l-2 border-slate-200 pl-3">{{ $item['text'] }}</p>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <p class="text-sm text-slate-600 whitespace-pre-wrap">{{ $stageRemark->message }}</p>
-                                @endif
-                            @else
-                                <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ $stageRemark->message }}</p>
-                            @endif
-                        </div>
-                    @endif
-
-                    @if(!empty($missingDocs))
-                        <div class="rounded-xl border {{ $missingBg }} overflow-hidden">
-                            <div class="px-4 py-2 border-b {{ $dividerColor }} bg-white/50">
-                                <p class="text-[10px] font-extrabold {{ $titleColor }} uppercase tracking-widest flex items-center gap-1.5">
-                                    <i class="fas fa-list-check"></i> Missing Requirements / Actions Needed
-                                </p>
-                            </div>
-                            <ul class="divide-y {{ $dividerColor }}">
-                                @foreach($missingDocs as $doc)
-                                    <li class="flex items-center gap-3 px-4 py-2.5">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></div>
-                                        <span class="text-sm text-slate-700 font-medium">{{ $doc }}</span>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        @endif
-
-        @php
-            $missingDocs = [];
-            if (in_array($researchTitle->Status ?? '', ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
-                $latestDeficiency = \App\Models\SubmissionFeedback::where('research_title_id', $researchTitle->id)
-                    ->where('type', 'admin_deficiency')
-                    ->latest()
-                    ->first();
-                if ($latestDeficiency && !empty($latestDeficiency->missing_requirements)) {
-                    $missingDocs = is_array($latestDeficiency->missing_requirements) 
-                        ? $latestDeficiency->missing_requirements 
-                        : (json_decode($latestDeficiency->missing_requirements, true) ?? []);
-                }
+    <div class="max-w-7xl mx-auto w-full flex-1 min-h-0 flex flex-col lg:h-full lg:max-h-full gap-2.5"
+         x-data="{
+            drawerOpen: false,
+            drawerTab: 'details',
+            openDrawer(tab) {
+                this.drawerTab = tab;
+                this.drawerOpen = true;
+            },
+            closeDrawer() {
+                this.drawerOpen = false;
             }
+         }"
+         @keydown.escape.window="if (drawerOpen) closeDrawer()">
+
+        @php
+            $canSubmit = in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete']);
+            $isRevision = $researchTitle->Status === 'Waiting for Revision';
+            $submitLabel = $isRevision ? 'Submit Revisions' : 'Submit Corrections';
+            $submitIcon = $isRevision ? 'fa-paper-plane' : 'fa-check-circle';
+
+            $statusLower = strtolower($researchTitle->Status ?? '');
+            $statusConfig = match(true) {
+                str_contains($statusLower, 'modifications required') || str_contains($statusLower, 'disapproved') || str_contains($statusLower, 'major') => [
+                    'bg' => 'bg-rose-50',
+                    'text' => 'text-rose-800',
+                    'border' => 'border-rose-300',
+                    'dot' => 'bg-rose-600',
+                ],
+                str_contains($statusLower, 'waiting') || str_contains($statusLower, 'minor') || str_contains($statusLower, 'incomplete') => [
+                    'bg' => 'bg-amber-50',
+                    'text' => 'text-amber-800',
+                    'border' => 'border-amber-300',
+                    'dot' => 'bg-amber-500',
+                ],
+                str_contains($statusLower, 'reviewed') || str_contains($statusLower, 'approved') => [
+                    'bg' => 'bg-emerald-50',
+                    'text' => 'text-emerald-800',
+                    'border' => 'border-emerald-300',
+                    'dot' => 'bg-emerald-600',
+                ],
+                str_contains($statusLower, 'under review') => [
+                    'bg' => 'bg-indigo-50',
+                    'text' => 'text-indigo-800',
+                    'border' => 'border-indigo-300',
+                    'dot' => 'bg-indigo-600',
+                ],
+                str_contains($statusLower, 'reviewer assigned') => [
+                    'bg' => 'bg-blue-50',
+                    'text' => 'text-blue-800',
+                    'border' => 'border-blue-300',
+                    'dot' => 'bg-blue-600',
+                ],
+                default => [
+                    'bg' => 'bg-slate-100',
+                    'text' => 'text-slate-800',
+                    'border' => 'border-slate-300',
+                    'dot' => 'bg-slate-500',
+                ]
+            };
 
             $allFiles = $researchTitle->files->merge($researchTitle->adminFiles ?? collect());
+            $letters = $allFiles->whereIn('filetype', [
+                'Result of Review (Admin Generated)', 
+                'recommendation letter', 
+                'Archived Result of Review',
+                'Approval Letter',
+                'certificate'
+            ])->sortByDesc('created_at');
+            $protocolDocs = $researchTitle->files->whereNotIn('filetype', [
+                'Result of Review (Admin Generated)', 
+                'recommendation letter', 
+                'Archived Result of Review',
+                'Approval Letter',
+                'certificate'
+            ]);
 
-            $letters = $allFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->sortByDesc('created_at');
-            $archivedLetters = $allFiles->where('filetype', 'Archived Result of Review')->sortByDesc('created_at');
-            $protocolDocs = $researchTitle->files->whereNotIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review']);
-
-            // "Draft Workspace" = files with revision_number = -1
-            $draftFiles = $protocolDocs->where('revision_number', -1)->sortByDesc('created_at');
-
-            // "Current Documents" - The absolute latest version of each category (excluding drafts)
-            $activeFiles = $protocolDocs->where('revision_number', '!=', -1)->sortByDesc(function ($file) {
-                return $file->revision_number ?? 0;
-            })->unique('category')->sortByDesc('created_at');
-
-            // "Original Documents" = revision_number === null. This is always the very first file uploaded for a category.
             $originalFiles = $protocolDocs->whereNull('revision_number')->sortByDesc('created_at');
-
-            // "Revision Folders" = grouped by revision_number (where > 0, ignoring -1)
             $archivedFiles = $protocolDocs->where('revision_number', '>', 0)->sortByDesc('created_at');
             $revisionFolders = $archivedFiles->groupBy('revision_number')->sortKeys();
 
-            // Next Revision Number
-            $nextRevisionNumber = ($protocolDocs->where('revision_number', '>', 0)->max('revision_number') ?? 0) + 1;
+            // Consolidated latest version of each category (excluding drafts -1)
+            $activeFiles = $protocolDocs->where('revision_number', '!=', -1)
+                ->groupBy('category')
+                ->map(function ($categoryFiles) {
+                    $maxRev = $categoryFiles->max('revision_number');
+                    return $categoryFiles->where('revision_number', $maxRev);
+                })
+                ->flatten()
+                ->sortByDesc('created_at');
 
-            $isWaitingForRevision = $researchTitle->Status === 'Waiting for Revision';
+            // Draft workspace files (revision_number = -1)
+            $draftFiles = $protocolDocs->where('revision_number', -1)->sortByDesc('created_at');
+
+            $hasRevisions = $revisionFolders->isNotEmpty();
             $hasDraftFiles = $draftFiles->isNotEmpty();
+            $nextRevisionNumber = ($protocolDocs->where('revision_number', '>', 0)->max('revision_number') ?? 0) + 1;
+            $canReplace = in_array($researchTitle->Status ?? '', ['Incomplete', 'Pending', 'Pending (Initial Intake)']);
+
+            // Enriched file mapper for JavaScript / Alpine
+            $enrichFile = function ($file, $label) {
+                $ext = strtolower(pathinfo($file->filename, PATHINFO_EXTENSION));
+                if (!$ext) {
+                    $ext = strtolower($file->filetype ?? '');
+                }
+                $icons = [
+                    'pdf'  => ['icon' => 'fas fa-file-pdf', 'color' => 'text-rose-700/80', 'bg' => 'bg-rose-50/60 text-rose-700/80'],
+                    'doc'  => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-700/80', 'bg' => 'bg-blue-50/60 text-blue-700/80'],
+                    'docx' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-700/80', 'bg' => 'bg-blue-50/60 text-blue-700/80'],
+                    'ppt'  => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-amber-700/80', 'bg' => 'bg-amber-50/60 text-amber-700/80'],
+                    'pptx' => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-amber-700/80', 'bg' => 'bg-amber-50/60 text-amber-700/80'],
+                    'xls'  => ['icon' => 'fas fa-file-excel', 'color' => 'text-emerald-700/80', 'bg' => 'bg-emerald-50/60 text-emerald-700/80'],
+                    'xlsx' => ['icon' => 'fas fa-file-excel', 'color' => 'text-emerald-700/80', 'bg' => 'bg-emerald-50/60 text-emerald-700/80'],
+                    'jpg'  => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
+                    'jpeg' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
+                    'png'  => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
+                    'webp' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
+                ];
+                $attrs = $icons[$ext] ?? ['icon' => 'fas fa-file-alt', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'];
+
+                $remarksList = [];
+                if (isset($file->reviewerRemarks) && $file->reviewerRemarks->isNotEmpty()) {
+                    foreach ($file->reviewerRemarks as $rem) {
+                        $reviewerName = $rem->reviewer ? ($rem->reviewer->first_name . ' ' . $rem->reviewer->last_name) : 'Reviewer';
+                        $remarksList[] = [
+                            'reviewer' => $reviewerName,
+                            'text' => $rem->remarks,
+                            'date' => $rem->updated_at ? $rem->updated_at->timezone('Asia/Manila')->format('M d, Y • h:i A') : ''
+                        ];
+                    }
+                }
+
+                return [
+                    'id' => $file->id,
+                    'filename' => $file->filename,
+                    'label' => $file->category ?? ($file->filetype === 'certificate' ? 'Ethics Clearance Certificate' : ($file->filetype === 'Approval Letter' ? 'Cover Letter of Approval' : 'Uncategorized')),
+                    'group' => $label,
+                    'ext' => $ext,
+                    'revision_number' => $file->revision_number,
+                    'uploaded_at' => $file->created_at ? $file->created_at->format('M d, Y') : '',
+                    'icon' => $attrs['icon'],
+                    'color' => $attrs['color'],
+                    'bg' => $attrs['bg'],
+                    'remarks' => $remarksList,
+                    'has_remarks' => !empty($remarksList),
+                    'public_url' => asset($file->filepath),
+                    'delete_url' => route('delete.revision.document', $file->id),
+                ];
+            };
+
+            $groupFiles = function ($collection, $groupLabel) use ($enrichFile) {
+                $grouped = [];
+                foreach ($collection as $f) {
+                    $cat = $f->category;
+                    if (!$cat) {
+                        if ($f->filetype === 'certificate') {
+                            $cat = 'Clearance Certificate';
+                        } elseif ($f->filetype === 'Approval Letter') {
+                            $cat = 'Approval Letter';
+                        } elseif (str_contains($f->filetype ?? '', 'Result of Review')) {
+                            $cat = 'Result of Review';
+                        } else {
+                            $cat = 'Uncategorized';
+                        }
+                    }
+                    if (!isset($grouped[$cat])) {
+                        $grouped[$cat] = [];
+                    }
+                    $grouped[$cat][] = $enrichFile($f, $groupLabel);
+                }
+                $result = [];
+                foreach ($grouped as $cat => $files) {
+                    $result[] = [
+                        'category' => $cat,
+                        'files' => $files
+                    ];
+                }
+                return $result;
+            };
+
+            $jsOriginal = $groupFiles($originalFiles, 'Original');
+            $jsActive = $groupFiles($activeFiles, 'Current');
+            $jsLetters = $groupFiles($letters, 'Letters');
+            $jsDraft = $groupFiles($draftFiles, 'Draft');
+
+            $jsRevisions = [];
+            foreach ($revisionFolders as $revNum => $files) {
+                $jsRevisions[$revNum] = $groupFiles($files, "Revision $revNum");
+            }
+
+            // Determine default starting active file: prioritize Application Form if available
+            $appFormFile = $originalFiles->firstWhere('category', 'Application Form') 
+                ?? $activeFiles->firstWhere('category', 'Application Form');
+            $firstFile = $appFormFile 
+                ? $enrichFile($appFormFile, $appFormFile->revision_number ? 'Current' : 'Original')
+                : ($originalFiles->first() 
+                    ? $enrichFile($originalFiles->first(), 'Original') 
+                    : ($activeFiles->first() ? $enrichFile($activeFiles->first(), 'Current') : ($letters->first() ? $enrichFile($letters->first(), 'Letters') : null)));
+            
+            $serveRoute = route('researcher.serve_file', 'FILE_ID');
+
+            // Collect all file reviewer remarks for aggregated review accordion
+            $allRemarks = collect();
+            foreach ($protocolDocs as $doc) {
+                if (isset($doc->reviewerRemarks) && $doc->reviewerRemarks->isNotEmpty()) {
+                    foreach ($doc->reviewerRemarks as $rem) {
+                        $allRemarks->push([
+                            'file_id' => $doc->id,
+                            'filename' => $doc->filename,
+                            'category' => $doc->category ?? 'Uncategorized',
+                            'reviewer' => $rem->reviewer ? ($rem->reviewer->first_name . ' ' . $rem->reviewer->last_name) : 'Reviewer',
+                            'initial' => $rem->reviewer ? strtoupper(substr($rem->reviewer->first_name, 0, 1)) : 'R',
+                            'text' => $rem->remarks,
+                            'date' => $rem->updated_at ? $rem->updated_at->timezone('Asia/Manila')->format('M d, Y • h:i A') : ''
+                        ]);
+                    }
+                }
+            }
         @endphp
 
-        <!-- Recommendation Letters Section -->
-        @if($letters->isNotEmpty() || $archivedLetters->isNotEmpty())
-            <div class="mb-10">
-                <h2 class="text-lg sm:text-xl font-black text-slate-800 mb-5 flex items-center gap-2 font-heading tracking-tight">
-                    <i class="fas fa-envelope-open-text text-emerald-600"></i>
-                    <span>Recommendation Letters</span>
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
-                    {{-- Active Letters --}}
-                    @foreach($letters as $file)
-                        <div
-                            class="bg-white rounded-2xl border border-emerald-200/80 shadow-xs overflow-hidden flex flex-col group hover:shadow-md hover:border-emerald-300 transition-all duration-200">
-                            <div class="p-4 sm:p-5 flex items-start gap-3.5 border-b border-emerald-100/70 bg-emerald-50/40">
-                                <div
-                                    class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                                    <i class="fas fa-certificate text-lg"></i>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h4 class="font-black text-slate-900 text-sm leading-snug truncate mb-1"
-                                        title="{{ $file->filename }}">
-                                        {{ $file->filename }}
-                                    </h4>
-                                    <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700">
-                                        Official Document
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Document Visual / Preview Area -->
-                            <div
-                                class="relative bg-gradient-to-b from-slate-50 to-slate-100/50 flex-1 min-h-[160px] border-b border-slate-100 group-hover:bg-slate-100/70 transition-colors overflow-hidden flex flex-col items-center justify-center p-6 text-center">
-                                <div class="w-14 h-14 rounded-2xl bg-white shadow-xs border border-emerald-100 flex items-center justify-center text-emerald-600 mb-2.5 group-hover:scale-105 transition-transform duration-200">
-                                    <i class="fas fa-file-shield text-2xl"></i>
-                                </div>
-                                <p class="text-xs font-bold text-slate-700 max-w-[200px] truncate mb-1">{{ $file->filename }}</p>
-                                <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">Verified Admin Copy</span>                                <div
-                                    class="absolute inset-0 bg-slate-900/0 sm:group-hover:bg-slate-900/10 transition-colors flex items-center justify-center p-4">
-                                    <a href="{{ asset($file->filepath) }}" target="_blank"
-                                        class="opacity-90 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-2 sm:group-hover:translate-y-0 transition-all duration-200 bg-white/95 backdrop-blur-sm text-slate-900 hover:text-emerald-700 px-4 py-2 min-h-[38px] rounded-xl font-bold text-xs shadow-md flex items-center gap-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary"
-                                        aria-label="View {{ $file->filename }} in fullscreen">
-                                        <i class="fas fa-external-link-alt text-[11px]"></i>
-                                        <span>View Fullscreen</span>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <!-- Read-Only Actions -->
-                            <div class="p-3.5 sm:p-4 bg-white">
-                                <a href="{{ asset($file->filepath) }}" download
-                                    class="block w-full py-2.5 px-4 min-h-[44px] bg-emerald-50 hover:bg-emerald-100 text-emerald-800 hover:text-emerald-900 rounded-xl text-xs sm:text-sm font-bold text-center transition-colors flex items-center justify-center gap-2 active:scale-[0.98] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
-                                    aria-label="Download {{ $file->filename }}">
-                                    <i class="fas fa-download"></i>
-                                    <span>Download File</span>
-                                </a>
-                            </div>
+        <!-- Top Institutional Header Card -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs px-4 py-2 sm:px-5 sm:py-2.5 relative overflow-hidden shrink-0">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3">
+                
+                <!-- Left: Back Button + Code + Status + Title -->
+                <div class="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                    <a href="{{ route('home') }}" 
+                       class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center shrink-0 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95 cursor-pointer"
+                       title="Back to Titles" aria-label="Back to Titles">
+                        <i class="fas fa-arrow-left text-xs sm:text-sm" aria-hidden="true"></i>
+                    </a>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-mono text-xs font-semibold tabular-nums text-slate-700 bg-slate-50 border border-slate-200 px-2.5 py-0.5 rounded-md shadow-2xs">
+                                {{ $researchTitle->reoc_code ?? ('#'.str_pad($researchTitle->id, 5, '0', STR_PAD_LEFT)) }}
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} border {{ $statusConfig['border'] }} shadow-2xs">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $statusConfig['dot'] }} shrink-0"></span>
+                                <span>{{ $researchTitle->Status }}</span>
+                            </span>
                         </div>
-                    @endforeach
-
-                    {{-- Archived (Previous) Letters --}}
-                    @foreach($archivedLetters as $file)
-                        <div
-                            class="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden flex flex-col group hover:shadow-md hover:border-slate-300 transition-all duration-200">
-                            <div class="p-4 sm:p-5 flex items-start gap-3.5 border-b border-slate-100 bg-slate-50/50">
-                                <div
-                                    class="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 text-slate-400">
-                                    <i class="fas fa-history text-lg"></i>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h4 class="font-bold text-slate-700 text-sm leading-snug truncate mb-1"
-                                        title="{{ $file->filename }}">
-                                        {{ $file->filename }}
-                                    </h4>
-                                    <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
-                                        Previous Version
-                                    </span>
-                                    <p class="text-[10px] text-slate-400 mt-1 flex items-center gap-1 font-medium">
-                                        <i class="far fa-clock text-[9px]"></i> {{ $file->created_at->format('M d, Y') }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Document Visual / Preview Area -->
-                            <div
-                                class="relative bg-gradient-to-b from-slate-50 to-slate-100/50 flex-1 min-h-[160px] border-b border-slate-100 group-hover:bg-slate-100/70 transition-colors overflow-hidden flex flex-col items-center justify-center p-6 text-center">
-                                <div class="w-14 h-14 rounded-2xl bg-white shadow-xs border border-slate-200/80 flex items-center justify-center text-slate-400 mb-2.5 group-hover:scale-105 transition-transform duration-200">
-                                    <i class="fas fa-history text-2xl"></i>
-                                </div>
-                                <p class="text-xs font-bold text-slate-600 max-w-[200px] truncate mb-1">{{ $file->filename }}</p>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60">Archived Version</span>
-
-                                <div
-                                    class="absolute inset-0 bg-slate-900/0 sm:group-hover:bg-slate-900/10 transition-colors flex items-center justify-center p-4">
-                                    <a href="{{ asset($file->filepath) }}" target="_blank"
-                                        class="opacity-90 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-2 sm:group-hover:translate-y-0 transition-all duration-200 bg-white/95 backdrop-blur-sm text-slate-900 hover:text-slate-700 px-4 py-2 min-h-[38px] rounded-xl font-bold text-xs shadow-md flex items-center gap-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary"
-                                        aria-label="View {{ $file->filename }} in fullscreen">
-                                        <i class="fas fa-external-link-alt text-[11px]"></i>
-                                        <span>View Fullscreen</span>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <!-- Read-Only Actions -->
-                            <div class="p-3.5 sm:p-4 bg-white">
-                                <a href="{{ asset($file->filepath) }}" download
-                                    class="block w-full py-2.5 px-4 min-h-[44px] bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl text-xs sm:text-sm font-bold text-center transition-colors flex items-center justify-center gap-2 active:scale-[0.98] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
-                                    aria-label="Download {{ $file->filename }}">
-                                    <i class="fas fa-download"></i>
-                                    <span>Download File</span>
-                                </a>
-                            </div>
-                        </div>
-                    @endforeach
+                        <h1 class="font-heading font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-tight mt-0.5 truncate" title="{{ $researchTitle->Study_Protocol_title }}">
+                            {{ $researchTitle->Study_Protocol_title }}
+                        </h1>
+                    </div>
                 </div>
+
+                <!-- Right: Researcher Metadata & Quick Actions -->
+                <div class="flex flex-col sm:flex-row lg:flex-col sm:items-center lg:items-end justify-between gap-1.5 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                    
+                    <!-- Metadata Info Row -->
+                    <div class="flex items-center gap-2.5 text-xs text-slate-500 flex-wrap">
+                        <span class="tabular-nums font-medium text-slate-500">
+                            <i class="far fa-calendar-alt text-slate-400 mr-1" aria-hidden="true"></i>Submitted {{ $researchTitle->created_at->format('M d, Y') }}
+                        </span>
+                        @if(!empty($researchTitle->Review_Type) && !in_array($researchTitle->Review_Type, ['Unassigned', 'N/A']))
+                            <span class="text-slate-300">·</span>
+                            <span class="font-medium text-slate-600 bg-slate-50 border border-slate-200/80 text-[11px] px-2 py-0.5 rounded-md">
+                                {{ $researchTitle->Review_Type }}
+                            </span>
+                        @endif
+                    </div>
+
+                    <!-- Actions Pill Group -->
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <button type="button" @click="openDrawer('details')" 
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 hover:text-slate-900 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] h-8 cursor-pointer shadow-2xs group active:scale-95"
+                                title="View Submission Details">
+                            <i class="fas fa-info-circle text-xs text-slate-400 group-hover:text-[#8B0000] transition-colors" aria-hidden="true"></i>
+                            <span>Details</span>
+                        </button>
+
+                        <button type="button" @click="openDrawer('activity')" 
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 hover:text-slate-900 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] h-8 cursor-pointer shadow-2xs group active:scale-95"
+                                title="View Activity Log">
+                            <i class="fas fa-history text-xs text-slate-400 group-hover:text-[#8B0000] transition-colors" aria-hidden="true"></i>
+                            <span>Activity Log</span>
+                        </button>
+
+                        @if($canSubmit)
+                            <button type="button" onclick="document.getElementById('revisionModal').classList.remove('hidden')"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-brand-primary hover:bg-brand-secondary text-white text-xs font-bold transition-all shadow-md shadow-red-950/20 hover:shadow-red-950/30 hover:-translate-y-0.5 active:scale-95 h-8 cursor-pointer">
+                                <i class="fas {{ $submitIcon }} text-xs" aria-hidden="true"></i>
+                                <span>{{ $submitLabel }}</span>
+                            </button>
+                        @endif
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        @if(session('success'))
+            <div class="p-3 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-2xl flex items-center justify-between gap-3 text-xs shadow-2xs shrink-0">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-emerald-600"></i>
+                    <span class="font-bold">{{ session('success') }}</span>
+                </div>
+                <button type="button" @click="$el.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         @endif
 
-        @if($activeFiles->isNotEmpty() || $originalFiles->isNotEmpty() || $revisionFolders->isNotEmpty())
-            <div x-data="{ 
-                activeTab: $persist('original').as('reo_rt_{{ $researchTitle->id }}_tab'),
-                isDrafting: {{ $hasDraftFiles ? 'true' : 'false' }},
-                startDrafting() {
-                    this.isDrafting = true;
-                    this.activeTab = 'draft';
+        @if(session('error'))
+            <div class="p-3 bg-rose-50 border border-rose-300 text-rose-900 rounded-2xl flex items-center justify-between gap-3 text-xs shadow-2xs shrink-0">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-rose-600"></i>
+                    <span class="font-bold">{{ session('error') }}</span>
+                </div>
+                <button type="button" @click="$el.parentElement.remove()" class="text-rose-700 hover:text-rose-950">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        @endif
+
+        <!-- Main 12-Column File Workspace Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch flex-1 min-h-0 lg:h-full" 
+             x-data="{
+                activeFile: {{ $firstFile ? json_encode($firstFile) : 'null' }},
+                activeTab: '{{ $letters->isNotEmpty() && $originalFiles->isEmpty() ? 'letters' : 'original' }}',
+                originalFiles: {{ json_encode($jsOriginal) }},
+                activeFiles: {{ json_encode($jsActive) }},
+                letters: {{ json_encode($jsLetters) }},
+                revisions: {{ json_encode($jsRevisions) }},
+                draftFiles: {{ json_encode($jsDraft) }},
+                hasRevisions: {{ $hasRevisions ? 'true' : 'false' }},
+                hasDraftFiles: {{ $hasDraftFiles ? 'true' : 'false' }},
+                isWaitingForRevision: {{ $isRevision ? 'true' : 'false' }},
+                canReplace: {{ $canReplace ? 'true' : 'false' }},
+                serveRoute: '{{ $serveRoute }}',
+                isUploading: false,
+                uploadCategory: '',
+                replaceFileId: null,
+
+                getUrl(file) {
+                    if (!file) return '';
+                    return this.serveRoute.replace('FILE_ID', file.id);
+                },
+                getOfficeUrl(file) {
+                    if (!file || !file.public_url) return '';
+                    return 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(file.public_url);
+                },
+                isPdf(file) { return file && file.ext === 'pdf'; },
+                isOffice(file) { return file && ['doc','docx','ppt','pptx','xls','xlsx'].includes(file.ext); },
+                isImage(file) { return file && ['jpg','jpeg','png','gif','bmp','webp'].includes(file.ext); },
+                isLocalHost() {
+                    return ['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.hostname.endsWith('.test') || window.location.hostname.endsWith('.local');
+                },
+                selectFile(file) { this.activeFile = file; },
+
+                // Upload handling (Replace, Missing, Draft)
+                async handleFileUpload(fileInput, url, extraFields = {}) {
+                    const file = fileInput.files[0];
+                    if (!file) return;
+
+                    this.isUploading = true;
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('_token', '{{ csrf_token() }}');
+                    for (const [key, val] of Object.entries(extraFields)) {
+                        formData.append(key, val);
+                    }
+
+                    const progressModal = document.getElementById('upload-progress-modal');
+                    const progressBar = document.getElementById('upload-progress-bar');
+                    const percentageText = document.getElementById('upload-percentage');
+                    const sizeText = document.getElementById('upload-size');
+
+                    if (progressModal) {
+                        progressBar.style.width = '0%';
+                        percentageText.textContent = '0%';
+                        sizeText.textContent = '0 KB / 0 KB';
+                        progressModal.classList.remove('hidden');
+                    }
+
+                    const formatBytes = (bytes) => {
+                        if (bytes === 0) return '0 Bytes';
+                        const k = 1024;
+                        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                        const i = Math.floor(Math.log(bytes) / Math.log(k));
+                        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                    };
+
+                    try {
+                        const xhr = new XMLHttpRequest();
+                        const uploadPromise = new Promise((resolve, reject) => {
+                            xhr.upload.addEventListener('progress', (e) => {
+                                if (e.lengthComputable) {
+                                    const percent = Math.round((e.loaded / e.total) * 100);
+                                    if (progressBar) progressBar.style.width = percent + '%';
+                                    if (percentageText) percentageText.textContent = percent + '%';
+                                    if (sizeText) sizeText.textContent = `${formatBytes(e.loaded)} / ${formatBytes(e.total)}`;
+                                }
+                            });
+                            xhr.onload = () => {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    try {
+                                        resolve(JSON.parse(xhr.responseText));
+                                    } catch(e) {
+                                        resolve({ success: true });
+                                    }
+                                } else {
+                                    let errorMsg = 'Upload failed';
+                                    try {
+                                        const err = JSON.parse(xhr.responseText);
+                                        errorMsg = err.message || err.error || errorMsg;
+                                    } catch(e) {}
+                                    reject(new Error(errorMsg));
+                                }
+                            };
+                            xhr.onerror = () => reject(new Error('Network error during upload'));
+                        });
+
+                        xhr.open('POST', url);
+                        xhr.setRequestHeader('Accept', 'application/json');
+                        xhr.send(formData);
+
+                        const data = await uploadPromise;
+                        if (data.success || data.file) {
+                            if (progressModal) progressModal.classList.add('hidden');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'Document uploaded successfully! Updating workspace...',
+                                timer: 1200,
+                                showConfirmButton: false
+                            });
+                            setTimeout(() => window.location.reload(), 1200);
+                        } else {
+                            throw new Error(data.error || 'Server rejected file.');
+                        }
+                    } catch (error) {
+                        if (progressModal) progressModal.classList.add('hidden');
+                        Swal.fire({ icon: 'error', title: 'Upload Failed', text: error.message });
+                    } finally {
+                        this.isUploading = false;
+                        fileInput.value = '';
+                    }
+                },
+
+                // Action: Replace Existing File
+                replaceExisting(fileId, event) {
+                    this.handleFileUpload(event.target, '{{ route('update.file', $researchTitle->id) }}', {
+                        file_id: fileId,
+                        _method: 'PUT'
+                    });
+                },
+
+                // Action: Upload Missing Requirement
+                uploadMissing(category, event) {
+                    this.handleFileUpload(event.target, '{{ route('add.missing.file', $researchTitle->id) }}', {
+                        category: category
+                    });
+                },
+
+                // Action: Upload to Draft Workspace
+                uploadDraft(category, event) {
+                    this.handleFileUpload(event.target, '{{ route('upload.revision.document', $researchTitle->id) }}', {
+                        category: category
+                    });
+                },
+
+                // Action: Delete from Draft Workspace
+                async deleteDraft(fileId, deleteUrl) {
+                    const result = await Swal.fire({
+                        title: 'Remove Draft Document?',
+                        text: 'Are you sure you want to remove this document from your draft workspace?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Yes, remove',
+                        cancelButtonText: 'Cancel'
+                    });
+
+                    if (!result.isConfirmed) return;
+
+                    try {
+                        const response = await fetch(deleteUrl, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ _method: 'DELETE' })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            Swal.fire({ icon: 'success', title: 'Removed', text: 'Document removed from draft workspace.', timer: 1000, showConfirmButton: false });
+                            setTimeout(() => window.location.reload(), 1000);
+                        } else {
+                            throw new Error(data.error || 'Failed to remove file.');
+                        }
+                    } catch(e) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: e.message });
+                    }
                 }
-            }" class="mb-10">
-                <!-- Responsive Action Bar -->
-                @if($isWaitingForRevision && !$hasDraftFiles)
-                    <div x-show="!isDrafting"
-                        class="mb-6 sm:mb-8 p-5 sm:p-6 bg-blue-50/80 border border-blue-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-                        <div>
-                            <h3 class="text-base sm:text-lg font-black text-blue-900 mb-1 font-heading">Revisions Required</h3>
-                            <p class="text-blue-700 text-xs sm:text-sm leading-relaxed">Please create a new Revision Workspace to upload your corrected documents.</p>
+             }">
+
+            <!-- ===== LEFT COLUMN — Document Viewer Console (7 Cols) ===== -->
+            <div class="lg:col-span-7 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
+
+                <!-- Viewer Header & Controls Bar -->
+                <div class="bg-white px-3.5 py-1.5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-2.5 shrink-0">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/80 shadow-2xs"
+                             :class="activeFile ? activeFile.bg : 'bg-slate-50 text-slate-400'">
+                            <i :class="activeFile ? [activeFile.icon, activeFile.color] : 'fas fa-file text-slate-400'" class="text-xs" aria-hidden="true"></i>
                         </div>
-                        <button @click="startDrafting()" type="button"
-                            class="shrink-0 w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm">
-                            <i class="fas fa-plus"></i>
-                            <span>Create Revision {{ $nextRevisionNumber }}</span>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-xs font-semibold text-slate-950 truncate tracking-tight"
+                                      x-text="activeFile ? activeFile.label : 'No document selected'"></span>
+                                <template x-if="activeFile && activeFile.revision_number && activeFile.revision_number > 0">
+                                    <span class="text-[10px] font-semibold text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md"
+                                          x-text="'Revision ' + activeFile.revision_number"></span>
+                                </template>
+                                <template x-if="activeFile && activeFile.revision_number === -1">
+                                    <span class="text-[10px] font-semibold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md">Drafting Version</span>
+                                </template>
+                                <template x-if="activeFile && !activeFile.revision_number && activeFile.group !== 'Letters'">
+                                    <span class="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/70">Original</span>
+                                </template>
+                                <template x-if="activeFile && activeFile.group === 'Letters'">
+                                    <span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">Official Letter</span>
+                                </template>
+                            </div>
+                            <p class="text-xs text-slate-500 truncate font-mono font-medium max-w-[240px] sm:max-w-sm mt-0.5"
+                               x-text="activeFile ? activeFile.filename : ''"></p>
+                        </div>
+                    </div>
+
+                    <!-- Viewer Actions: Open Tab & Download -->
+                    <div class="flex items-center gap-1.5 shrink-0" x-show="activeFile">
+                        <a :href="isOffice(activeFile) && !isLocalHost() ? getOfficeUrl(activeFile) : getUrl(activeFile)" target="_blank"
+                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95 cursor-pointer"
+                            title="Open in new window" aria-label="Open document in new window">
+                            <i class="fas fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
+                        </a>
+                        <a :href="getUrl(activeFile) + '?download=1'" download
+                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95 cursor-pointer"
+                            title="Download document" aria-label="Download document">
+                            <i class="fas fa-download text-xs" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Document Frame Container -->
+                <div id="document-preview-container" class="bg-slate-100/70 rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs relative flex-1 min-h-0 h-[360px] lg:h-full">
+                    <template x-if="activeFile && isPdf(activeFile)">
+                        <iframe :src="getUrl(activeFile)" class="w-full h-full border-0 bg-white"
+                            title="PDF Document Viewer"></iframe>
+                    </template>
+                    <template x-if="activeFile && isOffice(activeFile)">
+                        <div class="w-full h-full">
+                            <template x-if="isLocalHost()">
+                                <div class="w-full h-full flex items-center justify-center p-6 bg-slate-50">
+                                    <div class="max-w-sm w-full bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 text-center">
+                                        <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto mb-3 text-blue-700 shadow-2xs">
+                                            <i class="fas fa-file-word text-xl" aria-hidden="true"></i>
+                                        </div>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-800 border border-blue-200 mb-2 uppercase tracking-wider">
+                                            Office Document
+                                        </span>
+                                        <h3 class="text-xs font-bold text-slate-900 mb-1 break-all" x-text="activeFile.filename"></h3>
+                                        <p class="text-[11px] text-slate-500 mb-4" x-text="activeFile.label + ' • ' + activeFile.uploaded_at"></p>
+                                        <div class="flex items-center justify-center gap-2">
+                                            <a :href="getUrl(activeFile) + '?download=1'" download
+                                               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-brand-primary hover:bg-brand-secondary text-white text-xs font-semibold rounded-xl shadow-2xs transition-all active:scale-95 cursor-pointer">
+                                                <i class="fas fa-download text-xs"></i>
+                                                <span>Download Document</span>
+                                            </a>
+                                            <a :href="getUrl(activeFile)" target="_blank"
+                                               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 shadow-2xs transition-all active:scale-95 cursor-pointer">
+                                                <i class="fas fa-arrow-up-right-from-square text-xs text-slate-400"></i>
+                                                <span>Open Raw</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="!isLocalHost()">
+                                <iframe :src="getOfficeUrl(activeFile)" class="w-full h-full border-0 bg-white"
+                                    title="Office Document Viewer"></iframe>
+                            </template>
+                        </div>
+                    </template>
+                    <template x-if="activeFile && isImage(activeFile)">
+                        <div class="absolute inset-0 flex items-center justify-center bg-slate-50/90 p-4 overflow-auto">
+                            <img :src="getUrl(activeFile)" :alt="activeFile.filename"
+                                class="max-w-full max-h-full object-contain rounded-lg shadow-sm border border-slate-200" />
+                        </div>
+                    </template>
+                    <template x-if="!activeFile">
+                        <div class="absolute inset-0 flex items-center justify-center bg-slate-50/80">
+                            <div class="text-center p-6 max-w-sm">
+                                <div class="w-10 h-10 bg-white rounded-xl border border-slate-200 flex items-center justify-center mx-auto mb-2 text-slate-400 shadow-2xs">
+                                    <i class="fas fa-file-contract text-base" aria-hidden="true"></i>
+                                </div>
+                                <h3 class="text-xs font-semibold text-slate-800 mb-0.5">No Document Selected</h3>
+                                <p class="text-[11px] text-slate-500 font-medium">Choose a document category from the panel on the right to preview.</p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Contextual Reviewer Remarks Callout (Appears below viewer when active file has remarks) -->
+                <div x-show="activeFile && activeFile.has_remarks" style="display: none;" 
+                     class="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-2.5 shadow-2xs shrink-0">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <i class="fas fa-exclamation-circle text-amber-600 text-xs"></i>
+                        <span class="text-xs font-semibold text-amber-950 uppercase tracking-wider">Reviewer Action Required on this Document</span>
+                    </div>
+                    <div class="space-y-1.5 max-h-24 overflow-y-auto custom-scrollbar">
+                        <template x-for="rem in (activeFile ? activeFile.remarks : [])" :key="rem.reviewer + rem.date">
+                            <div class="bg-white p-2.5 rounded-xl border border-amber-200 text-xs">
+                                <div class="flex justify-between items-center text-[10px] text-slate-500 font-bold mb-0.5">
+                                    <span class="text-amber-900" x-text="rem.reviewer"></span>
+                                    <span x-text="rem.date" class="tabular-nums"></span>
+                                </div>
+                                <p class="text-slate-800 whitespace-pre-wrap leading-relaxed" x-text="rem.text"></p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ===== RIGHT COLUMN — Document Ledger & Categories (5 Cols) ===== -->
+            <div class="lg:col-span-5 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
+
+                <!-- Stage-Specific Remarks Callout (Deliberation Notes or Admin Deficiency) -->
+                @if($stageRemark)
+                    @php
+                        $isRevStage = $researchTitle->Status === 'Waiting for Revision';
+                        $missingDocs = is_array($stageRemark->missing_requirements) ? $stageRemark->missing_requirements : (json_decode($stageRemark->missing_requirements ?? '[]', true) ?? []);
+                    @endphp
+                    <div class="bg-white rounded-2xl shadow-2xs border border-slate-300/90 overflow-hidden shrink-0" x-data="{ stageOpen: true }">
+                        <button type="button" @click="stageOpen = !stageOpen" 
+                                class="w-full flex justify-between items-center px-3.5 py-2 {{ $isRevStage ? 'bg-indigo-50/80 hover:bg-indigo-100/80 text-indigo-950' : 'bg-amber-50/80 hover:bg-amber-100/80 text-amber-950' }} transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                            <div class="flex items-center gap-2">
+                                <i class="fas {{ $isRevStage ? 'fa-file-signature text-indigo-600' : 'fa-exclamation-triangle text-amber-600' }} text-xs" aria-hidden="true"></i>
+                                <span class="text-xs font-bold uppercase tracking-wider">
+                                    {{ $isRevStage ? 'Panel Deliberation Notes' : 'Admin Deficiency Remarks' }}
+                                </span>
+                            </div>
+                            <i class="fas fa-chevron-up text-xs text-slate-500 transition-transform duration-200" :class="stageOpen ? '' : 'rotate-180'" aria-hidden="true"></i>
                         </button>
+
+                        <div x-show="stageOpen" style="display: none;" x-transition class="p-3 border-t border-slate-200 bg-white max-h-48 overflow-y-auto custom-scrollbar space-y-2">
+                            @if($stageRemark->message)
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 whitespace-pre-wrap leading-relaxed">
+                                    {{ $stageRemark->message }}
+                                </div>
+                            @endif
+
+                            @if(!empty($missingDocs))
+                                <div class="bg-amber-50/60 rounded-xl border border-amber-200 p-2.5">
+                                    <p class="text-[10px] font-bold text-amber-900 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                        <i class="fas fa-list-check"></i> Action Required Documents
+                                    </p>
+                                    <ul class="space-y-1">
+                                        @foreach($missingDocs as $doc)
+                                            <li class="text-xs text-slate-800 flex items-center gap-2">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                                                <span class="font-medium">{{ $doc }}</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 @endif
 
-                <!-- Tabs Navigation (Responsive Horizontal Track) -->
-                <div role="tablist" aria-label="Document workspace tabs" class="flex gap-2 border-b border-slate-200/80 mb-6 sm:mb-8 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
-
-                    {{-- Original Documents tab: always shown when files with revision_number=null exist or when Incomplete --}}
-                    @if($originalFiles->isNotEmpty() || $researchTitle->Status === 'Incomplete')
-                        <button @click="activeTab = 'original'"
-                            role="tab"
-                            id="tab-original"
-                            aria-controls="panel-original"
-                            :aria-selected="activeTab === 'original' ? 'true' : 'false'"
-                            :tabindex="activeTab === 'original' ? 0 : -1"
-                            :class="activeTab === 'original' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-                            class="pb-3 px-4 sm:px-5 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
-                            <i class="fas fa-box-archive"></i>
-                            <span>Original Documents</span>
+                <!-- Aggregated Reviewer Remarks Accordion -->
+                @if($allRemarks->isNotEmpty())
+                    <div class="bg-white rounded-2xl shadow-2xs border border-slate-300/90 overflow-hidden shrink-0" x-data="{ rrOpen: false }">
+                        <button type="button" @click="rrOpen = !rrOpen" 
+                                class="w-full flex justify-between items-center px-3.5 py-2 bg-slate-50 hover:bg-slate-100 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-comments text-indigo-600 text-xs" aria-hidden="true"></i>
+                                <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Reviewer Remarks</span>
+                                <span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums">{{ $allRemarks->count() }}</span>
+                            </div>
+                            <i class="fas fa-chevron-up text-xs text-slate-500 transition-transform duration-200" :class="rrOpen ? '' : 'rotate-180'" aria-hidden="true"></i>
                         </button>
-                    @endif
 
-                    {{-- Revision Folder tabs --}}
-                    @foreach($revisionFolders->sortKeys() as $revNum => $files)
-                        <button @click="activeTab = 'rev_{{ $revNum }}'"
-                            role="tab"
-                            id="tab-rev-{{ $revNum }}"
-                            aria-controls="panel-rev-{{ $revNum }}"
-                            :aria-selected="activeTab === 'rev_{{ $revNum }}' ? 'true' : 'false'"
-                            :tabindex="activeTab === 'rev_{{ $revNum }}' ? 0 : -1"
-                            :class="activeTab === 'rev_{{ $revNum }}' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-                            class="pb-3 px-4 sm:px-5 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
-                            <i class="fas fa-folder"></i>
-                            <span>Revision {{ $revNum }}</span>
-                        </button>
-                    @endforeach
-
-                    {{-- Current Documents tab: only shown when revisions exist, to show the latest --}}
-                    @if($revisionFolders->isNotEmpty() && $activeFiles->isNotEmpty())
-                        <button @click="activeTab = 'active'"
-                            role="tab"
-                            id="tab-active"
-                            aria-controls="panel-active"
-                            :aria-selected="activeTab === 'active' ? 'true' : 'false'"
-                            :tabindex="activeTab === 'active' ? 0 : -1"
-                            :class="activeTab === 'active' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-                            class="pb-3 px-4 sm:px-5 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
-                            <i class="fas fa-file-signature"></i>
-                            <span>Current Documents</span>
-                        </button>
-                    @endif
-
-                    @if($isWaitingForRevision)
-                        <button x-show="isDrafting" @click="activeTab = 'draft'"
-                            role="tab"
-                            id="tab-draft"
-                            aria-controls="panel-draft"
-                            :aria-selected="activeTab === 'draft' ? 'true' : 'false'"
-                            :tabindex="activeTab === 'draft' ? 0 : -1"
-                            :class="activeTab === 'draft' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-                            class="pb-3 px-4 sm:px-5 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
-                            <i class="fas fa-edit"></i>
-                            <span>Drafting Revision {{ $nextRevisionNumber }}</span>
-                        </button>
-                    @endif
-                </div>
-
-                <!-- ORIGINAL DOCUMENTS VIEW: always shown, always the default tab -->
-                @if($originalFiles->isNotEmpty() || $researchTitle->Status === 'Incomplete')
-                    <div x-show="activeTab === 'original'" role="tabpanel" id="panel-original" aria-labelledby="tab-original" class="space-y-6">
-                        @php
-                            $filesByCategory = $originalFiles->groupBy('category');
-                            $renderedCategories = [];
-                        @endphp
-
-                        @foreach($requirements as $req)
-                            @php
-                                $categoryFiles = $filesByCategory->get($req->name, collect());
-                                $renderedCategories[] = $req->name;
-                                $shouldRender = $categoryFiles->isNotEmpty() || $researchTitle->Status === 'Incomplete';
-                            @endphp
-
-                            @if($shouldRender)
-                                @php $pKey = 'rt_' . $researchTitle->id . '_orig_' . Str::slug($req->name); @endphp
-                                <div x-data="{ expanded: $persist(false).as('{{ $pKey }}') }"
-                                    class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                                    <!-- Header (Collapsible trigger) -->
-                                    <button @click="expanded = !expanded"
-                                        :aria-expanded="expanded ? 'true' : 'false'"
-                                        class="w-full px-5 sm:px-6 py-4 flex items-center justify-between bg-white hover:bg-slate-50/90 transition-all border-b border-slate-100 text-left group cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
-                                        <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
-                                            <div
-                                                class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 {{ $categoryFiles->isNotEmpty() ? 'bg-slate-100 text-brand-primary' : 'bg-red-50 text-red-600' }}">
-                                                <i class="fas {{ $categoryFiles->isNotEmpty() ? 'fa-folder-open' : 'fa-triangle-exclamation' }} text-base"></i>
+                        <div x-show="rrOpen" style="display: none;" x-transition>
+                            <div class="p-3 space-y-2.5 max-h-[260px] overflow-y-auto custom-scrollbar">
+                                @foreach($allRemarks->groupBy('reviewer') as $reviewerName => $remarks)
+                                    <div class="border border-slate-300/80 rounded-xl overflow-hidden bg-white shadow-2xs">
+                                        <div class="flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border-b border-slate-200">
+                                            <div class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                                                {{ $remarks->first()['initial'] }}
                                             </div>
                                             <div class="min-w-0">
-                                                <div class="flex flex-wrap items-center gap-2 mb-0.5">
-                                                    <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-primary transition-colors">
-                                                        {{ $req->name }}
-                                                    </h3>
-                                                    @if(in_array($req->name, $missingDocs))
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-300" title="The Admin requested you to re-upload or fix this document">
-                                                            <i class="fas fa-exclamation-circle text-[9px]"></i> Reupload Needed
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                                @if($categoryFiles->isNotEmpty())
-                                                    <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
-                                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                        <span>{{ $categoryFiles->count() }} {{ Str::plural('document', $categoryFiles->count()) }} submitted</span>
-                                                    </p>
-                                                @else
-                                                    <p class="text-[11px] font-black text-red-600 flex items-center gap-1.5">
-                                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                                        <span>Missing Required Document</span>
-                                                    </p>
-                                                @endif
+                                                <p class="text-xs font-bold text-slate-900 truncate">{{ $reviewerName }}</p>
+                                                <p class="text-[10px] text-slate-500 font-medium">{{ $remarks->count() }} remark(s)</p>
                                             </div>
                                         </div>
-                                        <div
-                                            class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-200/80 shadow-2xs group-hover:bg-brand-primary group-hover:border-brand-primary group-hover:text-white text-slate-400 transition-all">
-                                            <i class="fas fa-chevron-down text-xs transition-transform duration-300"
-                                                :class="expanded ? 'rotate-180' : ''"></i>
+                                        <div class="divide-y divide-slate-100">
+                                            @foreach($remarks as $rem)
+                                                <div class="p-2.5">
+                                                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5 truncate">
+                                                        <i class="fas fa-file-alt mr-1"></i>{{ $rem['category'] }}
+                                                    </p>
+                                                    <p class="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap">{{ $rem['text'] }}</p>
+                                                    <p class="text-[10px] font-mono tabular-nums text-slate-500 mt-0.5">{{ $rem['date'] }}</p>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Version History Timeline Accordion -->
+                @if($hasRevisions)
+                    <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden shrink-0" x-data="{ vtOpen: false }">
+                        <button type="button" @click="vtOpen = !vtOpen" 
+                                class="w-full flex justify-between items-center px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-code-branch text-indigo-600 text-xs" aria-hidden="true"></i>
+                                <span class="text-xs font-semibold text-slate-800 uppercase tracking-wider">Version History</span>
+                            </div>
+                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-200" :class="vtOpen ? '' : 'rotate-180'" aria-hidden="true"></i>
+                        </button>
+                        <div x-show="vtOpen" style="display: none;" x-transition>
+                            <div class="p-3 border-t border-slate-100 bg-white">
+                                <div class="relative pl-3 space-y-2.5">
+                                    <div class="absolute left-3 top-2 bottom-2 w-0.5 bg-slate-200 pointer-events-none"></div>
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-6 h-6 rounded-full bg-slate-100 border-2 border-slate-400 flex items-center justify-center shrink-0 z-10 -ml-3">
+                                            <i class="fas fa-box-archive text-slate-600 text-[9px]" aria-hidden="true"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-bold text-slate-900">Original Submission</p>
+                                            <p class="text-[10px] text-slate-500 tabular-nums font-medium">
+                                                {{ $originalFiles->first()?->created_at?->format('M d, Y') ?? 'None' }} · {{ $originalFiles->count() }} file(s)
+                                            </p>
+                                        </div>
+                                    </div>
+                                    @foreach($revisionFolders->sortKeys() as $revNum => $files)
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-6 h-6 rounded-full bg-indigo-50 border-2 border-indigo-400 flex items-center justify-center shrink-0 z-10 -ml-3">
+                                                <span class="text-[9px] font-bold text-indigo-700 tabular-nums">{{ $revNum }}</span>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-900">Revision {{ $revNum }}</p>
+                                                <p class="text-[10px] text-slate-500 tabular-nums font-medium">
+                                                    {{ $files->first()?->created_at?->format('M d, Y') ?? 'None' }} · {{ $files->count() }} file(s)
+                                                </p>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                    <!-- Document Selector with Tactile Segmented Tabs -->
+                <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden flex flex-col flex-1 min-h-0">
+                    
+                    <!-- Segmented Control Tab Bar with Interactive Revision Selector -->
+                    <div class="p-1 border-b border-slate-100 bg-slate-50/50 shrink-0 relative" x-data="{ revDropdownOpen: false }">
+                        <div id="document-tab-bar" class="flex gap-1 overflow-x-auto custom-scrollbar p-0.5 bg-slate-100/80 rounded-xl border border-slate-200/80 cursor-grab select-none">
+                            @if($letters->isNotEmpty())
+                                <button type="button" @click="activeTab = 'letters'; if (letters.length > 0 && letters[0].files.length > 0 && (!activeFile || activeFile.group !== 'Letters')) { selectFile(letters[0].files[0]); }"
+                                    :class="activeTab === 'letters' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                    class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
+                                    <i class="fas fa-stamp text-xs" :class="activeTab === 'letters' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
+                                    <span>Letters</span>
+                                    <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full tabular-nums"
+                                          :class="activeTab === 'letters' ? 'bg-slate-100 text-slate-700 border border-slate-200/80' : 'bg-slate-200/70 text-slate-500'">
+                                        {{ $letters->count() }}
+                                    </span>
+                                </button>
+                            @endif
+
+                            <button type="button" @click="activeTab = 'original'; if (originalFiles.length > 0 && originalFiles[0].files.length > 0 && (!activeFile || activeFile.group !== 'Original')) { selectFile(originalFiles[0].files[0]); }"
+                                :class="activeTab === 'original' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
+                                <i class="fas fa-file-contract text-xs" :class="activeTab === 'original' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
+                                <span>Original</span>
+                                <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full tabular-nums"
+                                      :class="activeTab === 'original' ? 'bg-slate-100 text-slate-700 border border-slate-200/80' : 'bg-slate-200/70 text-slate-500'">
+                                    {{ $originalFiles->count() }}
+                                </span>
+                            </button>
+
+                            @if($hasRevisions && $revisionFolders->isNotEmpty())
+                                @if($revisionFolders->count() === 1)
+                                    @php $singleRevNum = $revisionFolders->keys()->first(); $singleRevFiles = $revisionFolders->first(); @endphp
+                                    <button type="button" @click="activeTab = 'rev_{{ $singleRevNum }}'; if (revisions['{{ $singleRevNum }}'] && revisions['{{ $singleRevNum }}'].length > 0 && revisions['{{ $singleRevNum }}'][0].files.length > 0) { selectFile(revisions['{{ $singleRevNum }}'][0].files[0]); }"
+                                        :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                        class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
+                                        <i class="fas fa-code-branch text-xs" :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'text-indigo-600' : 'text-slate-400'"></i>
+                                        <span>Rev {{ $singleRevNum }}</span>
+                                        <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full tabular-nums"
+                                              :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-slate-200/70 text-slate-500'">
+                                            {{ $singleRevFiles->count() }}
+                                        </span>
+                                    </button>
+                                @else
+                                    <button type="button" 
+                                        @click="revDropdownOpen = !revDropdownOpen"
+                                        :class="activeTab.startsWith('rev_') ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                        class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0"
+                                        aria-haspopup="true"
+                                        :aria-expanded="revDropdownOpen ? 'true' : 'false'"
+                                        title="Select revision cycle">
+                                        <i class="fas fa-code-branch text-xs" :class="activeTab.startsWith('rev_') ? 'text-indigo-600' : 'text-slate-400'"></i>
+                                        <span x-text="activeTab.startsWith('rev_') ? ('Rev ' + activeTab.replace('rev_', '')) : 'Revisions'"></span>
+                                        <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full tabular-nums"
+                                              :class="activeTab.startsWith('rev_') ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-slate-200/70 text-slate-500'"
+                                              x-text="activeTab.startsWith('rev_') ? (revisions[activeTab.replace('rev_', '')] ? revisions[activeTab.replace('rev_', '')].reduce((acc, g) => acc + g.files.length, 0) : '') : '{{ $revisionFolders->count() }}'">
+                                        </span>
+                                        <i class="fas fa-chevron-down text-[10px] transition-transform duration-200" 
+                                           :class="revDropdownOpen ? 'rotate-180 text-indigo-600' : (activeTab.startsWith('rev_') ? 'text-slate-600' : 'text-slate-400')" aria-hidden="true"></i>
+                                    </button>
+                                @endif
+                            @endif
+
+                            @if($hasRevisions && $activeFiles->isNotEmpty())
+                                <button type="button" @click="activeTab = 'current'; if (activeFiles.length > 0 && activeFiles[0].files.length > 0 && (!activeFile || activeFile.group !== 'Current')) { selectFile(activeFiles[0].files[0]); }"
+                                    :class="activeTab === 'current' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                    class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
+                                    <i class="fas fa-file-signature text-xs" :class="activeTab === 'current' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
+                                    <span>Current</span>
+                                    <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full tabular-nums"
+                                          :class="activeTab === 'current' ? 'bg-slate-100 text-slate-700 border border-slate-200/80' : 'bg-slate-200/70 text-slate-500'">
+                                        {{ $activeFiles->count() }}
+                                    </span>
+                                </button>
+                            @endif
+
+                            @if($isRevision || $hasDraftFiles)
+                                <button type="button" @click="activeTab = 'draft'; if (draftFiles.length > 0 && draftFiles[0].files.length > 0) { selectFile(draftFiles[0].files[0]); }"
+                                    :class="activeTab === 'draft' ? 'bg-orange-50 text-orange-900 shadow-2xs border border-orange-200 font-semibold' : 'text-orange-700/80 hover:text-orange-950 hover:bg-orange-50/50 font-medium'"
+                                    class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer shrink-0">
+                                    <i class="fas fa-edit text-xs"></i>
+                                    <span>Drafting Rev {{ $nextRevisionNumber }}</span>
+                                    <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full tabular-nums"
+                                          :class="activeTab === 'draft' ? 'bg-orange-200 text-orange-900' : 'bg-orange-100 text-orange-800'">
+                                        {{ $draftFiles->count() }}
+                                    </span>
+                                </button>
+                            @endif
+                        </div>
+
+                        {{-- Revision Selection Dropdown Menu --}}
+                        @if($hasRevisions && $revisionFolders->count() > 1)
+                            <div x-show="revDropdownOpen" 
+                                 x-cloak
+                                 @click.outside="revDropdownOpen = false"
+                                 @keydown.escape.window="revDropdownOpen = false"
+                                 x-transition:enter="transition ease-out duration-150 transform"
+                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-100 transform"
+                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                                 class="absolute right-3 top-full mt-1.5 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/90 py-1 z-50 overflow-hidden"
+                                 role="menu"
+                                 aria-label="Revision cycles">
+                                <div class="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+                                    <span class="flex items-center gap-1.5 text-indigo-950 font-semibold">
+                                        <i class="fas fa-code-branch text-indigo-600 text-xs" aria-hidden="true"></i>
+                                        <span>Select Revision Round</span>
+                                    </span>
+                                    <span class="text-slate-500 font-semibold tabular-nums bg-slate-200/70 px-1.5 py-0.5 rounded text-[10px]">{{ $revisionFolders->count() }} rounds</span>
+                                </div>
+                                <div class="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-slate-100/80">
+                                    @foreach($revisionFolders->sortKeys() as $revNum => $revFiles)
+                                        @php
+                                            $revDate = $revFiles->first()?->created_at?->format('M d, Y') ?? '';
+                                            $isLatest = $loop->last;
+                                        @endphp
+                                        <button type="button" 
+                                                @click="activeTab = 'rev_{{ $revNum }}'; revDropdownOpen = false; if (revisions['{{ $revNum }}'] && revisions['{{ $revNum }}'].length > 0 && revisions['{{ $revNum }}'][0].files.length > 0) { selectFile(revisions['{{ $revNum }}'][0].files[0]); }"
+                                                :class="activeTab === 'rev_{{ $revNum }}' ? 'bg-indigo-50/70 text-indigo-950 font-semibold' : 'text-slate-700 hover:bg-slate-50/80 font-medium'"
+                                                class="w-full flex items-center justify-between px-3.5 py-2 text-xs transition-colors text-left cursor-pointer group"
+                                                role="menuitem">
+                                            <div class="flex items-center gap-2.5 min-w-0">
+                                                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-semibold shrink-0 border transition-colors"
+                                                     :class="activeTab === 'rev_{{ $revNum }}' ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-slate-100 text-slate-600 border-slate-200 group-hover:bg-slate-200/70'">
+                                                    {{ $revNum }}
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span class="truncate">Revision {{ $revNum }}</span>
+                                                        @if($isLatest)
+                                                            <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 uppercase tracking-wider shrink-0 border border-emerald-200">Latest</span>
+                                                        @endif
+                                                    </div>
+                                                    @if($revDate)
+                                                        <p class="text-[10px] text-slate-400 tabular-nums truncate mt-0.5">{{ $revDate }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                                                <span class="text-[10px] font-medium px-2 py-0.5 rounded-full tabular-nums"
+                                                      :class="activeTab === 'rev_{{ $revNum }}' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-500'">
+                                                    {{ $revFiles->count() }} file(s)
+                                                </span>
+                                                <i x-show="activeTab === 'rev_{{ $revNum }}'" class="fas fa-check text-xs text-indigo-600 ml-1" aria-hidden="true"></i>
+                                            </div>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Scrollable Category & File Accordion List Area -->
+                    <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2">
+
+                        <!-- Letters Tab List (Default closed) -->
+                        <div x-show="activeTab === 'letters'" style="display:none;">
+                            <template x-for="group in letters" :key="group.category">
+                                <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white transition-colors"
+                                     x-data="{ expanded: false }">
+                                    <button type="button" @click="expanded = !expanded"
+                                        class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                        <span class="text-xs font-semibold text-slate-800 tracking-tight" x-text="group.category"></span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[11px] font-medium text-slate-400 tabular-nums"
+                                                  x-text="group.files.length + ' file(s)'"></span>
+                                            <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                               :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
                                         </div>
                                     </button>
+                                    <div x-show="expanded" style="display: none;" x-transition>
+                                        <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                            <template x-for="file in group.files" :key="file.id">
+                                                <button type="button" @click="selectFile(file)"
+                                                    :class="activeFile && activeFile.id === file.id 
+                                                        ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
+                                                        : 'text-slate-700 hover:bg-slate-50/80 font-normal border-l-[3px] border-transparent'"
+                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border"
+                                                         :class="activeFile && activeFile.id === file.id 
+                                                            ? 'bg-white text-slate-900 border-slate-300/80 shadow-2xs' 
+                                                            : [file.bg, 'border-slate-200/70']">
+                                                        <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
+                                                    </div>
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="text-xs truncate" 
+                                                           :class="activeFile && activeFile.id === file.id ? 'font-semibold text-slate-950' : 'font-medium text-slate-800'"
+                                                           x-text="file.filename"></p>
+                                                        <p class="text-[10px] tabular-nums text-slate-400" 
+                                                           x-text="file.uploaded_at"></p>
+                                                    </div>
+                                                    <span x-show="activeFile && activeFile.id === file.id"
+                                                          class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                        <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
+                                                        <span>Viewing</span>
+                                                    </span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
 
-                                    <!-- Content Grid -->
-                                    <div x-show="expanded" x-transition class="p-6 bg-slate-50/30" style="display: none;">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                            @if($categoryFiles->isNotEmpty())
-                                                @foreach($categoryFiles as $file)
-                                                    <x-researcher-file-card :file="$file" :researchTitle="$researchTitle" />
-                                                @endforeach
+                        <!-- Original Documents Tab List (ONLY Application Form open by default!) -->
+                        <div x-show="activeTab === 'original'" style="display:none;">
+                            @foreach($requirements as $req)
+                                @php
+                                    $reqFiles = $originalFiles->where('category', $req->name);
+                                    $shouldRender = $reqFiles->isNotEmpty() || $canReplace;
+                                    $isAppForm = str_contains(strtolower($req->name), 'application form');
+                                @endphp
+                                @if($shouldRender)
+                                    <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white transition-colors"
+                                         x-data="{ expanded: {{ $isAppForm ? 'true' : 'false' }} }">
+                                        <!-- Header Accordion Trigger -->
+                                        <button type="button" @click="expanded = !expanded"
+                                            class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="text-xs font-semibold text-slate-800 tracking-tight truncate">{{ $req->name }}</span>
+                                                @if(in_array($req->name, $missingDocs ?? []))
+                                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-semibold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200/80 shrink-0">
+                                                        <i class="fas fa-exclamation-circle text-[8px]"></i> Reupload
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <span class="text-[11px] font-medium text-slate-400 tabular-nums">
+                                                    {{ $reqFiles->count() }} file(s)
+                                                </span>
+                                                <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                                   :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
+                                            </div>
+                                        </button>
 
-                                                @if(in_array($researchTitle->Status ?? 'Pending', ['Incomplete', 'Pending', 'Pending (Initial Intake)']) && $req->is_multiple)
-                                                    <div x-data="{
-                                                            isUploading: false,
-                                                            async uploadMissingFile(event) {
-                                                                const file = event.target.files[0];
-                                                                if (!file) return;
-                                                                this.isUploading = true;
-                                                                
-                                                                const formData = new FormData();
-                                                                formData.append('file', file);
-                                                                formData.append('category', '{{ $req->name }}');
-                                                                formData.append('_token', '{{ csrf_token() }}');
-
-                                                                // Show Progress Modal
-                                                                const progressModal = document.getElementById('upload-progress-modal');
-                                                                const progressBar = document.getElementById('upload-progress-bar');
-                                                                const percentageText = document.getElementById('upload-percentage');
-                                                                const sizeText = document.getElementById('upload-size');
-                                                                
-                                                                if (progressModal) {
-                                                                    progressBar.style.width = '0%';
-                                                                    percentageText.textContent = '0%';
-                                                                    sizeText.textContent = '0 KB / 0 KB';
-                                                                    progressModal.classList.remove('hidden');
-                                                                }
-
-                                                                const formatBytes = (bytes, decimals = 2) => {
-                                                                    if (bytes === 0) return '0 Bytes';
-                                                                    const k = 1024;
-                                                                    const dm = decimals < 0 ? 0 : decimals;
-                                                                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-                                                                    const i = Math.floor(Math.log(bytes) / Math.log(k));
-                                                                    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-                                                                };
-
-                                                                try {
-                                                                    const xhr = new XMLHttpRequest();
-                                                                    
-                                                                    const uploadPromise = new Promise((resolve, reject) => {
-                                                                        xhr.upload.addEventListener('progress', (e) => {
-                                                                            if (e.lengthComputable) {
-                                                                                const percentComplete = Math.round((e.loaded / e.total) * 100);
-                                                                                if (progressBar) progressBar.style.width = percentComplete + '%';
-                                                                                if (percentageText) percentageText.textContent = percentComplete + '%';
-                                                                                if (sizeText) sizeText.textContent = `${formatBytes(e.loaded)} / ${formatBytes(e.total)}`;
-                                                                            }
-                                                                        });
-
-                                                                        xhr.onload = () => {
-                                                                            if (xhr.status >= 200 && xhr.status < 300) {
-                                                                                resolve(JSON.parse(xhr.responseText));
-                                                                            } else {
-                                                                                let errorMsg = 'Upload failed';
-                                                                                try {
-                                                                                    const errorData = JSON.parse(xhr.responseText);
-                                                                                    errorMsg = errorData.message || errorData.error || errorMsg;
-                                                                                } catch(e) {}
-                                                                                reject(new Error(errorMsg));
-                                                                            }
-                                                                        };
-
-                                                                        xhr.onerror = () => reject(new Error('Network error'));
-                                                                    });
-
-                                                                    xhr.open('POST', '{{ route('add.missing.file', $researchTitle->id) }}');
-                                                                    xhr.setRequestHeader('Accept', 'application/json');
-                                                                    xhr.send(formData);
-
-                                                                    const data = await uploadPromise;
-                                                                    
-                                                                    if (data.success) {
-                                                                        const htmlResponse = await fetch(window.location.href);
-                                                                        const htmlText = await htmlResponse.text();
-                                                                        const parser = new DOMParser();
-                                                                        const doc = parser.parseFromString(htmlText, 'text/html');
-                                                                        
-                                                                        const newContent = doc.getElementById('page-content');
-                                                                        if (newContent) document.getElementById('page-content').innerHTML = newContent.innerHTML;
-                                                                        
-                                                                        if (progressModal) progressModal.classList.add('hidden');
-                                                                        Swal.fire({ icon: 'success', title: 'Document Added', text: 'Document uploaded successfully!', timer: 1500, showConfirmButton: false, toast: true, position: 'top-end' });
-                                                                    } else {
-                                                                        throw new Error('Server returned unexpected format.');
-                                                                    }
-                                                                } catch (error) {
-                                                                    if (progressModal) progressModal.classList.add('hidden');
-                                                                    Swal.fire({ icon: 'error', title: 'Upload Error', text: error.message });
-                                                                } finally {
-                                                                    this.isUploading = false;
-                                                                    if (event.target) event.target.value = '';
-                                                                }
-                                                            }
-                                                        }"
-                                                        class="group bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors shadow-sm relative overflow-hidden">
-                                                        
-                                                        <!-- Loading Overlay -->
-                                                        <div x-show="isUploading" class="absolute inset-0 z-20 bg-white/90 backdrop-blur-sm flex items-center justify-center pointer-events-none transition-opacity duration-300" style="display: none;">
-                                                            <div class="flex flex-col items-center gap-2">
-                                                                <i class="fas fa-spinner fa-spin text-slate-500 text-2xl"></i>
-                                                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Uploading...</span>
+                                        <!-- Category Files Content -->
+                                        <div x-show="expanded" style="display: none;" x-transition>
+                                            <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                                @forelse($reqFiles as $file)
+                                                    @php $fJson = $enrichFile($file, 'Original'); @endphp
+                                                    <div class="flex items-center justify-between gap-2 px-3 py-2 text-left transition-all"
+                                                         :class="activeFile && activeFile.id === {{ $file->id }} ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' : 'text-slate-700 hover:bg-slate-50/80 font-normal border-l-[3px] border-transparent'">
+                                                        <button type="button" @click="selectFile({{ json_encode($fJson) }})"
+                                                                class="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer focus:outline-none">
+                                                            <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border"
+                                                                 :class="activeFile && activeFile.id === {{ $file->id }} ? 'bg-white text-slate-900 border-slate-300/80 shadow-2xs' : '{{ $fJson['bg'] }} border-slate-200/70'">
+                                                                <i class="{{ $fJson['icon'] }} {{ $fJson['color'] }} text-xs" aria-hidden="true"></i>
                                                             </div>
-                                                        </div>
+                                                            <div class="min-w-0 flex-1">
+                                                                <p class="text-xs truncate"
+                                                                   :class="activeFile && activeFile.id === {{ $file->id }} ? 'font-semibold text-slate-950' : 'font-medium text-slate-800'">
+                                                                    {{ $file->filename }}
+                                                                </p>
+                                                                <div class="flex items-center gap-2">
+                                                                    <span class="text-[10px] tabular-nums text-slate-400">
+                                                                        {{ $file->created_at->format('M d, Y') }}
+                                                                    </span>
+                                                                    @if(isset($file->reviewerRemarks) && $file->reviewerRemarks->isNotEmpty())
+                                                                        <span class="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-50 text-amber-900 border border-amber-200/80">
+                                                                            Has Remarks
+                                                                        </span>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        </button>
 
-                                                        <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center mb-3">
-                                                            <i class="fas fa-plus text-xl text-slate-400 group-hover:scale-110 transition-transform"></i>
-                                                        </div>
-                                                        <h4 class="font-bold text-slate-700 text-xs mb-1 flex items-center justify-center gap-1">
-                                                            {{ $req->name }}
-                                                            @if(in_array($req->name, $missingDocs))
-                                                                <i class="fas fa-exclamation-circle text-amber-500" title="Reupload Needed"></i>
+                                                        <!-- Interactive Replace File Button (when allowed) -->
+                                                        <div class="flex items-center gap-1.5 shrink-0">
+                                                            <span x-show="activeFile && activeFile.id === {{ $file->id }}"
+                                                                  class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                                                                <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
+                                                                <span>Viewing</span>
+                                                            </span>
+
+                                                            @if($canReplace)
+                                                                <label class="cursor-pointer inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 text-[11px] font-medium transition-all shadow-2xs"
+                                                                       title="Replace this document">
+                                                                    <i class="fas fa-arrow-rotate-right text-[10px] text-slate-400"></i>
+                                                                    <span>Replace</span>
+                                                                    <input type="file" class="hidden" @change="replaceExisting({{ $file->id }}, $event)">
+                                                                </label>
                                                             @endif
-                                                        </h4>
-                                                        <span class="text-xs text-slate-500 mb-4 block">Add Another Document</span>
+                                                        </div>
+                                                    </div>
+                                                @empty
+                                                    <!-- Missing File Empty Notice -->
+                                                    <div class="p-3 bg-rose-50/30 text-center">
+                                                        <p class="text-xs font-semibold text-rose-800 mb-1.5 flex items-center justify-center gap-1.5">
+                                                            <i class="fas fa-circle-exclamation text-rose-500"></i>
+                                                            <span>Missing Required Document</span>
+                                                        </p>
+                                                        @if($canReplace)
+                                                            <label class="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-xl border border-dashed border-rose-300 bg-white text-rose-700 hover:bg-rose-50 text-xs font-medium transition-colors cursor-pointer shadow-2xs">
+                                                                <i class="fas fa-upload text-xs"></i>
+                                                                <span>Upload Missing {{ $req->name }}</span>
+                                                                <input type="file" class="hidden" @change="uploadMissing('{{ $req->name }}', $event)">
+                                                            </label>
+                                                        @endif
+                                                    </div>
+                                                @endforelse
 
-                                                        <label class="block cursor-pointer w-full">
-                                                            <div class="w-full py-2.5 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors flex items-center justify-center gap-2 group/upload" :class="isUploading ? 'opacity-50 pointer-events-none' : ''">
-                                                                <i class="fas fa-upload group-hover/upload:-translate-y-0.5 transition-transform"></i>
-                                                                <span>Upload Additional</span>
-                                                            </div>
-                                                            @php
-                                                                $accepts = [];
-                                                                if (str_contains(strtolower($req->file_type), 'pdf'))
-                                                                    $accepts[] = '.pdf';
-                                                                if (str_contains(strtolower($req->file_type), 'word'))
-                                                                    array_push($accepts, '.doc', '.docx');
-                                                                $acceptAttr = count($accepts) > 0 ? implode(',', $accepts) : '';
-                                                            @endphp
-                                                            <input type="file" class="hidden" @change="uploadMissingFile($event)" accept="{{ $acceptAttr }}" :disabled="isUploading">
+                                                @if($reqFiles->isNotEmpty() && $canReplace && $req->is_multiple)
+                                                    <div class="p-2 bg-slate-50/40 flex justify-end">
+                                                        <label class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-dashed border-slate-300 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium cursor-pointer transition-all shadow-2xs">
+                                                            <i class="fas fa-plus text-[10px] text-slate-400"></i>
+                                                            <span>Add Another {{ $req->name }}</span>
+                                                            <input type="file" class="hidden" @change="uploadMissing('{{ $req->name }}', $event)">
                                                         </label>
                                                     </div>
                                                 @endif
-                                            @else
-                                                    @if(in_array($researchTitle->Status ?? 'Pending', ['Incomplete', 'Pending', 'Pending (Initial Intake)']))
-                                                        <div x-data="{
-                                                            isUploading: false,
-                                                            async uploadMissingFile(event) {
-                                                                const file = event.target.files[0];
-                                                                if (!file) return;
-                                                                this.isUploading = true;
-                                                                
-                                                                const formData = new FormData();
-                                                                formData.append('file', file);
-                                                                formData.append('category', '{{ $req->name }}');
-                                                                formData.append('_token', '{{ csrf_token() }}');
-
-                                                                // Show Progress Modal
-                                                                const progressModal = document.getElementById('upload-progress-modal');
-                                                                const progressBar = document.getElementById('upload-progress-bar');
-                                                                const percentageText = document.getElementById('upload-percentage');
-                                                                const sizeText = document.getElementById('upload-size');
-                                                                
-                                                                if (progressModal) {
-                                                                    progressBar.style.width = '0%';
-                                                                    percentageText.textContent = '0%';
-                                                                    sizeText.textContent = '0 KB / 0 KB';
-                                                                    progressModal.classList.remove('hidden');
-                                                                }
-
-                                                                const formatBytes = (bytes, decimals = 2) => {
-                                                                    if (bytes === 0) return '0 Bytes';
-                                                                    const k = 1024;
-                                                                    const dm = decimals < 0 ? 0 : decimals;
-                                                                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-                                                                    const i = Math.floor(Math.log(bytes) / Math.log(k));
-                                                                    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-                                                                };
-
-                                                                try {
-                                                                    const xhr = new XMLHttpRequest();
-                                                                    
-                                                                    const uploadPromise = new Promise((resolve, reject) => {
-                                                                        xhr.upload.addEventListener('progress', (e) => {
-                                                                            if (e.lengthComputable) {
-                                                                                const percentComplete = Math.round((e.loaded / e.total) * 100);
-                                                                                if (progressBar) progressBar.style.width = percentComplete + '%';
-                                                                                if (percentageText) percentageText.textContent = percentComplete + '%';
-                                                                                if (sizeText) sizeText.textContent = `${formatBytes(e.loaded)} / ${formatBytes(e.total)}`;
-                                                                            }
-                                                                        });
-
-                                                                        xhr.onload = () => {
-                                                                            if (xhr.status >= 200 && xhr.status < 300) {
-                                                                                resolve(JSON.parse(xhr.responseText));
-                                                                            } else {
-                                                                                let errorMsg = 'Upload failed';
-                                                                                try {
-                                                                                    const errorData = JSON.parse(xhr.responseText);
-                                                                                    errorMsg = errorData.message || errorData.error || errorMsg;
-                                                                                } catch(e) {}
-                                                                                reject(new Error(errorMsg));
-                                                                            }
-                                                                        };
-
-                                                                        xhr.onerror = () => reject(new Error('Network error'));
-                                                                    });
-
-                                                                    xhr.open('POST', '{{ route('add.missing.file', $researchTitle->id) }}');
-                                                                    xhr.setRequestHeader('Accept', 'application/json');
-                                                                    xhr.send(formData);
-
-                                                                    const data = await uploadPromise;
-                                                                    
-                                                                    if (data.success) {
-                                                                        const htmlResponse = await fetch(window.location.href);
-                                                                        const htmlText = await htmlResponse.text();
-                                                                        const parser = new DOMParser();
-                                                                        const doc = parser.parseFromString(htmlText, 'text/html');
-                                                                        
-                                                                        const newContent = doc.getElementById('page-content');
-                                                                        if (newContent) document.getElementById('page-content').innerHTML = newContent.innerHTML;
-                                                                        
-                                                                        if (progressModal) progressModal.classList.add('hidden');
-                                                                        Swal.fire({ icon: 'success', title: 'Document Added', text: 'Document uploaded successfully!', timer: 1500, showConfirmButton: false, toast: true, position: 'top-end' });
-                                                                    } else {
-                                                                        throw new Error('Server returned unexpected format.');
-                                                                    }
-                                                                } catch (error) {
-                                                                    if (progressModal) progressModal.classList.add('hidden');
-                                                                    Swal.fire({ icon: 'error', title: 'Upload Error', text: error.message });
-                                                                } finally {
-                                                                    this.isUploading = false;
-                                                                    if (event.target) event.target.value = '';
-                                                                }
-                                                            }
-                                                        }" class="group bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors shadow-sm relative overflow-hidden">
-                                                            
-                                                            <!-- Loading Overlay -->
-                                                            <div x-show="isUploading" class="absolute inset-0 z-20 bg-white/90 backdrop-blur-sm flex items-center justify-center pointer-events-none transition-opacity duration-300" style="display: none;">
-                                                                <div class="flex flex-col items-center gap-2">
-                                                                    <i class="fas fa-spinner fa-spin text-brand-primary text-2xl"></i>
-                                                                    <span class="text-[10px] font-bold text-brand-primary uppercase tracking-wider">Uploading...</span>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center mb-3">
-                                                                <i class="fas fa-file-upload text-xl text-slate-400 group-hover:scale-110 transition-transform"></i>
-                                                            </div>
-                                                            <h4 class="font-bold text-slate-700 text-xs mb-1 flex items-center justify-center gap-1">
-                                                                {{ $req->name }}
-                                                                @if(in_array($req->name, $missingDocs))
-                                                                    <i class="fas fa-exclamation-circle text-amber-500" title="Reupload Needed"></i>
-                                                                @endif
-                                                            </h4>
-                                                            <span class="text-[10px] text-slate-500 mb-4 block">{{ $req->is_required ? 'Required Document' : 'Optional Document' }} (Not Submitted)</span>
-
-                                                            <label class="block cursor-pointer w-full">
-                                                                <div class="w-full py-2.5 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors flex items-center justify-center gap-2 group/upload" :class="isUploading ? 'opacity-50 pointer-events-none' : ''">
-                                                                    <i class="fas fa-upload group-hover/upload:-translate-y-0.5 transition-transform"></i>
-                                                                    <span>Upload File</span>
-                                                                </div>
-                                                                @php
-                                                                    $accepts = [];
-                                                                    if (str_contains(strtolower($req->file_type), 'pdf'))
-                                                                        $accepts[] = '.pdf';
-                                                                    if (str_contains(strtolower($req->file_type), 'word'))
-                                                                        array_push($accepts, '.doc', '.docx');
-                                                                    $acceptAttr = count($accepts) > 0 ? implode(',', $accepts) : '';
-                                                                @endphp
-                                                                <input type="file" class="hidden" @change="uploadMissingFile($event)" accept="{{ $acceptAttr }}" :disabled="isUploading">
-                                                            </label>
-                                                        </div>
-                                                    @endif
-                                                @endif
                                             </div>
                                         </div>
                                     </div>
-                            @endif
-                        @endforeach
-
-                        @foreach($filesByCategory as $category => $categoryFiles)
-                            @if(!in_array($category, $renderedCategories))
-                                @php $pKey = 'rt_' . $researchTitle->id . '_orig_' . Str::slug($category ?? 'uncat'); @endphp
-                                <div x-data="{ expanded: $persist(false).as('{{ $pKey }}') }" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                                    <button @click="expanded = !expanded"
-                                        :aria-expanded="expanded ? 'true' : 'false'"
-                                        class="w-full px-5 sm:px-6 py-4 flex items-center justify-between bg-white hover:bg-slate-50/90 transition-all border-b border-slate-100 text-left group cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
-                                        <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
-                                            <div class="w-11 h-11 rounded-xl bg-slate-100 text-brand-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                                <i class="fas fa-folder-open text-base"></i>
-                                            </div>
-                                            <div class="min-w-0">
-                                                <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-primary transition-colors">
-                                                    {{ $category ?? 'Uncategorized' }}
-                                                </h3>
-                                                <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                    <span>{{ $categoryFiles->count() }} {{ Str::plural('document', $categoryFiles->count()) }}</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-200/80 shadow-2xs group-hover:bg-brand-primary group-hover:border-brand-primary group-hover:text-white text-slate-400 transition-all">
-                                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="expanded ? 'rotate-180' : ''"></i>
-                                        </div>
-                                    </button>
-                                    <div x-show="expanded" x-transition class="p-6 bg-slate-50/30" style="display: none;">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                            @foreach($categoryFiles as $file)
-                                                <x-researcher-file-card :file="$file" :researchTitle="$researchTitle" />
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                @endif
-                <!-- Active Documents (Current) View: only shows when revisions exist -->
-                @if($revisionFolders->isNotEmpty() && $activeFiles->isNotEmpty())
-                    <div x-show="activeTab === 'active'" role="tabpanel" id="panel-active" aria-labelledby="tab-active">
-                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        @foreach($activeFiles as $file)
-                            @php 
-                                        $ext = strtolower($file->filetype);
-                                $isPdf = $ext === 'pdf';
-                                $isOffice = in_array($ext, ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']);
-
-                                $displayName = $file->category ?? 'General Document';
-
-                                $fileTypeLabel = match ($file->filetype) {
-                                    'certificate' => 'Clearance Certificate',
-                                    default => strtoupper($ext) . ' Document'
-                                };
-
-                                if ($isPdf) {
-                                    $iconClass = 'fa-file-pdf text-brand-primary';
-                                    $bgClass = 'bg-red-50';
-                                } elseif (in_array($ext, ['doc', 'docx'])) {
-                                    $iconClass = 'fa-file-word text-blue-600';
-                                    $bgClass = 'bg-blue-50';
-                                } elseif (in_array($ext, ['ppt', 'pptx'])) {
-                                    $iconClass = 'fa-file-powerpoint text-orange-600';
-                                    $bgClass = 'bg-orange-50';
-                                } elseif (in_array($ext, ['xls', 'xlsx'])) {
-                                    $iconClass = 'fa-file-excel text-green-600';
-                                    $bgClass = 'bg-green-50';
-                                } else {
-                                    $iconClass = 'fa-file text-slate-400';
-                                    $bgClass = 'bg-slate-50';
-                                }
-                            @endphp
-
-                            <div class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col relative overflow-hidden">
-                                <!-- Header -->
-                                <div class="p-5 flex items-start gap-4 border-b border-slate-50 bg-white relative z-10">
-                                    <div class="w-12 h-12 rounded-xl {{ $bgClass }} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                                        <i class="fas {{ $iconClass }} text-xl"></i>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <h4 class="font-bold text-slate-800 text-sm leading-snug truncate mb-1" title="{{ $file->filename }}">
-                                            {{ $displayName }}
-                                        </h4>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider {{ $bgClass }} text-slate-600 border border-slate-100">
-                                            {{ $fileTypeLabel }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Document Visual / Preview Area -->
-                                <div class="relative bg-gradient-to-b from-slate-50 to-slate-100/50 flex-1 min-h-[160px] border-b border-slate-100 group-hover:bg-slate-100/70 transition-colors overflow-hidden flex flex-col items-center justify-center p-6 text-center">
-                                    <div class="w-14 h-14 rounded-2xl bg-white shadow-xs border border-slate-200/80 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform duration-200">
-                                        <i class="fas {{ $iconClass }} text-2xl"></i>
-                                    </div>
-                                    <p class="text-xs font-bold text-slate-700 max-w-[220px] truncate mb-1">{{ $file->filename }}</p>
-                                    <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md {{ $isPdf ? 'bg-red-50 text-brand-primary border border-red-100' : 'bg-blue-50 text-blue-700 border border-blue-100' }}">
-                                        {{ strtoupper($file->filetype ?: 'DOC') }} File
-                                    </span>
-
-                                    <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center p-4">
-                                        <a href="{{ asset($file->filepath) }}" target="_blank"
-                                            class="transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 bg-white/95 backdrop-blur-sm text-slate-900 hover:text-brand-primary px-4 py-2 rounded-xl font-bold text-xs shadow-md flex items-center gap-2">
-                                            <i class="fas fa-external-link-alt text-[11px]"></i>
-                                            <span>View Fullscreen</span>
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <!-- Actions -->
-                                <div class="p-4 bg-white space-y-3">
-                                    @php
-                                        $canUpload = $researchTitle->Status === 'Incomplete';
-                                    @endphp
-                                    @if($canUpload)
-                                        <form action="{{ route('update.file', $researchTitle->id) }}" method="POST" enctype="multipart/form-data">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="hidden" name="file_id" value="{{ $file->id }}">
-                                            <label class="block cursor-pointer">
-                                                <div class="w-full py-2.5 px-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-brand-primary hover:bg-slate-50 text-slate-700 hover:text-brand-primary text-sm font-bold text-center transition-all duration-200 flex items-center justify-center gap-2 group/upload">
-                                                    <i class="fas fa-cloud-upload-alt group-hover/upload:-translate-y-0.5 transition-transform"></i>
-                                                    <span>Upload New Version</span>
-                                                </div>
-                                                <input type="file" name="file" class="hidden" onchange="this.form.submit()" accept=".{{ $file->filetype }}">
-                                            </label>
-                                        </form>
-                                    @endif
-                                    <a href="{{ asset($file->filepath) }}" download class="block w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-sm font-bold text-center transition-colors flex items-center justify-center gap-2">
-                                        <i class="fas fa-download"></i> Download File
-                                    </a>
-                                </div>
-                            </div>
-                        @endforeach
-                        </div>
-                    </div>
-                @endif
-
-                <!-- Revision Folders View -->
-                @foreach($revisionFolders->sortKeys() as $revNum => $files)
-                    <div x-show="activeTab === 'rev_{{ $revNum }}'" role="tabpanel" id="panel-rev-{{ $revNum }}" aria-labelledby="tab-rev-{{ $revNum }}" style="display: none;" class="space-y-6">
-                        <!-- Revision Header -->
-                        <div class="bg-slate-50 rounded-3xl border border-slate-200 p-6 flex items-center justify-between mb-2 pb-4 border-b border-slate-200/60 shadow-sm">
-                            <h4 class="text-lg font-bold text-slate-700 flex items-center gap-3">
-                                <i class="fas fa-folder text-brand-primary text-2xl"></i>
-                                Revision {{ $revNum }}
-                            </h4>
-                            <span class="text-xs font-bold text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
-                                {{ $files->count() }} Documents
-                            </span>
+                                @endif
+                            @endforeach
                         </div>
 
-                        @php
-                            $revFilesByCategory = $files->groupBy('category');
-                            $renderedRevCategories = [];
-                        @endphp
-
-                        @foreach($requirements as $req)
-                            @php
-                                $categoryFiles = $revFilesByCategory->get($req->name, collect());
-                                $renderedRevCategories[] = $req->name;
-                            @endphp
-
-                            @if($categoryFiles->isNotEmpty())
-                                @php $pKey = 'rt_' . $researchTitle->id . '_rev_' . $revNum . '_' . Str::slug($req->name); @endphp
-                                <div x-data="{ expanded: $persist(false).as('{{ $pKey }}') }" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                                    <button @click="expanded = !expanded"
-                                        :aria-expanded="expanded ? 'true' : 'false'"
-                                        class="w-full px-5 sm:px-6 py-4 flex items-center justify-between bg-white hover:bg-slate-50/90 transition-all border-b border-slate-100 text-left group cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
-                                        <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
-                                            <div class="w-11 h-11 rounded-xl bg-slate-100 text-brand-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                                <i class="fas fa-folder-open text-base"></i>
-                                            </div>
-                                            <div class="min-w-0">
-                                                <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-primary transition-colors">
-                                                    {{ $req->name }}
-                                                </h3>
-                                                <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                    <span>{{ $categoryFiles->count() }} {{ Str::plural('document', $categoryFiles->count()) }}</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-200/80 shadow-2xs group-hover:bg-brand-primary group-hover:border-brand-primary group-hover:text-white text-slate-400 transition-all">
-                                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="expanded ? 'rotate-180' : ''"></i>
-                                        </div>
-                                    </button>
-                                    <div x-show="expanded" x-transition class="p-6 bg-slate-50/30" style="display: none;">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            @foreach($categoryFiles as $file)
-                                                <x-researcher-readonly-file-card :file="$file" :showRevisionTag="false" />
-                                            @endforeach
-                                        </div>
-                                    </div>
+                        <!-- Revision Tabs (One per revision number - ONLY Application Form open by default!) -->
+                        @foreach($revisionFolders->sortKeys() as $revNum => $revFiles)
+                            <div x-show="activeTab === 'rev_{{ $revNum }}'" style="display:none;">
+                                <div class="px-3 py-1.5 bg-indigo-50/50 border border-indigo-100 rounded-xl mb-2 flex items-center justify-between">
+                                    <p class="text-xs font-semibold text-indigo-950">Revision {{ $revNum }} Documents</p>
+                                    <span class="text-[10px] font-mono text-slate-400">{{ $revFiles->first()?->created_at?->format('M d, Y') }}</span>
                                 </div>
-                            @endif
-                        @endforeach
-
-                        @foreach($revFilesByCategory as $category => $categoryFiles)
-                            @if(!in_array($category, $renderedRevCategories))
-                                @php $pKey = 'rt_' . $researchTitle->id . '_rev_' . $revNum . '_' . Str::slug($category ?? 'uncat'); @endphp
-                                <div x-data="{ expanded: $persist(false).as('{{ $pKey }}') }" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                                    <button @click="expanded = !expanded"
-                                        :aria-expanded="expanded ? 'true' : 'false'"
-                                        class="w-full px-5 sm:px-6 py-4 flex items-center justify-between bg-white hover:bg-slate-50/90 transition-all border-b border-slate-100 text-left group cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2">
-                                        <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
-                                            <div class="w-11 h-11 rounded-xl bg-slate-100 text-brand-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                                <i class="fas fa-folder-open text-base"></i>
+                                <template x-for="group in revisions['{{ $revNum }}']" :key="group.category">
+                                    <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white transition-colors"
+                                         x-data="{ expanded: Boolean(group.category && group.category.toLowerCase().includes('application form')) }">
+                                        <button type="button" @click="expanded = !expanded"
+                                            class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                            <span class="text-xs font-semibold text-slate-800 tracking-tight" x-text="group.category"></span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[11px] font-medium text-slate-400 tabular-nums"
+                                                      x-text="group.files.length + ' file(s)'"></span>
+                                                <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                                   :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
                                             </div>
-                                            <div class="min-w-0">
-                                                <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-primary transition-colors">
-                                                    {{ $category ?? 'Uncategorized' }}
-                                                </h3>
-                                                <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                    <span>{{ $categoryFiles->count() }} {{ Str::plural('document', $categoryFiles->count()) }}</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-200/80 shadow-2xs group-hover:bg-brand-primary group-hover:border-brand-primary group-hover:text-white text-slate-400 transition-all">
-                                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="expanded ? 'rotate-180' : ''"></i>
-                                        </div>
-                                    </button>
-                                    <div x-show="expanded" x-transition class="p-6 bg-slate-50/30" style="display: none;">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            @foreach($categoryFiles as $file)
-                                                <x-researcher-readonly-file-card :file="$file" :showRevisionTag="false" />
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                @endforeach
-
-                <!-- DRAFT WORKSPACE VIEW -->
-                @if($isWaitingForRevision)
-                    <div x-show="activeTab === 'draft'" role="tabpanel" id="panel-draft" aria-labelledby="tab-draft" style="display: none;">
-                        <div class="bg-orange-50/50 rounded-3xl border border-orange-200 p-8 shadow-sm mb-6">
-                            <div class="mb-8">
-                                <h3 class="text-xl font-bold text-orange-900 flex items-center gap-2 mb-2">
-                                    <i class="fas fa-pencil-ruler text-orange-500"></i> Revision {{ $nextRevisionNumber }} Workspace
-                                </h3>
-                                <p class="text-orange-700 text-sm">Upload your corrected documents below. These act as drafts until you click "Submit Corrections".</p>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                @foreach($activeFiles as $file)
-                                    @php
-                                        $draftFilesForCategory = $draftFiles->where('category', $file->category)->values();
-                                        // Pass the initial files to Alpine
-                                        $initialFilesJson = $draftFilesForCategory->map(function ($df) {
-                                            return [
-                                                'id' => $df->id,
-                                                'filename' => $df->filename,
-                                                'filetype' => collect(explode('.', $df->filename))->last(),
-                                                'category' => $df->category,
-                                                'isPdf' => strtolower(collect(explode('.', $df->filename))->last()) === 'pdf',
-                                                'deleteUrl' => route('delete.revision.document', $df->id),
-                                                'created_at' => $df->created_at->timezone('Asia/Manila')->format('F d, Y \a\t h:i A')
-                                            ];
-                                        })->toJson();
-                                    @endphp
-
-                                    <div x-data="revisionDropzone({ 
-                                        category: '{{ $file->category }}', 
-                                        uploadUrl: '{{ route('upload.revision.document', $researchTitle->id) }}',
-                                        csrfToken: '{{ csrf_token() }}',
-                                        initialFiles: {{ $initialFilesJson }}
-                                    })" 
-                                    class="bg-white rounded-2xl border p-5 relative transition-all duration-300"
-                                    :class="[isDragging ? 'border-orange-400 bg-orange-50 ring-4 ring-orange-100 scale-[1.02]' : (files.length > 0 ? 'border-emerald-300 ring-2 ring-emerald-50' : 'border-orange-200 border-dashed')]"
-                                    @dragover.prevent="isDragging = true"
-                                    @dragleave.prevent="isDragging = false"
-                                    @drop.prevent="handleDrop($event)">
-
-                                        <div class="flex items-center justify-between mb-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors border"
-                                                    :class="files.length > 0 ? 'bg-emerald-100 text-emerald-600 border-emerald-200 shadow-inner' : 'bg-orange-100 text-orange-500 border-orange-200 shadow-inner'">
-                                                    <i class="fas" :class="files.length > 0 ? 'fa-check' : 'fa-file-upload'"></i>
-                                                </div>
-                                                <div>
-                                                    <h4 class="font-bold text-sm text-slate-800 leading-snug">{{ $file->category }}</h4>
-                                                    <template x-if="files.length > 0">
-                                                        <p class="text-[10px] text-slate-400 mt-0.5" x-text="'Last updated on ' + getLatestDate()"></p>
-                                                    </template>
-                                                </div>
-                                            </div>
-                                            <span x-show="files.length > 0" x-text="files.length + ' file(s)'" class="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 text-slate-500 shadow-sm border border-slate-200"></span>
-                                        </div>
-
-                                        <!-- Uploaded Files List -->
-                                        <div class="space-y-2 mb-3" x-show="files.length > 0">
-                                            <template x-for="(f, index) in files" :key="f.id || index">
-                                                <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-200 flex items-center justify-between group shadow-sm transition-all animate-[fadeIn_0.2s_ease-out]">
-                                                    <div class="flex items-center min-w-0 flex-1 gap-2">
-                                                        <div class="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm border border-emerald-100 flex-shrink-0">
-                                                            <i class="fas text-emerald-600 text-sm" :class="f.isPdf ? 'fa-file-pdf' : 'fa-file'"></i> 
+                                        </button>
+                                        <div x-show="expanded" style="display: none;" x-transition>
+                                            <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                                <template x-for="file in group.files" :key="file.id">
+                                                    <button type="button" @click="selectFile(file)"
+                                                        :class="activeFile && activeFile.id === file.id 
+                                                            ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
+                                                            : 'text-slate-700 hover:bg-slate-50/80 font-normal border-l-[3px] border-transparent'"
+                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                                        <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border"
+                                                             :class="activeFile && activeFile.id === file.id 
+                                                                ? 'bg-white text-slate-900 border-slate-300/80 shadow-2xs' 
+                                                                : [file.bg, 'border-slate-200/70']">
+                                                            <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
                                                         </div>
-                                                        <p class="text-[11px] font-bold text-emerald-800 truncate" x-text="f.filename"></p>
-                                                    </div>
-                                                    <button type="button" @click.prevent="removeFile(f, index)" class="text-emerald-600/50 hover:text-red-500 p-1.5 bg-white rounded-lg opacity-0 group-hover:opacity-100 transition-all border border-transparent hover:border-red-200 shadow-sm hover:shadow active:scale-95">
-                                                        <i class="fas fa-times text-xs"></i>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="text-xs truncate" 
+                                                               :class="activeFile && activeFile.id === file.id ? 'font-semibold text-slate-950' : 'font-medium text-slate-800'"
+                                                               x-text="file.filename"></p>
+                                                            <p class="text-[10px] tabular-nums text-slate-400" 
+                                                               x-text="file.uploaded_at"></p>
+                                                        </div>
+                                                        <span x-show="activeFile && activeFile.id === file.id"
+                                                              class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                            <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
+                                                            <span>Viewing</span>
+                                                        </span>
                                                     </button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        @endforeach
+
+                        <!-- Current Documents Tab List (ONLY Application Form open by default!) -->
+                        @if($hasRevisions && $activeFiles->isNotEmpty())
+                            <div x-show="activeTab === 'current'" style="display:none;">
+                                <div class="px-3 py-1.5 bg-slate-100/60 border border-slate-200/70 rounded-xl mb-2">
+                                    <p class="text-xs font-semibold text-slate-700">Latest Consolidated Version of Each Document</p>
+                                </div>
+                                <template x-for="group in activeFiles" :key="group.category">
+                                    <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white transition-colors"
+                                         x-data="{ expanded: Boolean(group.category && group.category.toLowerCase().includes('application form')) }">
+                                        <button type="button" @click="expanded = !expanded"
+                                            class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                            <span class="text-xs font-semibold text-slate-800 tracking-tight" x-text="group.category"></span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[11px] font-medium text-slate-400 tabular-nums"
+                                                      x-text="group.files.length + ' file(s)'"></span>
+                                                <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                                   :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
+                                            </div>
+                                        </button>
+                                        <div x-show="expanded" style="display: none;" x-transition>
+                                            <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                                <template x-for="file in group.files" :key="file.id">
+                                                    <button type="button" @click="selectFile(file)"
+                                                        :class="activeFile && activeFile.id === file.id 
+                                                            ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
+                                                            : 'text-slate-700 hover:bg-slate-50/80 font-normal border-l-[3px] border-transparent'"
+                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                                        <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border"
+                                                             :class="activeFile && activeFile.id === file.id 
+                                                                ? 'bg-white text-slate-900 border-slate-300/80 shadow-2xs' 
+                                                                : [file.bg, 'border-slate-200/70']">
+                                                            <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="text-xs truncate" 
+                                                               :class="activeFile && activeFile.id === file.id ? 'font-semibold text-slate-950' : 'font-medium text-slate-800'"
+                                                               x-text="file.filename"></p>
+                                                            <p class="text-[10px] tabular-nums text-slate-400" 
+                                                               x-text="file.uploaded_at"></p>
+                                                        </div>
+                                                        <span x-show="activeFile && activeFile.id === file.id"
+                                                              class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                            <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
+                                                            <span>Viewing</span>
+                                                        </span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        @endif
+
+                        <!-- Draft Workspace Tab List (ONLY Application Form open by default!) -->
+                        @if($isRevision || $hasDraftFiles)
+                            <div x-show="activeTab === 'draft'" style="display:none;">
+                                <div class="px-3.5 py-2.5 bg-orange-50/60 border border-orange-200/70 rounded-xl mb-2 flex items-center justify-between gap-2">
+                                    <div>
+                                        <p class="text-xs font-semibold text-orange-950">Revision {{ $nextRevisionNumber }} Draft Workspace</p>
+                                        <p class="text-[11px] text-orange-800 mt-0.5">Upload your revised documents below before submitting.</p>
+                                    </div>
+                                    @if($draftFiles->isNotEmpty())
+                                        <button type="button" onclick="document.getElementById('revisionModal').classList.remove('hidden')"
+                                                class="shrink-0 px-3 py-1.5 bg-brand-primary hover:bg-brand-secondary text-white text-xs font-semibold rounded-xl shadow-xs cursor-pointer transition-all active:scale-95">
+                                            Submit Revisions
+                                        </button>
+                                    @endif
+                                </div>
+
+                                @foreach($requirements as $req)
+                                    @php
+                                        $dFiles = $draftFiles->where('category', $req->name);
+                                        $isAppForm = str_contains(strtolower($req->name), 'application form');
+                                    @endphp
+                                    <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white transition-colors"
+                                         x-data="{ expanded: {{ $isAppForm ? 'true' : 'false' }} }">
+                                        <button type="button" @click="expanded = !expanded"
+                                            class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer">
+                                            <span class="text-xs font-semibold text-slate-800 tracking-tight">{{ $req->name }}</span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[11px] font-medium text-slate-400 tabular-nums">
+                                                    {{ $dFiles->count() }} file(s)
+                                                </span>
+                                                <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                                   :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
+                                            </div>
+                                        </button>
+                                        <div x-show="expanded" style="display: none;" x-transition>
+                                            <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                                @foreach($dFiles as $file)
+                                                    @php $dJson = $enrichFile($file, 'Draft'); @endphp
+                                                    <div class="flex items-center justify-between gap-2 px-3 py-2 text-left"
+                                                         :class="activeFile && activeFile.id === {{ $file->id }} ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' : 'text-slate-700 hover:bg-slate-50/80 font-normal border-l-[3px] border-transparent'">
+                                                        <button type="button" @click="selectFile({{ json_encode($dJson) }})"
+                                                                class="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer focus:outline-none">
+                                                            <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border"
+                                                                 :class="activeFile && activeFile.id === {{ $file->id }} ? 'bg-white text-slate-900 border-slate-300/80 shadow-2xs' : '{{ $dJson['bg'] }} border-slate-200/70'">
+                                                                <i class="{{ $dJson['icon'] }} {{ $dJson['color'] }} text-xs" aria-hidden="true"></i>
+                                                            </div>
+                                                            <div class="min-w-0 flex-1">
+                                                                <p class="text-xs truncate"
+                                                                   :class="activeFile && activeFile.id === {{ $file->id }} ? 'font-semibold text-slate-950' : 'font-medium text-slate-800'">
+                                                                    {{ $file->filename }}
+                                                                </p>
+                                                                <span class="text-[10px] tabular-nums text-slate-400">
+                                                                    {{ $file->created_at->format('M d, Y') }}
+                                                                </span>
+                                                            </div>
+                                                        </button>
+
+                                                        <div class="flex items-center gap-1.5 shrink-0">
+                                                            <span x-show="activeFile && activeFile.id === {{ $file->id }}"
+                                                                  class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                                                                <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
+                                                                <span>Viewing</span>
+                                                            </span>
+                                                            <button type="button" @click="deleteDraft({{ $file->id }}, '{{ route('delete.revision.document', $file->id) }}')"
+                                                                    class="w-6 h-6 rounded-lg flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-800 transition-colors cursor-pointer border border-rose-200 shadow-2xs"
+                                                                    title="Remove from draft">
+                                                                <i class="fas fa-trash-alt text-[9px]"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+
+                                                <!-- Upload Dropzone for this requirement in Draft Workspace -->
+                                                <div class="p-2.5 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between gap-2">
+                                                    <span class="text-[11px] text-slate-500 font-medium">Upload revised file:</span>
+                                                    <label class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-dashed border-orange-400/80 bg-white hover:bg-orange-50/60 text-orange-800 text-xs font-medium cursor-pointer transition-all shadow-2xs">
+                                                        <i class="fas fa-cloud-arrow-up text-xs text-orange-600"></i>
+                                                        <span>Upload {{ $req->name }}</span>
+                                                        <input type="file" class="hidden" @change="uploadDraft('{{ $req->name }}', $event)">
+                                                    </label>
                                                 </div>
-                                            </template>
-                                        </div>
-
-                                        <!-- Loading State -->
-                                        <div x-show="isUploading" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3 shadow-inner">
-                                            <div class="w-8 h-8 bg-white border border-blue-100 shadow-sm rounded-lg flex items-center justify-center flex-shrink-0">
-                                                <i class="fas fa-spinner fa-spin text-blue-500"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-[11px] font-bold text-blue-800">Uploading File(s)...</p>
-                                                <p class="text-[9px] text-blue-600 mt-0.5 font-medium">Please wait while transferring.</p>
                                             </div>
                                         </div>
-
-                                        <!-- Drop/Browse action -->
-                                        <label class="block cursor-pointer">
-                                            <div class="w-full py-4 rounded-xl border-2 border-dashed border-orange-200 hover:border-orange-400 hover:bg-orange-50 text-orange-600 font-bold text-center transition-all flex flex-col items-center justify-center gap-2 group shadow-sm bg-white hover:shadow-md">
-                                                <i class="fas fa-cloud-upload-alt text-2xl group-hover:-translate-y-1 transition-transform text-orange-400 group-hover:text-orange-600"></i>
-                                                <span class="text-xs">Click to Browse or Drag Files</span>
-                                                <span class="text-[9px] font-extrabold text-orange-500/80 bg-orange-100/50 px-2 rounded-full uppercase tracking-wider">Multiple Uploads Allowed</span>
-                                            </div>
-                                            <input type="file" class="hidden" multiple @change="handleFiles($event.target.files)" accept=".{{ strtolower($file->filetype) }}">
-                                        </label>
                                     </div>
                                 @endforeach
-                @endif
+                            </div>
+                        @endif
+
+                    </div>{{-- end scrollable list --}}
+        <!-- Slide-over Drawer (Details & Activity Log)                -->
+        <!-- ========================================================= -->
+        <div x-show="drawerOpen" 
+             style="display: none;" 
+             class="relative z-[100]" 
+             aria-labelledby="drawer-title" 
+             role="dialog" 
+             aria-modal="true">
+            
+            <div x-show="drawerOpen" 
+                 x-transition:enter="ease-in-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in-out duration-300"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity" 
+                 @click="closeDrawer()"></div>
+
+            <div class="fixed inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute inset-0 overflow-hidden">
+                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-4 sm:pl-10"
+                         x-show="drawerOpen"
+                         x-transition:enter="transform transition ease-in-out duration-300"
+                         x-transition:enter-start="translate-x-full"
+                         x-transition:enter-end="translate-x-0"
+                         x-transition:leave="transform transition ease-in-out duration-300"
+                         x-transition:leave-start="translate-x-0"
+                         x-transition:leave-end="translate-x-full">
+                        
+                        <div class="pointer-events-auto w-screen max-w-md sm:max-w-lg flex flex-col h-full bg-white shadow-xl border-l border-slate-200/80">
+                            
+                            <!-- Drawer Top Header -->
+                            <div class="p-5 border-b border-slate-200/90 bg-white flex items-start justify-between gap-3 shrink-0">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                                        <span class="font-mono text-xs font-bold tabular-nums text-slate-900 bg-slate-100 border border-slate-300 px-2.5 py-0.5 rounded-md shadow-2xs">
+                                            {{ $researchTitle->reoc_code ?? ('#'.str_pad($researchTitle->id, 5, '0', STR_PAD_LEFT)) }}
+                                        </span>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} border {{ $statusConfig['border'] }} shadow-2xs">
+                                            <span class="w-1.5 h-1.5 rounded-full {{ $statusConfig['dot'] }} shrink-0"></span>
+                                            <span>{{ $researchTitle->Status }}</span>
+                                        </span>
+                                    </div>
+                                    <h3 id="drawer-title" class="font-heading font-bold text-base sm:text-lg text-slate-950 truncate" title="{{ $researchTitle->Study_Protocol_title }}">
+                                        {{ $researchTitle->Study_Protocol_title }}
+                                    </h3>
+                                </div>
+                                <button type="button" @click="closeDrawer()" 
+                                        class="w-8 h-8 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition-all flex items-center justify-center shrink-0 min-w-[36px] min-h-[36px] focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95 cursor-pointer"
+                                        title="Close Drawer (Esc)" aria-label="Close Drawer">
+                                    <i class="fas fa-times text-xs" aria-hidden="true"></i>
+                                </button>
+                            </div>
+
+                            <!-- Drawer Multi-Tab Switcher -->
+                            <div class="px-5 py-2.5 bg-slate-50 border-b border-slate-200 shrink-0">
+                                <div class="flex gap-1 bg-slate-200/70 p-1 rounded-xl border border-slate-300/80">
+                                    <button type="button" @click="drawerTab = 'details'"
+                                            :class="drawerTab === 'details' ? 'bg-white text-slate-950 shadow-xs border border-slate-300/80 font-bold' : 'text-slate-600 hover:text-slate-950 hover:bg-white/50 font-semibold'"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                        <i class="fas fa-info-circle text-xs" :class="drawerTab === 'details' ? 'text-[#8B0000]' : 'text-slate-500'"></i>
+                                        <span>Details</span>
+                                    </button>
+
+                                    <button type="button" @click="drawerTab = 'activity'"
+                                            :class="drawerTab === 'activity' ? 'bg-white text-slate-950 shadow-xs border border-slate-300/80 font-bold' : 'text-slate-600 hover:text-slate-950 hover:bg-white/50 font-semibold'"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                        <i class="fas fa-history text-xs" :class="drawerTab === 'activity' ? 'text-[#8B0000]' : 'text-slate-500'"></i>
+                                        <span>Activity Log</span>
+                                        <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full tabular-nums"
+                                              :class="drawerTab === 'activity' ? 'bg-slate-950 text-white' : 'bg-slate-300/80 text-slate-700'">
+                                            {{ $researchTitle->titleLogs->count() }}
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Drawer Body Content -->
+                            <div class="flex-1 overflow-y-auto custom-scrollbar">
+                                
+                                <!-- Tab 1: Submission Details -->
+                                <div x-show="drawerTab === 'details'" class="p-5 space-y-4 text-xs">
+                                    <div class="space-y-3.5 bg-slate-50 p-4 rounded-xl border border-slate-200/90 shadow-2xs">
+                                        <div class="flex justify-between items-center gap-3">
+                                            <span class="text-slate-600 font-semibold">Protocol Code:</span>
+                                            <span class="font-bold text-slate-900 font-mono text-right">{{ $researchTitle->reoc_code ?? 'Pending Assignment' }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center gap-3 pt-2.5 border-t border-slate-200">
+                                            <span class="text-slate-600 font-semibold">Research Category:</span>
+                                            <span class="font-bold text-slate-900 text-right">{{ $researchTitle->Research_Category }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center gap-3 pt-2.5 border-t border-slate-200">
+                                            <span class="text-slate-600 font-semibold">Project Type:</span>
+                                            <span class="font-bold text-slate-900 text-right">{{ $researchTitle->project_type ?? 'N/A' }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center gap-3 pt-2.5 border-t border-slate-200">
+                                            <span class="text-slate-600 font-semibold">Review Type:</span>
+                                            <span class="font-bold text-slate-900 text-right">{{ $researchTitle->Review_Type ?? 'Unassigned' }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center gap-3 pt-2.5 border-t border-slate-200">
+                                            <span class="text-slate-600 font-semibold">Submission Date:</span>
+                                            <span class="font-mono text-slate-900 text-right">{{ $researchTitle->created_at->format('M d, Y • h:i A') }}</span>
+                                        </div>
+                                    </div>
+
+                                    @if($researchTitle->primary_objectives)
+                                        <div class="border border-slate-200 rounded-xl p-4 bg-white shadow-2xs">
+                                            <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[10px] mb-1.5">Primary Objectives</h4>
+                                            <p class="text-slate-700 leading-relaxed whitespace-pre-wrap">{{ $researchTitle->primary_objectives }}</p>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <!-- Tab 2: Activity Log -->
+                                <div x-show="drawerTab === 'activity'" style="display: none;" class="p-5">
+                                    <div class="relative pl-3 space-y-4">
+                                        <div class="absolute left-3 top-1 bottom-1 w-0.5 bg-slate-200 pointer-events-none"></div>
+                                        @forelse($researchTitle->titleLogs as $log)
+                                            <div class="flex gap-3 relative">
+                                                <div class="w-5 h-5 rounded-full bg-slate-100 border-2 border-white flex-shrink-0 z-10 -ml-[9px] flex items-center justify-center shadow-2xs">
+                                                    <div class="w-2 h-2 rounded-full bg-indigo-600"></div>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-xs font-bold text-slate-900 leading-tight">{{ $log->action }}</p>
+                                                    <p class="text-xs text-slate-700 mt-0.5 leading-relaxed">{{ $log->description }}</p>
+                                                    <p class="text-[10px] font-mono tabular-nums text-slate-500 font-medium mt-1">{{ $log->created_at->format('M d, Y • h:i A') }}</p>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <p class="text-xs text-slate-500 italic">No activity logs recorded.</p>
+                                        @endforelse
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Drawer Footer -->
+                            <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-end shrink-0">
+                                <button type="button" @click="closeDrawer()" 
+                                        class="px-5 py-2 text-xs font-bold text-slate-700 hover:text-slate-950 bg-white border border-slate-300 rounded-xl shadow-2xs hover:bg-slate-100 transition-all min-h-[38px] focus:outline-none focus:ring-2 focus:ring-[#8B0000] active:scale-95 cursor-pointer">
+                                    Close
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
             </div>
-        @endif
+        </div>
 
-
-
-    </main>
     </div>
 
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- Async File Upload Alpine Component -->
-    <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('revisionDropzone', (config) => ({
-            category: config.category,
-            uploadUrl: config.uploadUrl,
-            csrfToken: config.csrfToken,
-            files: config.initialFiles || [],
-            isDragging: false,
-            isUploading: false,
-            
-            getLatestDate() {
-                if (this.files.length === 0) return '';
-                const lastFile = this.files[this.files.length - 1];
-                return lastFile.created_at || 'just now';
-            },
-            
-            handleDrop(e) {
-                this.isDragging = false;
-                if (e.dataTransfer.files.length > 0) {
-                    this.handleFiles(e.dataTransfer.files);
-                }
-            },
-            
-            async handleFiles(fileList) {
-                this.isUploading = true;
-                const promises = [];
-                
-                for (let i = 0; i < fileList.length; i++) {
-                    promises.push(this.uploadFile(fileList[i]));
-                }
-                
-                await Promise.all(promises);
-                this.isUploading = false;
-            },
-            
-            async uploadFile(file) {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('category', this.category);
-                formData.append('_token', this.csrfToken);
-                
-                // Show Progress Modal
-                const progressModal = document.getElementById('upload-progress-modal');
-                const progressBar = document.getElementById('upload-progress-bar');
-                const percentageText = document.getElementById('upload-percentage');
-                const sizeText = document.getElementById('upload-size');
-                
-                if (progressModal) {
-                    progressBar.style.width = '0%';
-                    percentageText.textContent = '0%';
-                    sizeText.textContent = '0 KB / 0 KB';
-                    progressModal.classList.remove('hidden');
-                }
+    <!-- Revision/Correction Modal -->
+    @if($canSubmit)
+        <div id="revisionModal" class="fixed inset-0 z-[110] hidden" aria-labelledby="revision-modal-heading" role="dialog"
+            aria-modal="true" x-data @keydown.escape.window="document.getElementById('revisionModal').classList.add('hidden')">
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+                onclick="document.getElementById('revisionModal').classList.add('hidden')"></div>
 
-                const formatBytes = (bytes, decimals = 2) => {
-                    if (bytes === 0) return '0 Bytes';
-                    const k = 1024;
-                    const dm = decimals < 0 ? 0 : decimals;
-                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-                    const i = Math.floor(Math.log(bytes) / Math.log(k));
-                    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-                };
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
+                        <form action="{{ route('submit.revisions', $researchTitle->id) }}" method="POST">
+                            @csrf
 
-                try {
-                    const xhr = new XMLHttpRequest();
-                    
-                    const uploadPromise = new Promise((resolve, reject) => {
-                        xhr.upload.addEventListener('progress', (e) => {
-                            if (e.lengthComputable) {
-                                const percentComplete = Math.round((e.loaded / e.total) * 100);
-                                if (progressBar) progressBar.style.width = percentComplete + '%';
-                                if (percentageText) percentageText.textContent = percentComplete + '%';
-                                if (sizeText) sizeText.textContent = `${formatBytes(e.loaded)} / ${formatBytes(e.total)}`;
-                            }
-                        });
+                            <!-- Header -->
+                            <div class="px-7 py-5 bg-brand-primary relative overflow-hidden text-white">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 id="revision-modal-heading" class="text-xl font-bold tracking-tight flex items-center gap-2.5">
+                                            <i class="fas {{ $submitIcon }} text-base"></i>
+                                            <span>{{ $submitLabel }}</span>
+                                        </h3>
+                                        <p class="text-red-100 text-xs mt-1">
+                                            {{ $isRevision ? 'Confirm submission of your revised documents for committee evaluation.' : 'Confirm submission of your document corrections for admin verification.' }}
+                                        </p>
+                                    </div>
+                                    <button type="button" onclick="document.getElementById('revisionModal').classList.add('hidden')"
+                                        class="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all cursor-pointer"
+                                        aria-label="Close modal">
+                                        <i class="fas fa-times text-base"></i>
+                                    </button>
+                                </div>
+                            </div>
 
-                        xhr.onload = () => {
-                            if (xhr.status >= 200 && xhr.status < 300) {
-                                resolve(JSON.parse(xhr.responseText));
-                            } else {
-                                let errorMsg = 'Upload failed';
-                                try {
-                                    const errorData = JSON.parse(xhr.responseText);
-                                    errorMsg = errorData.message || errorData.error || errorMsg;
-                                } catch(e) {}
-                                reject(new Error(errorMsg));
-                            }
-                        };
+                            <!-- Body -->
+                            <div class="px-7 py-6 space-y-4">
+                                <div class="bg-blue-50/80 p-3.5 rounded-xl border border-blue-200 flex gap-3 items-start">
+                                    <i class="fas fa-info-circle text-blue-600 text-base shrink-0 mt-0.5"></i>
+                                    <p class="text-xs text-blue-900 leading-relaxed">
+                                        @if($isRevision)
+                                            Your revision workspace files will be compiled into <strong>Revision {{ $nextRevisionNumber }}</strong> and your protocol status will be updated to <strong>Revision Submitted</strong>.
+                                        @else
+                                            Your updated documents will be submitted to the Research Ethics Office for intake review.
+                                        @endif
+                                    </p>
+                                </div>
 
-                        xhr.onerror = () => reject(new Error('Network error'));
-                    });
+                                <div class="space-y-1.5">
+                                    <label for="revision_message" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                        Remarks / Summary of Changes <span class="text-slate-400 font-normal normal-case">(Optional)</span>
+                                    </label>
+                                    <textarea name="revision_message" id="revision_message" rows="3"
+                                        class="w-full rounded-xl border border-slate-300 bg-white shadow-2xs focus:border-brand-primary focus:ring-1 focus:ring-brand-primary text-xs p-3 resize-none transition-all placeholder-slate-400"
+                                        placeholder="{{ $isRevision ? 'Describe the key modifications made in this revision...' : 'Describe what was corrected...' }}"></textarea>
+                                </div>
+                            </div>
 
-                    xhr.open('POST', this.uploadUrl);
-                    xhr.setRequestHeader('Accept', 'application/json');
-                    xhr.send(formData);
-
-                    const data = await uploadPromise;
-                    if (data.success) {
-                        this.files.push(data.file);
-                    } else {
-                        alert('Upload failed: ' + (data.error || 'Unknown error'));
-                    }
-                } catch (error) {
-                    console.error(error);
-                    alert('Upload error: ' + error.message);
-                } finally {
-                    if (progressModal) progressModal.classList.add('hidden');
-                }
-            },
-            
-            async removeFile(fileObj, index) {
-                const result = await Swal.fire({
-                    title: 'Remove Document?',
-                    text: 'Are you sure you want to delete this draft file?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444', 
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Yes, remove it',
-                    cancelButtonText: 'Cancel',
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        confirmButton: 'rounded-xl px-4 py-2 font-bold',
-                        cancelButton: 'rounded-xl px-4 py-2 font-bold'
-                    }
-                });
-
-                if (!result.isConfirmed) return;
-                
-                // Remove from UI optimistically
-                this.files.splice(index, 1);
-                
-                try {
-                    const response = await fetch(fileObj.deleteUrl, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': this.csrfToken,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ _method: 'DELETE' })
-                    });
-                    
-                    const data = await response.json();
-                    if(!data.success) {
-                        // re-add if failed
-                        this.files.splice(index, 0, fileObj);
-                        alert('Failed to remove: ' + data.error);
-                    }
-                } catch (e) {
-                    this.files.splice(index, 0, fileObj);
-                    alert('Error removing file');
-                }
-            }
-        }));
-    });
-    </script>
+                            <!-- Footer -->
+                            <div class="bg-slate-50 px-7 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 border-t border-slate-200">
+                                <button type="button" onclick="document.getElementById('revisionModal').classList.add('hidden')"
+                                    class="inline-flex justify-center items-center rounded-xl bg-white px-4 py-2 text-xs font-bold text-slate-700 border border-slate-300 hover:bg-slate-100 transition-all cursor-pointer">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    class="inline-flex justify-center items-center gap-2 rounded-xl bg-brand-primary hover:bg-brand-secondary px-6 py-2 text-xs font-bold text-white shadow-md shadow-red-950/20 hover:shadow-red-950/30 transition-all cursor-pointer">
+                                    <span>Confirm & Submit</span>
+                                    <i class="fas fa-arrow-right text-[10px]"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Upload Progress Modal -->
-    <div id="upload-progress-modal" class="fixed inset-0 z-[60] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity"></div>
+    <div id="upload-progress-modal" class="fixed inset-0 z-[120] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs transition-opacity"></div>
         <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
-                    <div class="px-8 py-10">
-                        <div class="flex flex-col items-center text-center">
-                            <!-- Animated Icon -->
-                            <div class="relative w-24 h-24 mb-8">
-                                <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
-                                <div class="absolute inset-0 border-4 border-brand-primary rounded-full border-t-transparent animate-spin"></div>
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <i class="fas fa-cloud-upload-alt text-3xl text-brand-primary animate-pulse"></i>
-                                </div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-slate-900 mb-2">Uploading Research Files</h3>
-                            <p class="text-slate-500 text-sm mb-8 max-w-sm">Please do not close this window or refresh the page. We are securely transferring your documents to our servers.</p>
-                            <!-- Progress Bar Container -->
-                            <div class="w-full bg-slate-100 rounded-full h-4 mb-4 relative overflow-hidden shadow-inner">
-                                <div id="upload-progress-bar" class="bg-gradient-to-r from-brand-primary to-brand-secondary h-full w-0 transition-all duration-300 ease-out shadow-lg relative">
-                                    <div class="absolute inset-0 bg-white/20 animate-shimmer"></div>
-                                </div>
-                            </div>
-                            <!-- Progress Stats -->
-                            <div class="flex justify-between w-full text-sm font-bold">
-                                <span id="upload-percentage" class="text-brand-primary">0%</span>
-                                <span id="upload-size" class="text-slate-400">0 KB / 0 KB</span>
-                            </div>
+                <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-200 p-8 text-center">
+                    <div class="relative w-16 h-16 mx-auto mb-5">
+                        <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-brand-primary rounded-full border-t-transparent animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-cloud-upload-alt text-xl text-brand-primary animate-pulse"></i>
                         </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-1">Uploading Research Document</h3>
+                    <p class="text-slate-500 text-xs mb-6">Please keep this window open while the document transfers to the server.</p>
+                    <div class="w-full bg-slate-100 rounded-full h-3 mb-3 relative overflow-hidden shadow-inner">
+                        <div id="upload-progress-bar" class="bg-brand-primary h-full w-0 transition-all duration-200"></div>
+                    </div>
+                    <div class="flex justify-between w-full text-xs font-bold">
+                        <span id="upload-percentage" class="text-brand-primary">0%</span>
+                        <span id="upload-size" class="text-slate-400 font-mono">0 KB / 0 KB</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <style>
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        .animate-shimmer {
-            animation: shimmer 2s infinite;
-        }
-    </style>
+    <!-- Interactive Mouse Drag-to-Scroll ("hold click then swipe") & Wheel Scroll for Tab Bar -->
+    <script>
+        (function initTabDragScroll() {
+            const setupDragScroll = () => {
+                const tabBar = document.getElementById('document-tab-bar');
+                if (!tabBar || tabBar.dataset.dragScrollInitialized) return;
+                tabBar.dataset.dragScrollInitialized = 'true';
+
+                let isDown = false;
+                let startX = 0;
+                let scrollLeft = 0;
+                let hasDragged = false;
+
+                tabBar.addEventListener('mousedown', (e) => {
+                    if (e.button !== 0) return;
+                    isDown = true;
+                    hasDragged = false;
+                    tabBar.classList.add('cursor-grabbing');
+                    tabBar.classList.remove('cursor-grab');
+                    startX = e.pageX - tabBar.offsetLeft;
+                    scrollLeft = tabBar.scrollLeft;
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    const x = e.pageX - tabBar.offsetLeft;
+                    const walk = (x - startX);
+                    if (Math.abs(walk) > 4) {
+                        hasDragged = true;
+                    }
+                    tabBar.scrollLeft = scrollLeft - walk;
+                });
+
+                window.addEventListener('mouseup', () => {
+                    if (!isDown) return;
+                    isDown = false;
+                    tabBar.classList.remove('cursor-grabbing');
+                    tabBar.classList.add('cursor-grab');
+
+                    if (hasDragged) {
+                        const captureClick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        };
+                        tabBar.addEventListener('click', captureClick, { capture: true, once: true });
+                        setTimeout(() => {
+                            tabBar.removeEventListener('click', captureClick, { capture: true });
+                        }, 50);
+                    }
+                });
+
+                tabBar.addEventListener('wheel', (e) => {
+                    if (e.deltaY !== 0 && tabBar.scrollWidth > tabBar.clientWidth) {
+                        e.preventDefault();
+                        tabBar.scrollLeft += e.deltaY;
+                    }
+                }, { passive: false });
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setupDragScroll);
+            } else {
+                setupDragScroll();
+            }
+        })();
+    </script>
 </x-user_layout>

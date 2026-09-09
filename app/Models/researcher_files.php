@@ -31,6 +31,24 @@ class Researcher_files extends Model
         return $this->belongsTo(User::class, 'uploaded_by');
     }
 
+    public function researchTitles()
+    {
+        return $this->belongsToMany(
+            Research_title::class,
+            'research_title_files',
+            'researcher_file_id',
+            'research_title_id'
+        );
+    }
+
+    public function getEffectiveResearchTitleAttribute()
+    {
+        if ($this->research_title_id) {
+            return $this->research;
+        }
+        return $this->researchTitles()->first();
+    }
+
     public function reviewerRemarks()
     {
         return $this->hasMany(ReviewerFileRemark::class, 'file_id');

@@ -23,8 +23,8 @@
                     </div>
                     <button type="button" onclick="closeStatusModal()"
                         aria-label="Close status modal"
-                        class="text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 rounded-lg p-1 transition-colors">
-                        <i class="fas fa-times text-xl"></i>
+                        class="text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-xl p-2 min-w-[38px] min-h-[38px] flex items-center justify-center transition-colors cursor-pointer">
+                        <i class="fas fa-times text-lg"></i>
                     </button>
                 </div>
             </div>
@@ -35,14 +35,12 @@
                     @csrf
                     <input type="hidden" name="status_action" id="statusActionInput">
 
-
-
                     <!-- 1. Review Classification -->
                     <div class="{{ request()->routeIs('admin.revisions') ? 'hidden' : '' }}">
                         <label class="block text-sm font-bold text-slate-700 mb-3">Review Classification</label>
-                        <div class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+                        <div class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl shadow-2xs">
                             <div class="flex flex-col">
-                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Current Review Type</span>
+                                <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">Current Review Type</span>
                                 <span class="font-bold text-slate-800 text-sm" id="currentReviewTypeDisplay">Unassigned</span>
                             </div>
                             <div class="flex-1 w-full max-w-[240px]">
@@ -53,7 +51,7 @@
                                     <option value="Expedited Review">Expedited Review</option>
                                     <option value="Full Board Review">Full Board Review</option>
                                 </select>
-                                                                <div x-data="{ 
+                                <div x-data="{ 
                                         open: false,
                                         value: '',
                                         lockedType: 'Unassigned',
@@ -86,6 +84,7 @@
                                         value = ''; 
                                         if(document.getElementById('reviewTypeSelect')) document.getElementById('reviewTypeSelect').value = ''; 
                                         open = false;
+                                    "
                                     @keydown.escape.window="if (open) open = false"
                                     class="relative w-full">
 
@@ -93,9 +92,9 @@
                                        :aria-expanded="open ? 'true' : 'false'"
                                        aria-haspopup="listbox"
                                        aria-label="Change review classification"
-                                       class="flex items-center justify-between w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 hover:border-slate-300 hover:bg-slate-100 rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-all">
+                                       class="flex items-center justify-between w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 hover:border-slate-300 hover:bg-slate-100 rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-all cursor-pointer min-h-[44px]">
                                        <span x-text="displayValue" class="font-semibold text-slate-700 truncate pr-2" :class="{ 'text-slate-400 font-medium': !value }"></span>
-                                       <i class="fas fa-chevron-down text-slate-400 text-[10px] transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
+                                       <i class="fas fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
                                    </button>
 
                                    <div x-show="open" @click.outside="open = false" style="display: none;" 
@@ -103,46 +102,44 @@
                                        
                                        <!-- Option: Unassigned -->
                                        <button type="button" @click="selectOption('Unassigned')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Unassigned', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Unassigned' && value !== 'Unassigned', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Unassigned' && lockedType !== 'Unassigned' }"
-                                           class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Unassigned', 'hover:bg-slate-50 hover:pl-5 cursor-pointer': lockedType !== 'Unassigned' && value !== 'Unassigned', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000] cursor-pointer': value === 'Unassigned' && lockedType !== 'Unassigned' }"
+                                           class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all min-h-[44px]">
                                            <span class="text-left w-full" x-text="lockedType === 'Unassigned' ? 'Unassigned (Current)' : 'Unassigned'"></span>
-                                           <i x-show="lockedType === 'Unassigned'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
+                                           <i x-show="lockedType === 'Unassigned'" class="fas fa-ban text-slate-300 text-xs ml-2 flex-shrink-0"></i>
                                        </button>
 
                                        <!-- Option: Exempt Review -->
                                        <button type="button" @click="selectOption('Exempt Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Exempt Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Exempt Review' && value !== 'Exempt Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Exempt Review' && lockedType !== 'Exempt Review', 'ring-2 ring-inset ring-red-200 bg-red-50/50': aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review' }"
-                                           class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Exempt Review', 'hover:bg-slate-50 hover:pl-5 cursor-pointer': lockedType !== 'Exempt Review' && value !== 'Exempt Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000] cursor-pointer': value === 'Exempt Review' && lockedType !== 'Exempt Review', 'ring-2 ring-inset ring-red-200 bg-red-50/50': aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review' }"
+                                           class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all min-h-[44px]">
                                            <span class="text-left flex-1" x-text="lockedType === 'Exempt Review' ? 'Exempt Review (Current)' : 'Exempt Review'"></span>
-                                           <span x-show="aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-red-100/90 text-[#8B0000] px-1.5 py-0.5 rounded-full border border-red-200/90 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
-                                           <i x-show="lockedType === 'Exempt Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
+                                           <span x-show="aiSuggested === 'Exempt Review' && lockedType !== 'Exempt Review'" class="ml-2 flex-shrink-0 text-[11px] font-bold bg-red-100/90 text-[#8B0000] px-2 py-0.5 rounded-full border border-red-200/90 flex items-center gap-1"><i class="fas fa-magic text-[11px]"></i> AI</span>
+                                           <i x-show="lockedType === 'Exempt Review'" class="fas fa-ban text-slate-300 text-xs ml-2 flex-shrink-0"></i>
                                        </button>
 
                                        <!-- Option: Expedited Review -->
                                        <button type="button" @click="selectOption('Expedited Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Expedited Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Expedited Review' && value !== 'Expedited Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Expedited Review' && lockedType !== 'Expedited Review', 'ring-2 ring-inset ring-red-200 bg-red-50/50': aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review' }"
-                                           class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Expedited Review', 'hover:bg-slate-50 hover:pl-5 cursor-pointer': lockedType !== 'Expedited Review' && value !== 'Expedited Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000] cursor-pointer': value === 'Expedited Review' && lockedType !== 'Expedited Review', 'ring-2 ring-inset ring-red-200 bg-red-50/50': aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review' }"
+                                           class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all min-h-[44px]">
                                            <span class="text-left flex-1" x-text="lockedType === 'Expedited Review' ? 'Expedited Review (Current)' : 'Expedited Review'"></span>
-                                           <span x-show="aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-red-100/90 text-[#8B0000] px-1.5 py-0.5 rounded-full border border-red-200/90 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
-                                           <i x-show="lockedType === 'Expedited Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
+                                           <span x-show="aiSuggested === 'Expedited Review' && lockedType !== 'Expedited Review'" class="ml-2 flex-shrink-0 text-[11px] font-bold bg-red-100/90 text-[#8B0000] px-2 py-0.5 rounded-full border border-red-200/90 flex items-center gap-1"><i class="fas fa-magic text-[11px]"></i> AI</span>
+                                           <i x-show="lockedType === 'Expedited Review'" class="fas fa-ban text-slate-300 text-xs ml-2 flex-shrink-0"></i>
                                        </button>
 
                                        <!-- Option: Full Board Review -->
                                        <button type="button" @click="selectOption('Full Board Review')"
-                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Full Board Review', 'hover:bg-slate-50 hover:pl-5': lockedType !== 'Full Board Review' && value !== 'Full Board Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000]': value === 'Full Board Review' && lockedType !== 'Full Board Review', 'ring-2 ring-inset ring-red-200 bg-red-50/50': aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review' }"
-                                           class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all">
+                                           :class="{ 'opacity-40 cursor-not-allowed bg-slate-50 relative overflow-hidden': lockedType === 'Full Board Review', 'hover:bg-slate-50 hover:pl-5 cursor-pointer': lockedType !== 'Full Board Review' && value !== 'Full Board Review', 'bg-red-50 text-[#8B0000] border-l-2 border-[#8B0000] cursor-pointer': value === 'Full Board Review' && lockedType !== 'Full Board Review', 'ring-2 ring-inset ring-red-200 bg-red-50/50': aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review' }"
+                                           class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all min-h-[44px]">
                                            <span class="text-left flex-1" x-text="lockedType === 'Full Board Review' ? 'Full Board Review (Current)' : 'Full Board Review'"></span>
-                                           <span x-show="aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review'" class="ml-2 flex-shrink-0 text-[9px] font-bold bg-red-100/90 text-[#8B0000] px-1.5 py-0.5 rounded-full border border-red-200/90 flex items-center gap-1"><i class="fas fa-magic text-[8px]"></i> AI</span>
-                                           <i x-show="lockedType === 'Full Board Review'" class="fas fa-ban text-slate-300 text-[10px] ml-2 flex-shrink-0"></i>
+                                           <span x-show="aiSuggested === 'Full Board Review' && lockedType !== 'Full Board Review'" class="ml-2 flex-shrink-0 text-[11px] font-bold bg-red-100/90 text-[#8B0000] px-2 py-0.5 rounded-full border border-red-200/90 flex items-center gap-1"><i class="fas fa-magic text-[11px]"></i> AI</span>
+                                           <i x-show="lockedType === 'Full Board Review'" class="fas fa-ban text-slate-300 text-xs ml-2 flex-shrink-0"></i>
                                        </button>
 
-                                    </div>
+                                   </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-
 
                     <!-- 2. Status Actions -->
                     <div class="{{ request()->routeIs('admin.applications') ? 'hidden' : '' }}">
@@ -159,7 +156,7 @@
                                     <i class="fas fa-edit text-lg"></i>
                                 </div>
                                 <h4 class="font-bold text-slate-800 text-sm">Needs Revision</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Request changes</p>
+                                <p class="text-xs text-slate-500 mt-1">Request changes</p>
                             </div>
 
                             <!-- Panel Deliberation -->
@@ -173,7 +170,7 @@
                                     <i class="fas fa-gavel text-lg"></i>
                                 </div>
                                 <h4 class="font-bold text-slate-800 text-sm">Panel Deliberation</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Schedule panel review</p>
+                                <p class="text-xs text-slate-500 mt-1">Schedule panel review</p>
                             </div>
 
                             <!-- Approve -->
@@ -187,7 +184,7 @@
                                     <i class="fas fa-award text-lg"></i>
                                 </div>
                                 <h4 class="font-bold text-slate-800 text-sm">Approve</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Issue ethical clearance</p>
+                                <p class="text-xs text-slate-500 mt-1">Issue ethical clearance</p>
                             </div>
                         </div>
                     </div>
@@ -202,7 +199,7 @@
                             </div>
                             <input type="date" id="appointmentDate" name="appointment_date"
                                 min="{{ date('Y-m-d', strtotime('+2 days')) }}"
-                                class="w-full pl-10 pr-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all">
+                                class="w-full pl-10 pr-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs transition-all cursor-pointer">
                         </div>
                     </div>
 
@@ -211,18 +208,18 @@
                         <label for="remarks" class="block text-sm font-bold text-slate-700 mb-2">Notification Message
                             <span class="text-slate-400 font-normal text-xs">(Optional)</span></label>
                         <textarea id="remarks" name="remarks" rows="3"
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"
+                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs transition-all resize-none"
                             placeholder="Add any specific instructions or remarks for the researcher..."></textarea>
                     </div>
 
                     <!-- Actions -->
                     <div class="flex gap-3 pt-4 border-t border-slate-100">
                         <button type="button" onclick="closeStatusModal()"
-                            class="flex-1 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-colors">
+                            class="flex-1 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-colors cursor-pointer min-h-[44px]">
                             Cancel
                         </button>
                         <button type="submit" id="submitStatusBtn"
-                            class="flex-1 px-4 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-semibold hover:bg-[#6d0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 transition-colors shadow-2xs flex justify-center items-center gap-2">
+                            class="flex-1 px-4 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-semibold hover:bg-[#6d0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 transition-colors shadow-2xs flex justify-center items-center gap-2 cursor-pointer min-h-[44px]">
                             <span>{{ request()->routeIs('admin.applications') ? 'Update Status' : 'Update & Notify' }}</span>
                             <i class="fas fa-paper-plane text-xs"></i>
                         </button>

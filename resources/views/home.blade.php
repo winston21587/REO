@@ -169,6 +169,19 @@
                                         {{ $checkStatus === 'Incomplete' ? 'Add Files' : 'Manage Files' }}
                                     </a>
 
+                                    @php
+                                        $resCert = $title->adminFiles->firstWhere('filetype', 'certificate') ?? $title->files->firstWhere('filetype', 'certificate');
+                                        $resCover = $title->adminFiles->firstWhere('filetype', 'Approval Letter') ?? $title->files->firstWhere('filetype', 'Approval Letter');
+                                    @endphp
+
+                                    @if(in_array($checkStatus, ['Approved', 'Certification']) && ($resCert || $resCover))
+                                        <button type="button" onclick="document.getElementById('researcher-cert-modal-{{ $title->id }}').showModal()"
+                                            class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs md:text-sm text-center shadow-md shadow-emerald-600/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 border border-transparent cursor-pointer">
+                                            <i class="fas fa-certificate text-emerald-100"></i>
+                                            <span>View Clearance Documents</span>
+                                        </button>
+                                    @endif
+
                                     @if($title->status === 'Incomplete')
                                         <div class="w-full px-3 py-2 text-xs md:text-sm text-orange-600 font-bold text-center bg-orange-50/80 backdrop-blur-sm rounded-lg border border-orange-100 shadow-sm">
                                             <i class="fas fa-exclamation-triangle mr-1"></i> Check Requirements
@@ -606,6 +619,166 @@
                                     </div>
                                 </div>
                             </dialog>
+
+                            <!-- Issued Certificates Modal (Researcher View - Swiss Modernism Ledger) -->
+                            @if($resCert || $resCover)
+                            <dialog id="researcher-cert-modal-{{ $title->id }}"
+                                aria-labelledby="cert-modal-title-{{ $title->id }}"
+                                onclick="if (event.target === this) this.close()"
+                                class="m-auto rounded-2xl p-0 backdrop:bg-slate-950/60 backdrop:backdrop-blur-xs w-full max-w-lg open:animate-[fadeIn_0.2s_ease-out] motion-reduce:animate-none border border-slate-200/90 shadow-2xl overflow-hidden focus:outline-none">
+                                <div class="bg-white flex flex-col text-left">
+                                    <!-- Institutional Header -->
+                                    <div class="bg-gradient-to-b from-[#faf8f8] to-slate-50 px-6 py-5 border-b border-slate-200/80 flex items-start justify-between gap-4">
+                                        <div class="flex items-start gap-3.5 min-w-0">
+                                            <div class="w-11 h-11 rounded-xl bg-[#8B0000]/10 border border-[#8B0000]/20 flex items-center justify-center text-[#8B0000] shrink-0 mt-0.5 shadow-xs">
+                                                <i class="fas fa-certificate text-lg" aria-hidden="true"></i>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <h3 id="cert-modal-title-{{ $title->id }}" class="text-base font-extrabold text-slate-900 font-heading tracking-tight">
+                                                        Official Clearance Documents
+                                                    </h3>
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                        Approved & Issued
+                                                    </span>
+                                                </div>
+                                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                                                    Official ethics clearance instruments issued by Western Mindanao State University REO.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button type="button" onclick="document.getElementById('researcher-cert-modal-{{ $title->id }}').close()"
+                                            class="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]"
+                                            aria-label="Close modal">
+                                            <i class="fas fa-times text-base" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Protocol Metadata Context Ribbon -->
+                                    <div class="px-6 py-2.5 bg-slate-100/70 border-b border-slate-200/60 flex items-center justify-between gap-2 text-xs">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="font-mono font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200/80 shrink-0">
+                                                {{ $title->reoc_code ?: ('#' . str_pad($title->id, 5, '0', STR_PAD_LEFT)) }}
+                                            </span>
+                                            <span class="text-slate-600 truncate font-medium max-w-[280px]" title="{{ $title->Study_Protocol_title }}">
+                                                {{ $title->Study_Protocol_title }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Document Ledger Body -->
+                                    <div class="p-6 space-y-3.5">
+                                        @if($resCover)
+                                            <div class="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-sm transition-all group">
+                                                <div class="flex items-start justify-between gap-3">
+                                                    <div class="flex items-start gap-3 min-w-0">
+                                                        <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center shrink-0 group-hover:bg-[#8B0000]/10 group-hover:text-[#8B0000] group-hover:border-[#8B0000]/20 transition-colors">
+                                                            <i class="fas fa-file-invoice text-base" aria-hidden="true"></i>
+                                                        </div>
+                                                        <div class="min-w-0">
+                                                            <div class="flex items-center gap-2 flex-wrap">
+                                                                <h4 class="font-bold text-sm text-slate-900 leading-tight">Cover Letter of Approval</h4>
+                                                                <span class="text-[10px] font-mono px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded border border-slate-200/60">REO-Form 02</span>
+                                                            </div>
+                                                            <p class="text-xs text-slate-500 mt-1 leading-snug">
+                                                                Formal institutional endorsement authorizing study protocol commencement.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                                                    <a href="{{ route('researcher.serve_file', $resCover->id) }}" target="_blank" rel="noopener noreferrer"
+                                                       class="inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 transition-all cursor-pointer group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]">
+                                                        <i class="fas fa-eye text-slate-400 group-hover/btn:text-slate-600 transition-colors" aria-hidden="true"></i>
+                                                        <span>Preview Document</span>
+                                                        <i class="fas fa-external-link-alt text-[10px] text-slate-400 group-hover/btn:translate-x-0.5 transition-transform" aria-hidden="true"></i>
+                                                    </a>
+                                                    <a href="{{ route('researcher.serve_file', $resCover->id) }}" download
+                                                       class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]">
+                                                        <i class="fas fa-download text-slate-400" aria-hidden="true"></i>
+                                                        <span>Download</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if($resCert)
+                                            <div class="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-sm transition-all group">
+                                                <div class="flex items-start justify-between gap-3">
+                                                    <div class="flex items-start gap-3 min-w-0">
+                                                        <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
+                                                            <i class="fas fa-award text-base" aria-hidden="true"></i>
+                                                        </div>
+                                                        <div class="min-w-0">
+                                                            <div class="flex items-center gap-2 flex-wrap">
+                                                                <h4 class="font-bold text-sm text-slate-900 leading-tight">Certificate of Exemption</h4>
+                                                                <span class="text-[10px] font-mono px-1.5 py-0.5 bg-emerald-50 text-emerald-800 rounded border border-emerald-200/80">REO-Form 01</span>
+                                                            </div>
+                                                            <p class="text-xs text-slate-500 mt-1 leading-snug">
+                                                                Ethics Clearance Certificate certifying study protocol exemption from review.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                                                    <a href="{{ route('researcher.serve_file', $resCert->id) }}" target="_blank" rel="noopener noreferrer"
+                                                       class="inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200/80 hover:border-emerald-300 transition-all cursor-pointer group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">
+                                                        <i class="fas fa-eye text-emerald-600 group-hover/btn:text-emerald-700 transition-colors" aria-hidden="true"></i>
+                                                        <span>Preview Certificate</span>
+                                                        <i class="fas fa-external-link-alt text-[10px] text-emerald-600 group-hover/btn:translate-x-0.5 transition-transform" aria-hidden="true"></i>
+                                                    </a>
+                                                    <a href="{{ route('researcher.serve_file', $resCert->id) }}" download
+                                                       class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]">
+                                                        <i class="fas fa-download text-slate-400" aria-hidden="true"></i>
+                                                        <span>Download</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @php
+                                            $certAppointment = $title->appointment ? $title->appointment->firstWhere('stage', 'Certificate Pickup') : null;
+                                        @endphp
+                                        @if($certAppointment && $certAppointment->appointment_date)
+                                            <div class="p-4 bg-amber-50/90 border border-amber-200/90 rounded-xl flex items-start gap-3">
+                                                <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+                                                    <i class="fas fa-calendar-check text-base" aria-hidden="true"></i>
+                                                </div>
+                                                <div class="text-xs text-amber-950 leading-relaxed min-w-0">
+                                                    <div class="font-bold text-sm text-amber-900">Hardcopy Pickup Scheduled</div>
+                                                    <p class="mt-0.5 font-medium">
+                                                        {{ \Carbon\Carbon::parse($certAppointment->appointment_date)->format('l, F j, Y \a\t g:i A') }}
+                                                    </p>
+                                                    <p class="text-[11px] text-amber-800/90 mt-1">
+                                                        Please bring an official university ID to the Research Ethics Office to receive your sealed physical documents.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <!-- Archival Notice -->
+                                        <div class="p-3 bg-slate-50/80 rounded-xl border border-slate-200/60 flex items-center gap-2.5 text-xs text-slate-600">
+                                            <i class="fas fa-shield-halved text-emerald-600 shrink-0 text-sm" aria-hidden="true"></i>
+                                            <span class="leading-relaxed">
+                                                Certified and recorded in the Western Mindanao State University Research Ethics Registry.
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div class="px-6 py-3.5 bg-slate-50/90 border-t border-slate-200/80 flex items-center justify-between">
+                                        <span class="text-[11px] font-mono text-slate-400">
+                                            WMSU • REO CLEARANCE
+                                        </span>
+                                        <button type="button" onclick="document.getElementById('researcher-cert-modal-{{ $title->id }}').close()"
+                                            class="h-10 min-h-[40px] px-5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 uppercase tracking-wider bg-white hover:bg-slate-100 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]">
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </dialog>
+                            @endif
 
 
                     {{-- CV Correction Modal (per title) --}}

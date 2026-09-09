@@ -46,8 +46,8 @@ class ReviewerController extends Controller
     {
         $userId = Auth::id();
 
-        // Show revision-related statuses (excluding 'Waiting for Revision') so the reviewer can track the full cycle
-        $revisionStatuses = ['Revision Submitted', 'Reviewing Revisions'];
+        // Show all revision-related statuses so the reviewer can track the full revision cycle
+        $revisionStatuses = ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions'];
 
         $titles = Research_title::where(function ($q) use ($userId) {
             $q->whereHas('reviewers', function ($query) use ($userId) {
@@ -112,7 +112,13 @@ class ReviewerController extends Controller
 
     public function viewFiles($id)
     {
-        $researchTitle = Research_title::with(['researcher.user', 'files', 'adminFiles'])->findOrFail($id);
+        $researchTitle = Research_title::with([
+            'researcher.user',
+            'files',
+            'adminFiles.uploader',
+            'titleLogs.user',
+            'revisionLogs.user'
+        ])->findOrFail($id);
         $this->authorizeReviewerAssignment($researchTitle);
 
         // Automatically transition status when reviewer opens the files for the first time
@@ -130,12 +136,14 @@ class ReviewerController extends Controller
         $backUrl = url()->previous(route('reviewer.dashboard'));
 
         try {
-            $myFileRemarks = \App\Models\ReviewerFileRemark::whereIn('file_id', function ($query) use ($id) {
-                $query->select('id')
-                    ->from('researcher_files')
-                    ->where('research_title_id', $id);
-            })
-                ->where('reviewer_id', Auth::id())
+            // Aggregate all file IDs belonging to this protocol (both researcher files via pivot and admin files)
+            $allFileIds = $researchTitle->files->pluck('id')->merge($researchTitle->adminFiles->pluck('id'))->unique();
+
+            $myFileRemarks = \App\Models\ReviewerFileRemark::where('reviewer_id', Auth::id())
+                ->where(function ($q) use ($id, $allFileIds) {
+                    $q->where('research_title_id', $id)
+                        ->orWhereIn('file_id', $allFileIds);
+                })
                 ->get()
                 ->keyBy('file_id');
         } catch (\Exception $e) {
@@ -149,30 +157,79 @@ class ReviewerController extends Controller
     public function serveFile($id)
     {
         $file = researcher_files::findOrFail($id);
-        $researchTitle = Research_title::findOrFail($file->research_title_id);
+
+        // Polymorphic relation resolution: check effective_research_title (pivot) or direct foreign key
+        $researchTitle = $file->effective_research_title;
+        if (!$researchTitle && $file->research_title_id) {
+            $researchTitle = Research_title::find($file->research_title_id);
+        }
+
+        if (!$researchTitle) {
+            abort(404, 'Associated research protocol not found.');
+        }
+
         $this->authorizeReviewerAssignment($researchTitle);
 
-        // Normalize path: remove 'storage/' prefix if present
-        $path = str_replace('storage/', '', $file->filepath);
+        $path = ltrim(str_replace('storage/', '', $file->filepath), '/');
+
+        $respondWithFile = function (string $fullPath) use ($file) {
+            $mimeType = \Illuminate\Support\Facades\File::mimeType($fullPath) ?: 'application/octet-stream';
+            $disposition = request()->boolean('download') ? 'attachment' : 'inline';
+            return response()->file($fullPath, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => "{$disposition}; filename=\"{$file->filename}\"",
+            ]);
+        };
 
         // 1. Check Storage (Public Disk)
         if (Storage::disk('public')->exists($path)) {
-            return response()->file(storage_path('app/public/' . $path));
+            return $respondWithFile(storage_path('app/public/' . $path));
         }
 
-        // 2. Check Public Directory (Direct Access)
+        // 2. Check public_uploads disk (root is public_path())
+        if (Storage::disk('public_uploads')->exists($path)) {
+            return $respondWithFile(public_path($path));
+        }
+
+        // 3. Check Public Directory (Direct Access)
         $publicPath = public_path($file->filepath);
         if (file_exists($publicPath)) {
-            return response()->file($publicPath);
+            return $respondWithFile($publicPath);
         }
 
-        // 3. Check Storage Path directly (Absolute)
+        // 4. Check Storage Path directly (Absolute fallback)
         $storagePath = storage_path('app/public/' . $path);
         if (file_exists($storagePath)) {
-            return response()->file($storagePath);
+            return $respondWithFile($storagePath);
         }
 
-        return abort(404, 'File not found.');
+        // 5. Institutional fallback view if physical binary missing from disk
+        return response(
+            '<!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Document Unavailable</title>
+                <script src="https://cdn.tailwindcss.com"></script>
+            </head>
+            <body class="bg-slate-50 flex items-center justify-center min-h-screen p-4 font-sans text-slate-700 antialiased">
+                <div class="max-w-sm w-full bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-xs">
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto mb-3 text-slate-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <h3 class="text-xs font-semibold text-slate-900 mb-1">Document Unavailable on Disk</h3>
+                    <p class="text-[11px] text-slate-500 mb-3 leading-relaxed break-all font-mono">' . htmlspecialchars($file->filename) . '</p>
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200/60">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span>Archived or Historical Record</span>
+                    </div>
+                </div>
+            </body>
+            </html>',
+            200,
+            ['Content-Type' => 'text/html']
+        );
     }
 
     public function uploadFile(Request $request, $id)
@@ -189,24 +246,26 @@ class ReviewerController extends Controller
             'files.*.max' => 'Each evaluation file must not exceed 20MB in size.'
         ]);
 
-        foreach ($request->file('files') as $file) {
-            $originalExt = $file->getClientOriginalExtension();
-            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $modifiedName = $originalName . '_reviewer.' . $originalExt;
+        DB::transaction(function () use ($request, $id) {
+            foreach ($request->file('files') as $file) {
+                $originalExt = $file->getClientOriginalExtension();
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $modifiedName = $originalName . '_reviewer.' . $originalExt;
 
-            // Ensure consistent path usage with Admin logic
-            $path = $file->storeAs('uploads/research_files', time() . '_' . $modifiedName, 'public_uploads');
+                // Ensure consistent path usage with Admin logic
+                $path = $file->storeAs('uploads/research_files', time() . '_' . $modifiedName, 'public_uploads');
 
-            researcher_files::create([
-                'research_title_id' => $id,
-                'filename' => $modifiedName,
-                'filepath' => 'uploads/research_files/' . basename($path),
-                'filetype' => $originalExt,
-                'uploaded_by' => Auth::id(),
-                'category' => 'Reviewer Uploads - ' . $request->input('category'),
-                'revision_number' => 0
-            ]);
-        }
+                researcher_files::create([
+                    'research_title_id' => $id,
+                    'filename' => $modifiedName,
+                    'filepath' => 'uploads/research_files/' . basename($path),
+                    'filetype' => $originalExt,
+                    'uploaded_by' => Auth::id(),
+                    'category' => 'Reviewer Uploads - ' . $request->input('category'),
+                    'revision_number' => 0
+                ]);
+            }
+        });
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -221,8 +280,15 @@ class ReviewerController extends Controller
     public function deleteFile(Request $request, $id)
     {
         $file = researcher_files::findOrFail($id);
-        $researchTitle = Research_title::findOrFail($file->research_title_id);
-        $this->authorizeReviewerAssignment($researchTitle);
+
+        $researchTitle = $file->effective_research_title;
+        if (!$researchTitle && $file->research_title_id) {
+            $researchTitle = Research_title::find($file->research_title_id);
+        }
+
+        if ($researchTitle) {
+            $this->authorizeReviewerAssignment($researchTitle);
+        }
 
         if ($file->uploaded_by !== Auth::id() && !in_array(Auth::user()->role ?? '', ['admin', 'superadmin'])) {
             if ($request->expectsJson()) {
@@ -238,12 +304,20 @@ class ReviewerController extends Controller
             return back()->with('error', 'Cannot delete non-evaluation files.');
         }
 
-        // Standardize file path by removing 'uploads/research_files/' if somehow saved that way
-        $path = str_replace('uploads/research_files/', '', $file->filepath);
-        $path = str_replace('storage/', '', $path);
+        DB::transaction(function () use ($file) {
+            // Standardize file path and safely delete physical file
+            $cleanPath = ltrim(str_replace(['storage/', 'public/'], '', $file->filepath), '/');
 
-        Storage::disk('public_uploads')->delete($path);
-        $file->delete();
+            if (Storage::disk('public_uploads')->exists($cleanPath)) {
+                Storage::disk('public_uploads')->delete($cleanPath);
+            } elseif (Storage::disk('public')->exists($cleanPath)) {
+                Storage::disk('public')->delete($cleanPath);
+            } elseif (file_exists(public_path($file->filepath))) {
+                @unlink(public_path($file->filepath));
+            }
+
+            $file->delete();
+        });
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true]);
@@ -270,91 +344,135 @@ class ReviewerController extends Controller
             return back()->withErrors(['error' => 'You must upload at least one evaluation document before completing the review.']);
         }
 
-        // Attach the suggested review type to the latest evaluation document uploaded by this reviewer
-        $myUploads = $submission->adminFiles()
-            ->where('uploaded_by', Auth::id())
-            ->where('category', 'like', 'Reviewer Uploads%')
-            ->latest()
-            ->get();
-
-        $latestUpload = $myUploads->first();
-
-        if ($latestUpload && $request->has('suggested_review_type')) {
-            $latestUpload->suggested_review_type = $request->input('suggested_review_type');
-            $latestUpload->save();
-        }
-
-        // Save per-file remarks submitted from the modal (applies to researcher's files)
-        $fileRemarks = $request->input('file_remarks', []);
-        foreach ($fileRemarks as $fileId => $remark) {
-            if (!empty(trim($remark))) {
-                \App\Models\ReviewerFileRemark::updateOrCreate(
-                    [
-                        'reviewer_id' => Auth::id(),
-                        'file_id' => $fileId
-                    ],
-                    [
-                        'remarks' => trim($remark),
-                        'research_title_id' => $id
-                    ]
-                );
-            }
-        }
-
-
-        // Save Review Decision & Remarks (Re-Evaluation only)
-        if ($request->has('review_decision')) {
-            $submission->reviewer_decision = $request->input('review_decision');
-
-            // Build structured deliberation message
-            $deliberationNotes = "";
-            if ($request->filled('scientific_soundness') || $request->filled('ethical_issues') || $request->filled('icf_issues') || $request->filled('summary_of_issues')) {
-                $deliberationNotes = "=== DELIBERATION NOTES ===\n";
-                $deliberationNotes .= "Scientific Soundness: " . $request->input('scientific_soundness', 'N/A') . "\n\n";
-                $deliberationNotes .= "Ethical Issues: " . $request->input('ethical_issues', 'N/A') . "\n\n";
-                $deliberationNotes .= "ICF Issues: " . $request->input('icf_issues', 'N/A') . "\n\n";
-                $deliberationNotes .= "Summary of Issues & Resolutions: " . $request->input('summary_of_issues', 'N/A') . "\n\n";
-            }
-
-            $msg = $deliberationNotes . "=== FINAL DECISION ===\nReview Decision: " . $request->input('review_decision') . "\nRemarks: " . $request->input('remarks', 'None');
-            \App\Models\SubmissionFeedback::create([
-                'research_title_id' => $submission->id,
-                'user_id' => Auth::id(),
-                'type' => 'reviewer_decision',
-                'message' => $msg
+        if ($isReEvaluation) {
+            $request->validate([
+                'review_decision' => 'required|string|in:Approved,Minor revision/s required,Major revision/s required,Disapproved',
+                'scientific_soundness' => 'nullable|string|max:5000',
+                'ethical_issues' => 'nullable|string|max:5000',
+                'icf_issues' => 'nullable|string|max:5000',
+                'summary_of_issues' => 'nullable|string|max:5000',
+                'remarks' => 'nullable|string|max:2000',
+                'file_remarks' => 'nullable|array',
+                'file_remarks.*' => 'nullable|string|max:2000',
             ]);
-
-            \App\Models\RevisionLog::create([
-                'research_title_id' => $submission->id,
-                'user_id' => Auth::id(),
-                'message' => $msg
-            ]);
-        } elseif ($request->filled('suggested_review_type')) {
-            // Initial review
-            $message = "Suggested Review Type: " . $request->input('suggested_review_type');
-
-            \App\Models\SubmissionFeedback::create([
-                'research_title_id' => $submission->id,
-                'user_id' => Auth::id(),
-                'type' => 'reviewer_decision',
-                'message' => $message
-            ]);
-        }
-
-        // Mark this reviewer's assignment as completed
-        $submission->reviewers()->updateExistingPivot(Auth::id(), ['status' => 'Completed']);
-
-        // Only mark the overall submission as 'Reviewed' when ALL assigned reviewers are done
-        $allDone = $submission->reviewers()->wherePivot('status', '!=', 'Completed')->doesntExist();
-        if ($allDone) {
-            $submission->Status = 'Reviewed';
         } else {
-            // Keep active status so remaining reviewers can still work
-            if (!in_array($submission->Status, ['Under Review', 'Reviewing Revisions'])) {
-                $submission->Status = 'Under Review';
-            }
+            $request->validate([
+                'suggested_review_type' => 'required|string|in:Exempt Review,Expedited Review,Full Board Review',
+                'file_remarks' => 'nullable|array',
+                'file_remarks.*' => 'nullable|string|max:2000',
+            ]);
         }
-        $submission->save();
+
+        $allDone = false;
+
+        DB::transaction(function () use ($request, $id, $isReEvaluation, &$allDone) {
+            // Lock submission row for concurrent safety
+            $submission = Research_title::lockForUpdate()->findOrFail($id);
+
+            // Attach suggested review type to latest evaluation document uploaded by this reviewer
+            $myUploads = $submission->adminFiles()
+                ->where('uploaded_by', Auth::id())
+                ->where('category', 'like', 'Reviewer Uploads%')
+                ->latest()
+                ->get();
+
+            $latestUpload = $myUploads->first();
+            if ($latestUpload && $request->filled('suggested_review_type')) {
+                $latestUpload->suggested_review_type = $request->input('suggested_review_type');
+                $latestUpload->save();
+            }
+
+            // Save per-file remarks submitted from modal
+            $fileRemarks = $request->input('file_remarks', []);
+            foreach ($fileRemarks as $fileId => $remark) {
+                if (!empty(trim($remark))) {
+                    \App\Models\ReviewerFileRemark::updateOrCreate(
+                        [
+                            'reviewer_id' => Auth::id(),
+                            'file_id' => $fileId
+                        ],
+                        [
+                            'remarks' => trim($remark),
+                            'research_title_id' => $id
+                        ]
+                    );
+                }
+            }
+
+            // Save Review Decision & Remarks (Re-Evaluation only)
+            if ($request->filled('review_decision')) {
+                $submission->reviewer_decision = $request->input('review_decision');
+
+                // Build structured deliberation message
+                $deliberationNotes = "";
+                if ($request->filled('scientific_soundness') || $request->filled('ethical_issues') || $request->filled('icf_issues') || $request->filled('summary_of_issues')) {
+                    $deliberationNotes = "=== DELIBERATION NOTES ===\n";
+                    $deliberationNotes .= "Scientific Soundness: " . $request->input('scientific_soundness', 'N/A') . "\n\n";
+                    $deliberationNotes .= "Ethical Issues: " . $request->input('ethical_issues', 'N/A') . "\n\n";
+                    $deliberationNotes .= "ICF Issues: " . $request->input('icf_issues', 'N/A') . "\n\n";
+                    $deliberationNotes .= "Summary of Issues & Resolutions: " . $request->input('summary_of_issues', 'N/A') . "\n\n";
+                }
+
+                $msg = $deliberationNotes . "=== FINAL DECISION ===\nReview Decision: " . $request->input('review_decision') . "\nRemarks: " . $request->input('remarks', 'None');
+                \App\Models\SubmissionFeedback::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => Auth::id(),
+                    'type' => 'reviewer_decision',
+                    'message' => $msg
+                ]);
+
+                \App\Models\RevisionLog::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => Auth::id(),
+                    'message' => $msg
+                ]);
+            } elseif ($request->filled('suggested_review_type')) {
+                // Initial review
+                $message = "Suggested Review Type: " . $request->input('suggested_review_type');
+
+                \App\Models\SubmissionFeedback::create([
+                    'research_title_id' => $submission->id,
+                    'user_id' => Auth::id(),
+                    'type' => 'reviewer_decision',
+                    'message' => $message
+                ]);
+            }
+
+            // Mark this reviewer\'s assignment as completed in pivot
+            if ($submission->reviewers()->where('users.id', Auth::id())->exists()) {
+                $submission->reviewers()->updateExistingPivot(Auth::id(), ['status' => 'Completed']);
+            } else {
+                // Attach if legacy JSON assignee without pivot row
+                $submission->reviewers()->attach(Auth::id(), ['status' => 'Completed', 'role' => 'Primary Reviewer']);
+            }
+
+            // Only mark overall submission as 'Reviewed' when ALL assigned reviewers are done
+            $allPivotDone = $submission->reviewers()->wherePivot('status', '!=', 'Completed')->doesntExist();
+
+            // Also check if any reviewer from legacy assigned_reviewers hasn\'t completed
+            $assignedJson = $submission->assigned_reviewers;
+            $allJsonDone = true;
+            if (is_array($assignedJson) && count($assignedJson) > 0) {
+                $completedIds = $submission->reviewers()->wherePivot('status', 'Completed')->pluck('users.id')->map(fn($uid) => (string)$uid)->toArray();
+                foreach ($assignedJson as $revId) {
+                    if (!in_array((string)$revId, $completedIds)) {
+                        $allJsonDone = false;
+                        break;
+                    }
+                }
+            }
+
+            $allDone = $allPivotDone && $allJsonDone;
+            if ($allDone) {
+                $submission->Status = 'Reviewed';
+            } else {
+                // Keep active status so remaining reviewers can still work
+                if (!in_array($submission->Status, ['Under Review', 'Reviewing Revisions'])) {
+                    $submission->Status = 'Under Review';
+                }
+            }
+            $submission->save();
+        });
 
         // Redirect based on context
         if ($isReEvaluation) {
@@ -373,37 +491,33 @@ class ReviewerController extends Controller
 
         $remark = trim($request->input('remarks', ''));
 
-        // Look up the research_title_id explicitly from the request, fallback to db lookup
-        $titleId = $request->input('research_title_id');
-        if (!$titleId) {
-            $file = \App\Models\Researcher_files::find($fileId);
-            $titleId = $file ? $file->research_title_id : null;
+        $file = \App\Models\researcher_files::findOrFail($fileId);
 
-            // If still null, try finding it via the pivot table
-            if (!$titleId) {
-                $pivot = \DB::table('research_title_files')->where('researcher_file_id', $fileId)->first();
-                $titleId = $pivot ? $pivot->research_title_id : null;
-            }
+        // Explicitly resolve the research title from the file
+        $researchTitle = $file->effective_research_title;
+        if (!$researchTitle && $file->research_title_id) {
+            $researchTitle = Research_title::find($file->research_title_id);
         }
 
-        if (!$titleId) {
-            return response()->json(['success' => false, 'message' => 'Missing research_title_id.'], 400);
+        if (!$researchTitle) {
+            return response()->json(['success' => false, 'message' => 'Associated protocol not found.'], 404);
         }
 
-        $researchTitle = Research_title::findOrFail($titleId);
         $this->authorizeReviewerAssignment($researchTitle);
 
-        if ($remark === '') {
-            // Delete existing remark if cleared
-            \App\Models\ReviewerFileRemark::where('reviewer_id', Auth::id())
-                ->where('file_id', $fileId)
-                ->delete();
-        } else {
-            \App\Models\ReviewerFileRemark::updateOrCreate(
-                ['reviewer_id' => Auth::id(), 'file_id' => $fileId],
-                ['remarks' => $remark, 'research_title_id' => $titleId]
-            );
-        }
+        DB::transaction(function () use ($fileId, $remark, $researchTitle) {
+            if ($remark === '') {
+                // Delete existing remark if cleared
+                \App\Models\ReviewerFileRemark::where('reviewer_id', Auth::id())
+                    ->where('file_id', $fileId)
+                    ->delete();
+            } else {
+                \App\Models\ReviewerFileRemark::updateOrCreate(
+                    ['reviewer_id' => Auth::id(), 'file_id' => $fileId],
+                    ['remarks' => $remark, 'research_title_id' => $researchTitle->id]
+                );
+            }
+        });
 
         return response()->json(['success' => true, 'message' => 'Remark saved.']);
     }

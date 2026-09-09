@@ -86,14 +86,14 @@
                 <div>
                     <!-- Column Header -->
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2.5">
-                            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight font-heading leading-tight">Recent Submissions</h2>
-                            <span class="tabular-nums px-2.5 py-0.5 text-xs font-extrabold rounded-full bg-slate-900 text-white shadow-2xs">
+                        <div class="flex items-center gap-2.5 sm:gap-3">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-heading leading-tight">Recent Submissions</h2>
+                            <span class="tabular-nums px-3 py-0.5 text-xs sm:text-sm font-extrabold rounded-full bg-slate-900 text-white shadow-2xs">
                                 {{ $pendingSubmissions->total() }}
                             </span>
                         </div>
                     </div>
-                    <p class="text-xs font-medium text-slate-600 mt-1">New protocols and resubmissions ready for completeness screening.</p>
+                    <p class="text-xs sm:text-sm font-medium text-slate-600 mt-1">New protocols and resubmissions ready for completeness screening.</p>
 
                     <!-- Controls Toolbar -->
                     <div class="flex gap-2 mt-2.5" x-data="{ expanded: false }">
@@ -102,7 +102,7 @@
                             <input type="text" name="recent_search" id="recent_search_input"
                                 value="{{ request('recent_search') }}" placeholder="Search submissions..."
                                 aria-label="Search recent submissions by protocol title"
-                                class="w-full pl-8 pr-3 py-1.5 h-8.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#8B0000] focus:border-[#8B0000] bg-white placeholder:text-slate-400 caret-[#8B0000] transition-colors shadow-2xs">
+                                class="w-full pl-8 pr-3 py-1.5 h-9 min-h-[36px] border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent bg-white placeholder:text-slate-400 caret-[#8B0000] transition-colors shadow-2xs">
                             <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs" aria-hidden="true"></i>
                         </div>
                         <div class="relative">
@@ -110,9 +110,9 @@
                                 :aria-expanded="expanded ? 'true' : 'false'"
                                 aria-haspopup="true"
                                 aria-label="Sort options for recent submissions"
-                                class="flex items-center gap-1.5 px-3 py-1.5 h-8.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 hover:text-slate-950 active:scale-[0.98] focus:outline-none focus:ring-1 focus:ring-[#8B0000] transition-colors justify-between sm:w-[125px] shadow-2xs">
-                                <span class="flex items-center gap-1.5"><i class="fas fa-arrow-down-short-wide text-slate-500 text-[11px]" aria-hidden="true"></i> <span>Sort</span></span>
-                                <i class="fas fa-chevron-down text-[9px] text-slate-500 transition-transform duration-200"
+                                class="flex items-center gap-1.5 px-3 py-1.5 h-9 min-h-[36px] border border-slate-300 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 hover:text-slate-950 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-colors justify-between sm:w-[125px] shadow-2xs cursor-pointer">
+                                <span class="flex items-center gap-1.5"><i class="fas fa-arrow-down-short-wide text-slate-500 text-xs" aria-hidden="true"></i> <span>Sort</span></span>
+                                <i class="fas fa-chevron-down text-xs text-slate-500 transition-transform duration-200"
                                     :class="expanded ? 'rotate-180' : ''" aria-hidden="true"></i>
                             </button>
 
@@ -120,7 +120,7 @@
                             <div x-show="expanded" x-cloak x-transition.opacity.duration.200ms @click.stop
                                 class="absolute right-0 mt-1.5 w-52 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
                                 <div class="p-2.5 border-b border-slate-100 bg-slate-50/70">
-                                    <span class="block text-[10px] font-extrabold text-slate-600 uppercase tracking-wider mb-1.5">Sort Submissions</span>
+                                    <span class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider mb-1.5">Sort Submissions</span>
                                     <div class="space-y-1.5">
                                         <label class="flex items-center gap-2 cursor-pointer group">
                                             <input type="radio" name="recent_sort" value="created_at"
@@ -140,7 +140,7 @@
                 </div>
 
                 <!-- Submissions List -->
-                <div id="recent-submissions-wrapper" class="flex flex-col flex-1 min-h-[460px]">
+                <div id="recent-submissions-wrapper" class="flex flex-col flex-1 min-h-[400px]">
                     @include('admin.partials.recent_submissions_list')
                 </div>
             </div>
@@ -154,14 +154,14 @@
                 <div>
                     <!-- Column Header -->
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2.5">
-                            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight font-heading leading-tight">Incomplete Submissions</h2>
-                            <span class="tabular-nums px-2.5 py-0.5 text-xs font-extrabold rounded-full bg-slate-200 text-slate-800 shadow-2xs">
+                        <div class="flex items-center gap-2.5 sm:gap-3">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-heading leading-tight">Incomplete Submissions</h2>
+                            <span class="tabular-nums px-3 py-0.5 text-xs sm:text-sm font-extrabold rounded-full bg-slate-200 text-slate-800 shadow-2xs">
                                 {{ $incompleteSubmissions->total() }}
                             </span>
                         </div>
                     </div>
-                    <p class="text-xs font-medium text-slate-600 mt-1">Protocols returned for missing requirements or awaiting revision.</p>
+                    <p class="text-xs sm:text-sm font-medium text-slate-600 mt-1">Protocols returned for missing requirements or awaiting revision.</p>
 
                     <!-- Controls Toolbar -->
                     <div class="flex gap-2 mt-2.5" x-data="{ expanded: false }">
@@ -170,7 +170,7 @@
                             <input type="text" name="incomplete_search" id="incomplete_search_input"
                                 value="{{ request('incomplete_search') }}" placeholder="Search incomplete..."
                                 aria-label="Search incomplete submissions by protocol title"
-                                class="w-full pl-8 pr-3 py-1.5 h-8.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#8B0000] focus:border-[#8B0000] bg-white placeholder:text-slate-400 caret-[#8B0000] transition-colors shadow-2xs">
+                                class="w-full pl-8 pr-3 py-1.5 h-9 min-h-[36px] border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent bg-white placeholder:text-slate-400 caret-[#8B0000] transition-colors shadow-2xs">
                             <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs" aria-hidden="true"></i>
                         </div>
                         <div class="relative">
@@ -178,9 +178,9 @@
                                 :aria-expanded="expanded ? 'true' : 'false'"
                                 aria-haspopup="true"
                                 aria-label="Sort options for incomplete submissions"
-                                class="flex items-center gap-1.5 px-3 py-1.5 h-8.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 hover:text-slate-950 active:scale-[0.98] focus:outline-none focus:ring-1 focus:ring-[#8B0000] transition-colors justify-between sm:w-[125px] shadow-2xs">
-                                <span class="flex items-center gap-1.5"><i class="fas fa-arrow-down-short-wide text-slate-500 text-[11px]" aria-hidden="true"></i> <span>Sort</span></span>
-                                <i class="fas fa-chevron-down text-[9px] text-slate-500 transition-transform duration-200"
+                                class="flex items-center gap-1.5 px-3 py-1.5 h-9 min-h-[36px] border border-slate-300 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 hover:text-slate-950 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-colors justify-between sm:w-[125px] shadow-2xs cursor-pointer">
+                                <span class="flex items-center gap-1.5"><i class="fas fa-arrow-down-short-wide text-slate-500 text-xs" aria-hidden="true"></i> <span>Sort</span></span>
+                                <i class="fas fa-chevron-down text-xs text-slate-500 transition-transform duration-200"
                                     :class="expanded ? 'rotate-180' : ''" aria-hidden="true"></i>
                             </button>
 
@@ -188,7 +188,7 @@
                             <div x-show="expanded" x-cloak x-transition.opacity.duration.200ms @click.stop
                                 class="absolute right-0 mt-1.5 w-52 bg-white border border-slate-200 rounded-xl shadow-lg z-[60] overflow-hidden">
                                 <div class="p-2.5 border-b border-slate-100 bg-slate-50/70">
-                                    <span class="block text-[10px] font-extrabold text-slate-600 uppercase tracking-wider mb-1.5">Sort Submissions</span>
+                                    <span class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider mb-1.5">Sort Submissions</span>
                                     <div class="space-y-1.5">
                                         <label class="flex items-center gap-2 cursor-pointer group">
                                             <input type="radio" name="incomplete_sort" value="created_at"
@@ -231,9 +231,6 @@
                         <i class="fas fa-gavel text-7xl text-white"></i>
                     </div>
                     <div class="relative z-10 pr-3 sm:pr-4">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wider uppercase bg-amber-400/25 text-amber-200 border border-amber-400/40 mb-1.5 sm:mb-2 shadow-xs">
-                            <i class="fas fa-clipboard-check text-[10px]" aria-hidden="true"></i> Initial Intake Screening
-                        </span>
                         <h2 class="text-white font-extrabold text-xl sm:text-2xl leading-tight" id="modal-title">Completeness & Intake Triage</h2>
                         <p class="text-slate-200 text-xs sm:text-sm mt-1 leading-relaxed line-clamp-2 sm:line-clamp-none font-medium">Verify document presence, official receipt validity, and researcher CV status before routing to committee review.</p>
                     </div>
@@ -254,10 +251,10 @@
                             <!-- Submission Identity Card -->
                             <div class="bg-slate-50/70 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-4 shadow-xs">
                                 <div class="flex items-center justify-between pb-2 border-b border-slate-200/60">
-                                    <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                    <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                                         <i class="fas fa-id-card text-slate-400" aria-hidden="true"></i> Submission Identity
                                     </span>
-                                    <span class="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200/60">Stage 1 Intake</span>
+                                    <span class="text-[11px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200/60">Stage 1 Intake</span>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
@@ -302,8 +299,8 @@
                                                 <i class="fas fa-file-invoice" aria-hidden="true"></i>
                                             </div>
                                             <div class="min-w-0">
-                                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Official Receipt File</p>
-                                                <p id="modalOrNumber" class="text-sm font-bold font-mono text-slate-800 truncate">—</p>
+                                                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Official Receipt File</p>
+                                                <p id="modalOrNumber" class="text-sm font-bold font-mono text-slate-800 truncate">Not Provided</p>
                                             </div>
                                         </div>
                                         <a id="modalOrFileLink" href="#" target="_blank"
@@ -413,7 +410,7 @@
                                     <label class="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                                         <i class="fas fa-balance-scale text-[#8B0000]" aria-hidden="true"></i> Completeness Determination
                                     </label>
-                                    <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Required Decision</span>
+                                    <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Required Decision</span>
                                 </div>
 
                                 <div class="space-y-3">
@@ -430,7 +427,7 @@
                                             <div class="flex items-center gap-2">
                                                 <span id="text_complete"
                                                     class="block font-bold text-slate-800 text-sm transition-colors">Complete Submission</span>
-                                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800">Pass</span>
+                                                <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800">Pass</span>
                                             </div>
                                             <span class="block text-xs text-slate-500 mt-1 leading-relaxed">All mandatory forms, protocol files, and required documents are verified.</span>
                                             <p id="completeLockHint" class="hidden text-[11px] font-semibold text-amber-800 bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200 mt-2 flex items-center gap-1.5">
@@ -452,7 +449,7 @@
                                             <div class="flex items-center gap-2">
                                                 <span id="text_incomplete"
                                                     class="block font-bold text-slate-800 text-sm transition-colors">Incomplete Submission</span>
-                                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800">Action Required</span>
+                                                <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-rose-100 text-rose-800">Action Required</span>
                                             </div>
                                             <span class="block text-xs text-slate-500 mt-1 leading-relaxed">Return protocol to researcher with specific document deficiencies and revision notes.</span>
                                         </div>
@@ -464,7 +461,7 @@
                             <div id="appointmentField"
                                 class="transition-all duration-300 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-2">
                                 <label for="appointment_date_input"
-                                    class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                    class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                                     <i class="far fa-calendar-alt text-emerald-600" aria-hidden="true"></i> Hardcopy Deadline & Intake Appointment
                                 </label>
                                 <p class="text-xs text-slate-500 leading-relaxed">Researcher will be given until this date to deliver physical hardcopies of the approved intake package to the REO office.</p>
@@ -482,7 +479,7 @@
                                             <label for="intake_remarks_input" class="block text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                                                 <i class="far fa-comment-dots text-rose-500" aria-hidden="true"></i> Instructions & Remarks for Researcher
                                             </label>
-                                            <span id="remarksCharCounter" class="text-[10px] text-slate-500 font-mono" aria-live="polite">0 / 3000</span>
+                                            <span id="remarksCharCounter" class="text-xs text-slate-500 font-mono" aria-live="polite">0 / 3000</span>
                                         </div>
                                         <p class="text-[11px] text-slate-500 mb-2">These notes will be delivered to the researcher and recorded in the protocol's revision history.</p>
                                         <textarea name="remarks" id="intake_remarks_input" rows="3" maxlength="3000"
@@ -513,7 +510,7 @@
                                             <button type="button" onclick="addRequirement()"
                                                 class="px-4 py-2.5 min-h-[44px] bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-xs rounded-xl transition-all border border-slate-200 flex items-center justify-center gap-1.5 shrink-0 touch-manipulation focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
                                                 aria-label="Add missing requirement to list">
-                                                <i class="fas fa-plus text-[10px]" aria-hidden="true"></i>
+                                                <i class="fas fa-plus text-xs" aria-hidden="true"></i>
                                                 <span>Add</span>
                                             </button>
                                         </div>
@@ -676,11 +673,11 @@
                 if (charCounter) {
                     charCounter.textContent = `${len} / 3000`;
                     if (len >= 2900) {
-                        charCounter.className = 'text-[10px] text-rose-600 font-bold font-mono';
+                        charCounter.className = 'text-xs text-rose-600 font-bold font-mono';
                     } else if (len >= 2500) {
-                        charCounter.className = 'text-[10px] text-amber-600 font-medium font-mono';
+                        charCounter.className = 'text-xs text-amber-600 font-medium font-mono';
                     } else {
-                        charCounter.className = 'text-[10px] text-slate-500 font-mono';
+                        charCounter.className = 'text-xs text-slate-500 font-mono';
                     }
                 }
             });
@@ -699,7 +696,7 @@
             const charCounter = document.getElementById('remarksCharCounter');
             if (charCounter) {
                 charCounter.textContent = '0 / 3000';
-                charCounter.className = 'text-[10px] text-slate-500 font-mono';
+                charCounter.className = 'text-xs text-slate-500 font-mono';
             }
         };
 
@@ -967,7 +964,7 @@
                     if (verifyCheckbox) verifyCheckbox.checked = false;
                 }
             } else {
-                if (orNumEl) orNumEl.textContent = '—';
+                if (orNumEl) orNumEl.textContent = 'Not Provided';
                 if (orNoReceipt) orNoReceipt.classList.remove('hidden');
             }
 

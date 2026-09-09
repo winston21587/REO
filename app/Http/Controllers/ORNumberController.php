@@ -9,6 +9,7 @@ use App\Models\TitleLog;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ORNumberController extends Controller
 {
@@ -19,55 +20,58 @@ class ORNumberController extends Controller
             'or_file' => 'required|file|mimes:jpeg,png,jpg,pdf|max:20480', // Max 20MB
         ]);
 
-        $title = Research_title::findOrFail($id);
-        
-        // Handle physical file upload
-        if ($request->hasFile('or_file')) {
-            $file = $request->file('or_file');
-            $filename = time() . '_OR_' . $request->or_number . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('uploads/official_receipts', $filename, 'public_uploads');
-            $title->or_file_path = $path;
-        }
-
-        // Save the OR Number and reset verification just in case it's a re-upload
-        $title->Official_Receipt_Number = $request->or_number;
-        $title->is_or_verified = false;
-        $title->or_rejection_remarks = null; // Clear any previous rejection remarks
-        
-        // If status was Rejected, revert it back to pending or submitted
-        if ($title->Status === 'Rejected') {
-            $title->Status = 'Pending';
-        }
-
-        $title->save();
-
-        // Create Activity Log
-        TitleLog::create([
-            'research_title_id' => $title->id,
-            'user_id' => Auth::id(),
+        return DB::transaction(function () use ($request, $id) {
+            $title = Research_title::where('id', $id)->lockForUpdate()->firstOrFail();
             
-            'action' => 'Official Receipt Uploaded',
-            'description' => "Uploaded Official Receipt #{$request->or_number} pending Admin verification.",
-        ]);
+            // Handle physical file upload
+            if ($request->hasFile('or_file')) {
+                $file = $request->file('or_file');
+                $filename = time() . '_OR_' . $request->or_number . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('uploads/official_receipts', $filename, 'public_uploads');
+                $title->or_file_path = $path;
+            }
 
-        return redirect()->back()->with('success', 'Official Receipt submitted and is pending verification.');
+            // Save the OR Number and reset verification just in case it's a re-upload
+            $title->Official_Receipt_Number = $request->or_number;
+            $title->is_or_verified = false;
+            $title->or_rejection_remarks = null; // Clear any previous rejection remarks
+            
+            // If status was Rejected, revert it back to pending or submitted
+            if ($title->Status === 'Rejected') {
+                $title->Status = 'Pending';
+            }
+
+            $title->save();
+
+            // Create Activity Log
+            TitleLog::create([
+                'research_title_id' => $title->id,
+                'user_id' => Auth::id(),
+                'action' => 'Official Receipt Uploaded',
+                'description' => "Uploaded Official Receipt #{$request->or_number} pending Admin verification.",
+            ]);
+
+            return redirect()->back()->with('success', 'Official Receipt submitted and is pending verification.');
+        });
     }
 
     public function verifyOR(Request $request, $id)
     {
-        $title = Research_title::findOrFail($id);
-        
-        $title->is_or_verified = true;
-        $title->save();
+        return DB::transaction(function () use ($id) {
+            $title = Research_title::where('id', $id)->lockForUpdate()->firstOrFail();
+            
+            $title->is_or_verified = true;
+            $title->save();
 
-        TitleLog::create([
-            'research_title_id' => $title->id,
-            'user_id' => Auth::id(),
-            'action' => 'Official Receipt Verified',
-            'description' => "Admin officially verified Receipt #{$title->Official_Receipt_Number}.",
-        ]);
+            TitleLog::create([
+                'research_title_id' => $title->id,
+                'user_id' => Auth::id(),
+                'action' => 'Official Receipt Verified',
+                'description' => "Admin officially verified Receipt #{$title->Official_Receipt_Number}.",
+            ]);
 
-        return redirect()->back()->with('success', 'Official Receipt has been verified.');
+            return redirect()->back()->with('success', 'Official Receipt has been verified.');
+        });
     }
 
     public function rejectOR(Request $request, $id)
@@ -76,33 +80,35 @@ class ORNumberController extends Controller
             'remarks' => 'required|string',
         ]);
 
-        $title = Research_title::findOrFail($id);
-        
-        $oldOr = $title->Official_Receipt_Number;
+        return DB::transaction(function () use ($request, $id) {
+            $title = Research_title::where('id', $id)->lockForUpdate()->firstOrFail();
+            
+            $oldOr = $title->Official_Receipt_Number;
 
-        // Optionally delete the physical file to save space
-        if ($title->or_file_path) {
-            $physicalPath = public_path($title->or_file_path);
-            if (file_exists($physicalPath)) {
-                unlink($physicalPath);
+            // Optionally delete the physical file to save space
+            if ($title->or_file_path) {
+                $physicalPath = public_path($title->or_file_path);
+                if (file_exists($physicalPath)) {
+                    unlink($physicalPath);
+                }
             }
-        }
 
-        // Reset the columns so the researcher can submit again
-        $title->Official_Receipt_Number = null;
-        $title->or_file_path = null;
-        $title->is_or_verified = false;
-        $title->or_rejection_remarks = $request->remarks;
-        $title->Status = 'Rejected';
-        $title->save();
+            // Reset the columns so the researcher can submit again
+            $title->Official_Receipt_Number = null;
+            $title->or_file_path = null;
+            $title->is_or_verified = false;
+            $title->or_rejection_remarks = $request->remarks;
+            $title->Status = 'Rejected';
+            $title->save();
 
-        TitleLog::create([
-            'research_title_id' => $title->id,
-            'user_id' => Auth::id(),
-            'action' => 'Official Receipt Rejected',
-            'description' => "Admin rejected the submitted receipt #{$oldOr}. Reason: {$request->remarks}",
-        ]);
+            TitleLog::create([
+                'research_title_id' => $title->id,
+                'user_id' => Auth::id(),
+                'action' => 'Official Receipt Rejected',
+                'description' => "Admin rejected the submitted receipt #{$oldOr}. Reason: {$request->remarks}",
+            ]);
 
-        return redirect()->back()->with('error', 'Official Receipt was rejected.');
+            return redirect()->back()->with('error', 'Official Receipt was rejected.');
+        });
     }
 }

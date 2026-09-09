@@ -7,6 +7,7 @@ use App\Models\Research_title;
 use App\Models\researcher_files;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use App\Models\DocumentRequirement;
 use App\Models\SubmissionFeedback;
 use App\Models\TitleLog;
@@ -125,64 +126,66 @@ class Research_title_Controller extends Controller
             }
         }
 
-        // ✅ Create research title
-        $research = Research_title::create([
-            'Study_Protocol_title' => $validated['Study_Protocol_title'],
-            'Research_Category' => $finalCategory,
-            'research_type' => $validated['research_type'],
-            'category_fee_at_submission' => $fee,
-            'Created_by' => $user->first_name . ' ' . $user->last_name,
-            'researcher_id' => $user->researcher->id,
-            'project_type' => $validated['project_type'],
-            'funding_type' => $validated['funding_type'] ?? null,
-            'course_type' => $validated['course_type'] ?? null,
-            'Adviser' => $validated['Adviser'] ?? null,
-        ]);
+        // ✅ Create research title and attach files atomically
+        DB::transaction(function () use ($validated, $finalCategory, $fee, $user, $request, $requirements) {
+            $research = Research_title::create([
+                'Study_Protocol_title' => $validated['Study_Protocol_title'],
+                'Research_Category' => $finalCategory,
+                'research_type' => $validated['research_type'],
+                'category_fee_at_submission' => $fee,
+                'Created_by' => $user->first_name . ' ' . $user->last_name,
+                'researcher_id' => $user->researcher->id,
+                'project_type' => $validated['project_type'],
+                'funding_type' => $validated['funding_type'] ?? null,
+                'course_type' => $validated['course_type'] ?? null,
+                'Adviser' => $validated['Adviser'] ?? null,
+            ]);
 
-        // Log OR upload (OR Number might not be submitted if it's handled as a file requirement instead)
-        $orNumberText = isset($request->or_number) ? " #" . $request->or_number : "";
+            // Log OR upload (OR Number might not be submitted if it's handled as a file requirement instead)
+            $orNumberText = isset($request->or_number) ? " #" . $request->or_number : "";
 
-        TitleLog::create([
-            'research_title_id' => $research->id,
-            'user_id' => Auth::id(),
-            'action' => 'Official Receipt Uploaded',
-            'description' => "Uploaded Official Receipt{$orNumberText} at submission. Pending Admin verification.",
-        ]);
+            TitleLog::create([
+                'research_title_id' => $research->id,
+                'user_id' => Auth::id(),
+                'action' => 'Official Receipt Uploaded',
+                'description' => "Uploaded Official Receipt{$orNumberText} at submission. Pending Admin verification.",
+            ]);
 
-        $uploadedFileIds = [];
+            $uploadedFileIds = [];
 
-        // ✅ Store documents
-        foreach ($requirements as $req) {
-            $fieldKey = 'files.' . $req->id;
+            // ✅ Store documents
+            foreach ($requirements as $req) {
+                $fieldKey = 'files.' . $req->id;
 
-            if ($request->hasFile($fieldKey)) {
-                $files = $request->file($fieldKey);
+                if ($request->hasFile($fieldKey)) {
+                    $files = $request->file($fieldKey);
 
-                // Unify to array for processing
-                if (!is_array($files)) {
-                    $files = [$files];
-                }
+                    // Unify to array for processing
+                    if (!is_array($files)) {
+                        $files = [$files];
+                    }
 
-                foreach ($files as $file) {
-                    // Generate category specific filename
-                    // Category = Requirement Name
-                    $filename = time() . '_' . \Illuminate\Support\Str::slug($req->name) . '_' . $file->getClientOriginalName();
-                    $path = $file->storeAs('uploads/research_files', $filename, 'public_uploads');
+                    foreach ($files as $file) {
+                        // Generate category specific filename
+                        // Category = Requirement Name
+                        $filename = time() . '_' . \Illuminate\Support\Str::slug($req->name) . '_' . $file->getClientOriginalName();
+                        $path = $file->storeAs('uploads/research_files', $filename, 'public_uploads');
 
-                    $fileRecord = researcher_files::create([
-                        'filename' => $filename,
-                        'filepath' => $path,
-                        'filetype' => $file->getClientOriginalExtension(),
-                        'category' => $req->name, // Storing human-readable requirement name
-                    ]);
+                        $fileRecord = researcher_files::create([
+                            'filename' => $filename,
+                            'filepath' => $path,
+                            'filetype' => $file->getClientOriginalExtension(),
+                            'category' => $req->name, // Storing human-readable requirement name
+                        ]);
 
-                    $uploadedFileIds[] = $fileRecord->id;
+                        $uploadedFileIds[] = $fileRecord->id;
+                    }
                 }
             }
-        }
 
-        // ✅ Attach files to pivot table
-        $research->files()->attach($uploadedFileIds);
+            // ✅ Attach files to pivot table
+            $research->files()->attach($uploadedFileIds);
+        });
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -203,7 +206,7 @@ class Research_title_Controller extends Controller
         if (!$user->researcher) {
             return redirect()->back()->with('error', 'You are not registered as a researcher.');
         }
-        $titles = Research_title::with(['files', 'titleLogs.user'])
+        $titles = Research_title::with(['files', 'adminFiles', 'appointment', 'titleLogs.user'])
             ->where('researcher_id', $user->researcher->id)
             ->orderBy('created_at', 'desc')
             ->paginate(9);
@@ -219,6 +222,13 @@ class Research_title_Controller extends Controller
     public function manageFiles($id)
     {
         $researchTitle = Research_title::with(['files.reviewerRemarks.reviewer', 'adminFiles', 'titleLogs.user'])->findOrFail($id);
+        $user = Auth::user();
+
+        // Security: Ensure logged-in researcher owns this protocol
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
+            abort(403, 'Unauthorized. You do not have permission to view this research protocol.');
+        }
+
         $requirements = DocumentRequirement::all();
 
         // Fetch stage-specific general remarks to display to the researcher
@@ -250,41 +260,67 @@ class Research_title_Controller extends Controller
 
     public function updateFile(Request $request, $id)
     {
-        $request->validate([
-            'file' => 'required|file|max:25600',
-            'file_id' => 'required|integer',
-        ]);
-
+        $user = Auth::user();
         $research = Research_title::findOrFail($id);
+
+        // Security check: ensure researcher owns this research title
+        if (!$user->researcher || $research->researcher_id !== $user->researcher->id) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            abort(403, 'Unauthorized action.');
+        }
+
         if (!in_array($research->Status, ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
             if ($request->expectsJson())
                 return response()->json(['error' => 'You can only update files when the protocol status is Incomplete or Pending.'], 403);
             abort(403, 'You can only update files when the protocol status is Incomplete or Pending.');
         }
 
-        $oldResearchFile = Researcher_files::findOrFail($request->file_id);
-
-        // Store new file
-        $path = $request->file('file')->store('uploads/research_files', 'public_uploads');
-
-        // Original behavior: Delete the old active file completely when updating directly
-        if ($oldResearchFile->revision_number === null) {
-            Storage::disk('public_uploads')->delete(str_replace('storage/', '', $oldResearchFile->filepath));
-            $oldResearchFile->delete();
-        }
-
-        // Create new replacement active file record
-        $newFileRecord = Researcher_files::create([
-            'research_title_id' => $oldResearchFile->research_title_id,
-            'filename' => $request->file('file')->getClientOriginalName(),
-            'filepath' => $path,
-            'filetype' => $request->file('file')->getClientOriginalExtension(),
-            'category' => $oldResearchFile->category,
-            'revision_number' => null,
+        $request->validate([
+            'file' => 'required|file|max:25600',
+            'file_id' => 'required|integer',
         ]);
 
-        $research = Research_title::findOrFail($id);
-        $research->files()->attach($newFileRecord->id);
+        $oldResearchFile = Researcher_files::findOrFail($request->file_id);
+
+        // Security check: verify the file actually belongs to this research title
+        $belongsToResearch = ($oldResearchFile->research_title_id == $id)
+            || $research->files()->where('researcher_files.id', $oldResearchFile->id)->exists();
+
+        if (!$belongsToResearch) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Unauthorized. File does not belong to this protocol.'], 403);
+            }
+            abort(403, 'File does not belong to this protocol.');
+        }
+
+        // Store new file on disk
+        $path = $request->file('file')->store('uploads/research_files', 'public_uploads');
+
+        // Wrap database mutations in transaction
+        $newFileRecord = DB::transaction(function () use ($research, $oldResearchFile, $request, $path) {
+            // Delete the old active file completely when updating directly
+            if ($oldResearchFile->revision_number === null) {
+                Storage::disk('public_uploads')->delete(str_replace('storage/', '', $oldResearchFile->filepath));
+                $research->files()->detach($oldResearchFile->id);
+                $oldResearchFile->delete();
+            }
+
+            // Create new replacement active file record
+            $newRecord = Researcher_files::create([
+                'research_title_id' => $research->id,
+                'filename' => $request->file('file')->getClientOriginalName(),
+                'filepath' => $path,
+                'filetype' => $request->file('file')->getClientOriginalExtension(),
+                'category' => $oldResearchFile->category,
+                'revision_number' => null,
+            ]);
+
+            $research->files()->attach($newRecord->id);
+
+            return $newRecord;
+        });
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -305,37 +341,44 @@ class Research_title_Controller extends Controller
 
     public function addMissingFile(Request $request, $id)
     {
+        $user = Auth::user();
+        $researchTitle = Research_title::findOrFail($id);
+
+        // Security check: ensure researcher owns this research title
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            abort(403, 'Unauthorized.');
+        }
+
+        if (!in_array($researchTitle->Status, ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'You can only upload missing files when the protocol status is Incomplete or Pending.'], 403);
+            }
+            abort(403, 'You can only upload missing files when the protocol status is Incomplete or Pending.');
+        }
+
         $request->validate([
             'file' => 'required|file|max:25600',
             'category' => 'required|string',
         ]);
 
-        $researchTitle = Research_title::findOrFail($id);
-        $user = Auth::user();
-        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
-            if ($request->expectsJson())
-                return response()->json(['error' => 'Unauthorized'], 403);
-            abort(403);
-        }
-
-        if (!in_array($researchTitle->Status, ['Incomplete', 'Pending', 'Pending (Initial Intake)'])) {
-            if ($request->expectsJson())
-                return response()->json(['error' => 'You can only upload missing files when the protocol status is Incomplete or Pending.'], 403);
-            abort(403, 'You can only upload missing files when the protocol status is Incomplete or Pending.');
-        }
-
         $path = $request->file('file')->store('uploads/research_files', 'public_uploads');
 
-        $newFileRecord = researcher_files::create([
-            'research_title_id' => $id,
-            'filename' => $request->file('file')->getClientOriginalName(),
-            'filepath' => $path,
-            'filetype' => $request->file('file')->getClientOriginalExtension(),
-            'category' => $request->category,
-            'revision_number' => null, // Directly attaching to original files
-        ]);
+        $newFileRecord = DB::transaction(function () use ($researchTitle, $request, $path) {
+            $record = researcher_files::create([
+                'research_title_id' => $researchTitle->id,
+                'filename' => $request->file('file')->getClientOriginalName(),
+                'filepath' => $path,
+                'filetype' => $request->file('file')->getClientOriginalExtension(),
+                'category' => $request->category,
+                'revision_number' => null, // Directly attaching to original files
+            ]);
 
-        $researchTitle->files()->attach($newFileRecord->id);
+            $researchTitle->files()->attach($record->id);
+            return $record;
+        });
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -356,31 +399,44 @@ class Research_title_Controller extends Controller
 
     public function uploadRevisionDocument(Request $request, $id)
     {
+        $user = Auth::user();
+        $researchTitle = Research_title::findOrFail($id);
+
+        // Security check: ensure researcher owns this research title
+        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            abort(403, 'Unauthorized.');
+        }
+
+        if (!in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'You can only upload revision documents when the protocol is Waiting for Revision or Incomplete.'], 403);
+            }
+            abort(403, 'Protocol is not currently accepting revision uploads.');
+        }
+
         $request->validate([
-            'file' => 'required|file|max:5120',
+            'file' => 'required|file|max:25600',
             'category' => 'required|string',
         ]);
 
-        $researchTitle = Research_title::findOrFail($id);
-        $user = Auth::user();
-        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
-            if ($request->expectsJson())
-                return response()->json(['error' => 'Unauthorized'], 403);
-            abort(403);
-        }
-
         $path = $request->file('file')->store('uploads/research_files', 'public_uploads');
 
-        $newFileRecord = Researcher_files::create([
-            'research_title_id' => $id,
-            'filename' => $request->file('file')->getClientOriginalName(),
-            'filepath' => $path,
-            'filetype' => $request->file('file')->getClientOriginalExtension(),
-            'category' => $request->category,
-            'revision_number' => -1, // -1 means In-Progress Workspace
-        ]);
+        $newFileRecord = DB::transaction(function () use ($researchTitle, $request, $path) {
+            $record = Researcher_files::create([
+                'research_title_id' => $researchTitle->id,
+                'filename' => $request->file('file')->getClientOriginalName(),
+                'filepath' => $path,
+                'filetype' => $request->file('file')->getClientOriginalExtension(),
+                'category' => $request->category,
+                'revision_number' => -1, // -1 means In-Progress Workspace
+            ]);
 
-        $researchTitle->files()->attach($newFileRecord->id);
+            $researchTitle->files()->attach($record->id);
+            return $record;
+        });
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -405,21 +461,32 @@ class Research_title_Controller extends Controller
         $file = Researcher_files::findOrFail($file_id);
         $user = Auth::user();
 
-        $researchTitle = Research_title::findOrFail($file->research_title_id);
-        if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
-            if (request()->expectsJson())
+        // Safe resolution via direct ID or pivot relation
+        $researchTitle = $file->research_title_id
+            ? Research_title::find($file->research_title_id)
+            : Research_title::whereHas('files', function ($q) use ($file_id) {
+                $q->where('researcher_files.id', $file_id);
+            })->first();
+
+        if (!$researchTitle || !$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
+            if (request()->expectsJson()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
-            abort(403);
+            }
+            abort(403, 'Unauthorized.');
         }
 
         if ($file->revision_number != -1) {
-            if (request()->expectsJson())
+            if (request()->expectsJson()) {
                 return response()->json(['error' => 'Not a draft document'], 403);
+            }
             abort(403, 'Can only delete files from the active draft workspace.');
         }
 
-        Storage::disk('public_uploads')->delete(str_replace('storage/', '', $file->filepath));
-        $file->delete();
+        DB::transaction(function () use ($researchTitle, $file) {
+            Storage::disk('public_uploads')->delete(str_replace('storage/', '', $file->filepath));
+            $researchTitle->files()->detach($file->id);
+            $file->delete();
+        });
 
         if (request()->expectsJson()) {
             return response()->json(['success' => true]);
@@ -438,28 +505,131 @@ class Research_title_Controller extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        // Find the recommendation letter file
-        $file = researcher_files::where('research_title_id', $id)
-            ->where('filetype', 'Result of Review (Admin Generated)')
-            ->latest()
-            ->first();
+        // Find the recommendation letter file across files, adminFiles, or direct ID
+        $file = $researchTitle->files()->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review'])->latest()->first()
+            ?? $researchTitle->adminFiles()->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review'])->latest()->first()
+            ?? researcher_files::where('research_title_id', $id)->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review'])->latest()->first();
 
-        if (!$file || !Storage::disk('public_uploads')->exists(str_replace('storage/', '', $file->filepath))) {
+        if (!$file) {
             return back()->with('error', 'Recommendation letter not found.');
         }
 
-        // Serve the file
-        // Note: The filepath in DB acts as relative path for public_uploads disk (once prefix stripped if any)
-        $storagePath = str_replace('storage/', '', $file->filepath);
-
-        return response()->file(public_path($storagePath));
+        return $this->serveFile(request(), $file->id);
     }
-    public function submitRevisions(Request $request, $id)
+
+    public function serveFile($request, $id = null)
     {
-        $researchTitle = Research_title::findOrFail($id);
+        if ($id === null) {
+            $id = $request;
+            $request = request();
+        } elseif (!($request instanceof Request)) {
+            $id = $request;
+            $request = request();
+        }
+
+        $file = researcher_files::findOrFail($id);
         $user = Auth::user();
 
-        // Security check
+        // Security check: ensure researcher owns this research title
+        $researchTitle = $file->research_title_id 
+            ? Research_title::find($file->research_title_id)
+            : Research_title::whereHas('files', function ($q) use ($id) {
+                $q->where('researcher_files.id', $id);
+            })->first();
+
+        if ($researchTitle && $user->researcher && $researchTitle->researcher_id !== $user->researcher->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $path = str_replace('storage/', '', $file->filepath);
+        $isDownload = $request->boolean('download');
+        $extension = strtolower(pathinfo($file->filepath, PATHINFO_EXTENSION));
+        $mimeTypes = [
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+        ];
+        $mimeType = $mimeTypes[$extension] ?? 'application/octet-stream';
+
+        $safeFilename = str_replace(['"', "\r", "\n"], '', $file->filename);
+        $disposition = $isDownload ? 'attachment' : 'inline';
+        $headers = [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => $disposition . '; filename="' . $safeFilename . '"',
+        ];
+
+        $respondWithFile = function ($fullPath) use ($isDownload, $safeFilename, $headers) {
+            if ($isDownload) {
+                return response()->download($fullPath, $safeFilename, $headers);
+            }
+            return response()->file($fullPath, $headers);
+        };
+
+        // 1. Check Storage (Public Disk)
+        if (Storage::disk('public')->exists($path)) {
+            return $respondWithFile(storage_path('app/public/' . $path));
+        }
+
+        // 2. Check public_uploads disk
+        if (Storage::disk('public_uploads')->exists($path)) {
+            $candidatePath = public_path($path);
+            if (file_exists($candidatePath)) {
+                return $respondWithFile($candidatePath);
+            }
+            if (file_exists(public_path('uploads/research_files/' . basename($path)))) {
+                return $respondWithFile(public_path('uploads/research_files/' . basename($path)));
+            }
+        }
+
+        // 3. Check Public Directory (Direct Access)
+        $publicPath = public_path($file->filepath);
+        if (file_exists($publicPath)) {
+            return $respondWithFile($publicPath);
+        }
+
+        // 4. Check Storage Path directly (Absolute)
+        $storagePath = storage_path('app/public/' . $path);
+        if (file_exists($storagePath)) {
+            return $respondWithFile($storagePath);
+        }
+
+        return response(
+            '<!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Document Unavailable</title>
+                <script src="https://cdn.tailwindcss.com"></script>
+            </head>
+            <body class="bg-slate-50 flex items-center justify-center min-h-screen p-4 font-sans text-slate-700 antialiased">
+                <div class="max-w-sm w-full bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-xs">
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto mb-3 text-slate-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <h3 class="text-xs font-semibold text-slate-900 mb-1">Document Unavailable on Disk</h3>
+                    <p class="text-[11px] text-slate-500 mb-3 leading-relaxed break-all font-mono">' . htmlspecialchars($file->filename) . '</p>
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200/60">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span>Archived or Hardcopy Record</span>
+                    </div>
+                </div>
+            </body>
+            </html>',
+            200,
+            ['Content-Type' => 'text/html']
+        );
+    }
+
+    public function submitRevisions(Request $request, $id)
+    {
+        $user = Auth::user();
+        $researchTitle = Research_title::findOrFail($id);
+
+        // Security check: ensure researcher owns this research title
         if (!$user->researcher || $researchTitle->researcher_id !== $user->researcher->id) {
             abort(403, 'Unauthorized action.');
         }
@@ -469,75 +639,87 @@ class Research_title_Controller extends Controller
             'revision_message' => 'nullable|string|max:1000',
         ]);
 
-        if (in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete'])) {
+        if (!in_array($researchTitle->Status, ['Waiting for Revision', 'Incomplete'])) {
+            return back()->with('error', 'Unable to submit revisions. Current status: ' . $researchTitle->Status);
+        }
 
-            $isIncomplete = $researchTitle->Status === 'Incomplete';
+        $isIncomplete = $researchTitle->Status === 'Incomplete';
+
+        // Wrapped in atomic database transaction with row-level locking
+        $successMsg = DB::transaction(function () use ($id, $user, $request, $isIncomplete) {
+            $protocol = Research_title::where('id', $id)->lockForUpdate()->firstOrFail();
 
             // Only enforce the Draft Workspace check for formal Revisions
             if (!$isIncomplete) {
                 // Check if any files have been uploaded into the draft workspace
-                $hasUpdatedFiles = Researcher_files::where('research_title_id', $id)
+                $hasUpdatedFiles = Researcher_files::where(function ($q) use ($id) {
+                        $q->where('research_title_id', $id)
+                          ->orWhereHas('researchTitles', fn($sq) => $sq->where('research_title_information.id', $id));
+                    })
                     ->where('revision_number', -1)
                     ->exists();
 
                 if (!$hasUpdatedFiles) {
-                    return back()->with('error', 'You must upload at least one document to your Revision Workspace before submitting corrections.');
+                    throw new \InvalidArgumentException('You must upload at least one document to your Revision Workspace before submitting corrections.');
                 }
 
                 // Group all draft workspace files into a formal new Revision Folder
-                $currentMax = Researcher_files::where('research_title_id', $id)
+                $currentMax = Researcher_files::where(function ($q) use ($id) {
+                        $q->where('research_title_id', $id)
+                          ->orWhereHas('researchTitles', fn($sq) => $sq->where('research_title_information.id', $id));
+                    })
                     ->where('revision_number', '>', 0)
                     ->max('revision_number') ?? 0;
                 $newRevisionNumber = $currentMax + 1;
 
-                Researcher_files::where('research_title_id', $id)
+                Researcher_files::where(function ($q) use ($id) {
+                        $q->where('research_title_id', $id)
+                          ->orWhereHas('researchTitles', fn($sq) => $sq->where('research_title_information.id', $id));
+                    })
                     ->where('revision_number', -1)
                     ->update(['revision_number' => $newRevisionNumber]);
             }
 
             // Determine new status
             $newStatus = $isIncomplete ? 'Incomplete Resubmitted' : 'Revision Submitted';
-            $logMessage = "Resubmitted corrections: " . $request->revision_message;
 
             // Create Submission Feedback (User Correction) & Revision Log for Admin View
             if ($request->revision_message) {
                 SubmissionFeedback::create([
-                    'research_title_id' => $researchTitle->id,
+                    'research_title_id' => $protocol->id,
                     'user_id' => $user->id,
                     'type' => 'user_correction',
                     'message' => $request->revision_message,
                 ]);
 
                 \App\Models\RevisionLog::create([
-                    'research_title_id' => $researchTitle->id,
+                    'research_title_id' => $protocol->id,
                     'user_id' => $user->id,
                     'message' => $request->revision_message,
                 ]);
             } else {
                 \App\Models\RevisionLog::create([
-                    'research_title_id' => $researchTitle->id,
+                    'research_title_id' => $protocol->id,
                     'user_id' => $user->id,
                     'message' => $isIncomplete ? 'Resubmitted initial intake files without additional notes.' : 'Resubmitted without additional notes.',
                 ]);
             }
 
-            $researchTitle->Status = $newStatus;
+            $protocol->Status = $newStatus;
 
             // Reset all assigned reviewers back to Pending so the protocol appears on their dashboard
             if (!$isIncomplete) {
-                foreach ($researchTitle->reviewers as $reviewer) {
-                    $researchTitle->reviewers()->updateExistingPivot($reviewer->id, ['status' => 'Pending']);
+                foreach ($protocol->reviewers as $reviewer) {
+                    $protocol->reviewers()->updateExistingPivot($reviewer->id, ['status' => 'Pending']);
                 }
             }
 
-            $researchTitle->save();
+            $protocol->save();
 
-            $successMsg = $isIncomplete ? 'Corrections submitted successfully! Document history synced.' : 'Revisions submitted successfully! Document history synced.';
+            return $isIncomplete ? 'Corrections submitted successfully! Document history synced.' : 'Revisions submitted successfully! Document history synced.';
+        });
 
-            return redirect()->route('home')->with('success', $successMsg);
-        }
-
-        return back()->with('error', 'Unable to submit revisions. Current status: ' . $researchTitle->Status);
+        return redirect()->route('home')->with('success', $successMsg);
     }
 }
 

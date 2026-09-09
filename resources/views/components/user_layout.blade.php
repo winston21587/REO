@@ -65,7 +65,7 @@
 
 <body class="bg-[#faf8f8] text-slate-800 antialiased"
     x-data="{ sidebarOpen: true, mobileOpen: false, mobileMenuOpen: false }">
-    <div class="min-h-screen bg-[#faf8f8] flex">
+    <div class="min-h-screen {{ request()->routeIs('manage.files*') ? 'lg:h-screen lg:max-h-screen lg:overflow-hidden' : '' }} bg-[#faf8f8] flex">
 
         <!-- Sidebar (Desktop Only) -->
         <aside
@@ -193,7 +193,7 @@
             </div>
         </header>
         <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col min-w-0 relative z-0 pb-20 lg:pb-0">
+        <div class="flex-1 flex flex-col min-w-0 relative z-0 pb-20 lg:pb-0 {{ request()->routeIs('manage.files*') ? 'lg:h-full lg:max-h-full lg:overflow-hidden' : '' }}">
 
 
 
@@ -234,7 +234,7 @@
             <!-- Global Notification Tab (Available for both Mobile & Desktop) -->
             <x-notification-tab />
 
-            <main class="flex-1 p-6 pt-20 lg:pt-6">
+            <main class="flex-1 {{ request()->routeIs('manage.files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5 pt-16 lg:pt-3.5 flex flex-col min-h-0 h-full' : 'p-6 pt-20 lg:pt-6' }}">
                 <x-profile />
                 {{ $slot }}
             </main>

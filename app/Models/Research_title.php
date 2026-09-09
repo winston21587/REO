@@ -14,6 +14,7 @@ class Research_title extends Model
     // Define fillable fields for mass assignment
     protected $fillable = [
         'Study_Protocol_title',
+        'Status',
         'Research_Category',
         'research_type',
         'Review_Type',

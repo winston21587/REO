@@ -1,12 +1,13 @@
 <x-reviewer_layout>
     @php
         $allFiles = $researchTitle->files->merge($researchTitle->adminFiles ?? collect());
-        $letters = $allFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter'])->sortByDesc('created_at');
-        $protocolDocs = $researchTitle->files->whereNotIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter']);
+        $letters = $allFiles->whereIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review'])->sortByDesc('created_at');
+        $protocolDocs = $researchTitle->files->whereNotIn('filetype', ['Result of Review (Admin Generated)', 'recommendation letter', 'Archived Result of Review']);
 
         $originalFiles = $protocolDocs->whereNull('revision_number')->sortByDesc('created_at');
         $archivedFiles = $protocolDocs->where('revision_number', '>', 0)->sortByDesc('created_at');
         $revisionFolders = $archivedFiles->groupBy('revision_number')->sortKeys();
+        
         // Get all active files from the highest revision per category
         $activeFiles = $protocolDocs->where('revision_number', '!=', -1)
             ->groupBy('category')
@@ -17,28 +18,36 @@
             ->flatten()
             ->sortByDesc('created_at');
 
-        $hasRevisions = $revisionFolders->isNotEmpty();
+        $reviewerUploads = $researchTitle->adminFiles()
+            ->where('uploaded_by', Auth::id())
+            ->where('category', 'like', 'Reviewer Uploads%')
+            ->latest()
+            ->get();
 
-        // Build enriched file sets for Alpine (all JSON encoded via x-data)
+        $hasRevisions = $revisionFolders->isNotEmpty();
+        $isReEvaluation = in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']);
+
+        // Enriched file mapper matching admin and researcher studios
         $enrichFile = function ($file, $label) {
             $ext = strtolower(pathinfo($file->filename, PATHINFO_EXTENSION));
-            if (!$ext)
+            if (!$ext) {
                 $ext = strtolower($file->filetype ?? '');
+            }
             $icons = [
-                'pdf' => ['icon' => 'fas fa-file-pdf', 'color' => 'text-red-700', 'bg' => 'bg-red-50'],
-                'doc' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-600', 'bg' => 'bg-blue-50'],
-                'docx' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-600', 'bg' => 'bg-blue-50'],
-                'ppt' => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-orange-500', 'bg' => 'bg-orange-50'],
-                'pptx' => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-orange-500', 'bg' => 'bg-orange-50'],
-                'xls' => ['icon' => 'fas fa-file-excel', 'color' => 'text-green-600', 'bg' => 'bg-green-50'],
-                'xlsx' => ['icon' => 'fas fa-file-excel', 'color' => 'text-green-600', 'bg' => 'bg-green-50'],
-                'jpg' => ['icon' => 'fas fa-file-image', 'color' => 'text-violet-600', 'bg' => 'bg-violet-50'],
-                'jpeg' => ['icon' => 'fas fa-file-image', 'color' => 'text-violet-600', 'bg' => 'bg-violet-50'],
-                'png' => ['icon' => 'fas fa-file-image', 'color' => 'text-violet-600', 'bg' => 'bg-violet-50'],
-                'webp' => ['icon' => 'fas fa-file-image', 'color' => 'text-violet-600', 'bg' => 'bg-violet-50'],
-                'gif' => ['icon' => 'fas fa-file-image', 'color' => 'text-violet-600', 'bg' => 'bg-violet-50'],
+                'pdf' => ['icon' => 'fas fa-file-pdf', 'color' => 'text-rose-700/80', 'bg' => 'bg-rose-50/60 text-rose-700/80'],
+                'doc' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-700/80', 'bg' => 'bg-blue-50/60 text-blue-700/80'],
+                'docx' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-700/80', 'bg' => 'bg-blue-50/60 text-blue-700/80'],
+                'ppt' => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-amber-700/80', 'bg' => 'bg-amber-50/60 text-amber-700/80'],
+                'pptx' => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-amber-700/80', 'bg' => 'bg-amber-50/60 text-amber-700/80'],
+                'xls' => ['icon' => 'fas fa-file-excel', 'color' => 'text-emerald-700/80', 'bg' => 'bg-emerald-50/60 text-emerald-700/80'],
+                'xlsx' => ['icon' => 'fas fa-file-excel', 'color' => 'text-emerald-700/80', 'bg' => 'bg-emerald-50/60 text-emerald-700/80'],
+                'jpg' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
+                'jpeg' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
+                'png' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
+                'gif' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
+                'webp' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
             ];
-            $attrs = $icons[$ext] ?? ['icon' => 'fas fa-file', 'color' => 'text-slate-400', 'bg' => 'bg-slate-100'];
+            $attrs = $icons[$ext] ?? ['icon' => 'fas fa-file-alt', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'];
             return [
                 'id' => $file->id,
                 'filename' => $file->filename,
@@ -58,7 +67,6 @@
             $grouped = [];
             foreach ($collection as $f) {
                 $cat = $f->category ?? 'Uncategorized';
-                // Skip files that are not viewable for reviewers
                 $req = $requirementsMap[$cat] ?? null;
                 if ($req && !($req['is_viewable_for_reviewer'] == 1 || $req['is_viewable_for_reviewer'] === true)) {
                     continue;
@@ -87,247 +95,153 @@
             $jsRevisions[$revNum] = $groupFiles($files, "Revision $revNum");
         }
 
-        $jsAllFilesFlat = [];
-        foreach ([$jsOriginal, $jsActive, $jsLetters] as $jsGroupList) {
-            foreach ($jsGroupList as $group) {
-                foreach ($group['files'] as $f) {
-                    $jsAllFilesFlat[] = $f;
-                }
-            }
-        }
-        foreach ($jsRevisions as $rev) {
-            foreach ($rev as $group) {
-                foreach ($group['files'] as $f) {
-                    $jsAllFilesFlat[] = $f;
-                }
-            }
-        }
-
         $firstFile = $originalFiles->first() ? $enrichFile($originalFiles->first(), 'Original') : ($activeFiles->first() ? $enrichFile($activeFiles->first(), 'Current') : null);
         $serveRoute = route('reviewer.serve_file', 'FILE_ID');
+        $remarksByFileId = $myFileRemarks->map(fn($r) => $r->remarks)->toArray();
     @endphp
 
-    <div class="max-w-7xl mx-auto pt-0 pb-6 animate-[fadeInUp_0.5s_ease-out]">
+    <div class="max-w-7xl mx-auto w-full flex-1 min-h-0 flex flex-col lg:h-full lg:max-h-full gap-2.5"
+         x-data="{
+            drawerOpen: false,
+            drawerTab: 'details',
+            openDrawer(tab) {
+                this.drawerTab = tab;
+                this.drawerOpen = true;
+            },
+            closeDrawer() {
+                this.drawerOpen = false;
+            }
+         }"
+         @keydown.escape.window="if (drawerOpen) closeDrawer()">
 
-        <!-- Top Navigation & Protocol Header (Refined Executive Layout) -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 pb-4 border-b border-slate-200/80 gap-3"
-             x-data="{ showHistoryModal: false }">
-            <div class="space-y-1.5 max-w-3xl">
-                <a href="{{ $backUrl }}"
-                    class="group inline-flex items-center gap-2 text-slate-500 hover:text-brand-primary transition-colors text-xs font-bold min-h-[36px]">
-                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-red-50 transition-colors">
-                        <i class="fas fa-arrow-left text-xs text-slate-500 group-hover:text-brand-primary transition-colors"></i>
-                    </div>
-                    <span>Back to Protocols</span>
-                </a>
-
-                <div class="flex flex-wrap items-center gap-2 pt-0.5">
-                    <span class="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">
-                        {{ $researchTitle->reoc_code ?? 'PENDING-ID' }}
-                    </span>
-                    @php
-                        $statusStyles = match($researchTitle->Status) {
-                            'Approved' => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
-                            'Reviewed' => 'bg-teal-50 text-teal-800 border-teal-200/80',
-                            'Under Review' => 'bg-blue-50 text-blue-800 border-blue-200/80',
-                            'Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions' => 'bg-amber-50 text-amber-800 border-amber-200/80',
-                            default => 'bg-slate-100 text-slate-700 border-slate-200/80'
-                        };
-                    @endphp
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-tight border {{ $statusStyles }}">
-                        <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-                        <span>{{ $researchTitle->Status }}</span>
-                    </span>
-                    @if($researchTitle->Review_Type)
-                        <span class="text-xs font-semibold text-slate-500">
-                            &bull; {{ $researchTitle->Review_Type }}
-                        </span>
-                    @endif
-                </div>
-
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 font-heading tracking-tight leading-snug"
-                    title="{{ $researchTitle->Study_Protocol_title }}">
-                    {{ $researchTitle->Study_Protocol_title }}
-                </h1>
-
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 pt-0.5">
-                    <span class="flex items-center gap-1.5">
-                        <i class="fas fa-layer-group text-slate-400 text-xs" aria-hidden="true"></i>
-                        <span>{{ $researchTitle->Research_Category ?? 'Research' }}</span>
-                    </span>
-                    <span>&bull;</span>
-                    <span class="flex items-center gap-1.5">
-                        <i class="fas fa-calendar-alt text-slate-400 text-xs" aria-hidden="true"></i>
-                        <span>Submitted {{ $researchTitle->created_at->format('M d, Y') }}</span>
-                    </span>
-                </div>
-            </div>
-
-            <!-- Header Action Utilities -->
-            <div class="flex items-center gap-2.5 self-stretch sm:self-auto justify-end shrink-0 pt-2 sm:pt-0">
-                @if($hasRevisions)
-                    <!-- Version Timeline Dropdown Popover -->
-                    <div class="relative" x-data="{ timelineDropdownOpen: false }">
-                        <button type="button"
-                                @click="timelineDropdownOpen = !timelineDropdownOpen"
-                                :aria-expanded="timelineDropdownOpen ? 'true' : 'false'"
-                                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-300 hover:bg-slate-50 text-xs font-bold transition-all shadow-2xs cursor-pointer min-h-[40px]">
-                            <i class="fas fa-code-branch text-xs text-indigo-500"></i>
-                            <span class="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">Version Timeline</span>
-                            <span class="px-1.5 py-0.2 rounded-full bg-indigo-50 text-[10px] font-bold text-indigo-600 border border-indigo-200/80">
-                                {{ $revisionFolders->count() + 1 }}
+        <!-- Top Institutional Header Card (Matching Admin & Researcher Studios) -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs px-4 py-2 sm:px-5 sm:py-2.5 relative overflow-hidden shrink-0">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3">
+                
+                <!-- Left: Back Button + Code + Status + Title -->
+                <div class="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                    <a href="{{ $backUrl }}" 
+                       class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200/90 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-colors flex items-center justify-center shrink-0 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95 cursor-pointer"
+                       title="Back to Queue" aria-label="Back to Queue">
+                        <i class="fas fa-arrow-left text-xs sm:text-sm" aria-hidden="true"></i>
+                    </a>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-mono text-xs font-semibold tabular-nums text-slate-700 bg-slate-50 border border-slate-200/80 px-2 py-0.5 rounded-md shadow-2xs">
+                                {{ $researchTitle->reoc_code ?? ('#'.str_pad($researchTitle->id, 5, '0', STR_PAD_LEFT)) }}
                             </span>
-                            <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"
-                               :class="timelineDropdownOpen ? 'rotate-180 text-indigo-600' : ''"></i>
+                            @php
+                                $statusLower = strtolower($researchTitle->Status ?? '');
+                                $statusConfig = match(true) {
+                                    str_contains($statusLower, 'disapproved') || str_contains($statusLower, 'major') => [
+                                        'bg' => 'bg-rose-50',
+                                        'text' => 'text-rose-800',
+                                        'border' => 'border-rose-300',
+                                        'dot' => 'bg-rose-600',
+                                    ],
+                                    str_contains($statusLower, 'waiting') || str_contains($statusLower, 'minor') => [
+                                        'bg' => 'bg-amber-50',
+                                        'text' => 'text-amber-800',
+                                        'border' => 'border-amber-300',
+                                        'dot' => 'bg-amber-500',
+                                    ],
+                                    str_contains($statusLower, 'reviewed') || str_contains($statusLower, 'approved') => [
+                                        'bg' => 'bg-emerald-50',
+                                        'text' => 'text-emerald-800',
+                                        'border' => 'border-emerald-300',
+                                        'dot' => 'bg-emerald-600',
+                                    ],
+                                    str_contains($statusLower, 'under review') || str_contains($statusLower, 'reviewing') => [
+                                        'bg' => 'bg-indigo-50',
+                                        'text' => 'text-indigo-800',
+                                        'border' => 'border-indigo-300',
+                                        'dot' => 'bg-indigo-600',
+                                    ],
+                                    str_contains($statusLower, 'reviewer assigned') => [
+                                        'bg' => 'bg-blue-50',
+                                        'text' => 'text-blue-800',
+                                        'border' => 'border-blue-300',
+                                        'dot' => 'bg-blue-600',
+                                    ],
+                                    default => [
+                                        'bg' => 'bg-slate-100',
+                                        'text' => 'text-slate-800',
+                                        'border' => 'border-slate-300',
+                                        'dot' => 'bg-slate-500',
+                                    ]
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} border {{ $statusConfig['border'] }} shadow-2xs">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $statusConfig['dot'] }} shrink-0"></span>
+                                <span>{{ $researchTitle->Status }}</span>
+                            </span>
+                        </div>
+                        <h1 class="font-heading font-bold text-base sm:text-lg text-slate-950 tracking-tight leading-tight mt-0.5 truncate" title="{{ $researchTitle->Study_Protocol_title }}">
+                            {{ $researchTitle->Study_Protocol_title }}
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- Right: Protocol Metadata & Drawer Action Buttons -->
+                <div class="flex flex-col sm:flex-row lg:flex-col sm:items-center lg:items-end justify-between gap-1.5 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                    
+                    <!-- Metadata Info Row -->
+                    <div class="flex items-center gap-2.5 text-xs text-slate-600 flex-wrap">
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-5 h-5 rounded-full bg-slate-900 border border-slate-300 flex items-center justify-center text-[10px] font-bold text-white uppercase shrink-0 shadow-2xs">
+                                {{ substr($researchTitle->researcher?->user?->first_name ?? $researchTitle->Created_by ?? 'U', 0, 1) }}
+                            </div>
+                            <span class="font-bold text-slate-900">
+                                {{ $researchTitle->researcher?->user ? ($researchTitle->researcher->user->first_name . ' ' . $researchTitle->researcher->user->last_name) : ($researchTitle->Created_by ?? 'Unknown') }}
+                            </span>
+                        </div>
+                        <span class="text-slate-300">·</span>
+                        <span class="tabular-nums font-medium text-slate-600">
+                            <i class="far fa-calendar-alt text-slate-400 mr-1" aria-hidden="true"></i>{{ $researchTitle->created_at->format('M d, Y') }}
+                        </span>
+                        @if(!empty($researchTitle->Review_Type) && !in_array($researchTitle->Review_Type, ['Unassigned', 'N/A']))
+                            <span class="font-bold text-slate-700 bg-slate-100 border border-slate-200/90 text-[11px] px-2 py-0.5 rounded-md">
+                                {{ $researchTitle->Review_Type }}
+                            </span>
+                        @endif
+                    </div>
+
+                    <!-- Quick Intelligence Drawer Triggers -->
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        @if($researchTitle->revisionLogs->isNotEmpty())
+                            <button type="button" @click="openDrawer('history')" 
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] h-8 cursor-pointer shadow-2xs group active:scale-95"
+                                    title="View Revision Feedback History">
+                                <i class="fas fa-history text-xs text-slate-400 group-hover:text-[#8B0000] transition-colors" aria-hidden="true"></i>
+                                <span>Revision History</span>
+                                <span class="px-1.5 py-0.5 rounded-full bg-slate-800 text-white text-[10px] font-medium tabular-nums">
+                                    {{ $researchTitle->revisionLogs->count() }}
+                                </span>
+                            </button>
+                        @endif
+
+                        <button type="button" @click="openDrawer('details')" 
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] h-8 cursor-pointer shadow-2xs group active:scale-95"
+                                title="View Submission Details">
+                            <i class="fas fa-info-circle text-xs text-slate-400 group-hover:text-[#8B0000] transition-colors" aria-hidden="true"></i>
+                            <span>Details</span>
                         </button>
 
-                        <!-- Timeline Popover Menu -->
-                        <div x-show="timelineDropdownOpen"
-                             x-transition:enter="transition ease-out duration-150"
-                             x-transition:enter-start="opacity-0 translate-y-1 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             x-transition:leave="transition ease-in duration-100"
-                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                             x-transition:leave-end="opacity-0 translate-y-1 scale-95"
-                             @click.outside="timelineDropdownOpen = false"
-                             @keydown.escape.window="timelineDropdownOpen = false"
-                             style="display: none;"
-                             class="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-80 sm:w-96 max-w-[calc(100vw_-_32px)] bg-white rounded-2xl shadow-xl border border-slate-200/90 z-[110] overflow-hidden">
-                            
-                            <div class="px-4 py-3 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                        <i class="fas fa-code-branch text-[11px]"></i>
-                                    </div>
-                                    <h4 class="text-xs font-bold text-slate-900 font-heading">Version Timeline</h4>
-                                </div>
-                                <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-full">
-                                    {{ $revisionFolders->count() + 1 }} {{ Str::plural('version', $revisionFolders->count() + 1) }}
-                                </span>
-                            </div>
-
-                            <div class="p-4 bg-white max-h-[320px] overflow-y-auto custom-scrollbar">
-                                <div class="relative pl-6 space-y-4">
-                                    <div class="absolute left-2.5 top-3 bottom-3 w-0.5 bg-slate-100"></div>
-
-                                    <!-- Original Submission -->
-                                    <div class="relative flex items-start gap-3">
-                                        <div class="w-6 h-6 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center shrink-0 z-10 -ml-5.5 shadow-2xs">
-                                            <i class="fas fa-box-archive text-slate-500 text-[10px]"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0 pt-0.5">
-                                            <div class="flex items-center justify-between gap-1">
-                                                <p class="text-xs font-bold text-slate-800">Original Submission</p>
-                                                <span class="text-[10px] text-slate-400 shrink-0">
-                                                    {{ $originalFiles->first()?->created_at?->format('M d, Y') ?? '—' }}
-                                                </span>
-                                            </div>
-                                            <p class="text-[11px] text-slate-500 mt-0.5">
-                                                {{ $originalFiles->count() }} {{ Str::plural('document', $originalFiles->count()) }}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Revision Folders -->
-                                    @foreach($revisionFolders->sortKeys() as $revNum => $files)
-                                        <div class="relative flex items-start gap-3">
-                                            <div class="w-6 h-6 rounded-full bg-indigo-50 border-2 border-indigo-400 flex items-center justify-center shrink-0 z-10 -ml-5.5 shadow-2xs">
-                                                <span class="text-[10px] font-black text-indigo-600">{{ $revNum }}</span>
-                                            </div>
-                                            <div class="flex-1 min-w-0 pt-0.5">
-                                                <div class="flex items-center justify-between gap-1">
-                                                    <p class="text-xs font-bold text-slate-800">Revision {{ $revNum }}</p>
-                                                    <span class="text-[10px] text-slate-400 shrink-0">
-                                                        {{ $files->first()?->created_at?->format('M d, Y') ?? '—' }}
-                                                    </span>
-                                                </div>
-                                                <p class="text-[11px] text-slate-500 mt-0.5">
-                                                    {{ $files->count() }} {{ Str::plural('document', $files->count()) }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
+                        <button type="button" @click="openDrawer('activity')" 
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] h-8 cursor-pointer shadow-2xs group active:scale-95"
+                                title="View Activity Log">
+                            <i class="fas fa-list-check text-xs text-slate-400 group-hover:text-[#8B0000] transition-colors" aria-hidden="true"></i>
+                            <span>Activity Log</span>
+                        </button>
                     </div>
-                @endif
 
-                @if($researchTitle->revisionLogs->isNotEmpty())
-                    <button type="button" @click="showHistoryModal = true"
-                            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-brand-primary hover:border-brand-primary/40 hover:bg-slate-50 text-xs font-bold transition-all shadow-2xs cursor-pointer min-h-[40px]">
-                        <i class="fas fa-clock-rotate-left text-xs text-slate-400 group-hover:text-brand-primary"></i>
-                        <span>Feedback History</span>
-                        <span class="px-1.5 py-0.2 rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 border border-slate-200">
-                            {{ $researchTitle->revisionLogs->count() }}
-                        </span>
-                    </button>
-
-                    <!-- Feedback History Modal -->
-                    <template x-teleport="body">
-                        <div x-show="showHistoryModal" style="display: none;"
-                             class="fixed inset-0 z-[120] overflow-y-auto"
-                             @keydown.escape.window="showHistoryModal = false"
-                             role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
-                            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                <div x-show="showHistoryModal" x-transition.opacity
-                                     class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs transition-opacity"
-                                     @click="showHistoryModal = false"></div>
-                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                                <div x-show="showHistoryModal" x-transition.scale.origin.bottom
-                                     class="relative z-10 inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-200">
-                                    <div class="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
-                                        <div class="flex items-center gap-2.5">
-                                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                                <i class="fas fa-history text-xs"></i>
-                                            </div>
-                                            <div>
-                                                <h3 class="text-sm font-bold text-slate-900 font-heading" id="history-modal-title">Revision Feedback History</h3>
-                                                <p class="text-[11px] text-slate-500">Chronological feedback and administrative review notes</p>
-                                            </div>
-                                        </div>
-                                        <button type="button" @click="showHistoryModal = false"
-                                                class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center cursor-pointer">
-                                            <i class="fas fa-times text-sm"></i>
-                                        </button>
-                                    </div>
-                                    <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar bg-white">
-                                        @foreach($researchTitle->revisionLogs as $log)
-                                            <div class="flex gap-3.5 p-4 rounded-xl bg-slate-50/70 border border-slate-200/70">
-                                                <div class="w-8 h-8 rounded-full {{ $log->user->role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700' }} flex items-center justify-center shrink-0 text-xs font-bold">
-                                                    <i class="fas {{ $log->user->role === 'admin' ? 'fa-user-shield' : 'fa-user' }}"></i>
-                                                </div>
-                                                <div class="flex-1 min-w-0">
-                                                    <div class="flex items-center justify-between gap-2 mb-1">
-                                                        <p class="text-xs font-bold text-slate-900">
-                                                            {{ $log->user->first_name }} {{ $log->user->last_name }}
-                                                            <span class="text-[10px] font-normal text-slate-500">({{ ucfirst($log->user->role) }})</span>
-                                                        </p>
-                                                        <span class="text-[10px] text-slate-400 font-medium">{{ $log->created_at->format('M d, Y • h:i A') }}</span>
-                                                    </div>
-                                                    <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $log->message }}</p>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    <div class="px-6 py-3 bg-slate-50 border-t border-slate-200/80 flex justify-end">
-                                        <button type="button" @click="showHistoryModal = false"
-                                                class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold transition-all cursor-pointer">
-                                            Close
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                @endif
+                </div>
             </div>
         </div>
 
-        @php
-            $remarksByFileId = $myFileRemarks->map(fn($r) => $r->remarks)->toArray();
-        @endphp
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" x-data="{
+        <!-- Main 12-Column File Workspace Grid (Starts immediately below Header) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch flex-1 min-h-0 lg:h-full" 
+             x-data="{
                 activeFile: {{ $firstFile ? json_encode($firstFile) : 'null' }},
                 activeTab: 'original',
                 originalFiles: {{ json_encode($jsOriginal) }},
@@ -336,20 +250,24 @@
                 revisions: {{ json_encode($jsRevisions) }},
                 hasRevisions: {{ $hasRevisions ? 'true' : 'false' }},
                 revisionNums: {{ json_encode(array_keys($jsRevisions)) }},
-                allFilesFlat: {{ json_encode($jsAllFilesFlat) }},
-                requirementsMap: {{ json_encode($requirementsMap) }},
                 serveRoute: '{{ $serveRoute }}',
                 remarksMap: {{ json_encode($remarksByFileId) }},
                 currentRemark: '',
                 remarkSaving: false,
                 remarkSaved: false,
                 remarkError: '',
-                getFilesForActiveTab() {
-                    if (!this.activeFile) return [];
-                    const files = Array.isArray(this.allFilesFlat) ? this.allFilesFlat : Object.values(this.allFilesFlat || {});
-                    return files.filter(f => f.group === this.activeFile.group);
+                showModal: false,
+                step: 1,
+                init() {
+                    if (this.activeFile && this.remarksMap[this.activeFile.id]) {
+                        this.currentRemark = this.remarksMap[this.activeFile.id];
+                    }
+                    this.$watch('activeFile', (file) => {
+                        this.remarkSaved = false;
+                        this.remarkError = '';
+                        this.currentRemark = (file && this.remarksMap[file.id]) ? this.remarksMap[file.id] : '';
+                    });
                 },
-
                 getUrl(file) {
                     if (!file) return '';
                     return this.serveRoute.replace('FILE_ID', file.id);
@@ -358,1309 +276,1056 @@
                     if (!file || !file.public_url) return '';
                     return 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(file.public_url);
                 },
-                isViewable(file) {
-                    if (!file) return false;
-                    const req = this.requirementsMap[file.label];
-                    return req ? (req.is_viewable_for_reviewer == 1 || req.is_viewable_for_reviewer === true) : true;
-                },
-                isDownloadable(file) {
-                    if (!file) return false;
-                    const req = this.requirementsMap[file.label];
-                    return req ? (req.is_downloadable_for_reviewer == 1 || req.is_downloadable_for_reviewer === true) : true;
-                },
                 isPdf(file) { return file && file.ext === 'pdf'; },
                 isOffice(file) { return file && ['doc','docx','ppt','pptx','xls','xlsx'].includes(file.ext); },
                 isImage(file) { return file && ['jpg','jpeg','png','gif','bmp','webp'].includes(file.ext); },
-                selectFile(file) {
-                    this.activeFile = file;
-                    this.currentRemark = file ? (this.remarksMap[file.id] || '') : '';
-                    this.remarkSaved = false;
-                    this.remarkError = '';
+                isLocalHost() {
+                    const host = window.location.hostname;
+                    return host === 'localhost' || host === '127.0.0.1' || host.endsWith('.test') || host.endsWith('.local');
                 },
-                async saveRemark() {
+                selectFile(file) { 
+                    this.activeFile = file; 
+                },
+                async saveCurrentRemark() {
                     if (!this.activeFile) return;
                     this.remarkSaving = true;
                     this.remarkSaved = false;
                     this.remarkError = '';
+                    const url = '{{ route('reviewer.save_file_remark', 'FILE_ID') }}'.replace('FILE_ID', this.activeFile.id);
                     try {
-                        const res = await fetch(`/reviewer/file-remark/${this.activeFile.id}`, {
+                        const res = await fetch(url, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
                             },
-                            body: JSON.stringify({ 
-                                remarks: this.currentRemark,
-                                research_title_id: '{{ $researchTitle->id }}'
-                            })
+                            body: JSON.stringify({ remarks: this.currentRemark })
                         });
-                        if (res.ok) {
-                            this.remarksMap[this.activeFile.id] = this.currentRemark;
+                        const data = await res.json();
+                        if (data.success) {
+                            if (this.currentRemark.trim()) {
+                                this.remarksMap[this.activeFile.id] = this.currentRemark.trim();
+                            } else {
+                                delete this.remarksMap[this.activeFile.id];
+                            }
                             this.remarkSaved = true;
-                            setTimeout(() => this.remarkSaved = false, 2500);
-                        } else if (res.status === 403) {
-                            this.remarkError = 'Unauthorized: You are not assigned to this protocol.';
+                            setTimeout(() => { this.remarkSaved = false; }, 3000);
                         } else {
-                            const data = await res.json().catch(() => ({}));
-                            this.remarkError = data.message || 'Failed to save remark. Please try again.';
+                            this.remarkError = data.message || 'Error saving remark.';
                         }
-                    } catch(e) {
-                        this.remarkError = 'Network error. Please check your connection and retry.';
+                    } catch (err) {
+                        this.remarkError = 'Network error saving remark.';
+                    } finally {
+                        this.remarkSaving = false;
                     }
-                    this.remarkSaving = false;
                 }
-             }" x-init="currentRemark = activeFile ? (remarksMap[activeFile.id] || '') : ''">            <!-- ===== LEFT — Integrated Document Evaluation Console ===== -->
-            <div class="lg:col-span-7 xl:col-span-8 lg:sticky lg:top-6 flex flex-col"
-                 x-data="{ previewExpanded: false }">
-                <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden flex flex-col">
+             }">
 
-                    <!-- Console Integrated Header Bar -->
-                    <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200/80 flex items-center justify-between gap-3">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 text-slate-700 shadow-2xs">
-                                <i :class="activeFile ? activeFile.icon : 'fas fa-file'" class="text-xs" aria-hidden="true"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-2">
-                                    <p class="text-xs font-black text-slate-900 truncate max-w-[180px] sm:max-w-md font-heading"
-                                       x-text="activeFile ? activeFile.label : 'No document selected'"></p>
-                                    <template x-if="activeFile && activeFile.revision_number">
-                                        <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200"
-                                              x-text="'Revision ' + activeFile.revision_number"></span>
-                                    </template>
-                                    <template x-if="activeFile && !activeFile.revision_number && activeFile.group !== 'Letters'">
-                                        <span class="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">Original</span>
-                                    </template>
-                                </div>
-                                <p class="text-[11px] text-slate-400 truncate mt-0.5" x-show="activeFile">
-                                    <span x-text="activeFile ? activeFile.filename : ''"></span>
-                                </p>
-                            </div>
+            <!-- ===== LEFT COLUMN — Document Viewer Studio & Contextual Remarks (7 Cols) ===== -->
+            <div class="lg:col-span-7 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
+
+                <!-- Viewer Header & Controls Bar -->
+                <div class="bg-white px-3.5 py-2 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-2.5 shrink-0">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/80 shadow-2xs"
+                             :class="activeFile ? activeFile.bg : 'bg-slate-50 text-slate-400'">
+                            <i :class="activeFile ? [activeFile.icon, activeFile.color] : 'fas fa-file text-slate-400'" class="text-xs" aria-hidden="true"></i>
                         </div>
-
-                        <!-- Header File Actions -->
-                        <div class="flex items-center gap-1.5 shrink-0" x-show="activeFile">
-                            <!-- Toggle Preview Size -->
-                            <button type="button" 
-                                @click="previewExpanded = !previewExpanded"
-                                :title="previewExpanded ? 'Minimize preview height' : 'Expand preview height'"
-                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200/90 text-slate-600 hover:text-brand-primary hover:border-brand-primary/40 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
-                                :aria-label="previewExpanded ? 'Minimize preview height' : 'Expand preview height'">
-                                <i :class="previewExpanded ? 'fas fa-compress' : 'fas fa-expand'" class="text-xs" aria-hidden="true"></i>
-                            </button>
-                            <a x-show="isViewable(activeFile)"
-                                :href="isOffice(activeFile) ? getOfficeUrl(activeFile) : getUrl(activeFile)" target="_blank"
-                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200/90 text-slate-600 hover:text-brand-primary hover:border-brand-primary/40 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
-                                aria-label="Open document in new tab"
-                                title="Open in new window">
-                                <i class="fas fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
-                            </a>
-                            <a x-show="isDownloadable(activeFile)" :href="getUrl(activeFile)" download
-                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200/90 text-slate-600 hover:text-brand-primary hover:border-brand-primary/40 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
-                                aria-label="Download document"
-                                title="Download document">
-                                <i class="fas fa-download text-xs" aria-hidden="true"></i>
-                            </a>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-slate-900 truncate tracking-tight"
+                                      x-text="activeFile ? activeFile.label : 'No document selected'"></span>
+                                <template x-if="activeFile && activeFile.revision_number">
+                                    <span class="text-[10px] font-medium text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md"
+                                          x-text="'Revision ' + activeFile.revision_number"></span>
+                                </template>
+                                <template x-if="activeFile && !activeFile.revision_number && activeFile.group !== 'Letters'">
+                                    <span class="text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/80">Original</span>
+                                </template>
+                            </div>
+                            <p class="text-[11px] text-slate-500 truncate font-mono font-normal max-w-[240px] sm:max-w-sm mt-0.5">
+                                <span x-text="activeFile ? activeFile.filename : ''"></span>
+                            </p>
                         </div>
                     </div>
 
-                    <!-- Viewer Pane (Minimized by default, expandable) -->
-                    <div class="bg-slate-950 relative transition-all duration-300 ease-in-out flex items-center justify-center"
-                         :class="previewExpanded ? 'min-h-[440px] sm:min-h-[520px] h-[58vh] sm:h-[64vh]' : 'min-h-[200px] sm:min-h-[240px] h-[26vh] sm:h-[30vh] xl:h-[34vh] max-h-[360px]'"
-                         x-data="{ imageLoadError: false }"
-                         x-init="$watch('activeFile', () => { imageLoadError = false })">
-                        
-                        <template x-if="activeFile && isViewable(activeFile) && isPdf(activeFile)">
-                            <iframe :src="getUrl(activeFile)" class="w-full h-full border-0 bg-white"
-                                title="PDF Viewer" loading="lazy"></iframe>
-                        </template>
-
-                        <template x-if="activeFile && isViewable(activeFile) && isOffice(activeFile)">
-                            <iframe :src="getOfficeUrl(activeFile)" class="w-full h-full border-0 bg-white"
-                                title="Office Viewer" loading="lazy"></iframe>
-                        </template>
-
-                        <template x-if="activeFile && isViewable(activeFile) && isImage(activeFile)">
-                            <div class="w-full h-full flex items-center justify-center p-3 overflow-auto">
-                                <img :src="getUrl(activeFile)" :alt="activeFile.filename"
-                                    x-show="!imageLoadError"
-                                    x-on:error="imageLoadError = true"
-                                    class="max-w-full max-h-full object-contain rounded-lg shadow-xl"
-                                    loading="lazy" decoding="async" />
-                                <div x-show="imageLoadError" class="text-center p-6">
-                                    <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto mb-2.5 text-slate-500">
-                                        <i class="fas fa-image text-xl" aria-hidden="true"></i>
-                                    </div>
-                                    <h4 class="text-xs font-bold text-slate-300">Image Preview Unavailable</h4>
-                                    <p class="text-[11px] text-slate-500 mt-0.5 max-w-xs">The image binary could not be loaded from storage or format is unsupported.</p>
-                                </div>
-                            </div>
-                        </template>
-
-                        <template x-if="activeFile && !isViewable(activeFile)">
-                            <div class="text-center p-6">
-                                <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto mb-2.5 text-slate-400">
-                                    <i class="fas fa-lock text-xl" aria-hidden="true"></i>
-                                </div>
-                                <h4 class="text-xs font-bold text-white">Preview Restricted</h4>
-                                <p class="text-[11px] text-slate-400 mt-0.5 max-w-xs">In-browser preview is restricted for external reviewers for this document category.</p>
-                            </div>
-                        </template>
-
-                        <template x-if="!activeFile">
-                            <div class="text-center p-6">
-                                <div class="w-12 h-12 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-center mx-auto mb-2.5 text-slate-500">
-                                    <i class="fas fa-folder-open text-xl" aria-hidden="true"></i>
-                                </div>
-                                <h4 class="text-xs font-bold text-slate-300">No Document Selected</h4>
-                                <p class="text-[11px] text-slate-500 mt-0.5 max-w-xs">Select a document from the file index on the right to start your review.</p>
-                            </div>
-                        </template>
-                    </div>
-
-                    <!-- Integrated Remarks Dock -->
-                    <div x-show="activeFile" class="p-3.5 sm:p-4 bg-white border-t border-slate-200/80">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 mb-2.5">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <div class="w-6 h-6 rounded-md bg-red-50 text-brand-primary flex items-center justify-center shrink-0">
-                                    <i class="fas fa-comment-dots text-[11px]" aria-hidden="true"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Per-Document Review Remarks</h3>
-                                    <p class="text-[10px] text-slate-500 truncate">Notes for <span class="font-bold text-slate-700" x-text="activeFile ? activeFile.label : ''"></span></p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                                <span x-show="remarkSaved" x-transition class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                                    <i class="fas fa-check text-[9px]" aria-hidden="true"></i> Saved
-                                </span>
-                                <span x-show="remarkSaving" x-transition class="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                                    <i class="fas fa-circle-notch fa-spin text-[10px] text-brand-primary" aria-hidden="true"></i> Saving...
-                                </span>
-                                <button type="button" @click="saveRemark()" :disabled="remarkSaving"
-                                    class="min-h-[32px] px-3 py-1 bg-brand-primary hover:bg-brand-secondary text-white text-xs font-bold rounded-lg transition-all shadow-2xs hover:shadow-xs active:scale-98 disabled:opacity-50 cursor-pointer flex items-center gap-1.5">
-                                    <i class="fas fa-floppy-disk text-xs" aria-hidden="true"></i>
-                                    <span>Save Note</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="relative">
-                            <textarea x-model="currentRemark" rows="2" maxlength="2000"
-                                class="w-full px-3 py-2 text-xs text-slate-700 bg-slate-50/70 border border-slate-200/80 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all resize-y leading-relaxed placeholder:text-slate-400 min-h-[58px]"
-                                placeholder="Type specific comments, required revisions, or observations for this document..."></textarea>
-                            <div class="flex items-center justify-between mt-1">
-                                <span class="text-[10px] text-slate-400 font-mono" x-text="(currentRemark ? currentRemark.length : 0) + '/2000 characters'"></span>
-                                <span x-show="currentRemark && currentRemark.length > 1900" class="text-[10px] text-amber-600 font-bold">Approaching limit</span>
-                            </div>
-                        </div>
-                        <div x-show="remarkError" x-cloak class="mt-2 flex items-center justify-between text-xs text-rose-700 bg-rose-50 border border-rose-200/80 px-3 py-2 rounded-xl">
-                            <span class="font-medium" x-text="remarkError"></span>
-                            <button type="button" @click="saveRemark()" class="underline font-bold text-rose-800 hover:text-rose-950 cursor-pointer ml-2 shrink-0">Retry</button>
-                        </div>
-                    </div>
-
-                </div>{{-- end document console card --}}
-
-                <!-- Protocol Information (Submission Details & Activity Log Side-by-Side) -->
-                <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4 items-start pt-1" x-data="{ subOpen: false, actOpen: false }">
-                    <!-- Submission Details Accordion (Left) -->
-                    <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden flex flex-col justify-start">
-                        <button @click="subOpen = !subOpen"
-                            class="w-full flex justify-between items-center px-5 py-3.5 bg-slate-50/70 hover:bg-slate-50 transition-colors cursor-pointer">
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                    <i class="fas fa-info-circle text-xs" aria-hidden="true"></i>
-                                </div>
-                                <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Submission Details</span>
-                            </div>
-                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300"
-                                :class="subOpen ? '' : 'rotate-180'" aria-hidden="true"></i>
-                        </button>
-                        <div x-show="subOpen" x-transition>
-                            <div class="p-4 sm:p-5 border-t border-slate-100 space-y-3.5 bg-white text-xs">
-                                <div class="flex justify-between items-start gap-3">
-                                    <span class="text-slate-500 font-semibold">Category</span>
-                                    <span class="bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 font-bold text-slate-800 text-right">
-                                        {{ $researchTitle->Research_Category ?? 'N/A' }}
-                                    </span>
-                                </div>
-                                <div class="flex justify-between items-start gap-3">
-                                    <span class="text-slate-500 font-semibold">Research Type</span>
-                                    <span class="bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 font-bold text-slate-800 text-right">
-                                        {{ $researchTitle->research_type ?? 'N/A' }}
-                                    </span>
-                                </div>
-                                <div class="flex justify-between items-center gap-3">
-                                    <span class="text-slate-500 font-semibold">Submitted</span>
-                                    <span class="font-bold text-slate-800">
-                                        {{ $researchTitle->created_at->format('M d, Y') }}
-                                    </span>
-                                </div>
-                                <div class="flex justify-between items-center gap-3">
-                                    <span class="text-slate-500 font-semibold">Revisions</span>
-                                    <span class="bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100 font-bold text-brand-primary text-[11px]">
-                                        {{ $revisionFolders->count() }} submitted
-                                    </span>
-                                </div>
-                                @if(auth()->user()->reviewer?->show_researcher_identity && $researchTitle->researcher?->user)
-                                <div class="border-t border-slate-100 pt-3 flex justify-between items-start gap-3">
-                                    <span class="text-slate-500 font-semibold">Researcher</span>
-                                    <div class="text-right">
-                                        <p class="font-bold text-slate-800">
-                                            {{ $researchTitle->researcher->user->first_name }} {{ $researchTitle->researcher->user->last_name }}
-                                        </p>
-                                        <p class="text-[10px] text-slate-400 font-medium">
-                                            {{ $researchTitle->researcher->user->email }}
-                                        </p>
-                                    </div>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Activity Log Accordion -->
-                    <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden flex flex-col justify-start">
-                        <button @click="actOpen = !actOpen"
-                            class="w-full flex justify-between items-center px-5 py-3.5 bg-slate-50/70 hover:bg-slate-50 transition-colors cursor-pointer">
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                    <i class="fas fa-history text-xs" aria-hidden="true"></i>
-                                </div>
-                                <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Activity Log</span>
-                            </div>
-                            <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-300"
-                                :class="actOpen ? '' : 'rotate-180'" aria-hidden="true"></i>
-                        </button>
-                        <div x-show="actOpen" x-transition>
-                            <div class="p-4 border-t border-slate-100 bg-white">
-                                <div class="relative pl-3 max-h-[320px] overflow-y-auto custom-scrollbar">
-                                    <div class="absolute left-3 top-1 bottom-1 w-0.5 bg-slate-100"></div>
-                                    <div class="space-y-3.5">
-                                        @forelse($researchTitle->titleLogs as $log)
-                                            <div class="flex gap-3 relative">
-                                                <div class="w-5 h-5 rounded-full bg-slate-100 border-2 border-white flex-shrink-0 z-10 -ml-[10px] flex items-center justify-center">
-                                                    <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-                                                </div>
-                                                <div class="pb-1 min-w-0">
-                                                    <p class="text-xs font-bold text-slate-800 leading-snug">
-                                                        {{ $log->action }}
-                                                    </p>
-                                                    <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                                                        {{ $log->description }}
-                                                    </p>
-                                                    <p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
-                                                        {{ $log->created_at->format('M d, Y • h:i A') }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        @empty
-                                            <p class="text-xs text-slate-400 italic py-2">No activity logs recorded.</p>
-                                        @endforelse
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Actions: Open Tab & Download -->
+                    <div class="flex items-center gap-1.5 shrink-0" x-show="activeFile">
+                        <a :href="isOffice(activeFile) && !isLocalHost() ? getOfficeUrl(activeFile) : getUrl(activeFile)" target="_blank"
+                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200/80 text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95 cursor-pointer"
+                            title="Open in new window" aria-label="Open document in new window">
+                            <i class="fas fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
+                        </a>
+                        <a :href="getUrl(activeFile) + '?download=1'" download
+                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200/80 text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95 cursor-pointer"
+                            title="Download document" aria-label="Download document">
+                            <i class="fas fa-download text-xs" aria-hidden="true"></i>
+                        </a>
                     </div>
                 </div>
 
-            </div>{{-- end left col --}}
+                <!-- Document Frame Container (Calm, Quiet Canvas Surface) -->
+                <div id="document-preview-container" class="bg-slate-100/70 rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs relative flex-1 min-h-0 h-[340px] lg:h-full">
+                    
+                    <!-- PDF Viewer -->
+                    <template x-if="activeFile && isPdf(activeFile)">
+                        <iframe :src="getUrl(activeFile)" class="w-full h-full border-0 bg-white"
+                            title="PDF Document Viewer"></iframe>
+                    </template>
 
-            <!-- ===== RIGHT — Document Navigator & Protocol Utility ===== -->
-            <div class="lg:col-span-5 xl:col-span-4 flex flex-col gap-4 pb-8 items-start w-full">
+                    <!-- Office Documents Viewer -->
+                    <template x-if="activeFile && isOffice(activeFile)">
+                        <div class="w-full h-full">
+                            <!-- Local Development Office Card -->
+                            <template x-if="isLocalHost()">
+                                <div class="w-full h-full flex items-center justify-center p-6 bg-slate-900 text-slate-100">
+                                    <div class="max-w-sm w-full bg-slate-900/95 rounded-2xl border border-slate-800 p-6 text-center shadow-xl">
+                                        <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center mx-auto mb-3 text-blue-400 shadow-xs">
+                                            <i class="fas fa-file-word text-xl" aria-hidden="true"></i>
+                                        </div>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-2 uppercase tracking-wider">
+                                            Office Document
+                                        </span>
+                                        <h3 class="text-xs font-bold text-white mb-1 break-all" x-text="activeFile.filename"></h3>
+                                        <p class="text-[11px] text-slate-400 mb-4" x-text="activeFile.label + ' • ' + activeFile.uploaded_at"></p>
+                                        <div class="flex items-center justify-center gap-2">
+                                            <a :href="getUrl(activeFile) + '?download=1'" download
+                                               class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#8B0000] hover:bg-[#6b0000] text-white text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer">
+                                                <i class="fas fa-download text-xs" aria-hidden="true"></i>
+                                                <span>Download Document</span>
+                                            </a>
+                                            <a :href="getUrl(activeFile)" target="_blank"
+                                               class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 shadow-xs transition-all active:scale-95 cursor-pointer">
+                                                <i class="fas fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
+                                                <span>Open in New Tab</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <!-- Production Cloud Office Viewer -->
+                            <template x-if="!isLocalHost()">
+                                <iframe :src="getOfficeUrl(activeFile)" class="w-full h-full border-0 bg-white"
+                                    title="Office Document Viewer"></iframe>
+                            </template>
+                        </div>
+                    </template>
 
-                <!-- Reviewer Upload Section -->
-                <div class="bg-white rounded-2xl p-5 shadow-2xs border border-slate-200/90 overflow-hidden flex-shrink-0 w-full"
-                            x-show="activeFile" style="display: none;">
-                            <div class="flex items-center gap-2 mb-3">
-                                <i class="fas fa-cloud-arrow-up text-xs text-brand-primary"></i>
-                                <h3 class="text-xs font-black text-slate-900 font-heading uppercase tracking-wider">
-                                    <span x-text="'Upload Evaluation Document for ' + (activeFile ? activeFile.label : '')"></span>
-                                </h3>
+                    <!-- Image Viewer -->
+                    <template x-if="activeFile && isImage(activeFile)">
+                        <div class="absolute inset-0 flex items-center justify-center bg-slate-50/90 p-4 overflow-auto">
+                            <img :src="getUrl(activeFile)" :alt="activeFile.filename"
+                                class="max-w-full max-h-full object-contain rounded-lg shadow-sm border border-slate-300" />
+                        </div>
+                    </template>
+
+                    <!-- Empty State -->
+                    <template x-if="!activeFile">
+                        <div class="absolute inset-0 flex items-center justify-center bg-slate-50/80">
+                            <div class="text-center p-6 max-w-sm">
+                                <div class="w-10 h-10 bg-white rounded-xl border border-slate-300 flex items-center justify-center mx-auto mb-2 text-slate-500 shadow-2xs">
+                                    <i class="fas fa-file-contract text-lg" aria-hidden="true"></i>
+                                </div>
+                                <h3 class="text-xs font-bold text-slate-900 mb-0.5">No Document Selected</h3>
+                                <p class="text-[11px] text-slate-600 font-medium">Choose a document category from the panel on the right to preview.</p>
                             </div>
-                            <form action="{{ route('reviewer.upload', $researchTitle->id) }}" method="POST"
-                                enctype="multipart/form-data" class="space-y-3 relative">
-                                @csrf
-                                <input type="hidden" name="category" :value="activeFile ? activeFile.label : 'Other'">
-                                <div>
-                                    <div class="flex items-center justify-between mb-1.5">
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                            Select Evaluation File
-                                        </label>
-                                        <span class="text-[10px] text-slate-400 font-semibold">PDF, DOC, DOCX &bull; Max 20MB</span>
-                                    </div>
-                                    <input type="file" name="files[]" required multiple accept=".pdf,.doc,.docx"
-                                        class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition-colors bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Per-Document Reviewer Remarks Card (Compact, Quiet, and Contextual) -->
+                <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3 shrink-0" x-show="activeFile">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                                <i class="fas fa-comment-dots text-[11px]" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="text-xs font-bold text-slate-900 truncate">
+                                Reviewer Remarks for <span class="text-[#8B0000]" x-text="activeFile ? activeFile.label : ''"></span>
+                            </h4>
+                            <span x-show="remarksMap[activeFile ? activeFile.id : '']" 
+                                  class="w-2 h-2 rounded-full bg-amber-500 shrink-0" 
+                                  title="Remark saved for this file"></span>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span x-show="remarkSaved" x-transition 
+                                  class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                <i class="fas fa-check text-[9px]"></i> Saved
+                            </span>
+                            <span x-show="remarkError" x-transition class="text-[10px] font-bold text-rose-600" x-text="remarkError"></span>
+                            <button type="button" @click="saveCurrentRemark()" :disabled="remarkSaving"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#8B0000] hover:bg-[#6b0000] text-white text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-60 active:scale-95">
+                                <i class="fas" :class="remarkSaving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'" aria-hidden="true"></i>
+                                <span x-text="remarkSaving ? 'Saving...' : 'Save Note'"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea x-model="currentRemark" rows="2" maxlength="2000"
+                              placeholder="Add specific comments, required revisions, or observations for this document..."
+                              class="w-full px-3 py-2 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-colors resize-none"></textarea>
+                    <div class="flex justify-between items-center text-[10px] text-slate-400 mt-1 px-1">
+                        <span>Notes automatically attach to your review ledger.</span>
+                        <span x-text="(currentRemark ? currentRemark.length : 0) + ' / 2000 chars'"></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ===== RIGHT COLUMN — Document Ledger, Evaluation Actions & Submission (5 Cols) ===== -->
+            <div class="lg:col-span-5 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
+
+                <!-- Unified Review Action & Evaluation Documents Studio Card -->
+                <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden shrink-0"
+                     x-data="{ uploadAccordionOpen: false, myUploadsOpen: false }">
+                    
+                    <!-- Main Action & Status Bar -->
+                    <div class="p-2.5 sm:p-3 flex items-center justify-between gap-2.5">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            @if($researchTitle->Status === 'Reviewed')
+                                <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-check-circle text-sm" aria-hidden="true"></i>
                                 </div>
-                                <div class="pt-1">
-                                    <button type="submit"
-                                        class="w-full min-h-[40px] bg-brand-primary hover:bg-brand-secondary text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-2xs flex items-center justify-center gap-2 text-xs cursor-pointer active:scale-98">
-                                        <i class="fas fa-upload text-xs" aria-hidden="true"></i> 
-                                        <span>Upload Document</span>
-                                    </button>
+                                <div class="min-w-0">
+                                    <h4 class="text-xs font-bold text-slate-900 leading-tight">Review Submitted</h4>
+                                    <p class="text-[11px] text-slate-500 truncate">Your formal review has been logged.</p>
                                 </div>
-                            </form>
-
-                            @php
-                                $reviewerUploads = $researchTitle->adminFiles()->where('uploaded_by', Auth::id())->where('category', 'like', 'Reviewer Uploads%')->latest()->get();
-                            @endphp
-                            @if($reviewerUploads->isNotEmpty())
-                                <!-- Complete Review Action Section -->
-                                <div class="mt-5 pt-4 border-t border-slate-100">
-                                    <div class="flex flex-col gap-3">
-                                        @if($researchTitle->Status !== 'Reviewed')
-                                            @if(in_array($researchTitle->Status, ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions']))
-                                                <div x-data="{ 
-                                                    showModal: false, 
-                                                    step: 1,
-                                                    showValidationError: false,
-                                                    scientific_soundness: '',
-                                                    ethical_issues: '',
-                                                    icf_issues: '',
-                                                    summary_of_issues: '',
-                                                    stepOneValid() {
-                                                        return this.scientific_soundness.trim() !== '' 
-                                                            && this.ethical_issues.trim() !== '' 
-                                                            && this.icf_issues.trim() !== '' 
-                                                            && this.summary_of_issues.trim() !== '';
-                                                    },
-                                                    proceedToStep2() {
-                                                        if (!this.stepOneValid()) {
-                                                            this.showValidationError = true;
-                                                            return;
-                                                        }
-                                                        this.step = 2;
-                                                    },
-                                                    resetWizard() {
-                                                        this.step = 1;
-                                                        this.scientific_soundness = '';
-                                                        this.ethical_issues = '';
-                                                        this.icf_issues = '';
-                                                        this.summary_of_issues = '';
-                                                    }
-                                                }"
-                                                    class="w-full relative">
-                                                    <button type="button" @click="resetWizard(); showModal = true"
-                                                        class="w-full min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-sm flex items-center justify-center gap-2 text-xs sm:text-sm transition-all cursor-pointer active:scale-98">
-                                                        <i class="fas fa-check-circle" aria-hidden="true"></i> 
-                                                        <span>Complete Review</span>
-                                                    </button>
-
-                                                    <!-- Validation Error Modal -->
-                                                    <template x-teleport="body">
-                                                        <div x-show="showValidationError" style="display: none;"
-                                                            class="fixed inset-0 z-[120] overflow-y-auto"
-                                                            @keydown.escape.window="showValidationError = false"
-                                                            aria-labelledby="validation-error-title" role="dialog" aria-modal="true">
-                                                            <div
-                                                                class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                                                <div x-show="showValidationError" x-transition.opacity
-                                                                    class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity"
-                                                                    @click="showValidationError = false" aria-hidden="true">
-                                                                </div>
-                                                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
-                                                                    aria-hidden="true">&#8203;</span>
-                                                                <div x-show="showValidationError"
-                                                                    x-transition:enter="ease-out duration-300"
-                                                                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                                                                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                                                                    x-transition:leave="ease-in duration-200"
-                                                                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                                                                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                                                                    class="relative z-10 inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
-                                                                    <div class="bg-white px-6 pt-6 pb-4">
-                                                                        <div class="flex items-start gap-4">
-                                                                            <div
-                                                                                class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
-                                                                                <i class="fas fa-exclamation-triangle"></i>
-                                                                            </div>
-                                                                            <div>
-                                                                                <h3 class="text-base font-bold text-slate-900"
-                                                                                    id="validation-error-title">Assessment Incomplete</h3>
-                                                                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-                                                                                    Please complete all four overarching deliberation
-                                                                                    fields (Scientific Soundness, Ethical Issues, ICF
-                                                                                    Issues, and Summary of Issues) before continuing.
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div
-                                                                        class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3 rounded-b-2xl">
-                                                                        <button type="button" @click="showValidationError = false"
-                                                                            class="inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-sm font-bold text-white hover:bg-red-700 transition-colors focus:outline-none w-full sm:w-auto">
-                                                                            I Understand
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </template>
-
-                                                    <!-- Embedded CSS for the custom thin scrollbar -->
-                                                    <style>
-                                                        .custom-scrollbar::-webkit-scrollbar {
-                                                            width: 6px;
-                                                        }
-
-                                                        .custom-scrollbar::-webkit-scrollbar-track {
-                                                            background: transparent;
-                                                        }
-
-                                                        .custom-scrollbar::-webkit-scrollbar-thumb {
-                                                            background-color: #cbd5e1;
-                                                            border-radius: 9999px;
-                                                        }
-
-                                                        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                                                            background-color: #94a3b8;
-                                                        }
-                                                    </style>
-
-                                                    <!-- Two-Step Wizard Modal -->
-                                                    <template x-teleport="body">
-                                                        <div x-show="showModal" style="display: none;"
-                                                            class="fixed inset-0 z-[100] overflow-y-auto"
-                                                            @keydown.escape.window="showModal = false"
-                                                            aria-labelledby="wizard-modal-title" role="dialog" aria-modal="true">
-                                                            <div
-                                                                class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                                                <div x-show="showModal" x-transition.opacity
-                                                                    class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity"
-                                                                    @click="showModal = false" aria-hidden="true"></div>
-                                                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
-                                                                    aria-hidden="true">&#8203;</span>
-                                                                <div x-show="showModal" x-transition.scale.origin.bottom
-                                                                    class="relative z-10 inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl lg:max-w-6xl sm:w-full border border-slate-100 max-h-[90vh]">
-
-                                                                    <!-- Header -->
-                                                                    <div
-                                                                        class="bg-white px-6 pt-5 pb-4 border-b border-slate-100 flex-shrink-0">
-                                                                        <div class="flex items-center justify-between">
-                                                                            <div class="flex items-center gap-3">
-                                                                                <div class="w-10 h-10 rounded-full flex items-center justify-center"
-                                                                                    :class="step === 1 ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'">
-                                                                                    <i class="fas"
-                                                                                        :class="step === 1 ? 'fa-clipboard-list' : 'fa-gavel'"></i>
-                                                                                </div>
-                                                                                <div>
-                                                                                    <h3 class="text-lg leading-6 font-bold text-slate-900"
-                                                                                        id="wizard-modal-title"
-                                                                                        x-text="step === 1 ? 'Step 1: Deliberation Assessment' : 'Step 2: Final Action'">
-                                                                                    </h3>
-                                                                                    <p class="text-xs text-slate-500 mt-0.5"
-                                                                                        x-text="step === 1 ? 'Document your assessment before casting a vote' : 'Review your summary and select your recommendation'">
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-                                                                            <button type="button" @click="showModal = false"
-                                                                                class="text-slate-400 hover:text-slate-500 transition-colors">
-                                                                                <i class="fas fa-times text-xl"></i>
-                                                                            </button>
-                                                                        </div>
-
-                                                                        <!-- Step Indicator -->
-                                                                        <div class="flex items-center gap-2 mt-4">
-                                                                            <div class="flex items-center gap-1.5">
-                                                                                <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
-                                                                                    :class="step === 1 ? 'bg-blue-600 text-white' : 'bg-green-500 text-white'">
-                                                                                    <span x-show="step === 1">1</span>
-                                                                                    <i x-show="step === 2"
-                                                                                        class="fas fa-check text-[10px]"></i>
-                                                                                </div>
-                                                                                <span class="text-xs font-bold"
-                                                                                    :class="step === 1 ? 'text-blue-600' : 'text-green-500'">Deliberation</span>
-                                                                            </div>
-                                                                            <div class="flex-1 h-0.5 rounded-full transition-colors"
-                                                                                :class="step === 2 ? 'bg-green-500' : 'bg-slate-200'">
-                                                                            </div>
-                                                                            <div class="flex items-center gap-1.5">
-                                                                                <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
-                                                                                    :class="step === 2 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-emerald-950'">
-                                                                                    2
-                                                                                </div>
-                                                                                <span class="text-xs font-bold"
-                                                                                    :class="step === 2 ? 'text-emerald-700' : 'text-emerald-950'">Action</span>
-                                                                            </div>
-
-                                                                        </div>
-
-                                                                        <!-- Form wraps both steps -->
-                                                                        <form
-                                                                            action="{{ route('reviewer.complete_review', $researchTitle->id) }}"
-                                                                            method="POST" class="m-0 flex-1 overflow-y-auto">
-                                                                            @csrf
-
-                                                                            <!-- ============================================ -->
-                                                                            <!-- STEP 1: Deliberation Assessment              -->
-                                                                            <!-- ============================================ -->
-                                                                            <div x-show="step === 1" class="px-6 py-5">
-
-
-
-                                                                                <!-- 2-COLUMN SPLIT-PANE GRID -->
-                                                                                <div
-                                                                                    class="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
-
-                                                                                    <!-- LEFT COLUMN (Document Remarks) -->
-                                                                                    <div
-                                                                                        class="xl:border-r xl:border-slate-100 xl:pr-8 xl:h-[55vh] flex flex-col">
-                                                                                        {{-- Per-file remarks for RESEARCHER files
-                                                                                        --}}
-                                                                                        @php
-                                                                                            $filesToReview = $activeFiles->isNotEmpty() ? $activeFiles : $originalFiles;
-                                                                                        @endphp
-                                                                                        <label
-                                                                                            class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Document-Specific
-                                                                                            Remarks (Optional)</label>
-
-                                                                                        <div
-                                                                                            class="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                                                                                            @foreach($filesToReview as $file)
-                                                                                                <div
-                                                                                                    class="group relative bg-white border border-slate-200 rounded-xl p-4 transition-all hover:shadow-md hover:border-slate-300 w-full mb-3">
-                                                                                                    <div
-                                                                                                        class="flex items-start gap-4 mb-3">
-                                                                                                        <div
-                                                                                                            class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-indigo-100">
-                                                                                                            <i
-                                                                                                                class="fas fa-file-invoice text-indigo-600 text-sm"></i>
-                                                                                                        </div>
-                                                                                                        <div class="flex-1 min-w-0">
-                                                                                                            <h4 class="text-sm font-bold text-slate-800 truncate"
-                                                                                                                title="{{ $file->filename }}">
-                                                                                                                {{ $file->filename }}
-                                                                                                            </h4>
-                                                                                                            <p
-                                                                                                                class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mt-0.5">
-                                                                                                                {{ $file->category }}
-                                                                                                            </p>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                    @php
-                                                                                                        $existingRemark = isset($myFileRemarks[$file->id]) ? $myFileRemarks[$file->id]->remarks : '';
-                                                                                                    @endphp
-                                                                                                    <div class="relative">
-                                                                                                        <div
-                                                                                                            class="absolute inset-y-0 left-0 pl-3 pt-3 pointer-events-none">
-                                                                                                            <i
-                                                                                                                class="fas fa-comment-dots text-slate-300"></i>
-                                                                                                        </div>
-                                                                                                        <textarea
-                                                                                                            name="file_remarks[{{ $file->id }}]"
-                                                                                                            rows="2"
-                                                                                                            placeholder="Add specific remarks for this document..."
-                                                                                                            class="w-full pl-10 pr-4 py-2.5 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none shadow-sm resize-none transition-all placeholder:text-slate-400 min-h-[60px]">{{ $existingRemark }}</textarea>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            @endforeach
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                    <!-- RIGHT COLUMN (Overarching Issues) -->
-                                                                                    <div
-                                                                                        class="space-y-6 flex-1 overflow-y-auto pr-4 custom-scrollbar xl:h-[55vh]">
-                                                                                        <!-- Scientific Soundness -->
-                                                                                        <div>
-                                                                                            <label
-                                                                                                class="block text-sm font-bold text-slate-800 mb-2 mt-4 xl:mt-0">
-                                                                                                <i
-                                                                                                    class="fas fa-microscope text-indigo-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
-                                                                                                Scientific Soundness <span
-                                                                                                    class="text-red-500">*</span>
-                                                                                            </label>
-                                                                                            <textarea x-model="scientific_soundness"
-                                                                                                name="scientific_soundness" rows="3"
-                                                                                                required
-                                                                                                placeholder="Evaluate the scientific merit: research design, methodology, data analysis plan, sample size justification..."
-                                                                                                class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[90px] leading-relaxed"></textarea>
-                                                                                        </div>
-
-                                                                                        <!-- Ethical Issues -->
-                                                                                        <div>
-                                                                                            <label
-                                                                                                class="block text-sm font-bold text-slate-800 mb-2">
-                                                                                                <i
-                                                                                                    class="fas fa-balance-scale text-amber-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
-                                                                                                Ethical Issues <span
-                                                                                                    class="text-red-500">*</span>
-                                                                                            </label>
-                                                                                            <textarea x-model="ethical_issues"
-                                                                                                name="ethical_issues" rows="3"
-                                                                                                required
-                                                                                                placeholder="Assess ethical considerations: risk-benefit ratio, privacy, confidentiality, vulnerable populations, potential harm..."
-                                                                                                class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[90px] leading-relaxed"></textarea>
-                                                                                        </div>
-
-                                                                                        <!-- ICF Issues -->
-                                                                                        <div>
-                                                                                            <label
-                                                                                                class="block text-sm font-bold text-slate-800 mb-2">
-                                                                                                <i
-                                                                                                    class="fas fa-file-signature text-emerald-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
-                                                                                                Informed Consent Form (ICF) Issues
-                                                                                                <span class="text-red-500">*</span>
-                                                                                            </label>
-                                                                                            <textarea x-model="icf_issues"
-                                                                                                name="icf_issues" rows="3" required
-                                                                                                placeholder="Review the informed consent: clarity of language, voluntariness, adequate disclosure, comprehension, documentation process..."
-                                                                                                class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[90px] leading-relaxed"></textarea>
-                                                                                        </div>
-
-                                                                                        <!-- Summary of Issues and Resolutions -->
-                                                                                        <div>
-                                                                                            <label
-                                                                                                class="block text-sm font-bold text-slate-800 mb-2">
-                                                                                                <i
-                                                                                                    class="fas fa-list-check text-rose-500 mr-1.5 hover:scale-110 transition-transform inline-block"></i>
-                                                                                                Summary
-                                                                                                of Issues and Resolutions <span
-                                                                                                    class="text-red-500">*</span>
-                                                                                            </label>
-                                                                                            <textarea x-model="summary_of_issues"
-                                                                                                name="summary_of_issues" rows="3"
-                                                                                                required
-                                                                                                placeholder="Summarize: which issues were resolved, which remain unresolved, and your recommendations for unresolved issues..."
-                                                                                                class="w-full px-4 py-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 focus:bg-white outline-none shadow-sm resize-y transition-all placeholder:text-slate-400 min-h-[110px] leading-relaxed"></textarea>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            <!-- Step 1 Buttons -->
-                                                                            <div x-show="step === 1"
-                                                                                class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-                                                                                <button type="button" @click="showModal = false"
-                                                                                    class="flex-1 inline-flex justify-center rounded-xl border border-slate-200 shadow-sm px-4 py-2.5 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors">
-                                                                                    Cancel
-                                                                                </button>
-                                                                                <button type="button" @click="proceedToStep2()"
-                                                                                    class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-2.5 bg-blue-600 text-sm font-bold text-white hover:bg-blue-700 focus:outline-none transition-colors border border-transparent">
-                                                                                    Save Deliberation & Proceed <i
-                                                                                        class="fas fa-arrow-right text-xs"></i>
-                                                                                </button>
-                                                                            </div>
-
-                                                                            <!-- ============================================ -->
-                                                                            <!-- STEP 2: Final Action                        -->
-                                                                            <!-- ============================================ -->
-                                                                            <div x-show="step === 2" style="display: none;"
-                                                                                class="px-6 py-5 space-y-4">
-
-                                                                                <!-- Read-only Summary Reference -->
-                                                                                <div
-                                                                                    class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                                                                                    <p
-                                                                                        class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">
-                                                                                        <i class="fas fa-quote-left mr-1"></i> Your
-                                                                                        Summary
-                                                                                        of
-                                                                                        Issues
-                                                                                    </p>
-                                                                                    <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap"
-                                                                                        x-text="summary_of_issues"></p>
-                                                                                </div>
-
-                                                                                <!-- Re-Evaluation: Action Taken -->
-                                                                                <div class="text-left">
-                                                                                    <label
-                                                                                        class="block text-xs font-bold text-slate-700 mb-2">
-                                                                                        <i
-                                                                                            class="fas fa-gavel text-rose-400 mr-1"></i>
-                                                                                        Action
-                                                                                        Taken
-                                                                                        <span class="text-red-400">*</span>
-                                                                                    </label>
-                                                                                    <div class="relative">
-                                                                                        <div
-                                                                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                                            <i
-                                                                                                class="fas fa-gavel text-slate-400 text-sm"></i>
-                                                                                        </div>
-                                                                                        <select name="review_decision" required
-                                                                                            class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-300 transition-colors appearance-none">
-                                                                                            <option value="" disabled selected>
-                                                                                                Select a
-                                                                                                recommendation...</option>
-                                                                                            <option value="Approved">✅ Approved (No
-                                                                                                further
-                                                                                                revisions needed)</option>
-                                                                                            <option
-                                                                                                value="Minor revision/s required">🟡
-                                                                                                Minor
-                                                                                                revision/s required</option>
-                                                                                            <option
-                                                                                                value="Major revision/s required">🟠
-                                                                                                Major
-                                                                                                revision/s required</option>
-                                                                                            <option value="Disapproved">❌
-                                                                                                Disapproved
-                                                                                            </option>
-                                                                                        </select>
-                                                                                        <div
-                                                                                            class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                                                                            <i
-                                                                                                class="fas fa-chevron-down text-slate-400 text-xs"></i>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                <div class="text-left">
-                                                                                    <label
-                                                                                        class="block text-xs font-bold text-slate-700 mb-2">Brief
-                                                                                        Remarks (Optional)</label>
-                                                                                    <textarea name="remarks" rows="2" maxlength="1000"
-                                                                                        placeholder="Brief summary of your decision..."
-                                                                                        class="w-full px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none shadow-sm"></textarea>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            <!-- Step 2 Buttons -->
-                                                                            <div x-show="step === 2" style="display: none;"
-                                                                                class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
-                                                                                <button type="button" @click="step = 1"
-                                                                                    class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl border border-slate-200 shadow-2xs px-4 py-3 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors min-h-[44px] cursor-pointer">
-                                                                                    <i class="fas fa-arrow-left text-xs" aria-hidden="true"></i> 
-                                                                                    <span>Back to Deliberation</span>
-                                                                                </button>
-                                                                                <button type="submit"
-                                                                                    class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-3 bg-emerald-600 text-sm font-bold text-white hover:bg-emerald-700 focus:outline-none transition-colors border border-transparent min-h-[44px] cursor-pointer active:scale-98">
-                                                                                    <i class="fas fa-check-circle" aria-hidden="true"></i> 
-                                                                                    <span>Finalize Review</span>
-                                                                                </button>
-                                                                            </div>
-
-                                                                        </form>
-                                                                    </div>
-                                                                </div>
-                                                    </template>
-                                                </div>
-                                            @else
-                                                <div x-data="{ showModal: false }" class="w-full">
-                                                    <button type="button" @click="showModal = true"
-                                                        class="w-full min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-sm flex items-center justify-center gap-2 text-xs sm:text-sm transition-all cursor-pointer active:scale-98">
-                                                        <i class="fas fa-check-circle" aria-hidden="true"></i> 
-                                                        <span>Complete Review</span>
-                                                    </button>
-
-                                                    <!-- Simple Single-Step Modal -->
-                                                    <template x-teleport="body">
-                                                        <div x-show="showModal" style="display: none;"
-                                                            class="fixed inset-0 z-[100] overflow-y-auto"
-                                                            @keydown.escape.window="showModal = false"
-                                                            aria-labelledby="complete-review-modal-title" role="dialog" aria-modal="true">
-                                                            <div
-                                                                class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                                                <div x-show="showModal" x-transition.opacity
-                                                                    class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity"
-                                                                    @click="showModal = false" aria-hidden="true"></div>
-                                                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
-                                                                    aria-hidden="true">&#8203;</span>
-                                                                <div x-show="showModal" x-transition.scale.origin.bottom
-                                                                    class="relative z-10 inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-slate-100">
-
-                                                                    <!-- Header -->
-                                                                    <div class="bg-white px-6 pt-5 pb-4 border-b border-slate-100">
-                                                                        <div class="flex items-center justify-between">
-                                                                            <div class="flex items-center gap-3">
-                                                                                <div
-                                                                                    class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                                                                                    <i class="fas fa-check-circle"></i>
-                                                                                </div>
-                                                                                <div>
-                                                                                    <h3 class="text-lg leading-6 font-bold text-slate-900"
-                                                                                        id="complete-review-modal-title">Complete Review</h3>
-                                                                                    <p class="text-xs text-slate-500 mt-0.5">Submit
-                                                                                        your
-                                                                                        final
-                                                                                        recommendation for this protocol.</p>
-                                                                                </div>
-                                                                            </div>
-                                                                            <button type="button" @click="showModal = false"
-                                                                                class="text-slate-400 hover:text-slate-500 transition-colors">
-                                                                                <i class="fas fa-times text-xl"></i>
-                                                                            </button>
-                                                                        </div>
-                                                                        <p
-                                                                            class="text-xs text-amber-900 bg-amber-50 border border-amber-200/80 px-3 py-2 rounded-xl mt-4">
-                                                                            <i
-                                                                                class="fas fa-exclamation-triangle text-amber-600 mr-1"></i>
-                                                                            You <span class="font-bold">might not be able to
-                                                                                modify</span>
-                                                                            your
-                                                                            uploads once marked as reviewed.
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <form
-                                                                        action="{{ route('reviewer.complete_review', $researchTitle->id) }}"
-                                                                        method="POST" class="m-0 p-6">
-                                                                        @csrf
-                                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                                                                            <!-- Left Column: Document Remarks -->
-                                                                            <div
-                                                                                class="space-y-4 max-h-[60vh] overflow-y-auto pr-3 custom-scrollbar border-r border-slate-100">
-                                                                                <h4
-                                                                                    class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
-                                                                                    <i class="fas fa-comments text-indigo-500"></i>
-                                                                                    Individual Document Remarks
-                                                                                </h4>
-                                                                                @foreach($activeFiles as $file)
-                                                                                    @php
-                                                                                        $cat = $file->category ?? 'Uncategorized';
-                                                                                        $ext = strtolower(pathinfo($file->filename, PATHINFO_EXTENSION));
-                                                                                    @endphp
-                                                                                    <div class="mb-5 last:mb-0">
-                                                                                        <label
-                                                                                            class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
-                                                                                            <span
-                                                                                                class="truncate pr-2">{{ $cat }}</span>
-                                                                                        </label>
-                                                                                        <textarea name="file_remarks[{{ $file->id }}]"
-                                                                                            rows="2" maxlength="1000"
-                                                                                            class="w-full px-3 py-2 text-sm text-slate-700 border border-slate-200 bg-slate-50 hover:bg-white rounded-xl focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none shadow-sm transition-all"
-                                                                                            placeholder="Write your notes for {{ $cat }}..."></textarea>
-                                                                                    </div>
-                                                                                @endforeach
-                                                                            </div>
-
-
-                                                                            <!-- Right Column: Final Decision -->
-                                                                            <div class="flex flex-col h-full pl-2">
-                                                                                <h4
-                                                                                    class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
-                                                                                    <i
-                                                                                        class="fas fa-layer-group text-indigo-500"></i>
-                                                                                    Final Decision
-                                                                                </h4>
-
-                                                                                <div class="text-left mb-6 flex-grow">
-                                                                                    <label
-                                                                                        class="block text-xs font-bold text-slate-700 mb-2">
-                                                                                        Suggested Next Review Type <span
-                                                                                            class="text-red-400">*</span></label>
-                                                                                    <div class="relative">
-                                                                                        <div
-                                                                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                                            <i
-                                                                                                class="fas fa-layer-group text-slate-400 text-sm"></i>
-                                                                                        </div>
-                                                                                        <select name="suggested_review_type"
-                                                                                            required
-                                                                                            class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-300 transition-colors appearance-none">
-                                                                                            <option value="" disabled selected>
-                                                                                                Select a review type...</option>
-                                                                                            <option value="Exempt Review">Exempt
-                                                                                                Review</option>
-                                                                                            <option value="Expedited Review">
-                                                                                                Expedited Review</option>
-                                                                                            <option value="Full Board Review">Full
-                                                                                                Board Review</option>
-                                                                                        </select>
-                                                                                        <div
-                                                                                            class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                                                                            <i
-                                                                                                class="fas fa-chevron-down text-slate-400 text-xs"></i>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div
-                                                                                    class="flex flex-col-reverse sm:flex-row gap-3 mt-auto border-t border-slate-100 pt-6">
-                                                                                    <button type="button" @click="showModal = false"
-                                                                                        class="flex-1 inline-flex justify-center items-center rounded-xl border border-slate-200 shadow-2xs px-4 py-3 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none transition-colors min-h-[44px] cursor-pointer">
-                                                                                        Cancel
-                                                                                    </button>
-                                                                                    <button type="submit"
-                                                                                        class="flex-1 inline-flex justify-center items-center gap-2 rounded-xl shadow-sm px-4 py-3 bg-emerald-600 text-sm font-bold text-white hover:bg-emerald-700 focus:outline-none transition-colors border border-transparent min-h-[44px] cursor-pointer active:scale-98">
-                                                                                        <i class="fas fa-check-circle" aria-hidden="true"></i> 
-                                                                                        <span>Finalize Review</span>
-                                                                                    </button>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </form>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                            @endif
-                                        @else
-                                            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-2">
-                                                <i class="fas fa-check-circle" aria-hidden="true"></i> 
-                                                <span>Protocol Review Completed</span>
-                                            </div>
-                                        @endif
-                                    </div>
+                            @else
+                                <div class="w-8 h-8 rounded-xl bg-[#8B0000]/10 text-[#8B0000] border border-[#8B0000]/20 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-gavel text-sm" aria-hidden="true"></i>
                                 </div>
-
-                                <!-- My Uploaded Evaluations Collapsible Dropdown -->
-                                <div class="mt-3.5" x-data="{ uploadsDropdownOpen: false }">
-                                    <!-- Dropdown Trigger Button -->
-                                    <button type="button" @click="uploadsDropdownOpen = !uploadsDropdownOpen"
-                                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/90 transition-all cursor-pointer group shadow-2xs">
-                                        <div class="flex items-center gap-2 min-w-0">
-                                            <div class="w-6 h-6 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center shrink-0">
-                                                <i class="fas text-[11px]" :class="uploadsDropdownOpen ? 'fa-folder-open' : 'fa-folder'"></i>
-                                            </div>
-                                            <span class="text-xs font-bold text-slate-800 whitespace-nowrap">
-                                                My Uploaded Evaluations
-                                            </span>
-                                            <span class="text-[10px] font-extrabold text-brand-primary bg-red-50 border border-red-200/80 px-1.5 py-0.5 rounded-full shrink-0">
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <h4 class="text-xs font-bold text-slate-900 leading-tight">
+                                            {{ $isReEvaluation ? 'Re-Evaluation in Progress' : 'Review in Progress' }}
+                                        </h4>
+                                        @if($reviewerUploads->isNotEmpty())
+                                            <span class="bg-[#8B0000] text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full tabular-nums">
                                                 {{ $reviewerUploads->count() }}
                                             </span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5 text-slate-400 group-hover:text-slate-700 shrink-0 ml-1">
-                                            <span class="text-[10px] font-semibold" x-text="uploadsDropdownOpen ? 'Hide' : 'View'"></span>
-                                            <i class="fas fa-chevron-down text-[10px] transition-transform duration-200"
-                                                :class="uploadsDropdownOpen ? 'rotate-180' : ''"></i>
-                                        </div>
-                                    </button>
-
-                                    <!-- Collapsible Files List -->
-                                    <div x-show="uploadsDropdownOpen" x-transition class="mt-2.5 space-y-2 max-h-[260px] overflow-y-auto custom-scrollbar pr-0.5">
-                                        @foreach($reviewerUploads as $upload)
-                                            @php
-                                                $uploadExt = strtolower(pathinfo($upload->filename, PATHINFO_EXTENSION));
-                                                $uploadIcon = match($uploadExt) {
-                                                    'pdf' => ['icon' => 'fas fa-file-pdf', 'color' => 'text-red-700', 'bg' => 'bg-red-50'],
-                                                    'doc', 'docx' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-600', 'bg' => 'bg-blue-50'],
-                                                    'xls', 'xlsx' => ['icon' => 'fas fa-file-excel', 'color' => 'text-emerald-700', 'bg' => 'bg-emerald-50'],
-                                                    'jpg', 'jpeg', 'png' => ['icon' => 'fas fa-file-image', 'color' => 'text-violet-600', 'bg' => 'bg-violet-50'],
-                                                    default => ['icon' => 'fas fa-file', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100'],
-                                                };
-                                            @endphp
-                                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200/80 group">
-                                                <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                                                    <div class="w-8 h-8 rounded-lg {{ $uploadIcon['bg'] }} {{ $uploadIcon['color'] }} flex items-center justify-center flex-shrink-0">
-                                                        <i class="{{ $uploadIcon['icon'] }} text-xs" aria-hidden="true"></i>
-                                                    </div>
-                                                    <div class="min-w-0 flex-1">
-                                                        <p class="text-xs font-bold text-slate-800 truncate" title="{{ $upload->filename }}">
-                                                            {{ $upload->filename }}
-                                                        </p>
-                                                        <p class="text-[10px] text-slate-500 font-medium truncate">
-                                                            {{ str_replace('Reviewer Uploads - ', '', $upload->category) }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div class="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all shrink-0">
-                                                    @if($researchTitle->Status !== 'Reviewed')
-                                                        <!-- Delete Button -->
-                                                        <form action="{{ route('reviewer.file.delete', $upload->id) }}" method="POST" class="m-0 p-0 inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="button"
-                                                                aria-label="Remove uploaded evaluation document"
-                                                                onclick="Swal.fire({ title: 'Remove Evaluation?', text: 'Are you sure you want to remove this evaluation?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8', confirmButtonText: 'Yes, remove it!' }).then((result) => { if (result.isConfirmed) { this.closest('form').submit(); } });"
-                                                                class="w-9 h-9 min-h-[36px] min-w-[36px] rounded-lg text-slate-500 hover:text-rose-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer">
-                                                                <i class="fas fa-trash-can text-xs" aria-hidden="true"></i>
-                                                            </button>
-                                                        </form>
-                                                    @endif
-
-                                                    <!-- View Button -->
-                                                    <a href="{{ route('reviewer.serve_file', $upload->id) }}" target="_blank"
-                                                        aria-label="View evaluation in new tab"
-                                                        class="w-9 h-9 min-h-[36px] min-w-[36px] rounded-lg text-slate-500 hover:text-brand-primary hover:bg-brand-primary/10 flex items-center justify-center transition-all cursor-pointer">
-                                                        <i class="fas fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        @endforeach
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-1 mt-0.5">
+                                        <button type="button" @click="myUploadsOpen = !myUploadsOpen" 
+                                                class="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 transition-colors cursor-pointer group">
+                                            <i class="fas fa-file-shield text-[10px] text-slate-400 group-hover:text-[#8B0000] transition-colors"></i>
+                                            <span>{{ $reviewerUploads->count() }} evaluation file(s)</span>
+                                            @if($reviewerUploads->isNotEmpty())
+                                                <i class="fas fa-chevron-down text-[8px] text-slate-400 transition-transform duration-200"
+                                                   :class="myUploadsOpen ? 'rotate-180 text-[#8B0000]' : ''"></i>
+                                            @endif
+                                        </button>
                                     </div>
                                 </div>
                             @endif
                         </div>
 
-                        <!-- Document Index Panel (Protocol Documents) -->
-                        <div class="w-full">
-                            <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden">
-                                
-                                <!-- Panel Header & Revision Tabs -->
-                                <div class="p-3.5 bg-slate-50 border-b border-slate-200/80">
-                                    <div class="flex items-center justify-between mb-2.5 px-1">
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-folder-tree text-xs text-brand-primary"></i>
-                                            <h3 class="text-xs font-black text-slate-900 font-heading uppercase tracking-wider">Protocol Documents</h3>
-                                        </div>
-                                        <span class="text-[10px] font-bold text-slate-500 bg-white px-2.5 py-0.5 rounded-full border border-slate-200/80 shadow-2xs">
-                                            {{ $protocolDocs->count() }} {{ Str::plural('file', $protocolDocs->count()) }}
-                                        </span>
+                        <!-- Action Buttons Group -->
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            @if($researchTitle->Status !== 'Reviewed')
+                                <button type="button" @click="uploadAccordionOpen = !uploadAccordionOpen"
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-[#8B0000] hover:border-slate-300 text-xs font-semibold transition-all shadow-2xs cursor-pointer active:scale-98">
+                                    <i class="fas fa-cloud-arrow-up text-xs text-slate-500"></i>
+                                    <span x-text="uploadAccordionOpen ? 'Close Upload' : 'Upload File'"></span>
+                                </button>
+
+                                <button type="button" @click="showModal = true"
+                                        style="background-color: #047857; color: #ffffff;"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#047857] hover:bg-[#065f46] text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95">
+                                    <i class="fas fa-clipboard-check text-xs text-white" aria-hidden="true"></i>
+                                    <span class="text-white font-bold">Complete Review</span>
+                                </button>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200">
+                                    <i class="fas fa-lock text-[9px]"></i> Finalized
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Upload Form Dropdown -->
+                    @if($researchTitle->Status !== 'Reviewed')
+                        <div x-show="uploadAccordionOpen" style="display: none;" x-transition class="p-3 border-t border-slate-100 bg-slate-50/50">
+                            <form action="{{ route('reviewer.upload', $researchTitle->id) }}" method="POST" enctype="multipart/form-data" class="space-y-2.5">
+                                @csrf
+                                <input type="hidden" name="category" :value="activeFile ? activeFile.label : 'Technical Evaluation'">
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                                            Select Evaluation Document
+                                        </label>
+                                        <span class="text-[10px] text-slate-400 font-medium">PDF, DOC, DOCX • Max 20MB</span>
                                     </div>
+                                    <input type="file" name="files[]" required multiple accept=".pdf,.doc,.docx"
+                                        class="w-full text-xs text-slate-600 file:mr-2.5 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition-colors bg-white border border-slate-200 rounded-xl cursor-pointer">
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-2 px-3 bg-[#8B0000] hover:bg-[#6b0000] text-white text-xs font-bold rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98">
+                                    <i class="fas fa-upload text-xs" aria-hidden="true"></i>
+                                    <span>Upload Document</span>
+                                </button>
+                            </form>
+                        </div>
+                    @endif
 
-                                    <!-- Segmented Revision Selector -->
-                                    <div role="tablist"
-                                        aria-label="Document revision sets"
-                                        class="flex gap-1 bg-slate-200/60 p-1 rounded-xl overflow-x-auto custom-scrollbar">
-                                        @if($letters->isNotEmpty())
-                                            <button role="tab"
-                                                :aria-selected="activeTab === 'letters'"
-                                                @click="activeTab = 'letters'"
-                                                :class="activeTab === 'letters' ? 'bg-white text-emerald-800 shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'"
-                                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all rounded-lg cursor-pointer">
-                                                <i class="fas fa-certificate text-emerald-600 text-[11px]" aria-hidden="true"></i> 
-                                                <span>Letters</span>
-                                            </button>
-                                        @endif
-
-                                        <button role="tab"
-                                            :aria-selected="activeTab === 'original'"
-                                            @click="activeTab = 'original'"
-                                            :class="activeTab === 'original' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'"
-                                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all rounded-lg cursor-pointer">
-                                            <i class="fas fa-box-archive text-slate-400 text-[11px]" aria-hidden="true"></i> 
-                                            <span>Original</span>
-                                        </button>
-
-                                        @foreach($revisionFolders->sortKeys() as $revNum => $_)
-                                            <button role="tab"
-                                                :aria-selected="activeTab === 'rev_{{ $revNum }}'"
-                                                @click="activeTab = 'rev_{{ $revNum }}'"
-                                                :class="activeTab === 'rev_{{ $revNum }}' ? 'bg-white text-brand-primary shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'"
-                                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all rounded-lg cursor-pointer">
-                                                <i class="fas fa-rotate text-brand-primary text-[11px]" aria-hidden="true"></i> 
-                                                <span>Rev {{ $revNum }}</span>
-                                            </button>
-                                        @endforeach
-
-                                        @if($hasRevisions && $activeFiles->isNotEmpty())
-                                            <button role="tab"
-                                                :aria-selected="activeTab === 'current'"
-                                                @click="activeTab = 'current'"
-                                                :class="activeTab === 'current' ? 'bg-white text-brand-primary shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'"
-                                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all rounded-lg cursor-pointer">
-                                                <i class="fas fa-file-signature text-brand-primary text-[11px]" aria-hidden="true"></i> 
-                                                <span>Current</span>
-                                            </button>
-                                        @endif
+                    <!-- Uploaded Files List -->
+                    <div x-show="myUploadsOpen || uploadAccordionOpen" style="display: none;" x-transition class="max-h-[160px] overflow-y-auto custom-scrollbar divide-y divide-slate-100 bg-white border-t border-slate-100">
+                        <div class="px-3 py-1.5 bg-slate-50/80 flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Uploaded Evaluation Documents</span>
+                            <span class="text-[10px] text-slate-400 tabular-nums">{{ $reviewerUploads->count() }} file(s)</span>
+                        </div>
+                        @forelse($reviewerUploads as $upload)
+                            @php
+                                $uExt = strtolower(pathinfo($upload->filename, PATHINFO_EXTENSION));
+                                $uIcon = match($uExt) {
+                                    'pdf' => 'fas fa-file-pdf text-rose-700',
+                                    'doc', 'docx' => 'fas fa-file-word text-blue-700',
+                                    default => 'fas fa-file text-slate-500',
+                                };
+                            @endphp
+                            <div class="flex items-center justify-between px-3 py-2 text-xs">
+                                <div class="flex items-center gap-2 min-w-0 flex-1">
+                                    <i class="{{ $uIcon }} text-xs shrink-0" aria-hidden="true"></i>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-bold text-slate-800 truncate" title="{{ $upload->filename }}">{{ $upload->filename }}</p>
+                                        <p class="text-[10px] text-slate-400">{{ $upload->created_at->format('M d, Y • h:i A') }}</p>
                                     </div>
                                 </div>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <a href="{{ route('reviewer.serve_file', $upload->id) }}" target="_blank"
+                                       class="w-7 h-7 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer shadow-2xs"
+                                       title="View file">
+                                        <i class="fas fa-arrow-up-right-from-square text-[10px]"></i>
+                                    </a>
+                                    @if($researchTitle->Status !== 'Reviewed')
+                                        <form action="{{ route('reviewer.file.delete', $upload->id) }}" method="POST" class="m-0 p-0 inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" 
+                                                    onclick="Swal.fire({ title: 'Delete Evaluation Document?', text: 'Are you sure you want to remove this evaluation?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8', confirmButtonText: 'Yes, delete it!' }).then((res) => { if(res.isConfirmed) this.closest('form').submit(); });"
+                                                    class="w-7 h-7 rounded-lg border border-slate-200 text-rose-500 hover:bg-rose-50 hover:text-rose-700 flex items-center justify-center cursor-pointer shadow-2xs"
+                                                    title="Delete evaluation file">
+                                                <i class="fas fa-trash-can text-[10px]"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="p-3 text-center text-slate-400 text-xs italic">
+                                No evaluation documents uploaded yet.
+                            </div>
+                        @endforelse
+                    </div>
 
-                                <!-- Document Tree Area -->
-                                <div class="overflow-y-auto custom-scrollbar max-h-[420px]">
+                </div>
 
-                                    <!-- Letters tab -->
-                                    <div x-show="activeTab === 'letters'" style="display:none;">
-                                        <template x-for="group in letters" :key="group.category">
-                                            <div x-data="{ open: false }" class="border-b border-slate-100 last:border-b-0">
-                                                <!-- Collapsible Requirement Header Dropdown -->
-                                                <button type="button"
-                                                    @click="open = !open"
-                                                    :aria-expanded="open ? 'true' : 'false'"
-                                                    class="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-100/90 flex items-center justify-between transition-colors cursor-pointer text-left select-none group focus:outline-none focus-visible:bg-slate-100">
-                                                    <div class="flex items-center gap-2 min-w-0 pr-2">
-                                                        <i class="fas text-[11px] transition-colors"
-                                                            :class="open ? 'fa-folder-open text-emerald-600' : 'fa-folder text-slate-400 group-hover:text-slate-600'" aria-hidden="true"></i>
-                                                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-slate-900 uppercase tracking-wider font-heading truncate"
-                                                            x-text="group.category"></span>
+                <!-- Document Selector with Tactile Segmented Tabs (Matching Admin Studio) -->
+                <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden flex flex-col flex-1 min-h-0">
+                    
+                    <!-- Segmented Control Tab Bar with Interactive Revision Selector -->
+                    <div class="p-1.5 border-b border-slate-200/80 bg-slate-50/50 shrink-0 relative" x-data="{ revDropdownOpen: false }">
+                        <div id="document-tab-bar" class="flex gap-1 overflow-x-auto custom-scrollbar p-0.5 bg-slate-100/80 rounded-xl border border-slate-200/80 cursor-grab select-none">
+                            @if($letters->isNotEmpty())
+                                <button type="button" @click="activeTab = 'letters'; if (letters.length > 0 && letters[0].files.length > 0 && (!activeFile || activeFile.group !== 'Letters')) { selectFile(letters[0].files[0]); }"
+                                    :class="activeTab === 'letters' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                    class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
+                                    <i class="fas fa-stamp text-xs" :class="activeTab === 'letters' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
+                                    <span>Letters</span>
+                                    <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
+                                          :class="activeTab === 'letters' ? 'bg-slate-900 text-white' : 'bg-slate-200/70 text-slate-600'">
+                                        {{ $letters->count() }}
+                                    </span>
+                                </button>
+                            @endif
+
+                            <button type="button" @click="activeTab = 'original'; if (originalFiles.length > 0 && originalFiles[0].files.length > 0 && (!activeFile || activeFile.group !== 'Original')) { selectFile(originalFiles[0].files[0]); }"
+                                :class="activeTab === 'original' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
+                                <i class="fas fa-file-contract text-xs" :class="activeTab === 'original' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
+                                <span>Original</span>
+                                <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
+                                      :class="activeTab === 'original' ? 'bg-slate-900 text-white' : 'bg-slate-200/70 text-slate-600'">
+                                    {{ $originalFiles->count() }}
+                                </span>
+                            </button>
+
+                            @if($hasRevisions && $revisionFolders->isNotEmpty())
+                                @if($revisionFolders->count() === 1)
+                                    @php $singleRevNum = $revisionFolders->keys()->first(); $singleRevFiles = $revisionFolders->first(); @endphp
+                                    <button type="button" @click="activeTab = 'rev_{{ $singleRevNum }}'; if (revisions['{{ $singleRevNum }}'] && revisions['{{ $singleRevNum }}'].length > 0 && revisions['{{ $singleRevNum }}'][0].files.length > 0) { selectFile(revisions['{{ $singleRevNum }}'][0].files[0]); }"
+                                        :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                        class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
+                                        <i class="fas fa-code-branch text-xs" :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'text-indigo-600' : 'text-slate-400'"></i>
+                                        <span>Rev {{ $singleRevNum }}</span>
+                                        <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
+                                              :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'bg-indigo-600 text-white' : 'bg-slate-200/70 text-slate-600'">
+                                            {{ $singleRevFiles->count() }}
+                                        </span>
+                                    </button>
+                                @else
+                                    <button type="button" 
+                                        @click="revDropdownOpen = !revDropdownOpen"
+                                        :class="activeTab.startsWith('rev_') ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                        class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0"
+                                        aria-haspopup="true"
+                                        :aria-expanded="revDropdownOpen ? 'true' : 'false'"
+                                        title="Select revision cycle">
+                                        <i class="fas fa-code-branch text-xs" :class="activeTab.startsWith('rev_') ? 'text-indigo-600' : 'text-slate-400'"></i>
+                                        <span x-text="activeTab.startsWith('rev_') ? ('Rev ' + activeTab.replace('rev_', '')) : 'Revisions'"></span>
+                                        <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
+                                              :class="activeTab.startsWith('rev_') ? 'bg-indigo-600 text-white' : 'bg-slate-200/70 text-slate-600'"
+                                              x-text="activeTab.startsWith('rev_') ? (revisions[activeTab.replace('rev_', '')] ? revisions[activeTab.replace('rev_', '')].reduce((acc, g) => acc + g.files.length, 0) : '') : '{{ $revisionFolders->count() }}'">
+                                        </span>
+                                        <i class="fas fa-chevron-down text-[10px] transition-transform duration-200" 
+                                           :class="revDropdownOpen ? 'rotate-180 text-indigo-600' : (activeTab.startsWith('rev_') ? 'text-slate-600' : 'text-slate-400')" aria-hidden="true"></i>
+                                    </button>
+                                @endif
+                            @endif
+
+                            @if($hasRevisions && $activeFiles->isNotEmpty())
+                                <button type="button" @click="activeTab = 'current'; if (activeFiles.length > 0 && activeFiles[0].files.length > 0 && (!activeFile || activeFile.group !== 'Current')) { selectFile(activeFiles[0].files[0]); }"
+                                    :class="activeTab === 'current' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                    class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
+                                    <i class="fas fa-file-signature text-xs" :class="activeTab === 'current' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
+                                    <span>Current</span>
+                                    <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
+                                          :class="activeTab === 'current' ? 'bg-slate-900 text-white' : 'bg-slate-200/70 text-slate-600'">
+                                        {{ $activeFiles->count() }}
+                                    </span>
+                                </button>
+                            @endif
+                        </div>
+
+                        {{-- Revision Selection Dropdown Menu --}}
+                        @if($hasRevisions && $revisionFolders->count() > 1)
+                            <div x-show="revDropdownOpen" 
+                                 x-cloak
+                                 @click.outside="revDropdownOpen = false"
+                                 @keydown.escape.window="revDropdownOpen = false"
+                                 x-transition:enter="transition ease-out duration-150 transform"
+                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-100 transform"
+                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                                 class="absolute right-3 top-full mt-1.5 w-64 bg-white rounded-2xl shadow-lg border border-slate-200/90 py-1.5 z-50 overflow-hidden"
+                                 role="menu"
+                                 aria-label="Revision cycles">
+                                <div class="px-3.5 py-2 text-[10px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+                                    <span class="flex items-center gap-1.5 text-indigo-950 font-semibold">
+                                        <i class="fas fa-code-branch text-indigo-600 text-xs" aria-hidden="true"></i>
+                                        <span>Select Revision Round</span>
+                                    </span>
+                                    <span class="text-slate-600 font-bold tabular-nums bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">{{ $revisionFolders->count() }} rounds</span>
+                                </div>
+                                <div class="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                                    @foreach($revisionFolders->sortKeys() as $revNum => $revFiles)
+                                        @php
+                                            $revDate = $revFiles->first()?->created_at?->format('M d, Y') ?? '';
+                                            $isLatest = $loop->last;
+                                        @endphp
+                                        <button type="button" 
+                                                @click="activeTab = 'rev_{{ $revNum }}'; revDropdownOpen = false; if (revisions['{{ $revNum }}'] && revisions['{{ $revNum }}'].length > 0 && revisions['{{ $revNum }}'][0].files.length > 0) { selectFile(revisions['{{ $revNum }}'][0].files[0]); }"
+                                                :class="activeTab === 'rev_{{ $revNum }}' ? 'bg-indigo-50/70 text-indigo-950 font-semibold' : 'text-slate-700 hover:bg-slate-50 font-normal'"
+                                                class="w-full flex items-center justify-between px-3.5 py-2.5 text-xs transition-colors text-left cursor-pointer group"
+                                                role="menuitem">
+                                            <div class="flex items-center gap-2.5 min-w-0">
+                                                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 border shadow-2xs transition-colors"
+                                                     :class="activeTab === 'rev_{{ $revNum }}' ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-slate-100 text-slate-700 border-slate-200 group-hover:bg-slate-200'">
+                                                    {{ $revNum }}
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span class="truncate">Revision {{ $revNum }}</span>
+                                                        @if($isLatest)
+                                                            <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 uppercase tracking-wider shrink-0 border border-emerald-200">Latest</span>
+                                                        @endif
                                                     </div>
-                                                    <div class="flex items-center gap-2 shrink-0">
-                                                        <span x-show="group.files && group.files.some(f => remarksMap[f.id])"
-                                                            class="w-2 h-2 rounded-full bg-amber-500 shrink-0"
-                                                            title="Contains document with reviewer remarks"></span>
-                                                        <span class="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200/80 shadow-2xs"
-                                                            x-text="group.files.length + (group.files.length === 1 ? ' file' : ' files')"></span>
-                                                        <i class="fas fa-chevron-down text-[10px] text-slate-400 group-hover:text-slate-600 transition-transform duration-200"
-                                                            :class="open ? 'rotate-180 text-emerald-600' : ''" aria-hidden="true"></i>
+                                                    @if($revDate)
+                                                        <p class="text-[10px] text-slate-400 tabular-nums truncate mt-0.5">{{ $revDate }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                                                <span class="text-[10px] font-medium px-2 py-0.5 rounded-full tabular-nums"
+                                                      :class="activeTab === 'rev_{{ $revNum }}' ? 'bg-indigo-100 text-indigo-900' : 'bg-slate-100 text-slate-500'">
+                                                    {{ $revFiles->count() }} file(s)
+                                                </span>
+                                                <i x-show="activeTab === 'rev_{{ $revNum }}'" class="fas fa-check text-xs text-indigo-600 ml-1" aria-hidden="true"></i>
+                                            </div>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Scrollable Category & File Accordion List Area -->
+                    <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2">
+
+                        <!-- Letters Tab List -->
+                        <div x-show="activeTab === 'letters'" style="display:none;">
+                            <template x-for="group in letters" :key="group.category">
+                                <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs transition-colors"
+                                     x-data="{ expanded: false }">
+                                    <button type="button" @click="expanded = !expanded"
+                                        class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                        <span class="text-xs font-semibold text-slate-900 tracking-tight" x-text="group.category"></span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[11px] font-medium text-slate-400 tabular-nums"
+                                                  x-text="group.files.length + ' file(s)'"></span>
+                                            <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                               :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
+                                        </div>
+                                    </button>
+                                    <div x-show="expanded" style="display: none;" x-transition>
+                                        <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                            <template x-for="file in group.files" :key="file.id">
+                                                <button type="button" @click="selectFile(file)"
+                                                    :class="activeFile && activeFile.id === file.id 
+                                                        ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
+                                                        : 'text-slate-600 hover:bg-slate-50/90 font-normal border-l-[3px] border-transparent'"
+                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-slate-200/90 bg-white shadow-2xs">
+                                                        <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
                                                     </div>
+                                                    <div class="min-w-0 flex-1">
+                                                        <div class="flex items-center justify-between gap-1.5">
+                                                            <p class="text-xs truncate font-medium text-slate-900" x-text="file.filename"></p>
+                                                            <span x-show="remarksMap[file.id]" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Has Reviewer Note"></span>
+                                                        </div>
+                                                        <p class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></p>
+                                                    </div>
+                                                    <span x-show="activeFile && activeFile.id === file.id"
+                                                          class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                        <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
+                                                        <span>Viewing</span>
+                                                    </span>
                                                 </button>
-
-                                                <!-- Dropdown File List -->
-                                                <div x-show="open" x-collapse>
-                                                    <div class="bg-white divide-y divide-slate-100/80">
-                                                        <template x-for="file in group.files" :key="file.id">
-                                                            <button @click="selectFile(file)"
-                                                                :class="activeFile && activeFile.id === file.id ? 'bg-emerald-50/70 border-emerald-500 font-bold' : 'hover:bg-slate-50/80 border-transparent'"
-                                                                class="w-full flex items-center gap-3 pl-6 pr-4 py-2.5 text-left transition-all border-l-2 cursor-pointer group min-h-[44px]">
-                                                                <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" :class="file.bg">
-                                                                    <i :class="[file.icon, file.color]" class="text-xs"></i>
-                                                                </div>
-                                                                <div class="min-w-0 flex-1">
-                                                                    <div class="flex items-center justify-between gap-1.5">
-                                                                        <p class="text-xs font-bold text-slate-800 group-hover:text-emerald-800 truncate" x-text="file.filename"></p>
-                                                                        <span x-show="remarksMap[file.id]" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Has Reviewer Remark"></span>
-                                                                    </div>
-                                                                    <p class="text-[10px] text-slate-400 mt-0.5" x-text="file.uploaded_at"></p>
-                                                                </div>
-                                                            </button>
-                                                        </template>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </div>
-
-                                    <!-- Original Documents tab -->
-                                    <div x-show="activeTab === 'original'" style="display:none;">
-                                        <template x-if="originalFiles.length === 0">
-                                            <div class="p-8 text-center text-slate-400">
-                                                <i class="fas fa-box-open text-3xl mb-2 block opacity-30"></i>
-                                                <p class="text-sm">No original documents found.</p>
-                                            </div>
-                                        </template>
-                                        <template x-for="group in originalFiles" :key="group.category">
-                                            <div x-data="{ open: false }" class="border-b border-slate-100 last:border-b-0">
-                                                <!-- Collapsible Requirement Header Dropdown -->
-                                                <button type="button"
-                                                    @click="open = !open"
-                                                    :aria-expanded="open ? 'true' : 'false'"
-                                                    class="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-100/90 flex items-center justify-between transition-colors cursor-pointer text-left select-none group focus:outline-none focus-visible:bg-slate-100">
-                                                    <div class="flex items-center gap-2 min-w-0 pr-2">
-                                                        <i class="fas text-[11px] transition-colors"
-                                                            :class="open ? 'fa-folder-open text-brand-primary' : 'fa-folder text-slate-400 group-hover:text-slate-600'" aria-hidden="true"></i>
-                                                        <span class="text-[10px] font-bold text-slate-700 group-hover:text-slate-900 uppercase tracking-wider font-heading truncate"
-                                                            x-text="group.category"></span>
-                                                    </div>
-                                                    <div class="flex items-center gap-2 shrink-0">
-                                                        <span x-show="group.files && group.files.some(f => remarksMap[f.id])"
-                                                            class="w-2 h-2 rounded-full bg-amber-500 shrink-0"
-                                                            title="Contains document with reviewer remarks"></span>
-                                                        <span class="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200/80 shadow-2xs"
-                                                            x-text="group.files.length + (group.files.length === 1 ? ' file' : ' files')"></span>
-                                                        <i class="fas fa-chevron-down text-[10px] text-slate-400 group-hover:text-slate-600 transition-transform duration-200"
-                                                            :class="open ? 'rotate-180 text-brand-primary' : ''" aria-hidden="true"></i>
-                                                    </div>
-                                                </button>
-
-                                                <!-- Dropdown File List -->
-                                                <div x-show="open" x-collapse>
-                                                    <div class="bg-white divide-y divide-slate-100/80">
-                                                        <template x-for="file in group.files" :key="file.id">
-                                                            <button @click="selectFile(file)"
-                                                                :class="activeFile && activeFile.id === file.id ? 'bg-brand-primary/[0.04] border-brand-primary font-bold' : 'hover:bg-slate-50/80 border-transparent'"
-                                                                class="w-full flex items-center gap-3 pl-6 pr-4 py-2.5 text-left transition-all border-l-2 cursor-pointer group min-h-[44px]">
-                                                                <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" :class="file.bg">
-                                                                    <i :class="[file.icon, file.color]" class="text-xs"></i>
-                                                                </div>
-                                                                <div class="min-w-0 flex-1">
-                                                                    <div class="flex items-center justify-between gap-1.5">
-                                                                        <p class="text-xs font-bold text-slate-800 group-hover:text-brand-primary truncate" x-text="file.filename"></p>
-                                                                        <span x-show="remarksMap[file.id]" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Has Reviewer Remark"></span>
-                                                                    </div>
-                                                                    <p class="text-[10px] text-slate-400 mt-0.5" x-text="file.uploaded_at"></p>
-                                                                </div>
-                                                            </button>
-                                                        </template>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </div>
-
-                                    <!-- Revision tabs (one per revision number) -->
-                                    @foreach($revisionFolders->sortKeys() as $revNum => $_)
-                                        <div x-show="activeTab === 'rev_{{ $revNum }}'" style="display:none;">
-                                            <template x-for="group in revisions['{{ $revNum }}']" :key="group.category">
-                                                <div x-data="{ open: false }" class="border-b border-slate-100 last:border-b-0">
-                                                    <!-- Collapsible Requirement Header Dropdown -->
-                                                    <button type="button"
-                                                        @click="open = !open"
-                                                        :aria-expanded="open ? 'true' : 'false'"
-                                                        class="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-100/90 flex items-center justify-between transition-colors cursor-pointer text-left select-none group focus:outline-none focus-visible:bg-slate-100">
-                                                        <div class="flex items-center gap-2 min-w-0 pr-2">
-                                                            <i class="fas text-[11px] transition-colors"
-                                                                :class="open ? 'fa-folder-open text-brand-primary' : 'fa-folder text-slate-400 group-hover:text-slate-600'" aria-hidden="true"></i>
-                                                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-slate-900 uppercase tracking-wider font-heading truncate"
-                                                                x-text="group.category"></span>
-                                                        </div>
-                                                        <div class="flex items-center gap-2 shrink-0">
-                                                            <span x-show="group.files && group.files.some(f => remarksMap[f.id])"
-                                                                class="w-2 h-2 rounded-full bg-amber-500 shrink-0"
-                                                                title="Contains document with reviewer remarks"></span>
-                                                            <span class="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200/80 shadow-2xs"
-                                                                x-text="group.files.length + (group.files.length === 1 ? ' file' : ' files')"></span>
-                                                            <i class="fas fa-chevron-down text-[10px] text-slate-400 group-hover:text-slate-600 transition-transform duration-200"
-                                                                :class="open ? 'rotate-180 text-brand-primary' : ''" aria-hidden="true"></i>
-                                                        </div>
-                                                    </button>
-
-                                                    <!-- Dropdown File List -->
-                                                    <div x-show="open" x-collapse>
-                                                        <div class="bg-white divide-y divide-slate-100/80">
-                                                            <template x-for="file in group.files" :key="file.id">
-                                                                <button @click="selectFile(file)"
-                                                                    :class="activeFile && activeFile.id === file.id ? 'bg-brand-primary/[0.04] border-brand-primary font-bold' : 'hover:bg-slate-50/80 border-transparent'"
-                                                                    class="w-full flex items-center gap-3 pl-6 pr-4 py-2.5 text-left transition-all border-l-2 cursor-pointer group min-h-[44px]">
-                                                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" :class="file.bg">
-                                                                        <i :class="[file.icon, file.color]" class="text-xs"></i>
-                                                                    </div>
-                                                                    <div class="min-w-0 flex-1">
-                                                                        <div class="flex items-center justify-between gap-1.5">
-                                                                            <p class="text-xs font-bold text-slate-800 group-hover:text-brand-primary truncate" x-text="file.filename"></p>
-                                                                            <span x-show="remarksMap[file.id]" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Has Reviewer Remark"></span>
-                                                                        </div>
-                                                                        <p class="text-[10px] text-slate-400 mt-0.5" x-text="file.uploaded_at"></p>
-                                                                    </div>
-                                                                </button>
-                                                            </template>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             </template>
                                         </div>
-                                    @endforeach
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
 
-                                    <!-- Current Documents tab -->
-                                    @if($hasRevisions && $activeFiles->isNotEmpty())
-                                        <div x-show="activeTab === 'current'" style="display:none;">
-                                            <template x-for="group in activeFiles" :key="group.category">
-                                                <div x-data="{ open: false }" class="border-b border-slate-100 last:border-b-0">
-                                                    <!-- Collapsible Requirement Header Dropdown -->
-                                                    <button type="button"
-                                                        @click="open = !open"
-                                                        :aria-expanded="open ? 'true' : 'false'"
-                                                        class="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-100/90 flex items-center justify-between transition-colors cursor-pointer text-left select-none group focus:outline-none focus-visible:bg-slate-100">
-                                                        <div class="flex items-center gap-2 min-w-0 pr-2">
-                                                            <i class="fas text-[11px] transition-colors"
-                                                                :class="open ? 'fa-folder-open text-brand-primary' : 'fa-folder text-slate-400 group-hover:text-slate-600'" aria-hidden="true"></i>
-                                                            <span class="text-[10px] font-bold text-slate-700 group-hover:text-slate-900 uppercase tracking-wider font-heading truncate"
-                                                                x-text="group.category"></span>
-                                                        </div>
-                                                        <div class="flex items-center gap-2 shrink-0">
-                                                            <span x-show="group.files && group.files.some(f => remarksMap[f.id])"
-                                                                class="w-2 h-2 rounded-full bg-amber-500 shrink-0"
-                                                                title="Contains document with reviewer remarks"></span>
-                                                            <span class="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200/80 shadow-2xs"
-                                                                x-text="group.files.length + (group.files.length === 1 ? ' file' : ' files')"></span>
-                                                            <i class="fas fa-chevron-down text-[10px] text-slate-400 group-hover:text-slate-600 transition-transform duration-200"
-                                                                :class="open ? 'rotate-180 text-brand-primary' : ''" aria-hidden="true"></i>
-                                                        </div>
-                                                    </button>
-
-                                                    <!-- Dropdown File List -->
-                                                    <div x-show="open" x-collapse>
-                                                        <div class="bg-white divide-y divide-slate-100/80">
-                                                            <template x-for="file in group.files" :key="file.id">
-                                                                <button @click="selectFile(file)"
-                                                                    :class="activeFile && activeFile.id === file.id ? 'bg-brand-primary/[0.04] border-brand-primary font-bold' : 'hover:bg-slate-50/80 border-transparent'"
-                                                                    class="w-full flex items-center gap-3 pl-6 pr-4 py-2.5 text-left transition-all border-l-2 cursor-pointer group min-h-[44px]">
-                                                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" :class="file.bg">
-                                                                        <i :class="[file.icon, file.color]" class="text-xs"></i>
-                                                                    </div>
-                                                                    <div class="min-w-0 flex-1">
-                                                                        <div class="flex items-center justify-between gap-1.5">
-                                                                            <p class="text-xs font-bold text-slate-800 group-hover:text-brand-primary truncate" x-text="file.filename"></p>
-                                                                            <span x-show="remarksMap[file.id]" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Has Reviewer Remark"></span>
-                                                                        </div>
-                                                                        <p class="text-[10px] text-slate-400 mt-0.5" x-text="file.uploaded_at"></p>
-                                                                    </div>
-                                                                </button>
-                                                            </template>
-                                                        </div>
+                        <!-- Original Documents Tab List (Single Application Form Accordion open by default) -->
+                        <div x-show="activeTab === 'original'" style="display:none;">
+                            <template x-if="originalFiles.length === 0">
+                                <div class="p-8 text-center text-slate-400">
+                                    <i class="fas fa-box-open text-3xl mb-2 block opacity-40" aria-hidden="true"></i>
+                                    <p class="text-xs font-medium text-slate-600">No original documents found.</p>
+                                </div>
+                            </template>
+                            <template x-for="group in originalFiles" :key="group.category">
+                                <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs transition-colors"
+                                     x-data="{ expanded: Boolean(group.category && group.category.toLowerCase().includes('application form')) }">
+                                    <button type="button" @click="expanded = !expanded"
+                                        class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                        <span class="text-xs font-semibold text-slate-900 tracking-tight" x-text="group.category"></span>
+                                        <div class="flex items-center gap-2">
+                                            <span x-show="group.files && group.files.some(f => remarksMap[f.id])" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Contains remarks"></span>
+                                            <span class="text-[11px] font-medium text-slate-400 tabular-nums"
+                                                  x-text="group.files.length + ' file(s)'"></span>
+                                            <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                               :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
+                                        </div>
+                                    </button>
+                                    <div x-show="expanded" style="display: none;" x-transition>
+                                        <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                            <template x-for="file in group.files" :key="file.id">
+                                                <button type="button" @click="selectFile(file)"
+                                                    :class="activeFile && activeFile.id === file.id 
+                                                        ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
+                                                        : 'text-slate-600 hover:bg-slate-50/90 font-normal border-l-[3px] border-transparent'"
+                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-slate-200/90 bg-white shadow-2xs">
+                                                        <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
                                                     </div>
-                                                </div>
+                                                    <div class="min-w-0 flex-1">
+                                                        <div class="flex items-center justify-between gap-1.5">
+                                                            <p class="text-xs truncate font-medium text-slate-900" x-text="file.filename"></p>
+                                                            <span x-show="remarksMap[file.id]" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Has Reviewer Note"></span>
+                                                        </div>
+                                                        <p class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></p>
+                                                    </div>
+                                                    <span x-show="activeFile && activeFile.id === file.id"
+                                                          class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                        <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
+                                                        <span>Viewing</span>
+                                                    </span>
+                                                </button>
                                             </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Revision Tabs (One per revision round) -->
+                        @foreach($revisionFolders->sortKeys() as $revNum => $_)
+                            <div x-show="activeTab === 'rev_{{ $revNum }}'" style="display:none;">
+                                <div class="px-3 py-1.5 bg-indigo-50/60 border border-indigo-200/80 rounded-xl mb-2 flex items-center justify-between">
+                                    <p class="text-xs font-semibold text-indigo-950">Revision {{ $revNum }} Documents</p>
+                                </div>
+                                <template x-for="group in revisions['{{ $revNum }}']" :key="group.category">
+                                    <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs transition-colors"
+                                         x-data="{ expanded: Boolean(group.category && group.category.toLowerCase().includes('application form')) }">
+                                        <button type="button" @click="expanded = !expanded"
+                                            class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                            <span class="text-xs font-semibold text-slate-900 tracking-tight" x-text="group.category"></span>
+                                            <div class="flex items-center gap-2">
+                                                <span x-show="group.files && group.files.some(f => remarksMap[f.id])" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Contains remarks"></span>
+                                                <span class="text-[11px] font-medium text-slate-400 tabular-nums"
+                                                      x-text="group.files.length + ' file(s)'"></span>
+                                                <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                                   :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
+                                            </div>
+                                        </button>
+                                        <div x-show="expanded" style="display: none;" x-transition>
+                                            <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                                <template x-for="file in group.files" :key="file.id">
+                                                    <button type="button" @click="selectFile(file)"
+                                                        :class="activeFile && activeFile.id === file.id 
+                                                            ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
+                                                            : 'text-slate-600 hover:bg-slate-50/90 font-normal border-l-[3px] border-transparent'"
+                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                                        <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-slate-200/90 bg-white shadow-2xs">
+                                                            <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <div class="flex items-center justify-between gap-1.5">
+                                                                <p class="text-xs truncate font-medium text-slate-900" x-text="file.filename"></p>
+                                                                <span x-show="remarksMap[file.id]" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Has Reviewer Note"></span>
+                                                            </div>
+                                                            <p class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></p>
+                                                        </div>
+                                                        <span x-show="activeFile && activeFile.id === file.id"
+                                                              class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                            <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
+                                                            <span>Viewing</span>
+                                                        </span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        @endforeach
+
+                        <!-- Current (Highest Revision) Documents Tab List -->
+                        <div x-show="activeTab === 'current'" style="display:none;">
+                            <template x-if="activeFiles.length === 0">
+                                <div class="p-8 text-center text-slate-400">
+                                    <i class="fas fa-file-signature text-3xl mb-2 block opacity-40" aria-hidden="true"></i>
+                                    <p class="text-xs font-medium text-slate-600">No active files found.</p>
+                                </div>
+                            </template>
+                            <template x-for="group in activeFiles" :key="group.category">
+                                <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs transition-colors"
+                                     x-data="{ expanded: Boolean(group.category && group.category.toLowerCase().includes('application form')) }">
+                                    <button type="button" @click="expanded = !expanded"
+                                        class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                        <span class="text-xs font-semibold text-slate-900 tracking-tight" x-text="group.category"></span>
+                                        <div class="flex items-center gap-2">
+                                            <span x-show="group.files && group.files.some(f => remarksMap[f.id])" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Contains remarks"></span>
+                                            <span class="text-[11px] font-medium text-slate-400 tabular-nums"
+                                                  x-text="group.files.length + ' file(s)'"></span>
+                                            <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                               :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
+                                        </div>
+                                    </button>
+                                    <div x-show="expanded" style="display: none;" x-transition>
+                                        <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                            <template x-for="file in group.files" :key="file.id">
+                                                <button type="button" @click="selectFile(file)"
+                                                    :class="activeFile && activeFile.id === file.id 
+                                                        ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
+                                                        : 'text-slate-600 hover:bg-slate-50/90 font-normal border-l-[3px] border-transparent'"
+                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-slate-200/90 bg-white shadow-2xs">
+                                                        <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
+                                                    </div>
+                                                    <div class="min-w-0 flex-1">
+                                                        <div class="flex items-center justify-between gap-1.5">
+                                                            <p class="text-xs truncate font-medium text-slate-900" x-text="file.filename"></p>
+                                                            <span x-show="remarksMap[file.id]" class="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Has Reviewer Note"></span>
+                                                        </div>
+                                                        <p class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></p>
+                                                    </div>
+                                                    <span x-show="activeFile && activeFile.id === file.id"
+                                                          class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                        <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
+                                                        <span>Viewing</span>
+                                                    </span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Complete Review Decision Modal (Two-Step or Direct Evaluation) -->
+            <template x-teleport="body">
+                <div x-show="showModal" style="display: none;"
+                     class="fixed inset-0 z-[100] overflow-y-auto"
+                     @keydown.escape.window="showModal = false"
+                     aria-labelledby="decision-modal-title" role="dialog" aria-modal="true">
+                    
+                    <!-- Backdrop -->
+                    <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
+                        <div x-show="showModal" x-transition.opacity
+                             class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity"
+                             @click="showModal = false" aria-hidden="true"></div>
+                        
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                        
+                        <!-- Modal Content Box -->
+                        <div x-show="showModal"
+                             x-transition:enter="ease-out duration-200"
+                             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                             x-transition:leave="ease-in duration-150"
+                             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                             class="relative z-10 inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-200">
+                            
+                            <!-- Modal Header -->
+                            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center shadow-2xs shrink-0">
+                                        <i class="fas fa-gavel text-sm" aria-hidden="true"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-slate-900 font-heading" id="decision-modal-title">
+                                            {{ $isReEvaluation ? 'Submit Re-Evaluation Decision' : 'Submit Review Decision' }}
+                                        </h3>
+                                        <p class="text-[11px] text-slate-500">Record your official review recommendation for this protocol</p>
+                                    </div>
+                                </div>
+                                <button type="button" @click="showModal = false"
+                                        class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                                        aria-label="Close modal">
+                                    <i class="fas fa-times text-sm"></i>
+                                </button>
+                            </div>
+
+                            <!-- Modal Form -->
+                            <form action="{{ route('reviewer.complete_review', $researchTitle->id) }}" method="POST" class="p-6 space-y-4">
+                                @csrf
+
+                                @if($reviewerUploads->isEmpty())
+                                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2.5">
+                                        <i class="fas fa-exclamation-triangle text-amber-600 text-sm mt-0.5 shrink-0"></i>
+                                        <div>
+                                            <p class="font-bold">Evaluation Document Required</p>
+                                            <p class="mt-0.5 text-[11px]">You must upload at least one evaluation document (PDF or DOCX) in the right panel before submitting your final decision.</p>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($isReEvaluation)
+                                    <!-- Re-Evaluation Decision Selector -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                                            Formal Review Decision <span class="text-rose-500">*</span>
+                                        </label>
+                                        <select name="review_decision" required
+                                                class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                            <option value="" disabled selected>Select review decision...</option>
+                                            <option value="Approved">Approved</option>
+                                            <option value="Minor revision/s required">Minor revision/s required</option>
+                                            <option value="Major revision/s required">Major revision/s required</option>
+                                            <option value="Disapproved">Disapproved</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Overarching Deliberations (Optional / Accordion) -->
+                                    <div class="space-y-3 pt-1" x-data="{ delibOpen: false }">
+                                        <button type="button" @click="delibOpen = !delibOpen"
+                                                class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 cursor-pointer">
+                                            <i class="fas fa-clipboard-list"></i>
+                                            <span x-text="delibOpen ? 'Hide Deliberation Assessment Fields' : 'Add Deliberation Assessment Details (Optional)'"></span>
+                                            <i class="fas fa-chevron-down text-[10px] transition-transform" :class="delibOpen ? 'rotate-180' : ''"></i>
+                                        </button>
+                                        <div x-show="delibOpen" style="display: none;" x-transition class="space-y-3 p-3 bg-slate-50/70 border border-slate-200/80 rounded-xl">
+                                            <div>
+                                                <label class="block text-[11px] font-bold text-slate-600 mb-1">Scientific Soundness</label>
+                                                <textarea name="scientific_soundness" rows="2" placeholder="Assess methodology, objectives, and feasibility..."
+                                                          class="w-full p-2 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none"></textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[11px] font-bold text-slate-600 mb-1">Ethical Issues & Risk Mitigation</label>
+                                                <textarea name="ethical_issues" rows="2" placeholder="Assess human subjects protection, risks, and confidentiality..."
+                                                          class="w-full p-2 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none"></textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[11px] font-bold text-slate-600 mb-1">ICF / Informed Consent Issues</label>
+                                                <textarea name="icf_issues" rows="2" placeholder="Evaluate consent forms, clarity, and participant comprehension..."
+                                                          class="w-full p-2 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none"></textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[11px] font-bold text-slate-600 mb-1">Summary of Issues & Recommendations</label>
+                                                <textarea name="summary_of_issues" rows="2" placeholder="Executive summary for the committee and researcher..."
+                                                          class="w-full p-2 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    <!-- Initial Review Decision: Suggested Next Review Type -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                                            Suggested Next Review Type <span class="text-rose-500">*</span>
+                                        </label>
+                                        <select name="suggested_review_type" required
+                                                class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                                            <option value="" disabled selected>Select suggested review classification...</option>
+                                            <option value="Exempt Review">Exempt Review</option>
+                                            <option value="Expedited Review">Expedited Review</option>
+                                            <option value="Full Board Review">Full Board Review</option>
+                                        </select>
+                                    </div>
+                                @endif
+
+                                <!-- General Deliberation Remarks -->
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                                        Executive Remarks / Deliberation Notes
+                                    </label>
+                                    <textarea name="remarks" rows="3" maxlength="2000"
+                                              placeholder="Provide your overall evaluation feedback for the administrative committee..."
+                                              class="w-full px-3 py-2 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B0000] transition-colors"></textarea>
+                                </div>
+
+                                <!-- Saved Remarks Overview -->
+                                <div class="pt-2 border-t border-slate-100">
+                                    <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+                                        <span class="font-bold text-slate-700">Per-Document Review Notes Attached</span>
+                                        <span class="tabular-nums font-semibold">{{ $myFileRemarks->count() }} file note(s)</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400">All document notes saved in your workspace are automatically submitted with this review.</p>
+                                </div>
+
+                                <!-- Modal Footer Buttons -->
+                                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                                    <button type="button" @click="showModal = false"
+                                            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" :disabled="{{ $reviewerUploads->isEmpty() ? 'true' : 'false' }}"
+                                            style="background-color: #047857; color: #ffffff;"
+                                            class="px-5 py-2 rounded-xl bg-[#047857] hover:bg-[#065f46] text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 active:scale-95">
+                                        <i class="fas fa-check-circle text-xs text-white" aria-hidden="true"></i>
+                                        <span class="text-white font-bold">Finalize Review Submission</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+        </div>
+
+        <!-- ===== SLIDE-OVER INTELLIGENCE DRAWERS (Matching Admin & Researcher Studios) ===== -->
+        <template x-teleport="body">
+            <div x-show="drawerOpen" 
+                 x-cloak
+                 style="display: none;"
+                 class="fixed inset-0 z-50 overflow-hidden" 
+                 role="dialog" 
+                 aria-modal="true"
+                 aria-label="Protocol Details Drawer">
+                
+                <!-- Backdrop -->
+                <div x-show="drawerOpen"
+                     x-transition:enter="transition-opacity ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition-opacity ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     @click="closeDrawer()"
+                     class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs"></div>
+
+                <!-- Slide-over Drawer Panel -->
+                <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+                    <div x-show="drawerOpen"
+                         x-transition:enter="transform transition ease-in-out duration-300 sm:duration-400"
+                         x-transition:enter-start="translate-x-full"
+                         x-transition:enter-end="translate-x-0"
+                         x-transition:leave="transform transition ease-in-out duration-300 sm:duration-400"
+                         x-transition:leave-start="translate-x-0"
+                         x-transition:leave-end="translate-x-full"
+                         class="w-screen max-w-md sm:max-w-lg bg-white shadow-2xl flex flex-col border-l border-slate-200">
+                        
+                        <!-- Drawer Header -->
+                        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-[#8B0000]/10 text-[#8B0000] border border-[#8B0000]/20 flex items-center justify-center shrink-0">
+                                    <i class="fas" :class="{
+                                        'fa-info-circle': drawerTab === 'details',
+                                        'fa-list-check': drawerTab === 'activity',
+                                        'fa-history': drawerTab === 'history'
+                                    }"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-900 font-heading" x-text="{
+                                        'details': 'Submission Details',
+                                        'activity': 'Protocol Activity Log',
+                                        'history': 'Revision Feedback History'
+                                    }[drawerTab]"></h3>
+                                    <p class="text-[11px] text-slate-500 font-mono">{{ $researchTitle->reoc_code ?? 'PENDING' }}</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="closeDrawer()"
+                                    class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                                    aria-label="Close drawer">
+                                <i class="fas fa-times text-sm"></i>
+                            </button>
+                        </div>
+
+                        <!-- Drawer Tab Switcher -->
+                        <div class="px-4 py-2 bg-slate-100/70 border-b border-slate-200 flex gap-1 shrink-0">
+                            <button type="button" @click="drawerTab = 'details'"
+                                    :class="drawerTab === 'details' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                                    class="flex-1 py-1 px-2.5 rounded-lg text-xs transition-all cursor-pointer text-center">
+                                Details
+                            </button>
+                            <button type="button" @click="drawerTab = 'activity'"
+                                    :class="drawerTab === 'activity' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                                    class="flex-1 py-1 px-2.5 rounded-lg text-xs transition-all cursor-pointer text-center">
+                                Activity Log
+                            </button>
+                            @if($researchTitle->revisionLogs->isNotEmpty())
+                                <button type="button" @click="drawerTab = 'history'"
+                                        :class="drawerTab === 'history' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                                        class="flex-1 py-1 px-2.5 rounded-lg text-xs transition-all cursor-pointer text-center">
+                                    History
+                                </button>
+                            @endif
+                        </div>
+
+                        <!-- Drawer Content Body -->
+                        <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4">
+                            
+                            <!-- Tab: Details -->
+                            <div x-show="drawerTab === 'details'" class="space-y-4">
+                                <div class="space-y-3 text-xs">
+                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Study Protocol Title</p>
+                                        <p class="font-bold text-slate-900 leading-snug">{{ $researchTitle->Study_Protocol_title }}</p>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">REOC Code</p>
+                                            <p class="font-mono font-bold text-slate-800">{{ $researchTitle->reoc_code ?? 'None' }}</p>
+                                        </div>
+                                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status</p>
+                                            <p class="font-bold text-slate-800">{{ $researchTitle->Status }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Research Type</p>
+                                            <p class="font-bold text-slate-800">{{ $researchTitle->research_type ?? 'N/A' }}</p>
+                                        </div>
+                                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Category</p>
+                                            <p class="font-bold text-slate-800">{{ $researchTitle->Research_Category ?? 'Research' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Lead Researcher</p>
+                                        <p class="font-bold text-slate-900">
+                                            {{ $researchTitle->researcher?->user ? ($researchTitle->researcher->user->first_name . ' ' . $researchTitle->researcher->user->last_name) : 'Unknown' }}
+                                        </p>
+                                        <p class="text-slate-500 text-[11px] mt-0.5">{{ $researchTitle->researcher?->user?->email }}</p>
+                                    </div>
+                                    @if(!empty($researchTitle->co_investigators))
+                                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Co-Investigators</p>
+                                            <p class="text-slate-700 leading-relaxed">{{ $researchTitle->co_investigators }}</p>
                                         </div>
                                     @endif
+                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Initial Submission Date</p>
+                                        <p class="font-bold text-slate-800">{{ $researchTitle->created_at->format('F d, Y • h:i A') }}</p>
+                                    </div>
+                                </div>
+                            </div>
 
-                                </div>{{-- end scrollable list --}}
-                            </div>{{-- end tabbed picker card --}}
-                        </div><!-- End Document Index Panel -->
+                            <!-- Tab: Activity Log -->
+                            <div x-show="drawerTab === 'activity'" class="space-y-3">
+                                <div class="relative pl-3">
+                                    <div class="absolute left-3 top-2 bottom-2 w-0.5 bg-slate-200"></div>
+                                    <div class="space-y-3">
+                                        @forelse($researchTitle->titleLogs as $log)
+                                            <div class="flex gap-2.5 relative">
+                                                <div class="w-4 h-4 rounded-full bg-slate-100 border-2 border-white flex-shrink-0 z-10 -ml-[7px] flex items-center justify-center mt-0.5">
+                                                    <div class="w-1.5 h-1.5 rounded-full bg-indigo-600"></div>
+                                                </div>
+                                                <div class="min-w-0 flex-1 pb-1">
+                                                    <p class="text-xs font-bold text-slate-900 leading-snug">{{ $log->action }}</p>
+                                                    <p class="text-[11px] text-slate-600 mt-0.5 leading-relaxed">{{ $log->description }}</p>
+                                                    <p class="text-[10px] font-mono text-slate-400 mt-0.5 tabular-nums">
+                                                        {{ $log->created_at->format('M d, Y • h:i A') }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <p class="text-xs text-slate-400 italic py-4 text-center">No activity logs recorded yet.</p>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            </div>
 
-            </div>{{-- end right col --}}
-        </div>{{-- end grid --}}
+                            <!-- Tab: Revision History -->
+                            <div x-show="drawerTab === 'history'" class="space-y-3">
+                                @forelse($researchTitle->revisionLogs as $log)
+                                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded-full {{ $log->user?->role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700' }} flex items-center justify-center text-[10px] font-bold">
+                                                    <i class="fas {{ $log->user?->role === 'admin' ? 'fa-user-shield' : 'fa-user' }}"></i>
+                                                </div>
+                                                <p class="text-xs font-bold text-slate-900">
+                                                    {{ $log->user?->first_name }} {{ $log->user?->last_name }}
+                                                    <span class="text-[10px] font-normal text-slate-400">({{ ucfirst($log->user?->role ?? 'User') }})</span>
+                                                </p>
+                                            </div>
+                                            <span class="text-[10px] text-slate-400 tabular-nums">{{ $log->created_at->format('M d, Y') }}</span>
+                                        </div>
+                                        <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap pl-8">{{ $log->message }}</p>
+                                    </div>
+                                @empty
+                                    <p class="text-xs text-slate-400 italic py-4 text-center">No revision history logs recorded.</p>
+                                @endforelse
+                            </div>
+
+                        </div>
+
+                        <!-- Drawer Footer -->
+                        <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex justify-end shrink-0">
+                            <button type="button" @click="closeDrawer()"
+                                    class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold transition-all shadow-2xs cursor-pointer">
+                                Close Details
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </template>
+
     </div>
 </x-reviewer_layout>
-
-

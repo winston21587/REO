@@ -386,7 +386,7 @@
                 </button>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 pt-16 md:pt-5 lg:pt-6 flex flex-col">
+            <div class="flex-1 {{ request()->routeIs('admin.view_files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5 pt-16 md:pt-3.5 lg:pt-3.5' : 'overflow-y-auto p-4 sm:p-5 lg:p-6 pt-16 md:pt-5 lg:pt-6' }} flex flex-col">
                 {{ $slot }}
             </div>
         </main>

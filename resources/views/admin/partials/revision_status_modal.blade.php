@@ -2,19 +2,19 @@
 <div id="revisionStatusModal" class="fixed inset-0 z-50 hidden transition-opacity duration-300 opacity-0"
     aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <!-- Backdrop -->
-    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeRevisionStatusModal()">
+    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity" onclick="closeRevisionStatusModal()">
     </div>
 
     <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
         <div id="revisionStatusModalContent"
-            class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl scale-95 duration-300 max-h-[90vh] flex flex-col">
+            class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl scale-95 duration-300 max-h-[90vh] flex flex-col border border-slate-200/80">
 
             <!-- Header -->
-            <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-slate-100 flex-shrink-0">
+            <div class="bg-white px-5 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-slate-100 flex-shrink-0">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-[#8B0000]">
-                            <i class="fas fa-sync-alt text-lg"></i>
+                        <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-[#8B0000] flex-shrink-0">
+                            <i class="fas fa-sync-alt text-base"></i>
                         </div>
                         <div>
                             <h3 class="text-lg font-bold leading-6 text-slate-900 font-heading" id="modal-title">Update
@@ -23,14 +23,14 @@
                         </div>
                     </div>
                     <button type="button" onclick="closeRevisionStatusModal()"
-                        class="text-slate-400 hover:text-slate-500 transition-colors">
-                        <i class="fas fa-times text-xl"></i>
+                        class="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close modal">
+                        <i class="fas fa-times text-base"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Body -->
-            <div class="px-4 py-6 sm:p-6 bg-slate-50/50 overflow-y-auto">
+            <div class="px-5 py-6 sm:p-6 bg-slate-50/50 overflow-y-auto">
                 <form id="revisionStatusForm" method="POST" class="space-y-6">
                     @csrf
                     <input type="hidden" name="status_action" id="revisionStatusActionInput">
@@ -39,49 +39,48 @@
                              DELIBERATION NOTES (Required - Top Section)
                              ============================================= -->
 
-
                     <!-- Scientific Soundness -->
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">
-                            <i class="fas fa-microscope text-indigo-400 mr-1"></i> Scientific Soundness <span
-                                class="text-red-400">*</span>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                            <i class="fas fa-microscope text-indigo-500 mr-1.5"></i> Scientific Soundness <span
+                                class="text-red-500">*</span>
                         </label>
                         <textarea id="deliberation_scientific" name="scientific_soundness" rows="3" readonly
                             placeholder="No feedback provided..."
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm bg-slate-50 text-slate-500 cursor-not-allowed shadow-none resize-none focus:outline-none"></textarea>
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm bg-slate-50/80 text-slate-600 cursor-not-allowed shadow-2xs resize-none focus:outline-none leading-relaxed"></textarea>
                     </div>
 
                     <!-- Ethical Issues -->
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">
-                            <i class="fas fa-balance-scale text-amber-400 mr-1"></i> Ethical Issues <span
-                                class="text-red-400">*</span>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                            <i class="fas fa-balance-scale text-amber-500 mr-1.5"></i> Ethical Issues <span
+                                class="text-red-500">*</span>
                         </label>
                         <textarea id="deliberation_ethical" name="ethical_issues" rows="3" readonly
                             placeholder="No feedback provided..."
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm bg-slate-50 text-slate-500 cursor-not-allowed shadow-none resize-none focus:outline-none"></textarea>
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm bg-slate-50/80 text-slate-600 cursor-not-allowed shadow-2xs resize-none focus:outline-none leading-relaxed"></textarea>
                     </div>
 
                     <!-- ICF Issues -->
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">
-                            <i class="fas fa-file-signature text-emerald-400 mr-1"></i> Informed Consent Form (ICF)
-                            Issues <span class="text-red-400">*</span>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                            <i class="fas fa-file-signature text-emerald-500 mr-1.5"></i> Informed Consent Form (ICF)
+                            Issues <span class="text-red-500">*</span>
                         </label>
                         <textarea id="deliberation_icf" name="icf_issues" rows="3" readonly
                             placeholder="No feedback provided..."
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm bg-slate-50 text-slate-500 cursor-not-allowed shadow-none resize-none focus:outline-none"></textarea>
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm bg-slate-50/80 text-slate-600 cursor-not-allowed shadow-2xs resize-none focus:outline-none leading-relaxed"></textarea>
                     </div>
 
                     <!-- Summary of Issues and Resolutions -->
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">
-                            <i class="fas fa-list-check text-rose-400 mr-1"></i> Summary of Issues and Resolutions <span
-                                class="text-red-400">*</span>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                            <i class="fas fa-list-check text-rose-500 mr-1.5"></i> Summary of Issues and Resolutions <span
+                                class="text-red-500">*</span>
                         </label>
                         <textarea id="deliberation_summary" name="summary_of_issues" rows="3" readonly
                             placeholder="No feedback provided..."
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm bg-slate-50 text-slate-500 cursor-not-allowed shadow-none resize-none focus:outline-none"></textarea>
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm bg-slate-50/80 text-slate-600 cursor-not-allowed shadow-2xs resize-none focus:outline-none leading-relaxed"></textarea>
                     </div>
 
                     <!-- =============================================
@@ -89,25 +88,25 @@
                              ============================================= -->
                     <div id="historicalFeedbackContainer" class="hidden mt-6 mb-2">
                         <details
-                            class="group bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-sm transition-all duration-300">
+                            class="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs transition-all duration-300">
                             <summary
-                                class="flex items-center justify-between cursor-pointer p-4 hover:bg-slate-100 transition-colors focus:outline-none">
+                                class="flex items-center justify-between cursor-pointer p-4 hover:bg-slate-50 transition-colors focus:outline-none">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-open:text-indigo-500 shadow-sm transition-colors">
+                                        class="h-8 w-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 group-open:text-indigo-600 shadow-2xs transition-colors">
                                         <i class="fas fa-history text-xs"></i>
                                     </div>
                                     <span class="text-sm font-bold text-slate-700">View Previous Remarks</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <span
-                                        class="bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-md text-[10px] font-bold"
+                                        class="bg-indigo-50 text-indigo-700 border border-indigo-200/60 px-2.5 py-0.5 rounded-full text-xs font-semibold"
                                         id="historicalRoundCount">0</span>
                                     <i
                                         class="fas fa-chevron-down text-slate-400 text-xs transition-transform duration-300 group-open:rotate-180"></i>
                                 </div>
                             </summary>
-                            <div class="p-4 bg-white border-t border-slate-200 space-y-4 max-h-[40vh] overflow-y-auto custom-scrollbar"
+                            <div class="p-4 bg-slate-50/50 border-t border-slate-100 space-y-4 max-h-[40vh] overflow-y-auto"
                                 id="historicalFeedbackContent">
                                 <!-- Dynamic Content Here -->
                             </div>
@@ -117,7 +116,7 @@
                     <!-- Divider -->
                     <div class="flex items-center gap-3 pt-2">
                         <div class="h-px bg-slate-200 flex-1"></div>
-                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Final
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Final
                             Action</span>
                         <div class="h-px bg-slate-200 flex-1"></div>
                     </div>
@@ -127,84 +126,84 @@
                              Panel Deliberation REMOVED per SOP
                              ============================================= -->
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-3">Action Taken</label>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">Action Taken</label>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <!-- Modifications Required -->
                             <div onclick="selectRevisionStatus('Modifications Required', this)"
-                                class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-orange-400 hover:shadow-md transition-all group">
+                                class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-orange-400 hover:shadow-xs transition-all group">
                                 <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
                                     <i class="fas fa-check-circle text-orange-500"></i>
                                 </div>
                                 <div
-                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-orange-500">
-                                    <i class="fas fa-edit text-lg"></i>
+                                    class="icon-box w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-orange-500">
+                                    <i class="fas fa-edit text-base"></i>
                                 </div>
                                 <h4 class="font-bold text-slate-800 text-sm">Modifications Required</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Minor or Major revisions</p>
+                                <p class="text-xs text-slate-500 mt-1">Minor or Major revisions</p>
                             </div>
 
                             <!-- Disapproved -->
                             <div onclick="selectRevisionStatus('Disapproved', this)"
-                                class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-red-400 hover:shadow-md transition-all group">
+                                class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-red-400 hover:shadow-xs transition-all group">
                                 <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
                                     <i class="fas fa-check-circle text-red-500"></i>
                                 </div>
                                 <div
-                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-red-500">
-                                    <i class="fas fa-times-circle text-lg"></i>
+                                    class="icon-box w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-red-500">
+                                    <i class="fas fa-times-circle text-base"></i>
                                 </div>
                                 <h4 class="font-bold text-slate-800 text-sm">Disapproved</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Serious ethical violations</p>
+                                <p class="text-xs text-slate-500 mt-1">Serious ethical violations</p>
                             </div>
 
                             <!-- Approve -->
                             <div onclick="selectRevisionStatus('Approved', this)"
-                                class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-green-400 hover:shadow-md transition-all group">
+                                class="revision-status-option cursor-pointer relative bg-white border border-slate-200 rounded-xl p-4 hover:border-emerald-400 hover:shadow-xs transition-all group">
                                 <div class="absolute top-3 right-3 opacity-0 transition-opacity check-icon">
-                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <i class="fas fa-check-circle text-emerald-500"></i>
                                 </div>
                                 <div
-                                    class="icon-box w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-green-500">
-                                    <i class="fas fa-award text-lg"></i>
+                                    class="icon-box w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mb-3 transition-colors group-hover:text-emerald-500">
+                                    <i class="fas fa-award text-base"></i>
                                 </div>
                                 <h4 class="font-bold text-slate-800 text-sm">Approve</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">Issue Clearance</p>
+                                <p class="text-xs text-slate-500 mt-1">Issue Clearance</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Appointment Date -->
                     <div>
-                        <label for="revisionAppointmentDate" class="block text-sm font-bold text-slate-700 mb-2">Set
+                        <label for="revisionAppointmentDate" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Set
                             Appointment / Deadline</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="far fa-calendar-alt text-slate-400"></i>
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="far fa-calendar-alt text-slate-400 text-sm"></i>
                             </div>
                             <input type="date" id="revisionAppointmentDate" name="appointment_date"
                                 min="{{ date('Y-m-d') }}"
-                                class="w-full pl-10 pr-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all">
+                                class="h-11 min-h-[44px] w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs transition-all bg-white">
                         </div>
                     </div>
 
                     <!-- Message Box -->
                     <div>
-                        <label for="revisionRemarks" class="block text-sm font-bold text-slate-700 mb-2">Notification
-                            Message <span class="text-slate-400 font-normal text-xs">(Optional)</span></label>
+                        <label for="revisionRemarks" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Notification
+                            Message <span class="text-slate-400 font-normal lowercase tracking-normal">(optional)</span></label>
                         <textarea id="revisionRemarks" name="remarks" rows="3"
-                            class="w-full px-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm transition-all resize-none"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs transition-all resize-none bg-white"
                             placeholder="Add any specific instructions or remarks for the researcher..."></textarea>
                     </div>
 
                     <!-- Actions -->
                     <div class="flex gap-3 pt-4 border-t border-slate-100">
                         <button type="button" onclick="closeRevisionStatusModal()"
-                            class="flex-1 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors">
+                            class="h-11 min-h-[44px] flex-1 px-4 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs cursor-pointer flex items-center justify-center">
                             Cancel
                         </button>
                         <button type="submit" id="submitRevisionStatusBtn"
-                            class="flex-1 px-4 py-3 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] transition-colors shadow-lg shadow-red-900/20 flex justify-center items-center gap-2">
-                            <span>Update & Notify</span> <i class="fas fa-paper-plane"></i>
+                            class="h-11 min-h-[44px] flex-1 px-4 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] transition-all shadow-md shadow-red-900/20 flex justify-center items-center gap-2 cursor-pointer">
+                            <span>Update & Notify</span> <i class="fas fa-paper-plane text-xs"></i>
                         </button>
                     </div>
                 </form>
@@ -218,13 +217,13 @@
         // 1. Update Hidden Input
         document.getElementById('revisionStatusActionInput').value = status;
 
-        // 2. Visual Selection — Remove active class from all options
+        // 2. Visual Selection: Remove active class from all options
         document.querySelectorAll('.revision-status-option').forEach(el => {
-            el.classList.remove('border-orange-400', 'bg-orange-50', 'border-red-400', 'bg-red-50', 'border-green-400', 'bg-green-50');
+            el.classList.remove('border-orange-400', 'bg-orange-50/60', 'border-red-400', 'bg-red-50/60', 'border-emerald-400', 'bg-emerald-50/60');
             el.classList.add('border-slate-200');
             el.querySelector('.check-icon').classList.add('opacity-0');
             const iconBox = el.querySelector('.icon-box');
-            iconBox.classList.remove('text-orange-500', 'text-red-500', 'text-green-500');
+            iconBox.classList.remove('text-orange-500', 'text-red-500', 'text-emerald-500');
             iconBox.classList.add('text-slate-400');
         });
 
@@ -236,17 +235,17 @@
         const submitBtn = document.getElementById('submitRevisionStatusBtn');
 
         if (status === 'Modifications Required') {
-            activeClass = 'border-orange-400 bg-orange-50';
+            activeClass = 'border-orange-400 bg-orange-50/60';
             activeText = 'text-orange-500';
-            submitBtn.innerHTML = '<span>Generate Letter</span> <i class="fas fa-file-invoice"></i>';
+            submitBtn.innerHTML = '<span>Generate Letter</span> <i class="fas fa-file-invoice text-xs"></i>';
         } else if (status === 'Disapproved') {
-            activeClass = 'border-red-400 bg-red-50';
+            activeClass = 'border-red-400 bg-red-50/60';
             activeText = 'text-red-500';
-            submitBtn.innerHTML = '<span>Update & Notify</span> <i class="fas fa-paper-plane"></i>';
+            submitBtn.innerHTML = '<span>Update & Notify</span> <i class="fas fa-paper-plane text-xs"></i>';
         } else if (status === 'Approved') {
-            activeClass = 'border-green-400 bg-green-50';
-            activeText = 'text-green-500';
-            submitBtn.innerHTML = '<span>Update & Notify</span> <i class="fas fa-paper-plane"></i>';
+            activeClass = 'border-emerald-400 bg-emerald-50/60';
+            activeText = 'text-emerald-500';
+            submitBtn.innerHTML = '<span>Update & Notify</span> <i class="fas fa-paper-plane text-xs"></i>';
         }
 
         const classes = activeClass.split(' ');
@@ -300,16 +299,16 @@
                         const roundLabel = `Version ${data.history.length - index}`;
 
                         const roundHtml = `
-                            <div class="border border-slate-100 rounded-xl overflow-hidden bg-white shadow-sm mb-4 last:mb-0">
-                                <div class="bg-slate-50 px-4 py-2 border-b border-slate-100 flex justify-between items-center">
-                                    <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">${roundLabel}</span>
-                                    <span class="text-[11px] text-slate-400 font-medium flex items-center gap-1.5"><i class="far fa-clock"></i> ${round.round_date}</span>
+                            <div class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs mb-4 last:mb-0">
+                                <div class="bg-slate-50/80 px-4 py-2.5 border-b border-slate-100 flex justify-between items-center">
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">${roundLabel}</span>
+                                    <span class="text-xs text-slate-500 font-medium flex items-center gap-1.5"><i class="far fa-clock text-slate-400"></i> ${round.round_date}</span>
                                 </div>
-                                <div class="p-4 space-y-4">
-                                    ${round.scientific_soundness ? `<div><h5 class="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest mb-1">Scientific Soundness</h5><p class="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed border-l-2 border-indigo-100 pl-3">${round.scientific_soundness}</p></div>` : ''}
-                                    ${round.ethical_issues ? `<div><h5 class="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest mb-1">Ethical Issues</h5><p class="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed border-l-2 border-amber-100 pl-3">${round.ethical_issues}</p></div>` : ''}
-                                    ${round.icf_issues ? `<div><h5 class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest mb-1">ICF Issues</h5><p class="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed border-l-2 border-emerald-100 pl-3">${round.icf_issues}</p></div>` : ''}
-                                    ${round.summary_of_issues ? `<div><h5 class="text-[10px] font-extrabold text-rose-400 uppercase tracking-widest mb-1">Summary</h5><p class="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed border-l-2 border-rose-100 pl-3">${round.summary_of_issues}</p></div>` : ''}
+                                <div class="p-4 space-y-3.5">
+                                    ${round.scientific_soundness ? `<div><h5 class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1">Scientific Soundness</h5><p class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed border-l-2 border-indigo-200 pl-3">${round.scientific_soundness}</p></div>` : ''}
+                                    ${round.ethical_issues ? `<div><h5 class="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">Ethical Issues</h5><p class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed border-l-2 border-amber-200 pl-3">${round.ethical_issues}</p></div>` : ''}
+                                    ${round.icf_issues ? `<div><h5 class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">ICF Issues</h5><p class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed border-l-2 border-emerald-200 pl-3">${round.icf_issues}</p></div>` : ''}
+                                    ${round.summary_of_issues ? `<div><h5 class="text-xs font-bold text-rose-600 uppercase tracking-wider mb-1">Summary</h5><p class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed border-l-2 border-rose-200 pl-3">${round.summary_of_issues}</p></div>` : ''}
                                 </div>
                             </div>
                         `;
@@ -330,11 +329,12 @@
 
         // Reset Box Selection Visuals
         document.querySelectorAll('.revision-status-option').forEach(el => {
-            el.classList.remove('border-orange-400', 'bg-orange-50', 'border-red-400', 'bg-red-50', 'border-green-400', 'bg-green-50');
+            el.classList.remove('border-orange-400', 'bg-orange-50/60', 'border-red-400', 'bg-red-50/60', 'border-emerald-400', 'bg-emerald-50/60');
             el.classList.add('border-slate-200');
             el.querySelector('.check-icon').classList.add('opacity-0');
-            el.querySelector('.icon-box').classList.remove('text-orange-500', 'text-red-500', 'text-green-500');
-            el.querySelector('.icon-box').classList.add('text-slate-400');
+            const iconBox = el.querySelector('.icon-box');
+            iconBox.classList.remove('text-orange-500', 'text-red-500', 'text-emerald-500');
+            iconBox.classList.add('text-slate-400');
         });
 
         // Auto-select current status
@@ -375,8 +375,6 @@
     // Handle Form Submission via AJAX
     document.getElementById('revisionStatusForm').addEventListener('submit', async function (e) {
         e.preventDefault();
-
-
 
         const statusAction = document.getElementById('revisionStatusActionInput').value;
 

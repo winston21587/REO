@@ -38,3 +38,16 @@ Thumbs.db
 /PRODUCT.md
 design.json
 /scratch/
+/design-system
+
+# Impeccable runtime & visual review artifacts
+.impeccable/config.local.json
+.impeccable/hook.*.json
+.impeccable/*.png
+.impeccable/live/
+!.impeccable/config.json
+!.impeccable/design.json
+
+# Playwright review screenshots
+tests/screenshots/
+test-results/

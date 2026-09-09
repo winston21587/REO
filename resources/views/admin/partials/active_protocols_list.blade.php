@@ -8,28 +8,28 @@
                             $docStatus = $isAdvanced ? 'Hardcopy Received' : $data->Status;
                             $docBadgeConfig = [
                                 'Hardcopy Received' => [
-                                    'badge' => 'bg-teal-50/70 text-teal-800 border-teal-200/70',
+                                    'text' => 'text-teal-700',
                                     'dot' => 'bg-teal-500',
                                     'label' => 'Hardcopy Received'
                                 ],
                                 'Incomplete - Awaiting Hardcopy' => [
-                                    'badge' => 'bg-rose-50/70 text-rose-800 border-rose-200/70',
+                                    'text' => 'text-rose-700',
                                     'dot' => 'bg-rose-500',
-                                    'label' => 'Incomplete - Awaiting Hardcopy'
+                                    'label' => 'Incomplete: Awaiting Hardcopy'
                                 ],
                                 'Incomplete Hardcopy' => [
-                                    'badge' => 'bg-rose-50/70 text-rose-800 border-rose-200/70',
+                                    'text' => 'text-rose-700',
                                     'dot' => 'bg-rose-500',
                                     'label' => 'Incomplete Hardcopy'
                                 ],
                                 'For Initial Review' => [
-                                    'badge' => 'bg-sky-50/70 text-sky-800 border-sky-200/70',
+                                    'text' => 'text-sky-700',
                                     'dot' => 'bg-sky-500',
                                     'label' => 'For Initial Review'
                                 ],
                             ];
                             $docConfig = $docBadgeConfig[$docStatus] ?? [
-                                'badge' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                'text' => 'text-slate-600',
                                 'dot' => 'bg-slate-400',
                                 'label' => $docStatus
                             ];
@@ -37,28 +37,28 @@
                             $revStatus = $isAdvanced ? $data->Status : 'Pending Assignment';
                             $revBadgeConfig = [
                                 'Pending Assignment' => [
-                                    'badge' => 'bg-slate-100 text-slate-600 border-slate-200/80 italic',
+                                    'text' => 'text-slate-500 italic',
                                     'dot' => 'bg-slate-400',
                                     'label' => 'Pending Assignment'
                                 ],
                                 'Reviewer Assigned' => [
-                                    'badge' => 'bg-blue-50/70 text-blue-800 border-blue-200/70',
+                                    'text' => 'text-blue-700',
                                     'dot' => 'bg-blue-500',
                                     'label' => 'Reviewer Assigned'
                                 ],
                                 'Under Review' => [
-                                    'badge' => 'bg-indigo-50/70 text-indigo-800 border-indigo-200/70',
+                                    'text' => 'text-indigo-700',
                                     'dot' => 'bg-indigo-500',
                                     'label' => 'Under Review'
                                 ],
                                 'Reviewed' => [
-                                    'badge' => 'bg-emerald-50/70 text-emerald-800 border-emerald-200/70',
+                                    'text' => 'text-emerald-700',
                                     'dot' => 'bg-emerald-500',
                                     'label' => 'Reviewed'
                                 ],
                             ];
                             $revConfig = $revBadgeConfig[$revStatus] ?? [
-                                'badge' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                'text' => 'text-slate-600',
                                 'dot' => 'bg-slate-400',
                                 'label' => $revStatus
                             ];
@@ -66,17 +66,17 @@
                             $reviewerSuggestedType = $data->adminFiles->whereNotNull('suggested_review_type')->first()?->suggested_review_type;
                             $typeBadgeConfig = [
                                 'Exempt Review' => [
-                                    'badge' => 'bg-emerald-50/70 text-emerald-800 border-emerald-200/70',
+                                    'text' => 'text-emerald-700',
                                     'icon' => 'fa-check-circle text-emerald-600',
                                     'label' => 'Exempt Review'
                                 ],
                                 'Expedited Review' => [
-                                    'badge' => 'bg-blue-50/70 text-blue-800 border-blue-200/70',
+                                    'text' => 'text-blue-700',
                                     'icon' => 'fa-bolt text-blue-600',
                                     'label' => 'Expedited Review'
                                 ],
                                 'Full Board Review' => [
-                                    'badge' => 'bg-amber-50/70 text-amber-900 border-amber-200/70',
+                                    'text' => 'text-amber-800',
                                     'icon' => 'fa-users text-amber-700',
                                     'label' => 'Full Board Review'
                                 ]
@@ -94,15 +94,15 @@
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                        <span class="text-[10px] font-mono font-medium text-slate-600 bg-slate-100 border border-slate-200/70 px-1.5 py-0.5 rounded">
+                                        <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
                                             #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
                                         </span>
-                                        <span class="text-xs text-slate-500 font-medium">
-                                            <i class="far fa-calendar-alt text-slate-400 mr-1"></i>{{ $data->created_at->format('M d, Y') }}
+                                        <span class="text-xs text-slate-500 font-medium tabular-nums flex items-center gap-1.5">
+                                            <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>{{ $data->created_at->format('M d, Y') }}
                                         </span>
                                     </div>
                                     <a href="{{ route('admin.view_files', $data->id) }}"
-                                       class="font-semibold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors"
+                                       class="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-sm"
                                        title="{{ $data->Study_Protocol_title }}">
                                         {{ $data->Study_Protocol_title }}
                                     </a>
@@ -132,16 +132,16 @@
                                         assigned_reviewers: {{ json_encode($data->assigned_reviewers ?? []) }},
                                         update_status_url: '{{ route('admin.updateStatus', $data->id) }}'
                                     })"
-                                    class="p-2.5 -mr-1 text-slate-400 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]"
+                                    class="p-2.5 -mr-1 text-slate-500 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] touch-manipulation"
                                     title="Protocol Actions"
                                     aria-label="Actions for {{ $data->Study_Protocol_title }}">
-                                    <i class="fas fa-ellipsis-v text-sm"></i>
+                                    <i class="fas fa-ellipsis-v text-sm" aria-hidden="true"></i>
                                 </button>
                             </div>
 
                             <!-- Researcher Row -->
                             <div class="flex items-center gap-2.5 pt-2 border-t border-slate-100 text-xs text-slate-600">
-                                <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-700 uppercase shrink-0">
+                                <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-xs font-bold text-slate-700 uppercase shrink-0">
                                     {{ substr($data->researcher->user->first_name ?? 'U', 0, 1) }}
                                 </div>
                                 <span class="font-semibold text-slate-800 truncate">
@@ -149,70 +149,55 @@
                                 </span>
                                 @if($data->researcher->user->email ?? false)
                                     <span class="text-slate-300">•</span>
-                                    <span class="text-slate-400 truncate text-[11px]">{{ $data->researcher->user->email }}</span>
+                                    <span class="text-slate-500 truncate text-[11px] font-medium">{{ $data->researcher->user->email }}</span>
                                 @endif
                             </div>
 
-                            <!-- Status Badges Grid -->
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
-                                <div class="bg-slate-50/80 border border-slate-200/60 p-2 rounded-lg">
-                                    <span class="block text-[9px] font-semibold uppercase tracking-wider text-slate-400">Document Status</span>
-                                    <div class="flex items-center gap-1.5 mt-1">
-                                        <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ $docConfig['dot'] }}"></span>
-                                        <span class="text-xs font-semibold truncate leading-tight">
-                                            {{ $docConfig['label'] }}
+                            <!-- Protocol Metadata & Badges (Clean, unnested layout) -->
+                            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+                                <!-- Doc Status Text -->
+                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $docConfig['text'] }}">
+                                    <span>{{ $docConfig['label'] }}</span>
+                                    @if($data->Status === 'Incomplete - Awaiting Hardcopy' && $latestDeficiencies->get($data->id))
+                                        <span class="text-rose-600 shrink-0 cursor-help ml-1.5" title="Reason: {{ $latestDeficiencies->get($data->id)->message }}">
+                                            <i class="fas fa-exclamation-circle text-xs" aria-hidden="true"></i>
                                         </span>
-                                        @if($data->Status === 'Incomplete - Awaiting Hardcopy' && $latestDeficiencies->get($data->id))
-                                            <span class="text-rose-600 shrink-0" title="Reason: {{ $latestDeficiencies->get($data->id)->message }}">
-                                                <i class="fas fa-exclamation-circle text-xs"></i>
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
+                                    @endif
+                                </span>
 
-                                <div class="bg-slate-50/80 border border-slate-200/60 p-2 rounded-lg">
-                                    <span class="block text-[9px] font-semibold uppercase tracking-wider text-slate-400">Reviewer Status</span>
-                                    <div class="flex items-center gap-1.5 mt-1">
-                                        <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ $revConfig['dot'] }}"></span>
-                                        <span class="text-xs font-semibold truncate leading-tight">
-                                            {{ $revConfig['label'] }}
-                                        </span>
-                                    </div>
-                                </div>
+                                <!-- Review Status Text -->
+                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $revConfig['text'] }}">
+                                    <span>{{ $revConfig['label'] }}</span>
+                                </span>
 
-                                <div class="bg-slate-50/80 border border-slate-200/60 p-2 rounded-lg col-span-2 sm:col-span-1">
-                                    <span class="block text-[9px] font-semibold uppercase tracking-wider text-slate-400">Classification</span>
-                                    <div class="flex flex-col gap-0.5 mt-1">
-                                        <div class="flex items-center gap-1">
-                                            @if(isset($typeBadgeConfig[$data->Review_Type]))
-                                                <i class="fas {{ $typeBadgeConfig[$data->Review_Type]['icon'] }} text-[9px]"></i>
-                                                <span class="text-xs font-semibold truncate leading-tight">
-                                                    {{ $data->Review_Type }}
-                                                </span>
-                                            @else
-                                                <span class="text-xs font-medium text-slate-400 italic truncate leading-tight">
-                                                    {{ $data->Review_Type ?: 'Unassigned' }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                        @if(!empty($reviewerSuggestedType))
-                                            <span class="text-[10px] text-slate-500 font-medium truncate">
-                                                Suggested: {{ str_replace(' Review', '', $reviewerSuggestedType) }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
+                                <!-- Review Classification Text -->
+                                @if(isset($typeBadgeConfig[$data->Review_Type]))
+                                    <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $typeBadgeConfig[$data->Review_Type]['text'] }}">
+                                        <span>{{ $data->Review_Type }}</span>
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center text-xs font-semibold text-slate-400 italic whitespace-nowrap">
+                                        {{ $data->Review_Type ?: 'Unassigned' }}
+                                    </span>
+                                @endif
+
+                                @if(!empty($reviewerSuggestedType))
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 whitespace-nowrap" title="Suggested by Reviewer">
+                                        <i class="fas fa-level-up-alt text-[11px] text-slate-400 rotate-90" aria-hidden="true"></i>
+                                        Suggested: {{ str_replace(' Review', '', $reviewerSuggestedType) }}
+                                    </span>
+                                @endif
                             </div>
 
                             <!-- Assigned Reviewers -->
                             @if($data->assigned_reviewers && count($data->assigned_reviewers) > 0)
                                 <div class="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-                                    <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mr-0.5">Reviewers:</span>
+                                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Reviewers:</span>
                                     @foreach($data->assigned_reviewers as $reviewerId)
                                         @php $reviewerUser = $reviewersById->get($reviewerId); @endphp
                                         @if($reviewerUser)
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80 font-medium text-[11px]">
-                                                <i class="fas fa-user-check text-slate-400 text-[9px]"></i>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 font-medium text-[11px]">
+                                                <i class="fas fa-user-check text-slate-400 text-[11px]" aria-hidden="true"></i>
                                                 {{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}
                                             </span>
                                         @endif
@@ -227,7 +212,7 @@
                 <div class="hidden lg:block overflow-x-auto flex-grow overflow-y-visible">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+                            <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] uppercase tracking-wider text-slate-500 font-bold">
                                 <th class="px-4 py-3.5 min-w-[200px]">Research Title</th>
                                 <th class="px-3 py-3.5 min-w-[140px]">Researcher</th>
                                 <th class="px-3 py-3.5 min-w-[120px]">Reviewers</th>
@@ -245,28 +230,28 @@
                                     $docStatus = $isAdvanced ? 'Hardcopy Received' : $data->Status;
                                     $docBadgeConfig = [
                                         'Hardcopy Received' => [
-                                            'badge' => 'bg-teal-50/70 text-teal-800 border-teal-200/70',
+                                            'text' => 'text-teal-700',
                                             'dot' => 'bg-teal-500',
                                             'label' => 'Hardcopy Received'
                                         ],
                                         'Incomplete - Awaiting Hardcopy' => [
-                                            'badge' => 'bg-rose-50/70 text-rose-800 border-rose-200/70',
+                                            'text' => 'text-rose-700',
                                             'dot' => 'bg-rose-500',
-                                            'label' => 'Incomplete - Awaiting Hardcopy'
+                                            'label' => 'Incomplete: Awaiting Hardcopy'
                                         ],
                                         'Incomplete Hardcopy' => [
-                                            'badge' => 'bg-rose-50/70 text-rose-800 border-rose-200/70',
+                                            'text' => 'text-rose-700',
                                             'dot' => 'bg-rose-500',
                                             'label' => 'Incomplete Hardcopy'
                                         ],
                                         'For Initial Review' => [
-                                            'badge' => 'bg-sky-50/70 text-sky-800 border-sky-200/70',
+                                            'text' => 'text-sky-700',
                                             'dot' => 'bg-sky-500',
                                             'label' => 'For Initial Review'
                                         ],
                                     ];
                                     $docConfig = $docBadgeConfig[$docStatus] ?? [
-                                        'badge' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                        'text' => 'text-slate-600',
                                         'dot' => 'bg-slate-400',
                                         'label' => $docStatus
                                     ];
@@ -274,28 +259,28 @@
                                     $revStatus = $isAdvanced ? $data->Status : 'Pending Assignment';
                                     $revBadgeConfig = [
                                         'Pending Assignment' => [
-                                            'badge' => 'bg-slate-100 text-slate-600 border-slate-200/80 italic',
+                                            'text' => 'text-slate-500 italic',
                                             'dot' => 'bg-slate-400',
                                             'label' => 'Pending Assignment'
                                         ],
                                         'Reviewer Assigned' => [
-                                            'badge' => 'bg-blue-50/70 text-blue-800 border-blue-200/70',
+                                            'text' => 'text-blue-700',
                                             'dot' => 'bg-blue-500',
                                             'label' => 'Reviewer Assigned'
                                         ],
                                         'Under Review' => [
-                                            'badge' => 'bg-indigo-50/70 text-indigo-800 border-indigo-200/70',
+                                            'text' => 'text-indigo-700',
                                             'dot' => 'bg-indigo-500',
                                             'label' => 'Under Review'
                                         ],
                                         'Reviewed' => [
-                                            'badge' => 'bg-emerald-50/70 text-emerald-800 border-emerald-200/70',
+                                            'text' => 'text-emerald-700',
                                             'dot' => 'bg-emerald-500',
                                             'label' => 'Reviewed'
                                         ],
                                     ];
                                     $revConfig = $revBadgeConfig[$revStatus] ?? [
-                                        'badge' => 'bg-slate-100 text-slate-700 border-slate-200/80',
+                                        'text' => 'text-slate-600',
                                         'dot' => 'bg-slate-400',
                                         'label' => $revStatus
                                     ];
@@ -306,17 +291,17 @@
                                     $hasMid = !empty($reviewerSuggestedType);
                                     $typeBadgeConfig = [
                                         'Exempt Review' => [
-                                            'badge' => 'bg-emerald-50/70 text-emerald-800 border-emerald-200/70',
+                                            'text' => 'text-emerald-700',
                                             'icon' => 'fa-check-circle text-emerald-600',
                                             'label' => 'Exempt Review'
                                         ],
                                         'Expedited Review' => [
-                                            'badge' => 'bg-blue-50/70 text-blue-800 border-blue-200/70',
+                                            'text' => 'text-blue-700',
                                             'icon' => 'fa-bolt text-blue-600',
                                             'label' => 'Expedited Review'
                                         ],
                                         'Full Board Review' => [
-                                            'badge' => 'bg-amber-50/70 text-amber-900 border-amber-200/70',
+                                            'text' => 'text-amber-800',
                                             'icon' => 'fa-users text-amber-700',
                                             'label' => 'Full Board Review'
                                         ]
@@ -332,12 +317,12 @@
                                 <tr class="hover:bg-slate-50/80 transition-colors group">
                                     <td class="px-4 py-3 align-middle">
                                         <div class="flex items-center gap-1.5 mb-1">
-                                            <span class="text-[10px] font-mono font-medium text-slate-600 bg-slate-100 border border-slate-200/70 px-1.5 py-0.5 rounded">
+                                            <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
                                                 #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
                                             </span>
                                         </div>
                                         <a href="{{ route('admin.view_files', $data->id) }}"
-                                           class="font-semibold text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-[#8B0000] transition-colors"
+                                           class="font-semibold text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-sm"
                                            title="{{ $data->Study_Protocol_title }}">
                                             {{ $data->Study_Protocol_title }}
                                         </a>
@@ -352,7 +337,7 @@
                                                     {{ $data->researcher->user->first_name ?? '' }}
                                                     {{ $data->researcher->user->last_name ?? 'Unknown' }}
                                                 </p>
-                                                <p class="text-[10px] text-slate-400 truncate">{{ $data->researcher->user->email ?? '' }}</p>
+                                                <p class="text-[11px] text-slate-500 font-medium truncate">{{ $data->researcher->user->email ?? '' }}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -364,8 +349,8 @@
                                                         $reviewerUser = $reviewersById->get($reviewerId);
                                                     @endphp
                                                     @if($reviewerUser)
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80 font-medium text-[11px] truncate max-w-[125px]" title="{{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}">
-                                                            <i class="fas fa-user-check text-slate-400 text-[9px] shrink-0"></i>
+                                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 font-medium text-[11px] truncate max-w-[140px]" title="{{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}">
+                                                            <i class="fas fa-user-check text-slate-400 text-[11px] shrink-0" aria-hidden="true"></i>
                                                             <span class="truncate">{{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}</span>
                                                         </span>
                                                     @endif
@@ -376,29 +361,27 @@
                                         @endif
                                     </td>
                                     <td class="px-3 py-3 align-middle whitespace-nowrap">
-                                        <div class="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                                            <i class="far fa-calendar-alt text-slate-400 text-[10px]"></i>
+                                        <div class="flex items-center gap-1.5 text-xs font-medium text-slate-600 tabular-nums">
+                                            <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>
                                             <span>{{ $data->created_at->format('M d, Y') }}</span>
                                         </div>
                                     </td>
                                     <td class="px-3 py-3 align-middle whitespace-nowrap">
                                         <div class="flex items-center gap-1.5">
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ $docConfig['badge'] }}">
-                                                <span class="w-1.5 h-1.5 rounded-full {{ $docConfig['dot'] }}"></span>
+                                            <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $docConfig['text'] }}">
                                                 {{ $docConfig['label'] }}
                                             </span>
                                             @if($data->Status === 'Incomplete - Awaiting Hardcopy')
                                                 @if($latestDeficiencies->get($data->id))
-                                                    <span class="text-rose-600 cursor-help transition-all hover:scale-110" title="Reason: {{ $latestDeficiencies->get($data->id)->message }}">
-                                                        <i class="fas fa-exclamation-circle text-xs drop-shadow-xs"></i>
+                                                    <span class="text-rose-600 cursor-help transition-all hover:scale-110 ml-1" title="Reason: {{ $latestDeficiencies->get($data->id)->message }}">
+                                                        <i class="fas fa-exclamation-circle text-xs drop-shadow-xs" aria-hidden="true"></i>
                                                     </span>
                                                 @endif
                                             @endif
                                         </div>
                                     </td>
                                     <td class="px-3 py-3 align-middle whitespace-nowrap">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ $revConfig['badge'] }}">
-                                            <span class="w-1.5 h-1.5 rounded-full {{ $revConfig['dot'] }}"></span>
+                                        <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $revConfig['text'] }}">
                                             {{ $revConfig['label'] }}
                                         </span>
                                     </td>
@@ -406,19 +389,18 @@
                                         <div class="flex flex-col gap-1 items-start">
                                             @if(isset($typeBadgeConfig[$data->Review_Type]))
                                                 @php $tConf = $typeBadgeConfig[$data->Review_Type]; @endphp
-                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border {{ $tConf['badge'] }}" title="Official Review Type">
-                                                    <i class="fas {{ $tConf['icon'] }} text-[9px]"></i>
+                                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $tConf['text'] }}" title="Official Review Type">
                                                     {{ $tConf['label'] }}
                                                 </span>
                                             @elseif($isNA)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold text-slate-500 italic">N/A</span>
+                                                <span class="inline-flex items-center text-xs font-semibold text-slate-500 italic">N/A</span>
                                             @else
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold text-slate-400 italic">Unassigned</span>
+                                                <span class="inline-flex items-center text-xs font-semibold text-slate-400 italic">Unassigned</span>
                                             @endif
                                             
                                             @if($hasMid)
-                                                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-slate-100/90 px-1.5 py-0.5 rounded border border-slate-200/80" title="Suggested by Reviewer">
-                                                    <i class="fas fa-level-up-alt text-[8px] text-slate-400 rotate-90"></i>
+                                                <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 whitespace-nowrap" title="Suggested by Reviewer">
+                                                    <i class="fas fa-level-up-alt text-[11px] text-slate-400 rotate-90" aria-hidden="true"></i>
                                                     Suggested: {{ str_replace(' Review', '', $reviewerSuggestedType) }}
                                                 </span>
                                             @endif
@@ -450,10 +432,10 @@
                                                 assigned_reviewers: {{ json_encode($data->assigned_reviewers ?? []) }},
                                                 update_status_url: '{{ route('admin.updateStatus', $data->id) }}'
                                             })"
-                                            class="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-slate-400 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all ml-auto touch-manipulation focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                                            class="w-9 h-9 min-w-[38px] min-h-[38px] flex items-center justify-center text-slate-500 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all ml-auto touch-manipulation cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
                                             title="Protocol Actions"
                                             aria-label="Actions for {{ $data->Study_Protocol_title }}">
-                                            <i class="fas fa-ellipsis-v text-xs"></i>
+                                            <i class="fas fa-ellipsis-v text-xs" aria-hidden="true"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -465,16 +447,16 @@
                 <div class="p-12 text-center text-slate-500 flex-grow flex flex-col items-center justify-center">
                     @if(request()->anyFilled(['search', 'review_types', 'doc_statuses', 'rev_statuses', 'assignment', 'sort_by']))
                         <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-                            <i class="fas fa-search text-xl"></i>
+                            <i class="fas fa-search text-xl" aria-hidden="true"></i>
                         </div>
                         <h4 class="text-sm font-semibold text-slate-900 mb-1">No matching protocols found</h4>
                         <p class="text-xs text-slate-500 max-w-sm mb-4 leading-relaxed">No active protocols match your current search or filter criteria. Try adjusting your parameters or clear all filters.</p>
-                        <a href="{{ route('admin.applications') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200/80 transition-colors shadow-2xs">
-                            <i class="fas fa-times-circle text-slate-400"></i> Clear All Filters
+                        <a href="{{ route('admin.applications') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200/80 transition-colors shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                            <i class="fas fa-times-circle text-slate-400" aria-hidden="true"></i> Clear All Filters
                         </a>
                     @else
                         <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-                            <i class="fas fa-folder-open text-xl"></i>
+                            <i class="fas fa-folder-open text-xl" aria-hidden="true"></i>
                         </div>
                         <h4 class="text-sm font-semibold text-slate-900 mb-1">No active protocols</h4>
                         <p class="text-xs text-slate-500 max-w-sm leading-relaxed">There are currently no research protocols undergoing initial ethical review or revision.</p>
@@ -485,29 +467,29 @@
             @if($datas->total() > 0)
             <div class="p-4 sm:p-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 mt-auto shrink-0">
                 <div class="text-center sm:text-left">
-                    Showing <span class="font-semibold text-slate-800 tabular-nums">{{ $datas->firstItem() ?? 0 }}</span> - <span
+                    Showing <span class="font-semibold text-slate-800 tabular-nums">{{ $datas->firstItem() ?? 0 }}</span> to <span
                         class="font-semibold text-slate-800 tabular-nums">{{ $datas->lastItem() ?? 0 }}</span> of <span
                         class="font-semibold text-slate-800 tabular-nums">{{ $datas->total() }}</span>
                 </div>
                 <div class="flex gap-2 filter-pagination">
                     <!-- Previous Page Link -->
                     @if ($datas->onFirstPage())
-                        <span class="opacity-50 cursor-not-allowed text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs"><i class="fas fa-chevron-left"></i></span>
+                        <span class="opacity-50 cursor-not-allowed text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs"><i class="fas fa-chevron-left" aria-hidden="true"></i></span>
                     @else
                         <a href="{{ $datas->appends(request()->except('page'))->previousPageUrl() }}"
-                            class="text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                            class="text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer"
                             aria-label="Previous page"><i
-                                class="fas fa-chevron-left"></i></a>
+                                class="fas fa-chevron-left" aria-hidden="true"></i></a>
                     @endif
 
                     <!-- Next Page Link -->
                     @if ($datas->hasMorePages())
                         <a href="{{ $datas->appends(request()->except('page'))->nextPageUrl() }}"
-                            class="text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                            class="text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer"
                             aria-label="Next page"><i
-                                class="fas fa-chevron-right"></i></a>
+                                class="fas fa-chevron-right" aria-hidden="true"></i></a>
                     @else
-                        <span class="opacity-50 cursor-not-allowed text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs"><i class="fas fa-chevron-right"></i></span>
+                        <span class="opacity-50 cursor-not-allowed text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs"><i class="fas fa-chevron-right" aria-hidden="true"></i></span>
                     @endif
                 </div>
             </div>

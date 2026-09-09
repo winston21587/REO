@@ -327,7 +327,7 @@
             <x-notification-tab />
 
             <!-- Page Body with Mobile Bottom Clearance -->
-            <div class="flex-1 overflow-y-auto p-4 sm:p-6 {{ request()->routeIs('reviewer.view_files') ? 'lg:px-8 lg:pt-3 lg:pb-8' : 'lg:p-8' }} relative z-0 pb-28 lg:pb-8 print:overflow-visible print:p-0 print:pb-0">
+            <div class="flex-1 {{ request()->routeIs('reviewer.view_files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5' : 'overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8' }} flex flex-col relative z-0 print:overflow-visible print:p-0 print:pb-0">
                 {{ $slot }}
             </div>
 

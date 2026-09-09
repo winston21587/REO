@@ -1,223 +1,321 @@
-<div class="flex flex-col h-full min-h-[400px]">
-    <div class="flex-grow">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr
-                    class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                    <th class="p-6 w-[25%]">Research Title</th>
-                    <th class="p-6">Researcher</th>
-                    <th class="p-6 whitespace-nowrap">Approval Date</th>
-                    <th class="p-6 whitespace-nowrap">Review Type</th>
-                    <th class="p-6 whitespace-nowrap">Status</th>
-                    <th class="p-6 text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
+<div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 flex flex-col flex-1 h-full min-h-[400px]">
+    @if($datas->count() > 0)
+        {{-- =========================================================
+             MOBILE & TABLET VIEWPORT: Adaptive Cards (block lg:hidden)
+             ========================================================= --}}
+        <div class="block lg:hidden divide-y divide-slate-100 flex-grow">
+            @foreach($datas as $data)
+                @php
+                    $certificate = $data->adminFiles->firstWhere('filetype', 'certificate');
+                    $approvalLetter = $data->adminFiles->firstWhere('filetype', 'Approval Letter');
+                    $hasCerts = ($certificate && $approvalLetter);
+                    $letterUrl = $approvalLetter ? route('admin.serve_file', $approvalLetter->id) : '';
+                    $certUrl = $certificate ? route('admin.serve_file', $certificate->id) : '';
+                    $researcherName = trim(($data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'Unknown') . ' ' . ($data->researcher->user->last_name ?? $data->user->last_name ?? ''));
+                    $researcherEmail = $data->researcher->user->email ?? $data->user->email ?? '';
+                    $approvalDateFormatted = $data->updated_at ? $data->updated_at->format('M d, Y') : 'Not Provided';
 
-                @forelse($datas as $data)
-                    <tr class="hover:bg-slate-50/80 transition-colors group relative" x-data="{ actionDrawerOpen: false }">
-                        <td class="p-6">
-                            <p class="font-bold text-slate-800 text-sm line-clamp-2 group-hover:text-[#8B0000] transition-colors"
-                                title="{{ $data->Study_Protocol_title }}">
-                                {{ $data->Study_Protocol_title }}
-                            </p>
-
-                        </td>
-                        <td class="p-6">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase flex-shrink-0">
-                                    {{ substr($data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'U', 0, 1) }}
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-slate-700 whitespace-nowrap">
-                                        {{ $data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'Unknown' }}
-                                        {{ $data->researcher->user->last_name ?? $data->user->last_name ?? '' }}
-                                    </p>
-                                    <p class="text-[10px] text-slate-400">
-                                        {{ $data->researcher->user->email ?? $data->user->email ?? '' }}
-                                    </p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="p-6 whitespace-nowrap">
-                            <div class="flex items-center gap-2 text-sm text-slate-600">
-                                <i class="far fa-calendar-check text-green-500"></i>
-                                {{ $data->updated_at->format('M d, Y') }}
-                            </div>
-                        </td>
-                        <td class="p-6 whitespace-nowrap">
-                            @php
-                                $typeColors = [
-                                    'Exempt Review' => 'text-emerald-600',
-                                    'Expedited Review' => 'text-blue-600',
-                                    'Full Board Review' => 'text-amber-600'
-                                ];
-                            @endphp
-                            @if($data->Review_Type && !in_array($data->Review_Type, ['Unassigned', 'N/A']))
-                                <div class="flex items-center cursor-default">
-                                    <span
-                                        class="text-sm font-bold {{ $typeColors[$data->Review_Type] ?? 'text-slate-500' }} tracking-tight leading-tight whitespace-normal">{{ $data->Review_Type }}</span>
-                                </div>
-                            @elseif($data->Review_Type === 'N/A')
-                                <span
-                                    class="text-sm font-semibold text-slate-500 italic tracking-tight leading-tight">N/A</span>
-                            @else
-                                <span class="text-sm font-semibold text-slate-500 italic leading-tight">—</span>
-                            @endif
-                        </td>
-                        <td class="p-6 whitespace-nowrap">
-                            @php
-                                $certificate = $data->adminFiles->firstWhere('filetype', 'certificate');
-                                $approvalLetter = $data->adminFiles->firstWhere('filetype', 'Approval Letter');
-                            @endphp
-                            @if($certificate && $approvalLetter)
-                                <button type="button"
-                                    onclick="openViewCertificatesModal('{{ asset($approvalLetter->filepath) }}', '{{ asset($certificate->filepath) }}')"
-                                    class="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors bg-transparent border-none p-0 cursor-pointer text-left leading-tight"
-                                    title="Click to view certificates">
-                                    Certified
-                                </button>
-                            @else
-                                <span class="text-sm font-bold text-amber-600 leading-tight">
-                                    Pending Generation
+                    $typeBadgeConfig = [
+                        'Exempt Review' => [
+                            'text' => 'text-emerald-700',
+                            'icon' => 'fa-check-circle text-emerald-600',
+                            'label' => 'Exempt Review'
+                        ],
+                        'Expedited Review' => [
+                            'text' => 'text-blue-700',
+                            'icon' => 'fa-bolt text-blue-600',
+                            'label' => 'Expedited Review'
+                        ],
+                        'Full Board Review' => [
+                            'text' => 'text-amber-800',
+                            'icon' => 'fa-users text-amber-700',
+                            'label' => 'Full Board Review'
+                        ]
+                    ];
+                @endphp
+                <div class="p-4 sm:p-5 space-y-3 hover:bg-slate-50/60 transition-colors">
+                    {{-- Card Header: Code & Date + Action Button --}}
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                                <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
+                                    {{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}
                                 </span>
-                            @endif
-                        </td>
-                        <td class="p-6 text-right">
-                            <button type="button" @click="actionDrawerOpen = true"
-                                class="p-2 text-slate-500 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all ml-auto flex items-center justify-center">
-                                <i class="fas fa-ellipsis-v text-sm"></i>
+                                <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium tabular-nums">
+                                    <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>
+                                    <span>Approved {{ $approvalDateFormatted }}</span>
+                                </div>
+                            </div>
+                            <a href="{{ route('admin.view_files', $data->id) }}"
+                               class="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-sm block"
+                               title="{{ $data->Study_Protocol_title }}">
+                                {{ $data->Study_Protocol_title }}
+                            </a>
+                        </div>
+
+                        <button type="button" 
+                                @click="$dispatch('open-cert-drawer', {
+                                    id: '{{ $data->id }}',
+                                    code: '{{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}',
+                                    title: {{ json_encode($data->Study_Protocol_title) }},
+                                    researcher_name: {{ json_encode($researcherName) }},
+                                    approval_date: '{{ $approvalDateFormatted }}',
+                                    status: '{{ $data->Status }}',
+                                    has_certificates: {{ $hasCerts ? 'true' : 'false' }},
+                                    approval_letter_url: '{{ $letterUrl }}',
+                                    certificate_url: '{{ $certUrl }}',
+                                    view_files_url: '{{ route('admin.view_files', $data->id) }}',
+                                    generate_page_url: '{{ route('admin.certificate.generate_page', $data->id) }}'
+                                })"
+                                class="p-2.5 -mr-1 text-slate-500 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] touch-manipulation"
+                                aria-label="Open action drawer for {{ $data->Study_Protocol_title }}">
+                            <i class="fas fa-ellipsis-v text-sm"></i>
+                        </button>
+                    </div>
+
+                    {{-- Badges Row --}}
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        {{-- Review Type --}}
+                        @if(isset($typeBadgeConfig[$data->Review_Type]))
+                            @php $tConf = $typeBadgeConfig[$data->Review_Type]; @endphp
+                            <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $tConf['text'] }}">
+                                {{ $tConf['label'] }}
+                            </span>
+                        @elseif($data->Review_Type === 'N/A')
+                            <span class="inline-flex items-center text-xs font-semibold text-slate-500 italic">N/A</span>
+                        @else
+                            <span class="inline-flex items-center text-xs font-semibold text-slate-400 italic">Unassigned</span>
+                        @endif
+
+                        {{-- Status --}}
+                        @if($hasCerts)
+                            <button type="button"
+                                    onclick="openViewCertificatesModal('{{ $letterUrl }}', '{{ $certUrl }}', '{{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($researcherName) }})"
+                                    class="inline-flex items-center gap-1 text-xs font-semibold whitespace-nowrap text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer group"
+                                    title="Click to view certified documents">
+                                <span>Certified</span>
+                                <i class="fas fa-external-link-alt text-[10px] text-emerald-600 ml-0.5 group-hover:translate-x-0.5 transition-transform" aria-hidden="true"></i>
                             </button>
+                        @else
+                            <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap text-amber-800">
+                                <span>Pending Generation</span>
+                            </span>
+                        @endif
+                    </div>
 
-                            <!-- Action Slide-Over Drawer -->
-                            <template x-teleport="body">
-                                <div x-show="actionDrawerOpen" class="fixed inset-0 z-[110] overflow-hidden"
-                                    aria-labelledby="slide-over-title" role="dialog" aria-modal="true"
-                                    style="display: none;">
-                                    <div class="absolute inset-0 overflow-hidden">
-                                        <div x-show="actionDrawerOpen" x-transition.opacity
-                                            class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
-                                            @click="actionDrawerOpen = false"></div>
-                                        <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-sm w-full pl-10">
-                                            <div x-show="actionDrawerOpen"
-                                                x-transition:enter="transform transition ease-out duration-300"
-                                                x-transition:enter-start="translate-x-full"
-                                                x-transition:enter-end="translate-x-0"
-                                                x-transition:leave="transform transition ease-in duration-300"
-                                                x-transition:leave-start="translate-x-0"
-                                                x-transition:leave-end="translate-x-full"
-                                                class="pointer-events-auto w-screen max-w-sm">
-                                                <div class="flex h-full flex-col overflow-y-scroll bg-slate-50 shadow-2xl">
+                    {{-- Researcher Details --}}
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-xs font-bold text-slate-700 uppercase shrink-0">
+                                {{ substr($researcherName ?: 'U', 0, 1) }}
+                            </div>
+                            <div class="min-w-0">
+                                <p class="font-semibold text-slate-800 truncate">{{ $researcherName }}</p>
+                                <p class="text-slate-400 text-[11px] truncate">{{ $researcherEmail ?: 'Not Provided' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
 
-                                                    <!-- Drawer Header -->
-                                                    <div
-                                                        class="px-6 py-6 border-b border-slate-100 flex justify-between items-start bg-slate-50 flex-none text-left">
-                                                        <div class="pr-3 w-full">
-                                                            <h3 class="font-heading font-extrabold text-lg text-slate-800 leading-tight line-clamp-3"
-                                                                title="{{ $data->Study_Protocol_title }}">
-                                                                {{ $data->Study_Protocol_title }}
-                                                            </h3>
+        {{-- =========================================================
+             DESKTOP VIEWPORT: Academic Ledger Table (lg:block, >= 1024px)
+             ========================================================= --}}
+        <div class="hidden lg:block overflow-x-auto flex-grow overflow-y-visible">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] uppercase tracking-wider text-slate-500 font-bold">
+                        <th class="px-4 py-3.5 min-w-[280px]">Research Title</th>
+                        <th class="px-3 py-3.5 min-w-[180px] w-56">Researcher</th>
+                        <th class="px-3 py-3.5 min-w-[130px] w-36 whitespace-nowrap">Approval Date</th>
+                        <th class="px-3 py-3.5 min-w-[140px] w-40 whitespace-nowrap">Review Type</th>
+                        <th class="px-3 py-3.5 min-w-[140px] w-44 whitespace-nowrap">Status</th>
+                        <th class="px-3 py-3.5 w-12 text-right pr-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($datas as $data)
+                        @php
+                            $certificate = $data->adminFiles->firstWhere('filetype', 'certificate');
+                            $approvalLetter = $data->adminFiles->firstWhere('filetype', 'Approval Letter');
+                            $hasCerts = ($certificate && $approvalLetter);
+                            $letterUrl = $approvalLetter ? route('admin.serve_file', $approvalLetter->id) : '';
+                            $certUrl = $certificate ? route('admin.serve_file', $certificate->id) : '';
+                            $researcherName = trim(($data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'Unknown') . ' ' . ($data->researcher->user->last_name ?? $data->user->last_name ?? ''));
+                            $researcherEmail = $data->researcher->user->email ?? $data->user->email ?? '';
+                            $approvalDateFormatted = $data->updated_at ? $data->updated_at->format('M d, Y') : 'Not Provided';
 
-                                                            <div class="mt-3 space-y-1.5">
-                                                                <div class="flex items-center gap-2 text-sm text-slate-600">
-                                                                    <i
-                                                                        class="fas fa-user-circle text-slate-400 w-4 text-center"></i>
-                                                                    <span
-                                                                        class="font-medium truncate">{{ $data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'Unknown' }}
-                                                                        {{ $data->researcher->user->last_name ?? $data->user->last_name ?? '' }}</span>
-                                                                </div>
-                                                                <div class="flex items-center gap-2 text-xs text-slate-500">
-                                                                    <i
-                                                                        class="far fa-calendar-alt text-slate-400 w-4 text-center"></i>
-                                                                    <span>{{ $data->updated_at->format('M d, Y') }}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <button @click="actionDrawerOpen = false"
-                                                            class="text-slate-500 hover:text-[#8B0000] hover:bg-red-50 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
-                                                            <i class="fas fa-times text-lg"></i>
-                                                        </button>
-                                                    </div>
+                            $typeBadgeConfig = [
+                                'Exempt Review' => [
+                                    'text' => 'text-emerald-700',
+                                    'icon' => 'fa-check-circle text-emerald-600',
+                                    'label' => 'Exempt Review'
+                                ],
+                                'Expedited Review' => [
+                                    'text' => 'text-blue-700',
+                                    'icon' => 'fa-bolt text-blue-600',
+                                    'label' => 'Expedited Review'
+                                ],
+                                'Full Board Review' => [
+                                    'text' => 'text-amber-800',
+                                    'icon' => 'fa-users text-amber-700',
+                                    'label' => 'Full Board Review'
+                                ]
+                            ];
+                        @endphp
+                        <tr class="hover:bg-slate-50/80 transition-colors group">
+                            {{-- Research Title --}}
+                            <td class="px-4 py-3 align-middle">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
+                                        {{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}
+                                    </span>
+                                </div>
+                                <a href="{{ route('admin.view_files', $data->id) }}"
+                                   class="font-semibold text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-sm"
+                                   title="{{ $data->Study_Protocol_title }}">
+                                    {{ $data->Study_Protocol_title }}
+                                </a>
+                            </td>
 
-                                                    <!-- Drawer Actions List -->
-                                                    <div class="flex-1 overflow-y-auto p-4 space-y-2">
-                                                        <a href="{{ route('admin.view_files', $data->id) }}"
-                                                            class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                            <i class="fas fa-eye w-4"></i> View Protocol Files
-                                                        </a>
-
-                                                        @if($certificate && $approvalLetter)
-                                                            <button type="button"
-                                                                onclick="actionDrawerOpen = false; setTimeout(() => openViewCertificatesModal('{{ asset($approvalLetter->filepath) }}', '{{ asset($certificate->filepath) }}'), 300)"
-                                                                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-green-600 rounded-lg transition-colors text-left">
-                                                                <i class="fas fa-certificate w-4"></i> View Issued Documents
-                                                            </button>
-                                                        @endif
-
-                                                        <hr class="border-slate-100 my-1">
-
-                                                        <a href="{{ route('admin.certificate.generate_page', $data->id) }}"
-                                                            class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#8B0000] rounded-lg transition-colors">
-                                                            <i class="fas fa-stamp w-4"></i> Document Generation
-                                                        </a>
-
-                                                        <hr class="border-slate-100 my-1">
-
-                                                        <!-- Global Revert Phase Button -->
-                                                        <form action="{{ route('admin.updateStatus', $data->id) }}" method="POST"
-                                                            id="revertPhaseForm-{{ $data->id }}">
-                                                            @csrf
-                                                            <input type="hidden" name="classification" value="Revert Phase">
-                                                            <button type="button"
-                                                                onclick="confirmRevertPhase('{{ $data->id }}', {{ json_encode($data->Study_Protocol_title) }}, '{{ $data->Status }}')"
-                                                                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-red-600 rounded-lg transition-colors text-left">
-                                                                <i class="fas fa-undo-alt w-4 text-center"></i> Step Backward (Undo)
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                            {{-- Researcher --}}
+                            <td class="px-3 py-3 align-middle">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-xs font-bold text-slate-700 uppercase shrink-0">
+                                        {{ substr($researcherName ?: 'U', 0, 1) }}
                                     </div>
-                            </template>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="p-12 text-center text-slate-400">
-                            <i class="fas fa-award text-4xl mb-4 text-slate-300"></i>
-                            <p>No approved protocols found matching the selected filters.</p>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-semibold text-slate-800 truncate">
+                                            {{ $researcherName }}
+                                        </p>
+                                        <p class="text-[11px] text-slate-500 font-medium truncate">
+                                            {{ $researcherEmail ?: 'Not Provided' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
 
+                            {{-- Approval Date --}}
+                            <td class="px-3 py-3 align-middle whitespace-nowrap">
+                                <div class="flex items-center gap-1.5 text-xs font-medium text-slate-600 tabular-nums">
+                                    <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>
+                                    <span>{{ $approvalDateFormatted }}</span>
+                                </div>
+                            </td>
+
+                            {{-- Review Type --}}
+                            <td class="px-3 py-3 align-middle whitespace-nowrap">
+                                @if(isset($typeBadgeConfig[$data->Review_Type]))
+                                    @php $tConf = $typeBadgeConfig[$data->Review_Type]; @endphp
+                                    <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $tConf['text'] }}" title="Official Review Type">
+                                        {{ $tConf['label'] }}
+                                    </span>
+                                @elseif($data->Review_Type === 'N/A')
+                                    <span class="inline-flex items-center text-xs font-semibold text-slate-500 italic">N/A</span>
+                                @else
+                                    <span class="inline-flex items-center text-xs font-semibold text-slate-400 italic">Unassigned</span>
+                                @endif
+                            </td>
+
+                            {{-- Status with Dual-Coding --}}
+                            <td class="px-3 py-3 align-middle whitespace-nowrap">
+                                @if($hasCerts)
+                                    <button type="button"
+                                            onclick="openViewCertificatesModal('{{ $letterUrl }}', '{{ $certUrl }}', '{{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($researcherName) }})"
+                                            class="inline-flex items-center gap-1 text-xs font-semibold whitespace-nowrap text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer group"
+                                            title="Click to view certified documents">
+                                        <span>Certified</span>
+                                        <i class="fas fa-external-link-alt text-[10px] text-emerald-600 ml-0.5 group-hover:translate-x-0.5 transition-transform" aria-hidden="true"></i>
+                                    </button>
+                                @else
+                                    <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap text-amber-800">
+                                        <span>Pending Generation</span>
+                                    </span>
+                                @endif
+                            </td>
+
+                            {{-- Actions --}}
+                            <td class="px-3 py-3 text-right align-middle pr-4 relative">
+                                <button type="button" 
+                                        @click="$dispatch('open-cert-drawer', {
+                                            id: '{{ $data->id }}',
+                                            code: '{{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}',
+                                            title: {{ json_encode($data->Study_Protocol_title) }},
+                                            researcher_name: {{ json_encode($researcherName) }},
+                                            approval_date: '{{ $approvalDateFormatted }}',
+                                            status: '{{ $data->Status }}',
+                                            has_certificates: {{ $hasCerts ? 'true' : 'false' }},
+                                            approval_letter_url: '{{ $letterUrl }}',
+                                            certificate_url: '{{ $certUrl }}',
+                                            view_files_url: '{{ route('admin.view_files', $data->id) }}',
+                                            generate_page_url: '{{ route('admin.certificate.generate_page', $data->id) }}'
+                                        })"
+                                        class="w-9 h-9 min-w-[38px] min-h-[38px] flex items-center justify-center text-slate-500 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all ml-auto touch-manipulation cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                                        title="Certification Actions"
+                                        aria-label="Open action drawer for {{ $data->Study_Protocol_title }}">
+                                    <i class="fas fa-ellipsis-v text-xs" aria-hidden="true"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <div class="p-12 text-center text-slate-500 flex-grow flex flex-col items-center justify-center">
+            @if(request()->anyFilled(['search', 'review_types', 'status', 'date_from', 'date_to', 'sort_by']))
+                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                    <i class="fas fa-search text-xl" aria-hidden="true"></i>
+                </div>
+                <h4 class="text-sm font-semibold text-slate-900 mb-1">No matching protocols found</h4>
+                <p class="text-xs text-slate-500 max-w-sm mb-4 leading-relaxed">No approved protocols match your current search or filter criteria. Try adjusting your parameters or clear all filters.</p>
+                <a href="{{ route('admin.certifications') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200/80 transition-colors shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
+                    <i class="fas fa-times-circle text-slate-400" aria-hidden="true"></i> Clear All Filters
+                </a>
+            @else
+                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                    <i class="fas fa-folder-open text-xl" aria-hidden="true"></i>
+                </div>
+                <h4 class="text-sm font-semibold text-slate-900 mb-1">No Approved Protocols Found</h4>
+                <p class="text-xs text-slate-500 max-w-sm leading-relaxed">There are currently no approved protocols with generated clearance certificates.</p>
+            @endif
+        </div>
+    @endif
+
+    {{-- =========================================================
+         PAGINATION FOOTER (Matching Active Protocols)
+         ========================================================= --}}
     @if($datas->total() > 0)
-        <div class="p-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-            <div>
-                Showing <span class="font-bold text-slate-700">{{ $datas->firstItem() ?? 0 }}</span> - <span
-                    class="font-bold text-slate-700">{{ $datas->lastItem() ?? 0 }}</span> of <span
-                    class="font-bold text-slate-700">{{ $datas->total() }}</span>
+        <div class="p-4 sm:p-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 mt-auto shrink-0">
+            <div class="text-center sm:text-left">
+                Showing <span class="font-semibold text-slate-800 tabular-nums">{{ $datas->firstItem() ?? 0 }}</span> to <span
+                    class="font-semibold text-slate-800 tabular-nums">{{ $datas->lastItem() ?? 0 }}</span> of <span
+                    class="font-semibold text-slate-800 tabular-nums">{{ $datas->total() }}</span>
             </div>
             <div class="flex gap-2 filter-pagination">
                 <!-- Previous Page Link -->
                 @if ($datas->onFirstPage())
-                    <span class="opacity-50 cursor-not-allowed text-slate-400"><i class="fas fa-chevron-left"></i></span>
+                    <span class="opacity-50 cursor-not-allowed text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs"><i class="fas fa-chevron-left text-xs" aria-hidden="true"></i></span>
                 @else
                     <a href="{{ $datas->appends(request()->except('page'))->previousPageUrl() }}"
-                        class="text-slate-600 hover:text-[#8B0000] transition-colors"><i class="fas fa-chevron-left"></i></a>
+                       class="text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer"
+                       aria-label="Previous page">
+                        <i class="fas fa-chevron-left text-xs" aria-hidden="true"></i>
+                    </a>
                 @endif
 
                 <!-- Next Page Link -->
                 @if ($datas->hasMorePages())
                     <a href="{{ $datas->appends(request()->except('page'))->nextPageUrl() }}"
-                        class="text-slate-600 hover:text-[#8B0000] transition-colors"><i class="fas fa-chevron-right"></i></a>
+                       class="text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer"
+                       aria-label="Next page">
+                        <i class="fas fa-chevron-right text-xs" aria-hidden="true"></i>
+                    </a>
                 @else
-                    <span class="opacity-50 cursor-not-allowed text-slate-400"><i class="fas fa-chevron-right"></i></span>
+                    <span class="opacity-50 cursor-not-allowed text-slate-400 w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 shadow-2xs"><i class="fas fa-chevron-right text-xs" aria-hidden="true"></i></span>
                 @endif
             </div>
         </div>
     @endif
+</div>

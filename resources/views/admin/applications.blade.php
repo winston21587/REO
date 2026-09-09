@@ -13,15 +13,15 @@
         @endphp
 
         <div class="pb-6 border-b border-slate-200">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Active Protocols</h1>
                     <p class="text-slate-500 mt-1 sm:mt-2 text-xs sm:text-sm">Monitor and manage research protocols undergoing initial ethical review and revision assessment.</p>
                 </div>
-                <div class="flex gap-2 sm:gap-4 mt-2 sm:mt-0 w-full sm:w-auto">
-                    <form action="{{ route('admin.applications') }}" method="GET" class="relative flex w-full gap-2 sm:gap-4" id="activeProtocolsForm">
+                <div class="flex gap-2 sm:gap-3 mt-1 xl:mt-0 w-full xl:w-auto">
+                    <form action="{{ route('admin.applications') }}" method="GET" class="relative flex w-full xl:w-auto items-center gap-2 sm:gap-3" id="activeProtocolsForm">
                         <!-- Search Input -->
-                        <div class="relative flex-1 sm:w-56 md:w-64">
+                        <div class="relative flex-1 w-full sm:w-64 md:w-72">
                             <input type="text" name="search" id="search_input" value="{{ request('search') }}" placeholder="Search protocols..."
                                 aria-label="Search active protocols"
                                 class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 h-10 sm:h-11 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs bg-white">
@@ -33,17 +33,17 @@
                             <button type="button" @click="expanded = true"
                                 :aria-expanded="expanded ? 'true' : 'false'"
                                 aria-label="Open filter options"
-                                class="flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 h-10 sm:h-11 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs transition-colors w-auto sm:w-[150px] justify-between touch-manipulation">
+                                class="flex items-center gap-2.5 px-3.5 sm:px-4 py-2 sm:py-2.5 h-10 sm:h-11 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs transition-colors cursor-pointer touch-manipulation">
                                 <span class="flex items-center gap-1.5">
-                                    <i class="fas fa-filter text-slate-400 text-xs"></i> 
-                                    <span class="hidden sm:inline">Filter</span>
+                                    <i class="fas fa-filter text-slate-400 text-xs" aria-hidden="true"></i> 
+                                    <span>Filter</span>
                                     @if($activeFilterCount > 0)
-                                        <span class="w-4 h-4 rounded-full bg-[#8B0000] text-white text-[10px] font-semibold flex items-center justify-center tabular-nums leading-none">
+                                        <span class="w-4 h-4 rounded-full bg-[#8B0000] text-white text-[11px] font-semibold flex items-center justify-center tabular-nums leading-none">
                                             {{ $activeFilterCount }}
                                         </span>
                                     @endif
                                 </span>
-                                <i class="fas fa-bars text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-90' : ''"></i>
+                                <i class="fas fa-bars text-xs text-slate-400 transition-transform" :class="expanded ? 'rotate-90' : ''" aria-hidden="true"></i>
                             </button>
 
                         <!-- Advanced Filter Drawer -->
@@ -56,7 +56,7 @@
                                  x-transition:leave="ease-in-out duration-300" 
                                  x-transition:leave-start="opacity-100" 
                                  x-transition:leave-end="opacity-0" 
-                                 class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+                                 class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity cursor-pointer" 
                                  @click="expanded = false"></div>
 
                             <div class="fixed inset-0 overflow-hidden pointer-events-none">
@@ -74,102 +74,102 @@
                                             <!-- Drawer Header -->
                                             <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-none text-left">
                                                 <h3 class="font-heading font-bold text-base text-slate-800 leading-tight">Apply Filters</h3>
-                                                <button type="button" @click="expanded = false" aria-label="Close filter options" class="text-slate-400 hover:text-[#8B0000] hover:bg-slate-100 transition-colors w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full mt-0.5">
-                                                    <i class="fas fa-times text-base"></i>
+                                                <button type="button" @click="expanded = false" aria-label="Close filter options" class="text-slate-400 hover:text-[#8B0000] hover:bg-slate-100 transition-colors w-9 h-9 min-w-[36px] min-h-[36px] flex-shrink-0 flex items-center justify-center rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                                    <i class="fas fa-times text-base" aria-hidden="true"></i>
                                                 </button>
                                             </div>
 
                                             <!-- Drawer Filters List -->
                                             <div class="flex-1 overflow-y-auto w-full pb-10">
                             <!-- Sort Section -->
-                            <div class="p-3 border-b border-slate-100 bg-slate-50/50">
-                                <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Sort By</label>
-                                <div class="space-y-2">
+                            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Sort By</label>
+                                <div class="space-y-2.5">
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="sort_by" value="created_at" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('sort_by', 'created_at') == 'created_at' ? 'checked' : '' }}>
+                                        <input type="radio" name="sort_by" value="created_at" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('sort_by', 'created_at') == 'created_at' ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Submission Date</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="sort_by" value="Title" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('sort_by') == 'Title' ? 'checked' : '' }}>
+                                        <input type="radio" name="sort_by" value="Title" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('sort_by') == 'Title' ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Review Type Section -->
-                            <div class="p-3 border-b border-slate-100">
-                                <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Review Type</label>
-                                <div class="space-y-2">
+                            <div class="p-4 border-b border-slate-100">
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Review Type</label>
+                                <div class="space-y-2.5">
                                     @php $selectedTypes = request('review_types', []); @endphp
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="review_types[]" value="Exempt Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Exempt Review', $selectedTypes) ? 'checked' : '' }}>
+                                        <input type="checkbox" name="review_types[]" value="Exempt Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Exempt Review', $selectedTypes) ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Exempt</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="review_types[]" value="Expedited Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Expedited Review', $selectedTypes) ? 'checked' : '' }}>
+                                        <input type="checkbox" name="review_types[]" value="Expedited Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Expedited Review', $selectedTypes) ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Expedited</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="review_types[]" value="Full Board Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Full Board Review', $selectedTypes) ? 'checked' : '' }}>
+                                        <input type="checkbox" name="review_types[]" value="Full Board Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Full Board Review', $selectedTypes) ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Full Board</span>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Document Status Section -->
-                            <div class="p-3 border-b border-slate-100">
-                                <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Document Status</label>
-                                <div class="space-y-2">
+                            <div class="p-4 border-b border-slate-100">
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Document Status</label>
+                                <div class="space-y-2.5">
                                     @php $docStatuses = request('doc_statuses', []); @endphp
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="doc_statuses[]" value="Incomplete - Awaiting Hardcopy" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Incomplete - Awaiting Hardcopy', $docStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors text-balance leading-snug">Incomplete - Awaiting Hardcopy</span>
+                                        <input type="checkbox" name="doc_statuses[]" value="Incomplete - Awaiting Hardcopy" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Incomplete - Awaiting Hardcopy', $docStatuses) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors text-balance leading-snug">Incomplete: Awaiting Hardcopy</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="doc_statuses[]" value="Incomplete Hardcopy" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Incomplete Hardcopy', $docStatuses) ? 'checked' : '' }}>
+                                        <input type="checkbox" name="doc_statuses[]" value="Incomplete Hardcopy" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Incomplete Hardcopy', $docStatuses) ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Incomplete Hardcopy</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="doc_statuses[]" value="Hardcopy Received" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Hardcopy Received', $docStatuses) ? 'checked' : '' }}>
+                                        <input type="checkbox" name="doc_statuses[]" value="Hardcopy Received" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Hardcopy Received', $docStatuses) ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Hardcopy Received</span>
                                     </label>
                                 </div>
                             </div>
                             
                             <!-- Reviewer Status Section -->
-                            <div class="p-3 border-b border-slate-100">
-                                <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Reviewer Status</label>
-                                <div class="space-y-2">
+                            <div class="p-4 border-b border-slate-100">
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Reviewer Status</label>
+                                <div class="space-y-2.5">
                                     @php $revStatuses = request('rev_statuses', []); @endphp
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="rev_statuses[]" value="Reviewer Assigned" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Reviewer Assigned', $revStatuses) ? 'checked' : '' }}>
+                                        <input type="checkbox" name="rev_statuses[]" value="Reviewer Assigned" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Reviewer Assigned', $revStatuses) ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Reviewer Assigned</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="rev_statuses[]" value="Under Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Under Review', $revStatuses) ? 'checked' : '' }}>
+                                        <input type="checkbox" name="rev_statuses[]" value="Under Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Under Review', $revStatuses) ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Under Review</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="rev_statuses[]" value="Reviewed" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000]" {{ in_array('Reviewed', $revStatuses) ? 'checked' : '' }}>
+                                        <input type="checkbox" name="rev_statuses[]" value="Reviewed" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Reviewed', $revStatuses) ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Reviewed</span>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Assignment Section -->
-                            <div class="p-3 bg-slate-50/50">
-                                <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Reviewer Assignment</label>
-                                <div class="space-y-2">
+                            <div class="p-4 bg-slate-50/50">
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Reviewer Assignment</label>
+                                <div class="space-y-2.5">
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="assignment" value="All" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('assignment', 'All') == 'All' ? 'checked' : '' }}>
+                                        <input type="radio" name="assignment" value="All" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('assignment', 'All') == 'All' ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Show All Protocols</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="assignment" value="Unassigned" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('assignment') == 'Unassigned' ? 'checked' : '' }}>
+                                        <input type="radio" name="assignment" value="Unassigned" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('assignment') == 'Unassigned' ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Unassigned Only</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="assignment" value="Assigned" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000]" {{ request('assignment') == 'Assigned' ? 'checked' : '' }}>
+                                        <input type="radio" name="assignment" value="Assigned" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('assignment') == 'Assigned' ? 'checked' : '' }}>
                                         <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Assigned Only</span>
                                     </label>
                                 </div>
@@ -188,13 +188,13 @@
         @if($activeFilterCount > 0)
             <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-100">
                 <span class="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1.5">
-                    <i class="fas fa-sliders text-slate-400 text-[10px]"></i> Active filters:
+                    <i class="fas fa-sliders text-slate-400 text-xs"></i> Active filters:
                 </span>
                 @if(request('search'))
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs hover:bg-slate-200/60 transition-colors">
                         <span class="text-slate-400 font-normal">Search:</span> "{{ request('search') }}"
                         <a href="{{ route('admin.applications', request()->except('search')) }}" class="hover:text-rose-600 ml-0.5 text-slate-400 transition-colors" title="Remove search filter" aria-label="Remove search filter">
-                            <i class="fas fa-times text-[10px]"></i>
+                            <i class="fas fa-times text-xs"></i>
                         </a>
                     </span>
                 @endif
@@ -208,7 +208,7 @@
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs hover:bg-slate-200/60 transition-colors">
                             <span class="text-slate-400 font-normal">Type:</span> {{ $rType }}
                             <a href="{{ route('admin.applications', $remParams) }}" class="hover:text-rose-600 ml-0.5 text-slate-400 transition-colors" title="Remove {{ $rType }} filter" aria-label="Remove {{ $rType }} filter">
-                                <i class="fas fa-times text-[10px]"></i>
+                                <i class="fas fa-times text-xs"></i>
                             </a>
                         </span>
                     @endforeach
@@ -223,7 +223,7 @@
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs hover:bg-slate-200/60 transition-colors">
                             <span class="text-slate-400 font-normal">Doc:</span> {{ $dStatus }}
                             <a href="{{ route('admin.applications', $remParams) }}" class="hover:text-rose-600 ml-0.5 text-slate-400 transition-colors" title="Remove {{ $dStatus }} filter" aria-label="Remove {{ $dStatus }} filter">
-                                <i class="fas fa-times text-[10px]"></i>
+                                <i class="fas fa-times text-xs"></i>
                             </a>
                         </span>
                     @endforeach
@@ -238,7 +238,7 @@
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs hover:bg-slate-200/60 transition-colors">
                             <span class="text-slate-400 font-normal">Review:</span> {{ $rvStatus }}
                             <a href="{{ route('admin.applications', $remParams) }}" class="hover:text-rose-600 ml-0.5 text-slate-400 transition-colors" title="Remove {{ $rvStatus }} filter" aria-label="Remove {{ $rvStatus }} filter">
-                                <i class="fas fa-times text-[10px]"></i>
+                                <i class="fas fa-times text-xs"></i>
                             </a>
                         </span>
                     @endforeach
@@ -247,7 +247,7 @@
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs hover:bg-slate-200/60 transition-colors">
                         <span class="text-slate-400 font-normal">Assignment:</span> {{ request('assignment') }}
                         <a href="{{ route('admin.applications', request()->except('assignment')) }}" class="hover:text-rose-600 ml-0.5 text-slate-400 transition-colors" title="Remove assignment filter" aria-label="Remove assignment filter">
-                            <i class="fas fa-times text-[10px]"></i>
+                            <i class="fas fa-times text-xs"></i>
                         </a>
                     </span>
                 @endif
@@ -255,7 +255,7 @@
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs hover:bg-slate-200/60 transition-colors">
                         <span class="text-slate-400 font-normal">Sort:</span> {{ request('sort_by') }}
                         <a href="{{ route('admin.applications', request()->except('sort_by')) }}" class="hover:text-rose-600 ml-0.5 text-slate-400 transition-colors" title="Remove sort" aria-label="Remove sort">
-                            <i class="fas fa-times text-[10px]"></i>
+                            <i class="fas fa-times text-xs"></i>
                         </a>
                     </span>
                 @endif
@@ -330,7 +330,7 @@
 
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4">
-                <div class="relative transform overflow-hidden rounded-2xl sm:rounded-[2rem] bg-white text-left shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] transition-all w-full max-w-lg mx-3 sm:mx-auto border border-slate-100"
+                <div class="relative transform overflow-hidden rounded-2xl sm:rounded-[2rem] bg-white text-left shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] transition-all w-full max-w-xl mx-3 sm:mx-auto border border-slate-100"
                     x-show="open" @click.away="open = false"
                     x-transition:enter="ease-out duration-300"
                     x-transition:enter-start="opacity-0 translate-y-8 scale-95"
@@ -353,7 +353,7 @@
                                         <h3 class="text-base sm:text-[1.15rem] font-bold text-slate-900 tracking-tight leading-tight" id="assign-modal-title" x-text="initialAssignedCount > 0 ? 'Change Assigned Reviewer(s)' : 'Assign Reviewer(s)'">Assign Reviewer(s)</h3>
                                         <p class="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium line-clamp-1">
                                             <span x-text="protocolTitle"></span>
-                                            <span x-show="reviewType" class="ml-1 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] uppercase font-bold text-slate-600" x-text="reviewType"></span>
+                                            <span x-show="reviewType" class="ml-1 px-1.5 py-0.5 bg-slate-100 rounded text-[11px] uppercase font-bold text-slate-600" x-text="reviewType"></span>
                                         </p>
                                     </div>
                                 </div>
@@ -387,24 +387,24 @@
                             <div class="flex flex-col sm:flex-row gap-2 mt-3 sm:mt-5">
                                 <div class="relative flex-1 group">
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-[#8B0000]">
-                                        <i class="fas fa-search text-slate-400 group-focus-within:text-[#8B0000] text-[13px]"></i>
+                                        <i class="fas fa-search text-slate-400 group-focus-within:text-[#8B0000] text-xs"></i>
                                     </div>
                                     <input type="text" x-model="search" placeholder="Search by reviewer name, department, or expertise..."
                                         aria-label="Search reviewers by name, department, or expertise"
-                                        class="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-100/60 border border-transparent rounded-full text-xs sm:text-[13px] font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-200 transition-all">
+                                        class="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-100/60 border border-transparent rounded-full text-xs sm:text-sm font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-200 transition-all">
                                 </div>
                                 <!-- College Filter -->
                                 <div class="relative flex-shrink-0 group">
                                     <select x-model="collegeFilter"
                                         aria-label="Filter reviewers by college"
-                                        class="w-full sm:w-auto h-full pl-4 pr-9 py-2.5 sm:py-3 bg-slate-100/60 border border-transparent rounded-full text-xs sm:text-[13px] text-slate-700 focus:outline-none focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-200 transition-all cursor-pointer appearance-none font-medium">
+                                        class="w-full sm:w-auto h-full pl-4 pr-9 py-2.5 sm:py-3 bg-slate-100/60 border border-transparent rounded-full text-xs sm:text-sm text-slate-700 focus:outline-none focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-200 transition-all cursor-pointer appearance-none font-medium">
                                         <option value="">All Colleges</option>
                                         @foreach($reviewerColleges as $college)
                                             <option value="{{ strtolower($college) }}">{{ $college }}</option>
                                         @endforeach
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
-                                        <i class="fas fa-chevron-down text-slate-400 text-[10px] group-focus-within:text-[#8B0000]"></i>
+                                        <i class="fas fa-chevron-down text-slate-400 text-xs group-focus-within:text-[#8B0000]"></i>
                                     </div>
                                 </div>
                             </div>
@@ -442,7 +442,7 @@
                                             class="sr-only">
 
                                         <!-- Avatar -->
-                                        <div class="w-12 h-12 rounded-full bg-gradient-to-br {{ $avatarColor }} flex items-center justify-center text-white text-[13px] tracking-wide font-bold flex-shrink-0 shadow-sm">
+                                        <div class="w-12 h-12 rounded-full bg-gradient-to-br {{ $avatarColor }} flex items-center justify-center text-white text-sm tracking-wide font-bold flex-shrink-0 shadow-sm">
                                             {{ $initials }}
                                         </div>
 
@@ -450,16 +450,16 @@
                                         <div class="flex-1 min-w-0 pr-8">
                                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                                 <div class="min-w-0">
-                                                    <p class="text-[14px] font-bold text-slate-800 leading-tight group-hover/card:text-[#8B0000] transition-colors">{{ $reviewer->first_name }} {{ $reviewer->last_name }}</p>
+                                                    <p class="text-sm font-bold text-slate-800 leading-tight group-hover/card:text-[#8B0000] transition-colors">{{ $reviewer->first_name }} {{ $reviewer->last_name }}</p>
                                                     @if($reviewerCollege)
                                                         <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
-                                                             <i class="fas fa-university text-[9px] opacity-70"></i>
+                                                             <i class="fas fa-university text-[11px] opacity-70"></i>
                                                             {{ $reviewerCollege }}
                                                         </p>
                                                     @endif
                                                 </div>
                                                 <!-- Workload Badge -->
-                                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 tracking-wide border
+                                                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 tracking-wide border
                                                     {{ $activeCount === 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-200/80' : ($activeCount <= 2 ? 'bg-amber-50 text-amber-900 border-amber-200/80' : 'bg-red-50 text-red-800 border-red-200/80') }}">
                                                     {{ $activeCount }} reviewing
                                                 </span>
@@ -469,12 +469,12 @@
                                                 <div class="flex flex-wrap items-center gap-1.5 mt-2.5">
                                                     @foreach(array_slice($reviewer->reviewer->expertise, 0, 3) as $index => $exp)
                                                         @if($index > 0)
-                                                            <span class="text-slate-300 text-[10px]">&bull;</span>
+                                                            <span class="text-slate-300 text-[11px]">&bull;</span>
                                                         @endif
                                                         <span class="text-slate-500 text-[11px] font-medium tracking-tight lowercase">{{ $exp }}</span>
                                                     @endforeach
                                                     @if(count($reviewer->reviewer->expertise) > 3)
-                                                        <span class="text-slate-300 text-[10px]">&bull;</span>
+                                                        <span class="text-slate-300 text-[11px]">&bull;</span>
                                                         <span class="text-slate-400 text-[11px] font-medium tracking-tight lowercase font-style-italic">+{{ count($reviewer->reviewer->expertise) - 3 }} more</span>
                                                     @endif
                                                 </div>
@@ -486,7 +486,7 @@
                                              :class="assigned.map(String).includes('{{ $reviewer->id }}') ? 'opacity-100 scale-100' : 'opacity-0 scale-75 group-hover/card:opacity-30 group-hover/card:scale-100'"
                                              style="transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1)">
                                             <div class="w-6 h-6 rounded-full bg-[#8B0000] flex items-center justify-center shadow-lg shadow-red-900/20">
-                                                <i class="fas fa-check text-white text-[10px]"></i>
+                                                <i class="fas fa-check text-white text-[11px]"></i>
                                             </div>
                                         </div>
                                     </label>
@@ -502,14 +502,19 @@
                                                     <i class="fas fa-folder-open text-slate-400 group-hover/acc:text-slate-600 transition-colors"></i>
                                                     Currently Reviewing ({{ $activeCount }})
                                                 </span>
-                                                <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-300 group-hover/acc:text-slate-800"
+                                                <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform duration-300 group-hover/acc:text-slate-800"
                                                    :class="expandedReviewer === '{{ $reviewer->id }}' ? 'rotate-180' : ''"></i>
                                             </button>
                                             <div x-show="expandedReviewer === '{{ $reviewer->id }}'" x-collapse class="pb-4 space-y-2">
-                                                @foreach($activeTitles as $aTitle)
+                                                 @foreach($activeTitles as $aTitle)
+                                                    @php
+                                                        $displayTitle = is_array($aTitle) 
+                                                            ? ($aTitle['title'] ?? $aTitle['Study_Protocol_title'] ?? 'Untitled Protocol') 
+                                                            : ($aTitle->title ?? $aTitle->Study_Protocol_title ?? 'Untitled Protocol');
+                                                    @endphp
                                                     <div class="flex items-start gap-2.5 py-2 px-3 rounded-xl bg-white border border-slate-100 shadow-sm">
                                                         <div class="w-1.5 h-1.5 rounded-full bg-[#8B0000]/80 mt-1.5 flex-shrink-0"></div>
-                                                        <p class="text-[12px] text-slate-600 font-medium leading-relaxed">{{ $aTitle->Study_Protocol_title }}</p>
+                                                        <p class="text-xs text-slate-600 font-medium leading-relaxed">{{ $displayTitle }}</p>
                                                     </div>
                                                 @endforeach
                                             </div>
@@ -526,18 +531,18 @@
                         </div>
 
                         <!-- Footer -->
-                        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-wrap sm:flex-nowrap gap-3 items-center justify-between rounded-b-2xl">
+                        <div class="px-5 sm:px-7 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between rounded-b-2xl">
                             <button type="button" @click="open = false; confirmUnchooseReviewer($event.target.closest('form'), protocolTitle, () => { assigned = [] }, () => { open = true })" x-show="initialAssignedCount > 0" x-transition.opacity
-                                class="w-full sm:w-auto px-4 py-2.5 bg-red-50 text-red-700 rounded-xl text-xs sm:text-sm font-semibold hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300 transition-colors border border-red-200 flex-shrink-0">
+                                class="w-full sm:w-auto px-4 py-2.5 bg-red-50 text-red-700 rounded-xl text-xs sm:text-sm font-semibold hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300 transition-colors border border-red-200 flex-shrink-0 whitespace-nowrap">
                                 <i class="fas fa-user-times mr-1.5"></i> Clear Assigned Reviewers
                             </button>
-                            <div class="flex gap-3 w-full sm:w-auto justify-end ml-auto">
+                            <div class="flex gap-2.5 w-full sm:w-auto justify-end sm:ml-auto">
                                 <button type="button" @click="open = false"
-                                    class="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 hover:text-slate-800 rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all shadow-2xs">
+                                    class="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-slate-200 text-slate-600 hover:text-slate-800 rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all shadow-2xs whitespace-nowrap">
                                     Cancel
                                 </button>
                                 <button type="submit"
-                                    class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-[#6d0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 transition-all shadow-2xs flex items-center justify-center min-w-[160px]">
+                                    class="flex-1 sm:flex-none px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-[#6d0000] focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 transition-all shadow-2xs flex items-center justify-center whitespace-nowrap min-w-[150px]">
                                     <i class="fas fa-user-check mr-2"></i> Save Assignment
                                 </button>
                             </div>
@@ -711,7 +716,7 @@
                     </div>
                     <p class="font-bold text-slate-800 text-base">${escapeHtml(reviewerName)}</p>
                     <div class="mt-2 p-2 bg-red-50 rounded-lg border border-red-100">
-                        <p class="text-[10px] text-[#8B0000] font-bold uppercase tracking-wider mb-1">Matching Expertise</p>
+                        <p class="text-[11px] text-[#8B0000] font-bold uppercase tracking-wider mb-1">Matching Expertise</p>
                         <p class="text-xs text-slate-700 font-medium">${escapeHtml(reviewerExpertise)}</p>
                     </div>
                     <div class="mt-2 pt-2 border-t border-red-100">

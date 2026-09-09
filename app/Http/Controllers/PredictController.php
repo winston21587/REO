@@ -12,8 +12,7 @@ use App\Models\Reviewer;
 class PredictController extends Controller
 {
     /**
-     * Use Groq's free API for IRB classification.
-     * This works instantly with no 404 errors.
+     * Use OpenRouter / Groq API for IRB classification.
      */
     public function predict(Request $request)
     {
@@ -37,44 +36,119 @@ class PredictController extends Controller
             . "Respond with ONLY the category name (EXEMPT, EXPEDITED, or FULL BOARD) followed by a colon and a one-sentence reason.\n"
             . "Category:";
 
+        $openRouterKey = config('services.openrouter.api_key', env('OPENROUTER_API_KEY'));
+        $openRouterModel = config('services.openrouter.model', env('OPENROUTER_MODEL', 'nex-agi/nex-n2.5-pro:free'));
+        $openRouterUrl = config('services.openrouter.url', 'https://openrouter.ai/api/v1/chat/completions');
+
         try {
-            Log::info('Attempting Groq AI Prediction for: ' . $title);
+            // 1. Primary engine: OpenRouter
+            if (!empty($openRouterKey)) {
+                Log::info('Attempting OpenRouter AI Prediction for: ' . $title);
 
-            $response = Groq::chat()->completions()->create([
-                'model' => env('GROQ_MODEL', 'GROQ_MODEL'),
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => 'You are an IRB classification expert. Analyze research titles and categorize them as EXEMPT, EXPEDITED, or FULL BOARD review types based on federal guidelines. Always respond with EXACTLY the category name followed by a colon and a brief reason.'
+                $response = Http::timeout(60)->withHeaders([
+                    'Authorization' => 'Bearer ' . $openRouterKey,
+                    'Content-Type' => 'application/json',
+                    'HTTP-Referer' => config('app.url', 'http://reo.test'),
+                    'X-Title' => config('app.name', 'WMSU REO'),
+                ])->post($openRouterUrl, [
+                    'model' => $openRouterModel,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are an IRB classification expert. Analyze research titles and categorize them as EXEMPT, EXPEDITED, or FULL BOARD review types based on federal guidelines. Always respond with EXACTLY the category name followed by a colon and a brief reason.'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt
+                        ]
                     ],
-                    [
-                        'role' => 'user',
-                        'content' => $prompt
-                    ]
-                ],
-                'temperature' => 0.1,
-                'max_tokens' => 150,
-            ]);
+                    'reasoning' => ['enabled' => true],
+                    'temperature' => 0.1,
+                    'max_tokens' => 300,
+                ]);
 
-            $rawOutput = $response['choices'][0]['message']['content'] ?? '';
-            Log::info('Groq Response: ' . $rawOutput);
-            
-            // Extract the classification
-            $label = $this->extractLabelFromOutput($rawOutput);
-            
+                if ($response->successful()) {
+                    $json = $response->json();
+                    $choice = $json['choices'][0]['message'] ?? [];
+                    $rawOutput = $choice['content'] ?? '';
+                    $reasoning = $choice['reasoning'] ?? ($choice['reasoning_details'] ?? null);
+                    if (is_array($reasoning)) {
+                        $reasoning = json_encode($reasoning, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                    }
+                    Log::info('OpenRouter Prediction Response: ' . $rawOutput);
+
+                    $label = $this->extractLabelFromOutput($rawOutput ?: ($reasoning ?? ''));
+                    $reasonText = $this->extractReasonFromOutput($rawOutput);
+
+                    return response()->json([
+                        'success' => true,
+                        'label' => $label,
+                        'raw_prediction' => $rawOutput,
+                        'reason' => $reasonText,
+                        'reasoning' => $reasoning,
+                        'provider' => 'OpenRouter',
+                        'model' => $openRouterModel,
+                    ]);
+                } else {
+                    Log::warning('OpenRouter API returned error: ' . $response->status() . ' - ' . $response->body());
+                }
+            }
+
+            // 2. Secondary fallback: Groq (if configured)
+            $groqKey = env('GROQ_API_KEY');
+            if (!empty($groqKey)) {
+                Log::info('Attempting Groq AI Prediction fallback for: ' . $title);
+
+                $response = Groq::chat()->completions()->create([
+                    'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are an IRB classification expert. Analyze research titles and categorize them as EXEMPT, EXPEDITED, or FULL BOARD review types based on federal guidelines. Always respond with EXACTLY the category name followed by a colon and a brief reason.'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt
+                        ]
+                    ],
+                    'temperature' => 0.1,
+                    'max_tokens' => 150,
+                ]);
+
+                $rawOutput = $response['choices'][0]['message']['content'] ?? '';
+                $label = $this->extractLabelFromOutput($rawOutput);
+                $reasonText = $this->extractReasonFromOutput($rawOutput);
+
+                return response()->json([
+                    'success' => true,
+                    'label' => $label,
+                    'raw_prediction' => $rawOutput,
+                    'reason' => $reasonText,
+                    'provider' => 'Groq',
+                ]);
+            }
+
+            // 3. Resilient heuristic fallback
+            $label = $this->heuristicPredict($title);
             return response()->json([
                 'success' => true,
                 'label' => $label,
-                'raw_prediction' => $rawOutput,
+                'raw_prediction' => $label . ': Heuristic classification based on keyword indicators.',
+                'reason' => 'Heuristic classification based on protocol title indicators.',
+                'provider' => 'Heuristic',
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Groq API Error: ' . $e->getMessage());
+            Log::error('AI Prediction Error: ' . $e->getMessage());
             
+            $fallbackLabel = $this->heuristicPredict($title);
             return response()->json([
-                'success' => false,
-                'message' => 'AI Service Error: ' . $e->getMessage()
-            ], 500);
+                'success' => true,
+                'label' => $fallbackLabel,
+                'raw_prediction' => 'Fallback: ' . $e->getMessage(),
+                'reason' => 'Estimated based on protocol keywords.',
+                'fallback' => true,
+            ]);
         }
     }
 
@@ -102,6 +176,27 @@ class PredictController extends Controller
         if (stripos($rawOutput, 'full board') !== false) return 'Full Board Review';
         
         return 'Expedited Review';
+    }
+
+    private function extractReasonFromOutput($rawOutput)
+    {
+        if (empty($rawOutput)) return '';
+        if (preg_match('/^(?:EXEMPT|EXPEDITED|FULL BOARD)\s*:\s*(.+)$/is', trim($rawOutput), $matches)) {
+            return trim($matches[1]);
+        }
+        return trim($rawOutput);
+    }
+
+    private function heuristicPredict($title)
+    {
+        $lower = strtolower($title);
+        if (preg_match('/\b(child|children|pediatric|prisoner|prison|inmate|biopsy|surgery|clinical trial|experimental drug|hiv|trauma|abuse|vulnerable|suicide)\b/i', $lower)) {
+            return 'Full Board Review';
+        }
+        if (preg_match('/\b(blood|serum|saliva|dna|genetic|mri|eeg|ekg|ultrasound|exercise|patient|identifiable|interview|focus group|audio|video|pregnant)\b/i', $lower)) {
+            return 'Expedited Review';
+        }
+        return 'Exempt Review';
     }
 
     public function save(Request $request)
@@ -136,14 +231,10 @@ class PredictController extends Controller
             'title' => 'required|string',
         ]);
 
-        $apiKey = env('GROQ_API_KEY');
-        
-        if (!$apiKey) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'API key not configured'
-            ], 500);
-        }
+        $openRouterKey = config('services.openrouter.api_key', env('OPENROUTER_API_KEY'));
+        $openRouterModel = config('services.openrouter.model', env('OPENROUTER_MODEL', 'nex-agi/nex-n2.5-pro:free'));
+        $openRouterUrl = config('services.openrouter.url', 'https://openrouter.ai/api/v1/chat/completions');
+        $groqKey = env('GROQ_API_KEY');
 
         $title = $request->title;
         
@@ -152,7 +243,7 @@ class PredictController extends Controller
         
         if ($reviewers->isEmpty()) {
             return response()->json([
-                'success' => false,
+                'success' => false, 
                 'message' => 'No reviewers found in the system'
             ], 404);
         }
@@ -207,20 +298,40 @@ class PredictController extends Controller
             . "Reviewer Name:";
 
         try {
-            $response = Http::timeout(60)->withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
-            ])->post('https://api.groq.com/openai/v1/chat/completions', [
-                'model' => 'llama-3.3-70b-versatile',
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $userPrompt]
-                ],
-                'temperature' => 0.1,
-                'max_tokens' => 80,
-            ]);
+            $response = null;
 
-            if ($response->successful()) {
+            if (!empty($openRouterKey)) {
+                $response = Http::timeout(45)->withHeaders([
+                    'Authorization' => 'Bearer ' . $openRouterKey,
+                    'Content-Type' => 'application/json',
+                    'HTTP-Referer' => config('app.url', 'http://reo.test'),
+                    'X-Title' => config('app.name', 'WMSU REO'),
+                ])->post($openRouterUrl, [
+                    'model' => $openRouterModel,
+                    'messages' => [
+                        ['role' => 'system', 'content' => $systemPrompt],
+                        ['role' => 'user', 'content' => $userPrompt]
+                    ],
+                    'reasoning' => ['enabled' => true],
+                    'temperature' => 0.1,
+                    'max_tokens' => 80,
+                ]);
+            } elseif (!empty($groqKey)) {
+                $response = Http::timeout(45)->withHeaders([
+                    'Authorization' => 'Bearer ' . $groqKey,
+                    'Content-Type' => 'application/json',
+                ])->post('https://api.groq.com/openai/v1/chat/completions', [
+                    'model' => 'llama-3.3-70b-versatile',
+                    'messages' => [
+                        ['role' => 'system', 'content' => $systemPrompt],
+                        ['role' => 'user', 'content' => $userPrompt]
+                    ],
+                    'temperature' => 0.1,
+                    'max_tokens' => 80,
+                ]);
+            }
+
+            if ($response && $response->successful()) {
                 $content = $response->json();
                 $predictedName = trim($content['choices'][0]['message']['content'] ?? '');
                 Log::info('AI Suggested Reviewer: ' . $predictedName);

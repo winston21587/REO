@@ -37,6 +37,8 @@ return [
 
     'openrouter' => [ 
         'api_key' => env('OPENROUTER_API_KEY'), 
+        'model' => env('OPENROUTER_MODEL', 'nex-agi/nex-n2.5-pro:free'),
+        'url' => env('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1/chat/completions'),
     ],
 
 

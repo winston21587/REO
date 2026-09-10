@@ -21,13 +21,6 @@ Route::get('/', function () {
     return view('index', compact('contents'));
 })->name('index');
 
-Route::get('/test-model', function () {
-    return view('test_model');
-})->name('test.model');
-Route::get('/test_model', function () { // Added this to match your typo!
-    return view('test_model');
-});
-
 Route::post('/admin/predict/suggest-reviewer', [App\Http\Controllers\PredictController::class, 'suggestReviewer'])->name('admin.predict.suggest-reviewer');
 
 Route::post('/predict-model', [\App\Http\Controllers\PredictionController::class, 'predict'])->name('predict.model');

@@ -74,3 +74,27 @@ tests/screenshots/
 test-results/
 playwright-report/
 blob-report/
+
+# Debug & scratch scripts (removed from repo)
+check_remark.php
+create_fonts.php
+extract*.php
+test.php
+test_font.php
+test.json
+query.json
+schema.json
+schema.txt
+colleges.txt
+document.xml
+document2.xml
+
+# Internal design & product docs (local only)
+DESIGN.md
+PRODUCT.md
+
+# Reverse engineering projects (unrelated)
+/Reverse Engineer/
+
+# Generated test outputs
+public/test_pdf.pdf

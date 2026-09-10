@@ -8,21 +8,18 @@
   <img src="https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.x">
   <img src="https://img.shields.io/badge/Tailwind_CSS-4.x-38BDF8?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS 4.x">
   <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7.x">
-  <img src="https://img.shields.io/badge/Flask-2.x-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
-  <img src="https://img.shields.io/badge/scikit--learn-latest-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white" alt="scikit-learn">
   <img src="https://img.shields.io/badge/MySQL-8.x-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL">
 </p>
 
 <h1 align="center">WMSU REO</h1>
-<h3 align="center">Research Ethics and Accreditation Review System</h3>
+<h3 align="center">Research Ethics Oversight Committee Portal</h3>
 
 <p align="center">
-  A modern research review and accreditation platform built to streamline proposal submission, reviewer assignment, document handling, scheduling, feedback, and AI-assisted decision support.
+  A unified digital platform for managing the complete lifecycle of research ethics review at Western Mindanao State University — from proposal submission through committee evaluation to clearance certification.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Active%20Development-22C55E?style=flat-square" alt="Status">
-  <img src="https://img.shields.io/badge/Type-Web%20Application-0F172A?style=flat-square" alt="Type">
   <img src="https://img.shields.io/badge/Architecture-Full%20Stack-8B5CF6?style=flat-square" alt="Architecture">
   <img src="https://img.shields.io/badge/AI%20Enabled-Yes-F59E0B?style=flat-square" alt="AI Enabled">
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License MIT">
@@ -32,111 +29,52 @@
 
 ## Overview
 
-**WMSU REO** is a comprehensive academic platform designed to manage the complete lifecycle of research ethics review, institutional review workflows, accreditation processing, and administrative oversight.
+**WMSU REO** replaces fragmented paper submissions and ad-hoc email communications with a centralized workflow engine that guarantees statutory compliance with Philippine Health Research Ethics Board (PHREB) standards.
 
-It brings together researchers, reviewers, administrators, and super-admins in one centralized system for:
+The system connects researchers, reviewers, administrators, and super-admins in one platform for:
 
-- Research proposal submission with title, description, and supporting documents
-- Document verification and automated processing pipeline
-- Intelligent reviewer assignment based on expertise and affiliation
+- Research proposal submission with supporting documents
+- Document verification and completeness triage
+- Reviewer assignment based on expertise and college affiliation
 - Appointment scheduling and meeting management
 - Structured feedback, revision tracking, and decision history
-- Automated email notifications for every critical update
-- AI-assisted preliminary decision support using machine learning
-
-Whether you are an Institutional Review Board (IRB) coordinator, a faculty reviewer, or a student researcher, WMSU-REOC provides the tools to make the ethical review process transparent, efficient, and data-driven.
+- Automated email notifications at every critical stage
+- AI-assisted preliminary classification using machine learning
 
 ---
 
-## Key Highlights
-
-<table>
-  <tr>
-    <td>
-      <img src="https://img.shields.io/badge/Multi--Role_Access-4285F4?style=flat-square" alt="Multi-Role Access">
-    </td>
-    <td>Supports Researchers, Reviewers, Admins, and Super-Admins with role-based permissions and tailored dashboards.</td>
-  </tr>
-  <tr>
-    <td>
-      <img src="https://img.shields.io/badge/Document_Workflow-34A853?style=flat-square" alt="Document Workflow">
-    </td>
-    <td>Handles upload, processing, verification, and tracking of research documents (PDF, Word, etc.).</td>
-  </tr>
-  <tr>
-    <td>
-      <img src="https://img.shields.io/badge/Scheduling_System-8E44AD?style=flat-square" alt="Scheduling System">
-    </td>
-    <td>Manages appointments and review meetings between researchers and reviewers.</td>
-  </tr>
-  <tr>
-    <td>
-      <img src="https://img.shields.io/badge/Feedback_&_Revisions-E67E22?style=flat-square" alt="Feedback & Revisions">
-    </td>
-    <td>Tracks reviewer comments, researcher revisions, and complete decision history across review cycles.</td>
-  </tr>
-  <tr>
-    <td>
-      <img src="https://img.shields.io/badge/AI--Assisted_Review-F1C40F?style=flat-square" alt="AI-Assisted Review">
-    </td>
-    <td>Uses a trained machine learning model to provide IRB classification and decision support for preliminary reviews.</td>
-  </tr>
-  <tr>
-    <td>
-      <img src="https://img.shields.io/badge/Notifications-E74C3C?style=flat-square" alt="Notifications">
-    </td>
-    <td>Automated email alerts for account creation, appointments, password resets, and review decisions.</td>
-  </tr>
-  <tr>
-    <td>
-      <img src="https://img.shields.io/badge/Administrative_Oversight-2C3E50?style=flat-square" alt="Administrative Oversight">
-    </td>
-    <td>Super-admin dashboards for managing system settings, fees, content, and user roles.</td>
-  </tr>
-</table>
-
----
-
-## Main Features
+## Features
 
 ### Researcher Portal
 - Submit research titles with descriptions and category selection
-- Upload required supporting documents and track their status
-- View proposal progress and review stage history
-- Receive feedback and respond to revision requests
-- Schedule consultations with assigned reviewers
+- Upload required supporting documents (protocols, consent forms, CVs)
+- Track proposal progress through each review stage
+- Receive and respond to reviewer feedback and revision requests
 
 ### Reviewer Portal
-- View all research submissions assigned based on expertise and college
-- Access uploaded documents for detailed review
-- Submit remarks, recommendations, and decisions
-- Communicate with researchers through structured feedback forms
-- Monitor revision history and set up meetings
+- Review assigned submissions with integrated document viewer
+- Submit structured remarks and recommendations per file
+- Track review history and monitor revision cycles
+- Communicate through the built-in feedback system
 
 ### Admin Dashboard
-- Manage users, roles, and permissions
-- Configure system parameters such as review fees and deadlines
-- Oversee the entire research submission workflow
-- Publish announcements, guidelines, and FAQs
-- Generate reports and audit trails
+- Conduct initial completeness triage on incoming submissions
+- Assign qualified reviewers to protocols
+- Manage review cycles, deadlines, and appointments
+- Generate official clearance certificates and recommendation letters
+- Publish announcements, guidelines, and FAQs via built-in CMS
 
 ### Super-Admin Controls
-- Full system access with complete configuration rights
-- Advanced oversight of all administrative functions
-- Manage sensitive settings that affect all user levels
-- Monitor system health and access logs
+- Manage all users, roles, and reviewer pools
+- Configure review fee structures
+- View institutional analytics and submission metrics
+- Oversee system-wide settings and access controls
 
 ### AI Decision Support
-- Pre-trained Institutional Review Board (IRB) classification model
-- Accepts extracted document text and metadata
-- Returns predicted risk level and approval probability
-- Assists reviewers with preliminary screening, saving time and reducing bias
-
-### Content Management System (CMS)
-- Built-in announcement and guidelines management
-- Rich-text editor for creating formatted content
-- Dynamic display on researcher and reviewer dashboards
-- Supports university-specific policies and updates
+- Trained IRB classification model for preliminary risk assessment
+- Accepts extracted document text for automated analysis
+- Returns predicted review type and approval probability
+- Assists reviewers with initial screening to reduce turnaround time
 
 ---
 
@@ -148,7 +86,6 @@ Whether you are an Institutional Review Board (IRB) coordinator, a faculty revie
   <img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP">
   <img src="https://img.shields.io/badge/Eloquent-ORM-2F2F2F?style=flat-square" alt="Eloquent ORM">
   <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL">
-  <img src="https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL">
 </p>
 
 ### Frontend
@@ -156,9 +93,8 @@ Whether you are an Institutional Review Board (IRB) coordinator, a faculty revie
   <img src="https://img.shields.io/badge/Blade-Templates-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Blade">
   <img src="https://img.shields.io/badge/Tailwind_CSS-4.x-38BDF8?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
   <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite">
-  <img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="JavaScript">
   <img src="https://img.shields.io/badge/Alpine.js-8BC0D0?style=flat-square&logo=alpine.js&logoColor=black" alt="Alpine.js">
-  <img src="https://img.shields.io/badge/Axios-API%20Calls-5A29E4?style=flat-square&logo=axios&logoColor=white" alt="Axios">
+  <img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="JavaScript">
 </p>
 
 ### AI / Machine Learning
@@ -167,7 +103,6 @@ Whether you are an Institutional Review Board (IRB) coordinator, a faculty revie
   <img src="https://img.shields.io/badge/Flask-API-000000?style=flat-square&logo=flask&logoColor=white" alt="Flask">
   <img src="https://img.shields.io/badge/scikit--learn-ML-F7931E?style=flat-square" alt="scikit-learn">
   <img src="https://img.shields.io/badge/pandas-Analysis-150458?style=flat-square&logo=pandas&logoColor=white" alt="pandas">
-  <img src="https://img.shields.io/badge/numpy-Arrays-013243?style=flat-square&logo=numpy&logoColor=white" alt="numpy">
 </p>
 
 ### Document Processing
@@ -176,29 +111,19 @@ Whether you are an Institutional Review Board (IRB) coordinator, a faculty revie
   <img src="https://img.shields.io/badge/TCPDF-PDF%20Generation-777777?style=flat-square" alt="TCPDF">
   <img src="https://img.shields.io/badge/FPDI-PDF%20Templating-777777?style=flat-square" alt="FPDI">
   <img src="https://img.shields.io/badge/Spatie-PDF%20to%20Text-00AAFF?style=flat-square&logo=laravel&logoColor=white" alt="Spatie">
-  <img src="https://img.shields.io/badge/Groq-Laravel%20AI-000000?style=flat-square" alt="Groq Laravel">
-  <img src="https://img.shields.io/badge/Laravel%20File%20Viewer-Document%20Preview-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="File Viewer">
-</p>
-
-### Development & Quality
-<p>
-  <img src="https://img.shields.io/badge/Composer-Dependency%20Manager-885630?style=flat-square&logo=composer&logoColor=white" alt="Composer">
-  <img src="https://img.shields.io/badge/npm-Frontend%20Packages-CB3837?style=flat-square&logo=npm&logoColor=white" alt="npm">
-  <img src="https://img.shields.io/badge/PHPUnit-Testing-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHPUnit">
-  <img src="https://img.shields.io/badge/Laravel%20Pint-Code%20Style-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Pint">
-  <img src="https://img.shields.io/badge/Sail-Docker-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Laravel Sail">
+  <img src="https://img.shields.io/badge/Groq-AI%20Integration-000000?style=flat-square" alt="Groq">
 </p>
 
 ---
 
-## System Architecture
+## Architecture
 
-The application uses a **dual-backend architecture**: a Laravel web application and a separate Python/Flask ML microservice. They communicate via JSON REST API to combine business logic with AI-powered predictions.
+The application uses a **dual-backend architecture**: a Laravel web application handles business logic and user-facing workflows, while a separate Python/Flask microservice provides AI-powered classification and document analysis.
 
 ```mermaid
 flowchart LR
     U[Researchers / Reviewers / Admins] --> L[Laravel 12 Web App]
-    L --> DB[(SQL Database)]
+    L --> DB[(MySQL Database)]
     L --> FS[File Storage]
     L --> M[Email Notifications]
     L --> P[Python Flask API]
@@ -209,3 +134,61 @@ flowchart LR
 
     L -->|JSON REST API| P
     P -->|JSON Response| L
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+- PHP 8.2+
+- Composer
+- Node.js 18+ & npm
+- MySQL 8.x
+- Python 3.x (for the ML microservice)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/winston21587/REO.git
+cd REO
+
+# Install PHP dependencies
+composer install
+
+# Install frontend dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+php artisan key:generate
+
+# Run database migrations
+php artisan migrate
+
+# Build frontend assets
+npm run build
+
+# Start the development server
+php artisan serve
+```
+
+### AI Microservice (Optional)
+
+```bash
+# Navigate to the Python service directory
+cd python-ml
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the Flask API
+python app.py
+```
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

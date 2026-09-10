@@ -142,21 +142,20 @@ class AdminController extends Controller
 
         $users = $query->paginate(10)->withQueryString();
 
+        // Metrics for directory header
+        $totalResearchers = User::where('role', 'researcher')->count();
+        $activeCount = User::where('role', 'researcher')->where('is_verified', true)->count();
+        $internalCount = User::where('role', 'researcher')->whereHas('researcher', function ($q) {
+            $q->where('external_user', false);
+        })->count();
+        $externalCount = User::where('role', 'researcher')->whereHas('researcher', function ($q) {
+            $q->where('external_user', true);
+        })->count();
 
         // Full list of WMSU Colleges
         $colleges = College::all();
 
-        // $colleges = [
-        //     "College of Computing Studies",
-        //     "College of Engineering",
-        //     "College of Science and Mathematics",
-        //     "College of Liberal Arts",
-        //     "College of Teacher Education",
-        //     "College of Nursing",
-        //     "College of Criminal Justice Education"
-        // ];
-
-        return view('admin.manage_users', compact('users', 'colleges'));
+        return view('admin.manage_users', compact('users', 'colleges', 'totalResearchers', 'activeCount', 'internalCount', 'externalCount'));
     }
 
     public function analyticsDetails(Request $request)
@@ -2506,10 +2505,9 @@ class AdminController extends Controller
                     </div>
                     <h3 class="text-xs font-semibold text-slate-900 mb-1">Document Unavailable on Disk</h3>
                     <p class="text-[11px] text-slate-500 mb-3 leading-relaxed break-all font-mono">' . htmlspecialchars($file->filename) . '</p>
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200/60">
-                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                        <span>Archived or Hardcopy Record</span>
-                    </div>
+                    <span class="inline-block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        Archived or Hardcopy Record
+                    </span>
                 </div>
             </body>
             </html>',
@@ -3415,8 +3413,10 @@ class AdminController extends Controller
         return back()->with('success', 'Researcher has been notified to submit their Official Receipt.');
     }
 
-    public function updateUserProfile(Request $request, User $user)
+    public function updateUserProfile(Request $request, $id)
     {
+        $user = $id instanceof User ? $id : User::findOrFail($id);
+
         // Security check
         if ($user->role !== 'researcher') {
             return redirect()->back()->with('error', 'Invalid user.');

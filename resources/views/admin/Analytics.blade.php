@@ -412,7 +412,7 @@
                 <p class="text-xs font-bold text-slate-600 uppercase tracking-wider">Active Researchers</p>
                 <div class="flex items-end gap-2 mt-2">
                     <h3 class="text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($activeResearchers) }}</h3>
-                    <span class="text-xs font-bold text-slate-500 mb-1">Registered Investigators</span>
+                    <span class="text-xs font-bold text-slate-500 mb-1">Registered Researchers</span>
                 </div>
             </div>
         </div>
@@ -529,9 +529,9 @@
                     </div>
                 </section>
 
-                <!-- Widget 2: Active Pipeline -->
+                <!-- Widget 2: Submissions by Stage -->
                 <section class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">Active Pipeline</h3>
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">Submissions by Stage</h3>
                     <div class="space-y-4">
                         @foreach($pipelineStages as $stage)
                         <div>
@@ -574,11 +574,11 @@
                     <i class="fas fa-tasks text-6xl text-[#8b0000]"></i>
                 </div>
                 <div class="relative z-10">
-                    <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Ongoing Pipeline Proposals</h2>
-                    <p class="text-xs text-slate-500 font-medium mt-0.5">Quick-access list of submissions currently requiring action.</p>
+                    <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Submissions In Progress</h2>
+                    <p class="text-xs text-slate-500 font-medium mt-0.5">List of submissions currently being reviewed or awaiting action.</p>
                 </div>
                 <div class="flex items-center gap-2 relative z-10">
-                    <span class="px-3 py-1 bg-[#8B0000] text-white text-xs font-bold rounded-lg shadow-sm tabular-nums">{{ $stuckProposals->total() }} Pending</span>
+                    <span class="px-3 py-1 bg-[#8B0000] text-white text-xs font-bold rounded-lg shadow-sm tabular-nums">{{ $stuckProposals->total() }} In Progress</span>
                 </div>
             </div>
             
@@ -607,25 +607,18 @@
                         </div>
                         <div>
                             @php
-                                $statusFormat = match($proposal->Status) {
-                                    'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-700 border-slate-200/80',
-                                    'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-50 text-blue-700 border-blue-200/80',
-                                    'Waiting for Revision' => 'bg-amber-50 text-amber-800 border-amber-200/80',
-                                    'Complete - Awaiting Hardcopy' => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
-                                    default => 'bg-slate-100 text-slate-700 border-slate-200/80'
-                                };
-                                $dotFormat = match($proposal->Status) {
-                                    'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-400',
-                                    'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-500',
-                                    'Waiting for Revision' => 'bg-amber-500',
-                                    'Complete - Awaiting Hardcopy' => 'bg-emerald-500',
-                                    default => 'bg-slate-400'
+                                $statusTextColor = match($proposal->Status) {
+                                    'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'text-slate-600',
+                                    'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review', 'Reviewer Assigned', 'Hardcopy Received' => 'text-blue-700',
+                                    'Waiting for Revision' => 'text-amber-800',
+                                    'Revision Submitted', 'Reviewing Revisions' => 'text-purple-700',
+                                    'Complete - Awaiting Hardcopy', 'Reviewed', 'Approved' => 'text-emerald-700',
+                                    default => 'text-slate-600'
                                 };
                                 $cleanStatus = str_replace(' - ', ': ', $proposal->Status);
                             @endphp
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border {{ $statusFormat }}">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $dotFormat }} shrink-0" aria-hidden="true"></span>
-                                <span>{{ $cleanStatus }}</span>
+                            <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $statusTextColor }}">
+                                {{ $cleanStatus }}
                             </span>
                         </div>
                     </div>
@@ -634,8 +627,8 @@
                         <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 mb-3 shadow-xs">
                             <i class="fas fa-check-circle text-2xl" aria-hidden="true"></i>
                         </div>
-                        <p class="text-sm font-bold text-slate-800">The pipeline is completely clear</p>
-                        <p class="text-xs text-slate-500 mt-1">All active protocols are progressing normally.</p>
+                        <p class="text-sm font-bold text-slate-800">No submissions currently in progress</p>
+                        <p class="text-xs text-slate-500 mt-1">All active submissions have been processed with no actions required.</p>
                     </div>
                 @endforelse
             </div>
@@ -645,7 +638,7 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider font-bold border-y border-slate-200">
-                            <th class="px-6 py-4">Protocol Title</th>
+                            <th class="px-6 py-4">Research Title</th>
                             <th class="px-6 py-4">Researcher</th>
                             <th class="px-6 py-4">Status</th>
                             <th class="px-6 py-4">Last Updated</th>
@@ -670,25 +663,18 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     @php
-                                        $statusFormat = match($proposal->Status) {
-                                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-100 text-slate-700 border-slate-200/80',
-                                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-50 text-blue-700 border-blue-200/80',
-                                            'Waiting for Revision' => 'bg-amber-50 text-amber-800 border-amber-200/80',
-                                            'Complete - Awaiting Hardcopy' => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
-                                            default => 'bg-slate-100 text-slate-700 border-slate-200/80'
-                                        };
-                                        $dotFormat = match($proposal->Status) {
-                                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'bg-slate-400',
-                                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review' => 'bg-blue-500',
-                                            'Waiting for Revision' => 'bg-amber-500',
-                                            'Complete - Awaiting Hardcopy' => 'bg-emerald-500',
-                                            default => 'bg-slate-400'
+                                        $statusTextColor = match($proposal->Status) {
+                                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'text-slate-600',
+                                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review', 'Reviewer Assigned', 'Hardcopy Received' => 'text-blue-700',
+                                            'Waiting for Revision' => 'text-amber-800',
+                                            'Revision Submitted', 'Reviewing Revisions' => 'text-purple-700',
+                                            'Complete - Awaiting Hardcopy', 'Reviewed', 'Approved' => 'text-emerald-700',
+                                            default => 'text-slate-600'
                                         };
                                         $cleanStatus = str_replace(' - ', ': ', $proposal->Status);
                                     @endphp
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border {{ $statusFormat }}">
-                                        <span class="w-1.5 h-1.5 rounded-full {{ $dotFormat }} shrink-0" aria-hidden="true"></span>
-                                        <span>{{ $cleanStatus }}</span>
+                                    <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $statusTextColor }}">
+                                        {{ $cleanStatus }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-500 font-medium tabular-nums">
@@ -708,8 +694,8 @@
                                     <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 mb-3 shadow-xs">
                                         <i class="fas fa-check-circle text-2xl" aria-hidden="true"></i>
                                     </div>
-                                    <p class="text-sm font-bold text-slate-800">The pipeline is completely clear</p>
-                                    <p class="text-xs text-slate-500 mt-1">All active protocols are progressing normally with no pending actions required.</p>
+                                    <p class="text-sm font-bold text-slate-800">No submissions currently in progress</p>
+                                    <p class="text-xs text-slate-500 mt-1">All active submissions have been processed with no pending actions required.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -1581,15 +1567,15 @@
             const getStatusBadge = (status) => {
                 const s = (status || '').toLowerCase();
                 if (s.includes('approved') || s.includes('complete') || s.includes('exempt')) {
-                    return 'bg-emerald-50 text-emerald-800 border border-emerald-200/80';
+                    return 'text-emerald-700';
                 }
                 if (s.includes('review') || s.includes('received')) {
-                    return 'bg-blue-50 text-blue-700 border border-blue-200/80';
+                    return 'text-blue-700';
                 }
                 if (s.includes('revis')) {
-                    return 'bg-amber-50 text-amber-800 border border-amber-200/80';
+                    return 'text-amber-800';
                 }
-                return 'bg-slate-100 text-slate-700 border border-slate-200/80';
+                return 'text-slate-600';
             };
 
             let html = '<div class="overflow-x-auto w-full"><table class="w-full text-left border-collapse">';
@@ -1642,7 +1628,7 @@
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-xs truncate" title="${safeTitle}">${safeTitle}</td>
                             <td class="px-4 py-3 text-sm text-slate-600 max-w-[180px] truncate" title="${safeResearcher}">${safeResearcher}</td>
-                            <td class="px-4 py-3 text-sm"><span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">${safeStatus}</span></td>
+                            <td class="px-4 py-3 text-sm"><span class="inline-flex items-center text-xs font-semibold whitespace-nowrap ${getStatusBadge(item.status)}">${safeStatus}</span></td>
                             <td class="px-4 py-3 text-sm text-slate-500 tabular-nums whitespace-nowrap">${safeDate}</td>
                             ${type === 'revisions' ? `<td class="px-4 py-3 text-sm text-center font-bold text-[#8B0000] tabular-nums">${safeRevisions}</td>` : ''}
                         </tr>

@@ -15,80 +15,49 @@
          @keydown.escape.window="if (drawerOpen) closeDrawer()">
 
         <!-- Top Institutional Header Card -->
-        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs px-4 py-2 sm:px-5 sm:py-2.5 relative overflow-hidden shrink-0">
+        <div class="bg-white rounded-2xl border border-slate-200/90 border-t-2 border-t-[#8B0000] shadow-xs px-4 py-2.5 sm:px-5 sm:py-3 relative overflow-hidden shrink-0">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3">
                 
                 <!-- Left: Back Button + Code + Status + Title -->
                 <div class="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
                     <a href="{{ $backUrl }}" 
-                       class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200/90 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-colors flex items-center justify-center shrink-0 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95"
+                       class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200/90 text-slate-600 hover:text-slate-950 hover:bg-slate-50 hover:border-slate-300 transition-colors flex items-center justify-center shrink-0 focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95"
                        title="Back to Queue" aria-label="Back to Queue">
                         <i class="fas fa-arrow-left text-xs sm:text-sm" aria-hidden="true"></i>
                     </a>
                     <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-mono text-xs font-semibold tabular-nums text-slate-700 bg-slate-50 border border-slate-200/80 px-2 py-0.5 rounded-md shadow-2xs">
+                        <div class="flex items-center gap-2.5 flex-wrap">
+                            <span class="font-mono text-xs font-bold tabular-nums text-slate-800 bg-slate-100 border border-slate-200/90 px-2 py-0.5 rounded-md shadow-2xs">
                                 {{ $researchTitle->reoc_code ?? ('#'.str_pad($researchTitle->id, 5, '0', STR_PAD_LEFT)) }}
                             </span>
                             @php
                                 $statusLower = strtolower($researchTitle->Status ?? '');
-                                $statusConfig = match(true) {
-                                    str_contains($statusLower, 'modifications required') || str_contains($statusLower, 'disapproved') || str_contains($statusLower, 'major') => [
-                                        'bg' => 'bg-rose-50',
-                                        'text' => 'text-rose-800',
-                                        'border' => 'border-rose-300',
-                                        'dot' => 'bg-rose-600',
-                                    ],
-                                    str_contains($statusLower, 'waiting') || str_contains($statusLower, 'minor') => [
-                                        'bg' => 'bg-amber-50',
-                                        'text' => 'text-amber-800',
-                                        'border' => 'border-amber-300',
-                                        'dot' => 'bg-amber-500',
-                                    ],
-                                    str_contains($statusLower, 'reviewed') || str_contains($statusLower, 'approved') => [
-                                        'bg' => 'bg-emerald-50',
-                                        'text' => 'text-emerald-800',
-                                        'border' => 'border-emerald-300',
-                                        'dot' => 'bg-emerald-600',
-                                    ],
-                                    str_contains($statusLower, 'under review') => [
-                                        'bg' => 'bg-indigo-50',
-                                        'text' => 'text-indigo-800',
-                                        'border' => 'border-indigo-300',
-                                        'dot' => 'bg-indigo-600',
-                                    ],
-                                    str_contains($statusLower, 'reviewer assigned') => [
-                                        'bg' => 'bg-blue-50',
-                                        'text' => 'text-blue-800',
-                                        'border' => 'border-blue-300',
-                                        'dot' => 'bg-blue-600',
-                                    ],
-                                    default => [
-                                        'bg' => 'bg-slate-100',
-                                        'text' => 'text-slate-800',
-                                        'border' => 'border-slate-300',
-                                        'dot' => 'bg-slate-500',
-                                    ]
+                                $statusTextColor = match(true) {
+                                    str_contains($statusLower, 'modifications required') || str_contains($statusLower, 'disapproved') || str_contains($statusLower, 'major') => 'text-rose-700',
+                                    str_contains($statusLower, 'waiting') || str_contains($statusLower, 'minor') => 'text-amber-700',
+                                    str_contains($statusLower, 'reviewed') || str_contains($statusLower, 'approved') => 'text-emerald-700',
+                                    str_contains($statusLower, 'under review') => 'text-indigo-700',
+                                    str_contains($statusLower, 'reviewer assigned') => 'text-blue-700',
+                                    default => 'text-slate-700'
                                 };
                             @endphp
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} border {{ $statusConfig['border'] }} shadow-2xs">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $statusConfig['dot'] }} shrink-0"></span>
-                                <span>{{ $researchTitle->Status }}</span>
+                            <span class="inline-flex items-center text-xs font-bold uppercase tracking-wider {{ $statusTextColor }}">
+                                {{ $researchTitle->Status }}
                             </span>
                         </div>
-                        <h1 class="font-heading font-bold text-base sm:text-lg text-slate-950 tracking-tight leading-tight mt-0.5 truncate" title="{{ $researchTitle->Study_Protocol_title }}">
+                        <h1 class="font-heading font-bold text-base sm:text-lg text-slate-950 tracking-tight leading-tight mt-1 truncate" title="{{ $researchTitle->Study_Protocol_title }}">
                             {{ $researchTitle->Study_Protocol_title }}
                         </h1>
                     </div>
                 </div>
 
-                <!-- Right: Researcher Metadata & Quick Action Pill Group -->
-                <div class="flex flex-col sm:flex-row lg:flex-col sm:items-center lg:items-end justify-between gap-1.5 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                <!-- Right: Researcher Metadata & Quick Action Group -->
+                <div class="flex flex-col sm:flex-row lg:flex-col sm:items-center lg:items-end justify-between gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
                     
                     <!-- Metadata Info Row -->
                     <div class="flex items-center gap-2.5 text-xs text-slate-600 flex-wrap">
                         <div class="flex items-center gap-1.5">
-                            <div class="w-5 h-5 rounded-full bg-slate-900 border border-slate-300 flex items-center justify-center text-[10px] font-bold text-white uppercase shrink-0 shadow-2xs">
+                            <div class="w-6 h-6 rounded-full bg-gradient-to-br from-[#8B0000] to-[#550000] text-white flex items-center justify-center text-[11px] font-bold uppercase shrink-0 shadow-2xs">
                                 {{ substr($researchTitle->researcher?->user?->first_name ?? $researchTitle->Created_by ?? 'U', 0, 1) }}
                             </div>
                             <span class="font-bold text-slate-900">
@@ -100,7 +69,15 @@
                             <i class="far fa-calendar-alt text-slate-400 mr-1" aria-hidden="true"></i>{{ $researchTitle->created_at->format('M d, Y') }}
                         </span>
                         @if(!empty($researchTitle->Review_Type) && !in_array($researchTitle->Review_Type, ['Unassigned', 'N/A']))
-                            <span class="font-bold text-slate-700 bg-slate-100 border border-slate-200/90 text-[11px] px-2 py-0.5 rounded-md">
+                            @php
+                                $revTypeBadge = match($researchTitle->Review_Type) {
+                                    'Exempt Review' => 'bg-emerald-50 text-emerald-800 border-emerald-200/90',
+                                    'Expedited Review' => 'bg-blue-50 text-blue-800 border-blue-200/90',
+                                    'Full Board Review' => 'bg-amber-50 text-amber-900 border-amber-200/90',
+                                    default => 'bg-slate-100 text-slate-700 border-slate-200/90'
+                                };
+                            @endphp
+                            <span class="font-bold text-[11px] px-2 py-0.5 rounded-md border shadow-2xs {{ $revTypeBadge }}">
                                 {{ $researchTitle->Review_Type }}
                             </span>
                         @endif
@@ -110,27 +87,27 @@
                     <div class="flex items-center gap-1.5 flex-wrap">
                         @if($auditTrail->isNotEmpty())
                             <button type="button" @click="openDrawer('audit')" 
-                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] h-8 cursor-pointer shadow-2xs group active:scale-95"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200/90 bg-white hover:bg-rose-50/60 hover:border-rose-200 text-slate-700 hover:text-[#8B0000] text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] h-8 cursor-pointer shadow-2xs group active:scale-95"
                                     title="View Complete Audit Trail">
-                                <i class="fas fa-stream text-xs text-slate-400 group-hover:text-[#8B0000] transition-colors" aria-hidden="true"></i>
+                                <i class="fas fa-stream text-xs text-[#8B0000] group-hover:scale-110 transition-transform" aria-hidden="true"></i>
                                 <span>Audit Trail</span>
-                                <span class="px-1.5 py-0.5 rounded-full bg-slate-800 text-white text-[10px] font-medium tabular-nums">
+                                <span class="px-1.5 py-0.5 rounded-full bg-[#8B0000] text-white text-[10px] font-bold tabular-nums shadow-2xs">
                                     {{ $auditTrail->count() }}
                                 </span>
                             </button>
                         @endif
 
                         <button type="button" @click="openDrawer('details')" 
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] h-8 cursor-pointer shadow-2xs group active:scale-95"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200/90 bg-white hover:bg-blue-50/60 hover:border-blue-200 text-slate-700 hover:text-blue-700 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 h-8 cursor-pointer shadow-2xs group active:scale-95"
                                 title="View Submission Details">
-                            <i class="fas fa-info-circle text-xs text-slate-400 group-hover:text-[#8B0000] transition-colors" aria-hidden="true"></i>
+                            <i class="fas fa-info-circle text-xs text-blue-600 group-hover:scale-110 transition-transform" aria-hidden="true"></i>
                             <span>Details</span>
                         </button>
 
                         <button type="button" @click="openDrawer('activity')" 
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] h-8 cursor-pointer shadow-2xs group active:scale-95"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200/90 bg-white hover:bg-indigo-50/60 hover:border-indigo-200 text-slate-700 hover:text-indigo-700 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 h-8 cursor-pointer shadow-2xs group active:scale-95"
                                 title="View Activity Log">
-                            <i class="fas fa-history text-xs text-slate-400 group-hover:text-[#8B0000] transition-colors" aria-hidden="true"></i>
+                            <i class="fas fa-history text-xs text-indigo-600 group-hover:scale-110 transition-transform" aria-hidden="true"></i>
                             <span>Activity Log</span>
                         </button>
                     </div>
@@ -199,20 +176,20 @@
                     $ext = strtolower($file->filetype ?? '');
                 }
                 $icons = [
-                    'pdf' => ['icon' => 'fas fa-file-pdf', 'color' => 'text-rose-700/80', 'bg' => 'bg-rose-50/60 text-rose-700/80'],
-                    'doc' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-700/80', 'bg' => 'bg-blue-50/60 text-blue-700/80'],
-                    'docx' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-700/80', 'bg' => 'bg-blue-50/60 text-blue-700/80'],
-                    'ppt' => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-amber-700/80', 'bg' => 'bg-amber-50/60 text-amber-700/80'],
-                    'pptx' => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-amber-700/80', 'bg' => 'bg-amber-50/60 text-amber-700/80'],
-                    'xls' => ['icon' => 'fas fa-file-excel', 'color' => 'text-emerald-700/80', 'bg' => 'bg-emerald-50/60 text-emerald-700/80'],
-                    'xlsx' => ['icon' => 'fas fa-file-excel', 'color' => 'text-emerald-700/80', 'bg' => 'bg-emerald-50/60 text-emerald-700/80'],
-                    'jpg' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
-                    'jpeg' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
-                    'png' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
-                    'gif' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
-                    'webp' => ['icon' => 'fas fa-file-image', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'],
+                    'pdf' => ['icon' => 'fas fa-file-pdf', 'color' => 'text-rose-600', 'bg' => 'bg-rose-50 text-rose-700 border border-rose-200/90'],
+                    'doc' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-600', 'bg' => 'bg-blue-50 text-blue-700 border border-blue-200/90'],
+                    'docx' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-600', 'bg' => 'bg-blue-50 text-blue-700 border border-blue-200/90'],
+                    'ppt' => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-amber-600', 'bg' => 'bg-amber-50 text-amber-800 border border-amber-200/90'],
+                    'pptx' => ['icon' => 'fas fa-file-powerpoint', 'color' => 'text-amber-600', 'bg' => 'bg-amber-50 text-amber-800 border border-amber-200/90'],
+                    'xls' => ['icon' => 'fas fa-file-excel', 'color' => 'text-emerald-600', 'bg' => 'bg-emerald-50 text-emerald-700 border border-emerald-200/90'],
+                    'xlsx' => ['icon' => 'fas fa-file-excel', 'color' => 'text-emerald-600', 'bg' => 'bg-emerald-50 text-emerald-700 border border-emerald-200/90'],
+                    'jpg' => ['icon' => 'fas fa-file-image', 'color' => 'text-purple-600', 'bg' => 'bg-purple-50 text-purple-700 border border-purple-200/90'],
+                    'jpeg' => ['icon' => 'fas fa-file-image', 'color' => 'text-purple-600', 'bg' => 'bg-purple-50 text-purple-700 border border-purple-200/90'],
+                    'png' => ['icon' => 'fas fa-file-image', 'color' => 'text-purple-600', 'bg' => 'bg-purple-50 text-purple-700 border border-purple-200/90'],
+                    'gif' => ['icon' => 'fas fa-file-image', 'color' => 'text-purple-600', 'bg' => 'bg-purple-50 text-purple-700 border border-purple-200/90'],
+                    'webp' => ['icon' => 'fas fa-file-image', 'color' => 'text-purple-600', 'bg' => 'bg-purple-50 text-purple-700 border border-purple-200/90'],
                 ];
-                $attrs = $icons[$ext] ?? ['icon' => 'fas fa-file-alt', 'color' => 'text-slate-500', 'bg' => 'bg-slate-100/70 text-slate-600'];
+                $attrs = $icons[$ext] ?? ['icon' => 'fas fa-file-alt', 'color' => 'text-teal-600', 'bg' => 'bg-teal-50 text-teal-700 border border-teal-200/90'];
                 return [
                     'id' => $file->id,
                     'filename' => $file->filename,
@@ -303,22 +280,25 @@
             <div class="lg:col-span-7 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
 
                 <!-- Viewer Header & Controls Bar -->
-                <div class="bg-white px-3.5 py-2 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-2.5 shrink-0">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/80 shadow-2xs"
-                             :class="activeFile ? activeFile.bg : 'bg-slate-50 text-slate-400'">
-                            <i :class="activeFile ? [activeFile.icon, activeFile.color] : 'fas fa-file text-slate-400'" class="text-xs" aria-hidden="true"></i>
+                <div class="bg-gradient-to-r from-white via-white to-slate-50/90 px-4 py-2.5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-2.5 shrink-0">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs"
+                             :class="activeFile ? activeFile.bg : 'bg-slate-100 text-slate-400 border border-slate-200'">
+                            <i :class="activeFile ? [activeFile.icon, activeFile.color] : 'fas fa-file text-slate-400'" class="text-sm" aria-hidden="true"></i>
                         </div>
                         <div class="min-w-0">
                             <div class="flex items-center gap-2">
-                                <span class="text-xs font-semibold text-slate-900 truncate tracking-tight"
+                                <span class="text-xs font-bold text-slate-900 truncate tracking-tight"
                                       x-text="activeFile ? activeFile.label : 'No document selected'"></span>
                                 <template x-if="activeFile && activeFile.revision_number">
-                                    <span class="text-[10px] font-medium text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md"
+                                    <span class="text-[10px] font-bold text-indigo-900 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md shadow-2xs"
                                           x-text="'Revision ' + activeFile.revision_number"></span>
                                 </template>
                                 <template x-if="activeFile && !activeFile.revision_number && activeFile.group !== 'Letters'">
-                                    <span class="text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/80">Original</span>
+                                    <span class="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/90 shadow-2xs">Original</span>
+                                </template>
+                                <template x-if="activeFile && activeFile.group === 'Letters'">
+                                    <span class="text-[10px] font-bold text-[#8B0000] bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200 shadow-2xs">Official Letter</span>
                                 </template>
                             </div>
                             <p class="text-[11px] text-slate-500 truncate font-mono font-normal max-w-[240px] sm:max-w-sm mt-0.5"
@@ -329,20 +309,20 @@
                     <!-- Actions: Open Tab & Download -->
                     <div class="flex items-center gap-1.5 shrink-0" x-show="activeFile">
                         <a :href="isOffice(activeFile) && !isLocalEnv ? getOfficeUrl(activeFile) : getUrl(activeFile)" target="_blank"
-                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200/80 text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95"
+                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200/90 text-slate-600 hover:text-blue-700 hover:bg-blue-50/60 hover:border-blue-300 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs active:scale-95 cursor-pointer"
                             title="Open in new window" aria-label="Open document in new window">
                             <i class="fas fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
                         </a>
                         <a :href="getDownloadUrl(activeFile)" download
-                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200/80 text-slate-600 hover:text-[#8B0000] hover:bg-slate-50 hover:border-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95"
+                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200/90 text-slate-600 hover:text-[#8B0000] hover:bg-red-50/60 hover:border-red-300 transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] shadow-2xs active:scale-95 cursor-pointer"
                             title="Download document" aria-label="Download document">
                             <i class="fas fa-download text-xs" aria-hidden="true"></i>
                         </a>
                     </div>
                 </div>
 
-                <!-- Document Frame Container (Calm, Quiet Canvas Surface) -->
-                <div id="document-preview-container" class="bg-slate-100/70 rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs relative flex-1 min-h-0 h-[360px] lg:h-full">
+                <!-- Document Frame Container (Calm, High-Contrast Canvas Surface) -->
+                <div id="document-preview-container" class="bg-slate-900/[0.02] rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs relative flex-1 min-h-0 h-[360px] lg:h-full">
                     <template x-if="activeFile && isPdf(activeFile)">
                         <iframe :src="getUrl(activeFile)" class="w-full h-full border-0 bg-white"
                             title="PDF Document Viewer"></iframe>
@@ -388,13 +368,13 @@
                         </div>
                     </template>
                     <template x-if="!activeFile">
-                        <div class="absolute inset-0 flex items-center justify-center bg-slate-50/80">
+                        <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-50/80 to-slate-100/60">
                             <div class="text-center p-6 max-w-sm">
-                                <div class="w-10 h-10 bg-white rounded-xl border border-slate-300 flex items-center justify-center mx-auto mb-2 text-slate-500 shadow-2xs">
-                                    <i class="fas fa-file-contract text-lg" aria-hidden="true"></i>
+                                <div class="w-12 h-12 bg-white rounded-2xl border border-slate-200/90 flex items-center justify-center mx-auto mb-3 text-[#8B0000] shadow-xs">
+                                    <i class="fas fa-file-signature text-xl" aria-hidden="true"></i>
                                 </div>
-                                <h3 class="text-xs font-bold text-slate-900 mb-0.5">No Document Selected</h3>
-                                <p class="text-[11px] text-slate-600 font-medium">Choose a document category from the panel on the right to preview.</p>
+                                <h3 class="text-xs font-bold text-slate-900 mb-1">No Document Selected</h3>
+                                <p class="text-[11px] text-slate-500 font-medium">Choose a document category from the panel on the right to preview.</p>
                             </div>
                         </div>
                     </template>
@@ -407,14 +387,19 @@
 
                 <!-- AI Review Type Suggestion Card -->
                 @if($researchTitle->ai_suggested_review_type)
-                    <div class="bg-indigo-50/60 border border-indigo-200/90 p-2.5 px-3 rounded-2xl shadow-2xs relative overflow-hidden shrink-0">
-                        <div class="flex items-center justify-between gap-1.5 mb-0.5">
-                            <span class="flex items-center gap-1.5 text-indigo-800 text-[10px] font-bold uppercase tracking-wider">
-                                <i class="fas fa-microchip text-indigo-600" aria-hidden="true"></i> AI Protocol Recommendation
+                    <div class="bg-gradient-to-r from-violet-50/90 via-indigo-50/70 to-purple-50/90 border border-indigo-200/90 p-3 rounded-2xl shadow-2xs relative overflow-hidden shrink-0">
+                        <div class="flex items-center justify-between gap-1.5 mb-1">
+                            <span class="flex items-center gap-1.5 text-indigo-900 text-[10px] font-bold uppercase tracking-wider">
+                                <span class="w-5 h-5 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-[10px] shadow-2xs">
+                                    <i class="fas fa-brain" aria-hidden="true"></i>
+                                </span>
+                                AI Protocol Recommendation
                             </span>
-                            <span class="text-[10px] font-bold text-indigo-800 bg-white px-2 py-0.2 rounded-full border border-indigo-200 shadow-2xs">System Suggestion</span>
+                            <span class="text-[10px] font-bold text-indigo-700 bg-white/90 px-2 py-0.5 rounded-full border border-indigo-200 shadow-2xs">
+                                System Suggestion
+                            </span>
                         </div>
-                        <h4 class="text-xs font-bold text-slate-950 leading-snug">
+                        <h4 class="text-xs font-bold text-slate-900 leading-snug pl-6.5">
                             {{ $researchTitle->ai_suggested_review_type }}
                         </h4>
                     </div>
@@ -425,13 +410,15 @@
                     $totalRemarks = $allFileRemarks->flatten()->count();
                 @endphp
                 @if($totalRemarks > 0)
-                    <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden shrink-0" x-data="{ rrOpen: false }">
+                    <div class="bg-white rounded-2xl shadow-2xs border border-indigo-200/80 overflow-hidden shrink-0" x-data="{ rrOpen: false }">
                         <button type="button" @click="rrOpen = !rrOpen" 
-                                class="w-full flex justify-between items-center px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                class="w-full flex justify-between items-center px-3.5 py-2.5 bg-gradient-to-r from-indigo-50/60 to-white hover:bg-indigo-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
                             <div class="flex items-center gap-2">
-                                <i class="fas fa-comments text-indigo-600 text-xs" aria-hidden="true"></i>
-                                <span class="text-xs font-semibold text-slate-800 uppercase tracking-wider">Reviewer Remarks</span>
-                                <span class="bg-indigo-600 text-white text-[10px] font-medium px-2 py-0.5 rounded-full tabular-nums">{{ $totalRemarks }}</span>
+                                <span class="w-5 h-5 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-[10px] shadow-2xs">
+                                    <i class="fas fa-comments" aria-hidden="true"></i>
+                                </span>
+                                <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Reviewer Remarks</span>
+                                <span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums shadow-2xs">{{ $totalRemarks }}</span>
                             </div>
                             <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-200" :class="rrOpen ? '' : 'rotate-180'" aria-hidden="true"></i>
                         </button>
@@ -448,13 +435,13 @@
                                         $initial = $reviewer ? strtoupper(substr($reviewer->first_name, 0, 1)) : '?';
                                     @endphp
                                     <div class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs">
-                                        <div class="flex items-center gap-2.5 px-3 py-1.5 bg-slate-50/80 border-b border-slate-100">
-                                            <div class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                                        <div class="flex items-center gap-2.5 px-3 py-2 bg-gradient-to-r from-slate-50 to-indigo-50/30 border-b border-slate-100">
+                                            <div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-2xs">
                                                 {{ $initial }}
                                             </div>
                                             <div class="min-w-0">
-                                                <p class="text-xs font-semibold text-slate-900 truncate">{{ $reviewerName }}</p>
-                                                <p class="text-[10px] text-slate-400 font-normal">{{ $remarks->count() }} remark(s)</p>
+                                                <p class="text-xs font-bold text-slate-900 truncate">{{ $reviewerName }}</p>
+                                                <p class="text-[10px] text-slate-500 font-medium">{{ $remarks->count() }} remark(s)</p>
                                             </div>
                                         </div>
                                         <div class="divide-y divide-slate-100">
@@ -486,10 +473,12 @@
                 @if($hasRevisions)
                     <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden shrink-0" x-data="{ vtOpen: false }">
                         <button type="button" @click="vtOpen = !vtOpen" 
-                                class="w-full flex justify-between items-center px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                class="w-full flex justify-between items-center px-3.5 py-2.5 bg-gradient-to-r from-slate-50 to-white hover:bg-slate-50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
                             <div class="flex items-center gap-2">
-                                <i class="fas fa-code-branch text-indigo-600 text-xs" aria-hidden="true"></i>
-                                <span class="text-xs font-semibold text-slate-800 uppercase tracking-wider">Version History</span>
+                                <span class="w-5 h-5 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-[10px] shadow-2xs">
+                                    <i class="fas fa-code-branch" aria-hidden="true"></i>
+                                </span>
+                                <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Version History</span>
                             </div>
                             <i class="fas fa-chevron-up text-xs text-slate-400 transition-transform duration-200" :class="vtOpen ? '' : 'rotate-180'" aria-hidden="true"></i>
                         </button>
@@ -535,36 +524,36 @@
                         <div id="document-tab-bar" class="flex gap-1 overflow-x-auto custom-scrollbar p-0.5 bg-slate-100/80 rounded-xl border border-slate-200/80 cursor-grab select-none">
                             @if($letters->isNotEmpty())
                                 <button type="button" @click="activeTab = 'letters'; if (letters.length > 0 && letters[0].files.length > 0 && (!activeFile || activeFile.group !== 'Letters')) { selectFile(letters[0].files[0]); }"
-                                    :class="activeTab === 'letters' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                    :class="activeTab === 'letters' ? 'bg-white text-rose-950 shadow-2xs border border-rose-200 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-medium'"
                                     class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
                                     <i class="fas fa-stamp text-xs" :class="activeTab === 'letters' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
                                     <span>Letters</span>
-                                    <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
-                                          :class="activeTab === 'letters' ? 'bg-slate-900 text-white' : 'bg-slate-200/70 text-slate-600'">
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full tabular-nums"
+                                          :class="activeTab === 'letters' ? 'bg-[#8B0000] text-white font-bold' : 'bg-slate-200/70 text-slate-600 font-medium'">
                                         {{ $letters->count() }}
                                     </span>
                                 </button>
                             @endif
 
                             <button type="button" @click="activeTab = 'original'; if (originalFiles.length > 0 && originalFiles[0].files.length > 0 && (!activeFile || activeFile.group !== 'Original')) { selectFile(originalFiles[0].files[0]); }"
-                                :class="activeTab === 'original' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                :class="activeTab === 'original' ? 'bg-white text-blue-950 shadow-2xs border border-blue-200 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-medium'"
                                 class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
-                                <i class="fas fa-file-contract text-xs" :class="activeTab === 'original' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
+                                <i class="fas fa-file-contract text-xs" :class="activeTab === 'original' ? 'text-blue-700' : 'text-slate-400'"></i>
                                 <span>Original</span>
-                                <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
-                                      :class="activeTab === 'original' ? 'bg-slate-900 text-white' : 'bg-slate-200/70 text-slate-600'">
+                                <span class="text-[10px] px-1.5 py-0.2 rounded-full tabular-nums"
+                                      :class="activeTab === 'original' ? 'bg-blue-700 text-white font-bold' : 'bg-slate-200/70 text-slate-600 font-medium'">
                                     {{ $originalFiles->count() }}
                                 </span>
                             </button>
 
                             <template x-if="reviewerDocs.length > 0">
                                 <button type="button" @click="activeTab = 'reviewer_docs'; if (reviewerDocs.length > 0 && reviewerDocs[0].files.length > 0 && (!activeFile || activeFile.group !== 'Reviewer Docs')) { selectFile(reviewerDocs[0].files[0]); }"
-                                    :class="activeTab === 'reviewer_docs' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                    :class="activeTab === 'reviewer_docs' ? 'bg-white text-emerald-950 shadow-2xs border border-emerald-200 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-medium'"
                                     class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
-                                    <i class="fas fa-user-edit text-xs" :class="activeTab === 'reviewer_docs' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
+                                    <i class="fas fa-user-edit text-xs" :class="activeTab === 'reviewer_docs' ? 'text-emerald-700' : 'text-slate-400'"></i>
                                     <span>Reports</span>
-                                    <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
-                                          :class="activeTab === 'reviewer_docs' ? 'bg-slate-900 text-white' : 'bg-slate-200/70 text-slate-600'"
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full tabular-nums"
+                                          :class="activeTab === 'reviewer_docs' ? 'bg-emerald-700 text-white font-bold' : 'bg-slate-200/70 text-slate-600 font-medium'"
                                           x-text="reviewerDocs.reduce((acc, g) => acc + g.files.length, 0)">
                                     </span>
                                 </button>
@@ -574,27 +563,27 @@
                                 @if($revisionFolders->count() === 1)
                                     @php $singleRevNum = $revisionFolders->keys()->first(); $singleRevFiles = $revisionFolders->first(); @endphp
                                     <button type="button" @click="activeTab = 'rev_{{ $singleRevNum }}'; if (revisions['{{ $singleRevNum }}'] && revisions['{{ $singleRevNum }}'].length > 0 && revisions['{{ $singleRevNum }}'][0].files.length > 0) { selectFile(revisions['{{ $singleRevNum }}'][0].files[0]); }"
-                                        :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                        :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'bg-white text-indigo-950 shadow-2xs border border-indigo-200 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-medium'"
                                         class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
                                         <i class="fas fa-code-branch text-xs" :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'text-indigo-600' : 'text-slate-400'"></i>
                                         <span>Rev {{ $singleRevNum }}</span>
-                                        <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
-                                              :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'bg-indigo-600 text-white' : 'bg-slate-200/70 text-slate-600'">
+                                        <span class="text-[10px] px-1.5 py-0.2 rounded-full tabular-nums"
+                                              :class="activeTab === 'rev_{{ $singleRevNum }}' ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-200/70 text-slate-600 font-medium'">
                                             {{ $singleRevFiles->count() }}
                                         </span>
                                     </button>
                                 @else
                                     <button type="button" 
                                         @click="revDropdownOpen = !revDropdownOpen"
-                                        :class="activeTab.startsWith('rev_') ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                        :class="activeTab.startsWith('rev_') ? 'bg-white text-indigo-950 shadow-2xs border border-indigo-200 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-medium'"
                                         class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0"
                                         aria-haspopup="true"
                                         :aria-expanded="revDropdownOpen ? 'true' : 'false'"
                                         title="Select revision cycle">
                                         <i class="fas fa-code-branch text-xs" :class="activeTab.startsWith('rev_') ? 'text-indigo-600' : 'text-slate-400'"></i>
                                         <span x-text="activeTab.startsWith('rev_') ? ('Rev ' + activeTab.replace('rev_', '')) : 'Revisions'"></span>
-                                        <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
-                                              :class="activeTab.startsWith('rev_') ? 'bg-indigo-600 text-white' : 'bg-slate-200/70 text-slate-600'"
+                                        <span class="text-[10px] px-1.5 py-0.2 rounded-full tabular-nums"
+                                              :class="activeTab.startsWith('rev_') ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-200/70 text-slate-600 font-medium'"
                                               x-text="activeTab.startsWith('rev_') ? (revisions[activeTab.replace('rev_', '')] ? revisions[activeTab.replace('rev_', '')].reduce((acc, g) => acc + g.files.length, 0) : '') : '{{ $revisionFolders->count() }}'">
                                         </span>
                                         <i class="fas fa-chevron-down text-[10px] transition-transform duration-200" 
@@ -605,12 +594,12 @@
 
                             @if($hasRevisions && $activeFiles->isNotEmpty())
                                 <button type="button" @click="activeTab = 'current'; if (activeFiles.length > 0 && activeFiles[0].files.length > 0 && (!activeFile || activeFile.group !== 'Current')) { selectFile(activeFiles[0].files[0]); }"
-                                    :class="activeTab === 'current' ? 'bg-white text-slate-950 shadow-2xs border border-slate-200/90 font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 font-medium'"
+                                    :class="activeTab === 'current' ? 'bg-white text-amber-950 shadow-2xs border border-amber-200 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-medium'"
                                     class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer shrink-0">
-                                    <i class="fas fa-file-signature text-xs" :class="activeTab === 'current' ? 'text-[#8B0000]' : 'text-slate-400'"></i>
+                                    <i class="fas fa-file-signature text-xs" :class="activeTab === 'current' ? 'text-amber-700' : 'text-slate-400'"></i>
                                     <span>Current</span>
-                                    <span class="text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums"
-                                          :class="activeTab === 'current' ? 'bg-slate-900 text-white' : 'bg-slate-200/70 text-slate-600'">
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full tabular-nums"
+                                          :class="activeTab === 'current' ? 'bg-amber-600 text-white font-bold' : 'bg-slate-200/70 text-slate-600 font-medium'">
                                         {{ $activeFiles->count() }}
                                     </span>
                                 </button>
@@ -690,32 +679,37 @@
                                 <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs transition-colors"
                                      x-data="{ expanded: false }">
                                     <button type="button" @click="expanded = !expanded"
-                                        class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
-                                        <span class="text-xs font-semibold text-slate-900 tracking-tight" x-text="group.category"></span>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-[11px] font-medium text-slate-400 tabular-nums"
-                                                  x-text="group.files.length + ' file(s)'"></span>
-                                            <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                        :class="expanded ? 'bg-slate-50/80' : 'bg-white'"
+                                        class="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-slate-50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                        <div class="flex items-center gap-2 min-w-0 pr-2">
+                                            <i class="fas fa-folder text-amber-500/90 text-xs shrink-0" aria-hidden="true"></i>
+                                            <span class="text-xs font-bold text-slate-900 tracking-tight truncate" x-text="group.category"></span>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <span class="text-[10px] font-semibold text-slate-500 bg-slate-100/90 border border-slate-200/70 px-2 py-0.5 rounded-full tabular-nums"
+                                                  x-text="group.files.length + ' file' + (group.files.length === 1 ? '' : 's')"></span>
+                                            <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"
                                                :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
                                         </div>
                                     </button>
                                     <div x-show="expanded" style="display: none;" x-transition>
-                                        <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                        <div class="divide-y divide-slate-100 border-t border-slate-100 p-1 bg-slate-50/30">
                                             <template x-for="file in group.files" :key="file.id">
                                                 <button type="button" @click="selectFile(file)"
                                                     :class="activeFile && activeFile.id === file.id 
-                                                        ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
-                                                        : 'text-slate-600 hover:bg-slate-50/90 font-normal border-l-[3px] border-transparent'"
-                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
-                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-slate-200/90 bg-white shadow-2xs">
+                                                        ? 'bg-gradient-to-r from-red-50/90 via-rose-50/40 to-white border border-red-200/90 shadow-xs' 
+                                                        : 'hover:bg-slate-50 border border-transparent'"
+                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer rounded-xl my-0.5">
+                                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all"
+                                                         :class="activeFile && activeFile.id === file.id ? 'bg-white border-red-200/80 shadow-2xs ring-2 ring-red-100' : 'bg-white border-slate-200/80 shadow-2xs'">
                                                         <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
                                                     </div>
                                                     <div class="min-w-0 flex-1">
-                                                        <p class="text-xs truncate font-medium text-slate-900" x-text="file.filename"></p>
-                                                        <p class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></p>
+                                                        <p class="text-xs truncate" :class="activeFile && activeFile.id === file.id ? 'font-bold text-[#8B0000]' : 'font-semibold text-slate-900'" x-text="file.filename"></p>
+                                                        <p class="text-[10px] tabular-nums text-slate-400 font-medium" x-text="file.uploaded_at"></p>
                                                     </div>
                                                     <span x-show="activeFile && activeFile.id === file.id"
-                                                          class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                          class="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-[#8B0000] to-[#700000] px-2.5 py-0.5 rounded-full shadow-2xs shrink-0">
                                                         <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
                                                         <span>Viewing</span>
                                                     </span>
@@ -739,32 +733,37 @@
                                 <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs transition-colors"
                                      x-data="{ expanded: Boolean(group.category && group.category.toLowerCase().includes('application form')) }">
                                     <button type="button" @click="expanded = !expanded"
-                                        class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
-                                        <span class="text-xs font-semibold text-slate-900 tracking-tight" x-text="group.category"></span>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-[11px] font-medium text-slate-400 tabular-nums"
-                                                  x-text="group.files.length + ' file(s)'"></span>
-                                            <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                        :class="expanded ? 'bg-slate-50/80' : 'bg-white'"
+                                        class="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-slate-50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                        <div class="flex items-center gap-2 min-w-0 pr-2">
+                                            <i class="fas fa-folder text-amber-500/90 text-xs shrink-0" aria-hidden="true"></i>
+                                            <span class="text-xs font-bold text-slate-900 tracking-tight truncate" x-text="group.category"></span>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <span class="text-[10px] font-semibold text-slate-500 bg-slate-100/90 border border-slate-200/70 px-2 py-0.5 rounded-full tabular-nums"
+                                                  x-text="group.files.length + ' file' + (group.files.length === 1 ? '' : 's')"></span>
+                                            <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"
                                                :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
                                         </div>
                                     </button>
                                     <div x-show="expanded" style="display: none;" x-transition>
-                                        <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                        <div class="divide-y divide-slate-100 border-t border-slate-100 p-1 bg-slate-50/30">
                                             <template x-for="file in group.files" :key="file.id">
                                                 <button type="button" @click="selectFile(file)"
                                                     :class="activeFile && activeFile.id === file.id 
-                                                        ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
-                                                        : 'text-slate-600 hover:bg-slate-50/90 font-normal border-l-[3px] border-transparent'"
-                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
-                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-slate-200/90 bg-white shadow-2xs">
+                                                        ? 'bg-gradient-to-r from-red-50/90 via-rose-50/40 to-white border border-red-200/90 shadow-xs' 
+                                                        : 'hover:bg-slate-50 border border-transparent'"
+                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer rounded-xl my-0.5">
+                                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all"
+                                                         :class="activeFile && activeFile.id === file.id ? 'bg-white border-red-200/80 shadow-2xs ring-2 ring-red-100' : 'bg-white border-slate-200/80 shadow-2xs'">
                                                         <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
                                                     </div>
                                                     <div class="min-w-0 flex-1">
-                                                        <p class="text-xs truncate font-medium text-slate-900" x-text="file.filename"></p>
-                                                        <p class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></p>
+                                                        <p class="text-xs truncate" :class="activeFile && activeFile.id === file.id ? 'font-bold text-[#8B0000]' : 'font-semibold text-slate-900'" x-text="file.filename"></p>
+                                                        <p class="text-[10px] tabular-nums text-slate-400 font-medium" x-text="file.uploaded_at"></p>
                                                     </div>
                                                     <span x-show="activeFile && activeFile.id === file.id"
-                                                          class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                          class="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-[#8B0000] to-[#700000] px-2.5 py-0.5 rounded-full shadow-2xs shrink-0">
                                                         <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
                                                         <span>Viewing</span>
                                                     </span>
@@ -779,39 +778,47 @@
                         <!-- Revision Tabs (One per revision number) -->
                         @foreach($revisionFolders->sortKeys() as $revNum => $_)
                             <div x-show="activeTab === 'rev_{{ $revNum }}'" style="display:none;">
-                                <div class="px-3 py-1.5 bg-indigo-50/60 border border-indigo-200/80 rounded-xl mb-2 flex items-center justify-between">
-                                    <p class="text-xs font-semibold text-indigo-950">Revision {{ $revNum }} Documents</p>
+                                <div class="px-3 py-2 bg-indigo-50/70 border border-indigo-200/80 rounded-xl mb-2 flex items-center justify-between">
+                                    <span class="flex items-center gap-2 text-xs font-bold text-indigo-950">
+                                        <i class="fas fa-code-branch text-indigo-600 text-xs" aria-hidden="true"></i>
+                                        <span>Revision {{ $revNum }} Documents</span>
+                                    </span>
                                 </div>
                                 <template x-for="group in revisions['{{ $revNum }}']" :key="group.category">
                                     <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs transition-colors"
                                          x-data="{ expanded: Boolean(group.category && group.category.toLowerCase().includes('application form')) }">
                                         <button type="button" @click="expanded = !expanded"
-                                            class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
-                                            <span class="text-xs font-semibold text-slate-900 tracking-tight" x-text="group.category"></span>
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-[11px] font-medium text-slate-400 tabular-nums"
-                                                      x-text="group.files.length + ' file(s)'"></span>
-                                                <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                            :class="expanded ? 'bg-slate-50/80' : 'bg-white'"
+                                            class="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-slate-50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                            <div class="flex items-center gap-2 min-w-0 pr-2">
+                                                <i class="fas fa-folder text-amber-500/90 text-xs shrink-0" aria-hidden="true"></i>
+                                                <span class="text-xs font-bold text-slate-900 tracking-tight truncate" x-text="group.category"></span>
+                                            </div>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <span class="text-[10px] font-semibold text-slate-500 bg-slate-100/90 border border-slate-200/70 px-2 py-0.5 rounded-full tabular-nums"
+                                                      x-text="group.files.length + ' file' + (group.files.length === 1 ? '' : 's')"></span>
+                                                <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"
                                                    :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
                                             </div>
                                         </button>
                                         <div x-show="expanded" style="display: none;" x-transition>
-                                            <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                            <div class="divide-y divide-slate-100 border-t border-slate-100 p-1 bg-slate-50/30">
                                                 <template x-for="file in group.files" :key="file.id">
                                                     <button type="button" @click="selectFile(file)"
                                                         :class="activeFile && activeFile.id === file.id 
-                                                            ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
-                                                            : 'text-slate-600 hover:bg-slate-50/90 font-normal border-l-[3px] border-transparent'"
-                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
-                                                        <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-slate-200/90 bg-white shadow-2xs">
+                                                            ? 'bg-gradient-to-r from-red-50/90 via-rose-50/40 to-white border border-red-200/90 shadow-xs' 
+                                                            : 'hover:bg-slate-50 border border-transparent'"
+                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer rounded-xl my-0.5">
+                                                        <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all"
+                                                             :class="activeFile && activeFile.id === file.id ? 'bg-white border-red-200/80 shadow-2xs ring-2 ring-red-100' : 'bg-white border-slate-200/80 shadow-2xs'">
                                                             <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
                                                         </div>
                                                         <div class="min-w-0 flex-1">
-                                                            <p class="text-xs truncate font-medium text-slate-900" x-text="file.filename"></p>
-                                                            <p class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></p>
+                                                            <p class="text-xs truncate" :class="activeFile && activeFile.id === file.id ? 'font-bold text-[#8B0000]' : 'font-semibold text-slate-900'" x-text="file.filename"></p>
+                                                            <p class="text-[10px] tabular-nums text-slate-400 font-medium" x-text="file.uploaded_at"></p>
                                                         </div>
                                                         <span x-show="activeFile && activeFile.id === file.id"
-                                                              class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                              class="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-[#8B0000] to-[#700000] px-2.5 py-0.5 rounded-full shadow-2xs shrink-0">
                                                             <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
                                                             <span>Viewing</span>
                                                         </span>
@@ -826,48 +833,56 @@
 
                         <!-- Reviewer Uploads Tab List -->
                         <div x-show="activeTab === 'reviewer_docs'" style="display:none;">
-                            <div class="px-3 py-1.5 bg-slate-100/70 border border-slate-200/80 rounded-xl mb-2">
-                                <p class="text-xs font-semibold text-slate-800">Reviewer Uploaded Reports & Evaluations</p>
+                            <div class="px-3 py-2 bg-emerald-50/70 border border-emerald-200/80 rounded-xl mb-2">
+                                <span class="flex items-center gap-2 text-xs font-bold text-emerald-950">
+                                    <i class="fas fa-user-edit text-emerald-700 text-xs" aria-hidden="true"></i>
+                                    <span>Reviewer Uploaded Reports & Evaluations</span>
+                                </span>
                             </div>
                             <template x-for="group in reviewerDocs" :key="group.category">
                                 <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs transition-colors"
                                      x-data="{ expanded: false }">
                                     <button type="button" @click="expanded = !expanded"
-                                        class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
-                                        <span class="text-xs font-semibold text-slate-900 tracking-tight" x-text="group.category"></span>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-[11px] font-medium text-slate-400 tabular-nums"
-                                                  x-text="group.files.length + ' file(s)'"></span>
-                                            <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                        :class="expanded ? 'bg-slate-50/80' : 'bg-white'"
+                                        class="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-slate-50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                        <div class="flex items-center gap-2 min-w-0 pr-2">
+                                            <i class="fas fa-folder text-amber-500/90 text-xs shrink-0" aria-hidden="true"></i>
+                                            <span class="text-xs font-bold text-slate-900 tracking-tight truncate" x-text="group.category"></span>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <span class="text-[10px] font-semibold text-slate-500 bg-slate-100/90 border border-slate-200/70 px-2 py-0.5 rounded-full tabular-nums"
+                                                  x-text="group.files.length + ' file' + (group.files.length === 1 ? '' : 's')"></span>
+                                            <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"
                                                :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
                                         </div>
                                     </button>
                                     <div x-show="expanded" style="display: none;" x-transition>
-                                        <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                        <div class="divide-y divide-slate-100 border-t border-slate-100 p-1 bg-slate-50/30">
                                             <template x-for="file in group.files" :key="file.id">
                                                 <button type="button" @click="selectFile(file)"
                                                     :class="activeFile && activeFile.id === file.id 
-                                                        ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
-                                                        : 'text-slate-600 hover:bg-slate-50/90 font-normal border-l-[3px] border-transparent'"
-                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
-                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-slate-200/90 bg-white shadow-2xs">
+                                                        ? 'bg-gradient-to-r from-red-50/90 via-rose-50/40 to-white border border-red-200/90 shadow-xs' 
+                                                        : 'hover:bg-slate-50 border border-transparent'"
+                                                    class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer rounded-xl my-0.5">
+                                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all"
+                                                         :class="activeFile && activeFile.id === file.id ? 'bg-white border-red-200/80 shadow-2xs ring-2 ring-red-100' : 'bg-white border-slate-200/80 shadow-2xs'">
                                                         <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
                                                     </div>
                                                     <div class="min-w-0 flex-1">
-                                                        <p class="text-xs truncate font-medium text-slate-900" x-text="file.filename"></p>
-                                                        <p class="text-[10px] font-medium text-slate-500" x-text="'By: ' + file.uploaded_by_name"></p>
+                                                        <p class="text-xs truncate" :class="activeFile && activeFile.id === file.id ? 'font-bold text-[#8B0000]' : 'font-semibold text-slate-900'" x-text="file.filename"></p>
+                                                        <p class="text-[10px] font-semibold text-slate-600" x-text="'By: ' + file.uploaded_by_name"></p>
                                                         <div class="flex items-center gap-2 mt-0.5">
-                                                            <span class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></span>
+                                                            <span class="text-[10px] tabular-nums text-slate-400 font-medium" x-text="file.uploaded_at"></span>
                                                             <span x-show="file.suggested_review_type"
-                                                                  class="text-[10px] font-medium px-1.5 py-0.2 rounded border text-emerald-800 bg-emerald-50 border-emerald-200"
+                                                                  class="text-[10px] font-bold px-2 py-0.2 rounded-md border text-emerald-800 bg-emerald-50 border-emerald-200 shadow-2xs"
                                                                   x-text="file.suggested_review_type"></span>
                                                         </div>
                                                         <p x-show="file.remarks"
-                                                           class="text-[10px] italic mt-1 line-clamp-2 text-slate-500 font-normal"
+                                                           class="text-[10px] italic mt-1 line-clamp-2 text-slate-600 font-normal bg-slate-50/80 p-1.5 rounded-lg border border-slate-100"
                                                            x-text="'&quot;' + file.remarks + '&quot;'"></p>
                                                     </div>
                                                     <span x-show="activeFile && activeFile.id === file.id"
-                                                          class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                          class="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-[#8B0000] to-[#700000] px-2.5 py-0.5 rounded-full shadow-2xs shrink-0">
                                                         <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
                                                         <span>Viewing</span>
                                                     </span>
@@ -882,42 +897,50 @@
                         <!-- Current Documents Tab List -->
                         @if($hasRevisions && $activeFiles->isNotEmpty())
                             <div x-show="activeTab === 'current'" style="display:none;">
-                                <div class="px-3 py-1.5 bg-slate-100/70 border border-slate-200/80 rounded-xl mb-2">
-                                    <p class="text-xs font-semibold text-slate-800">Latest Version of Each Document</p>
+                                <div class="px-3 py-2 bg-amber-50/70 border border-amber-200/80 rounded-xl mb-2">
+                                    <span class="flex items-center gap-2 text-xs font-bold text-amber-950">
+                                        <i class="fas fa-file-signature text-amber-700 text-xs" aria-hidden="true"></i>
+                                        <span>Latest Version of Each Document</span>
+                                    </span>
                                 </div>
                                 <template x-for="group in activeFiles" :key="group.category">
                                     <div class="mb-1.5 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-2xs transition-colors"
                                          x-data="{ expanded: Boolean(group.category && group.category.toLowerCase().includes('application form')) }">
                                         <button type="button" @click="expanded = !expanded"
-                                            class="w-full flex items-center justify-between px-3.5 py-2 bg-white hover:bg-slate-50/80 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
-                                            <span class="text-xs font-semibold text-slate-900 tracking-tight" x-text="group.category"></span>
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-[11px] font-medium text-slate-400 tabular-nums"
-                                                      x-text="group.files.length + ' file(s)'"></span>
-                                                <i class="fas fa-chevron-down text-[11px] text-slate-400 transition-transform duration-200"
+                                            :class="expanded ? 'bg-slate-50/80' : 'bg-white'"
+                                            class="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-slate-50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                            <div class="flex items-center gap-2 min-w-0 pr-2">
+                                                <i class="fas fa-folder text-amber-500/90 text-xs shrink-0" aria-hidden="true"></i>
+                                                <span class="text-xs font-bold text-slate-900 tracking-tight truncate" x-text="group.category"></span>
+                                            </div>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <span class="text-[10px] font-semibold text-slate-500 bg-slate-100/90 border border-slate-200/70 px-2 py-0.5 rounded-full tabular-nums"
+                                                      x-text="group.files.length + ' file' + (group.files.length === 1 ? '' : 's')"></span>
+                                                <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"
                                                    :class="expanded ? 'rotate-180 text-slate-600' : ''" aria-hidden="true"></i>
                                             </div>
                                         </button>
                                         <div x-show="expanded" style="display: none;" x-transition>
-                                            <div class="divide-y divide-slate-100 border-t border-slate-100">
+                                            <div class="divide-y divide-slate-100 border-t border-slate-100 p-1 bg-slate-50/30">
                                                 <template x-for="file in group.files" :key="file.id">
                                                     <button type="button" @click="selectFile(file)"
                                                         :class="activeFile && activeFile.id === file.id 
-                                                            ? 'bg-slate-100/90 text-slate-950 font-medium border-l-[3px] border-[#8B0000]' 
-                                                            : 'text-slate-600 hover:bg-slate-50/90 font-normal border-l-[3px] border-transparent'"
-                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
-                                                        <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border border-slate-200/90 bg-white shadow-2xs">
+                                                            ? 'bg-gradient-to-r from-red-50/90 via-rose-50/40 to-white border border-red-200/90 shadow-xs' 
+                                                            : 'hover:bg-slate-50 border border-transparent'"
+                                                        class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer rounded-xl my-0.5">
+                                                        <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all"
+                                                             :class="activeFile && activeFile.id === file.id ? 'bg-white border-red-200/80 shadow-2xs ring-2 ring-red-100' : 'bg-white border-slate-200/80 shadow-2xs'">
                                                             <i :class="[file.icon, file.color]" class="text-xs" aria-hidden="true"></i>
                                                         </div>
                                                         <div class="min-w-0 flex-1">
-                                                            <p class="text-xs truncate font-medium text-slate-900" x-text="file.filename"></p>
-                                                            <p class="text-[10px] font-normal tabular-nums"
-                                                               :class="activeFile && activeFile.id === file.id ? 'text-indigo-800 font-medium' : (file.revision_number ? 'text-indigo-600' : 'text-slate-400')"
+                                                            <p class="text-xs truncate" :class="activeFile && activeFile.id === file.id ? 'font-bold text-[#8B0000]' : 'font-semibold text-slate-900'" x-text="file.filename"></p>
+                                                            <p class="text-[10px] font-semibold tabular-nums"
+                                                               :class="activeFile && activeFile.id === file.id ? 'text-indigo-800' : (file.revision_number ? 'text-indigo-600' : 'text-slate-500')"
                                                                x-text="file.revision_number ? 'Revision ' + file.revision_number : 'Original'">
                                                             </p>
                                                         </div>
                                                         <span x-show="activeFile && activeFile.id === file.id"
-                                                              class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                                                              class="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-[#8B0000] to-[#700000] px-2.5 py-0.5 rounded-full shadow-2xs shrink-0">
                                                             <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
                                                             <span>Viewing</span>
                                                         </span>
@@ -977,9 +1000,8 @@
                                         <span class="font-mono text-xs font-bold tabular-nums text-slate-900 bg-slate-100 border border-slate-300 px-2.5 py-0.5 rounded-md shadow-2xs">
                                             {{ $researchTitle->reoc_code ?? ('#'.str_pad($researchTitle->id, 5, '0', STR_PAD_LEFT)) }}
                                         </span>
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} border {{ $statusConfig['border'] }} shadow-2xs">
-                                            <span class="w-1.5 h-1.5 rounded-full {{ $statusConfig['dot'] }} shrink-0"></span>
-                                            <span>{{ $researchTitle->Status }}</span>
+                                        <span class="inline-flex items-center text-xs font-bold uppercase tracking-wider {{ $statusTextColor }}">
+                                            {{ $researchTitle->Status }}
                                         </span>
                                     </div>
                                     <h3 id="drawer-title" class="font-heading font-bold text-base sm:text-lg text-slate-950 truncate" title="{{ $researchTitle->Study_Protocol_title }}">
@@ -1001,28 +1023,28 @@
                                 <div class="flex gap-1 bg-slate-200/70 p-1 rounded-xl border border-slate-300/80">
                                     @if($auditTrail->isNotEmpty())
                                         <button type="button" @click="drawerTab = 'audit'"
-                                                :class="drawerTab === 'audit' ? 'bg-white text-slate-950 shadow-xs border border-slate-300/80 font-bold' : 'text-slate-600 hover:text-slate-950 hover:bg-white/50 font-semibold'"
+                                                :class="drawerTab === 'audit' ? 'bg-white text-rose-950 shadow-xs border border-rose-200 font-bold' : 'text-slate-600 hover:text-slate-950 hover:bg-white/50 font-semibold'"
                                                 class="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
                                             <i class="fas fa-stream text-xs" :class="drawerTab === 'audit' ? 'text-[#8B0000]' : 'text-slate-500'"></i>
                                             <span>Audit Trail</span>
                                             <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full tabular-nums"
-                                                  :class="drawerTab === 'audit' ? 'bg-slate-950 text-white' : 'bg-slate-300/80 text-slate-700'">
+                                                  :class="drawerTab === 'audit' ? 'bg-[#8B0000] text-white' : 'bg-slate-300/80 text-slate-700'">
                                                 {{ $auditTrail->count() }}
                                             </span>
                                         </button>
                                     @endif
 
                                     <button type="button" @click="drawerTab = 'details'"
-                                            :class="drawerTab === 'details' ? 'bg-white text-slate-950 shadow-xs border border-slate-300/80 font-bold' : 'text-slate-600 hover:text-slate-950 hover:bg-white/50 font-semibold'"
+                                            :class="drawerTab === 'details' ? 'bg-white text-blue-950 shadow-xs border border-blue-200 font-bold' : 'text-slate-600 hover:text-slate-950 hover:bg-white/50 font-semibold'"
                                             class="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
-                                        <i class="fas fa-info-circle text-xs" :class="drawerTab === 'details' ? 'text-[#8B0000]' : 'text-slate-500'"></i>
+                                        <i class="fas fa-info-circle text-xs" :class="drawerTab === 'details' ? 'text-blue-700' : 'text-slate-500'"></i>
                                         <span>Details</span>
                                     </button>
 
                                     <button type="button" @click="drawerTab = 'activity'"
-                                            :class="drawerTab === 'activity' ? 'bg-white text-slate-950 shadow-xs border border-slate-300/80 font-bold' : 'text-slate-600 hover:text-slate-950 hover:bg-white/50 font-semibold'"
+                                            :class="drawerTab === 'activity' ? 'bg-white text-indigo-950 shadow-xs border border-indigo-200 font-bold' : 'text-slate-600 hover:text-slate-950 hover:bg-white/50 font-semibold'"
                                             class="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
-                                        <i class="fas fa-history text-xs" :class="drawerTab === 'activity' ? 'text-[#8B0000]' : 'text-slate-500'"></i>
+                                        <i class="fas fa-history text-xs" :class="drawerTab === 'activity' ? 'text-indigo-600' : 'text-slate-500'"></i>
                                         <span>Activity Log</span>
                                     </button>
                                 </div>

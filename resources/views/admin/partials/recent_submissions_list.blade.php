@@ -8,16 +8,8 @@
                         title="{{ $sub->Study_Protocol_title }}">{{ $sub->Study_Protocol_title }}</h3>
 
                     @if($sub->Status === 'Revision Submitted')
-                        <span
-                            class="inline-flex items-center gap-1.5 text-xs font-bold text-purple-900 bg-purple-50/80 border border-purple-200 px-2.5 py-1 rounded-full shrink-0 shadow-2xs">
-                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" aria-hidden="true"></span>
-                            <span>Resubmitted</span>
-                        </span>
-                    @else
-                        <span
-                            class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 bg-amber-50/80 border border-amber-200 px-2.5 py-1 rounded-full shrink-0 shadow-2xs">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" aria-hidden="true"></span>
-                            <span>Pending</span>
+                        <span class="inline-flex items-center text-xs font-semibold text-purple-700 whitespace-nowrap shrink-0">
+                            Resubmitted
                         </span>
                     @endif
                 </div>
@@ -64,8 +56,8 @@
                             data-has-project-type="{{ ($sub->project_type || $sub->research_type || $sub->Research_Category) ? 'true' : 'false' }}"
                             data-researcher-name="{{ trim(($sub->researcher->user->first_name ?? '') . ' ' . ($sub->researcher->user->last_name ?? '')) }}"
                             data-researcher-email="{{ $sub->researcher->user->email ?? '' }}"
-                            aria-label="Screen protocol completeness for: {{ $sub->Study_Protocol_title }}">
-                            <i class="fas fa-clipboard-check text-white text-xs" aria-hidden="true"></i> <span>Triage</span>
+                            aria-label="Check submission completeness for: {{ $sub->Study_Protocol_title }}">
+                            <i class="fas fa-clipboard-check text-white text-xs" aria-hidden="true"></i> <span>Check</span>
                         </button>
                     </div>
                 </div>

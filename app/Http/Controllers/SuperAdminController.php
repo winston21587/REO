@@ -52,7 +52,12 @@ class SuperAdminController extends Controller
         $users = $query->latest()->paginate(10)->withQueryString();
         $colleges = College::all();
 
-        return view('super_admin.manage_admins', compact('users', 'colleges'));
+        $totalAdmins = User::where('role', 'admin')->count();
+        $activeCount = User::where('role', 'admin')->where('is_verified', true)->count();
+        $internalCount = User::where('role', 'admin')->whereHas('admin', fn($q) => $q->where('external_user', false))->count();
+        $externalCount = User::where('role', 'admin')->whereHas('admin', fn($q) => $q->where('external_user', true))->count();
+
+        return view('super_admin.manage_admins', compact('users', 'colleges', 'totalAdmins', 'activeCount', 'internalCount', 'externalCount'));
     }
 
     public function createAdmin(Request $request)
@@ -188,7 +193,12 @@ class SuperAdminController extends Controller
 
         $globalVisibility = \App\Models\Reviewer::where('show_researcher_identity', true)->exists();
 
-        return view('super_admin.manage_reviewers', compact('users', 'colleges', 'globalVisibility'));
+        $totalReviewers = User::where('role', 'reviewer')->count();
+        $activeCount = User::where('role', 'reviewer')->where('is_verified', true)->count();
+        $internalCount = User::where('role', 'reviewer')->whereHas('reviewer', fn($q) => $q->where('external_user', false))->count();
+        $externalCount = User::where('role', 'reviewer')->whereHas('reviewer', fn($q) => $q->where('external_user', true))->count();
+
+        return view('super_admin.manage_reviewers', compact('users', 'colleges', 'globalVisibility', 'totalReviewers', 'activeCount', 'internalCount', 'externalCount'));
     }
 
     public function createReviewer(Request $request)

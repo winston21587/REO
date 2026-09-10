@@ -1,5 +1,9 @@
 <x-super_admin_layout>
+    <script>
+        window.__REO_REVIEWERS = {!! json_encode($users->items()) !!};
+    </script>
     <div x-data="{ 
+        reviewersList: window.__REO_REVIEWERS || [],
         showAddModal: {{ $errors->any() ? 'true' : 'false' }}, 
         showViewModal: false, 
         showEditModal: false,
@@ -12,6 +16,17 @@
         confirmMethod: 'POST',
         confirmIsDelete: false,
         confirmFormId: null,
+        filterAffiliation: '{{ request('status') }}',
+
+        openViewModal(id) {
+            this.selectedUser = this.reviewersList.find(u => u.id === id) || null;
+            this.showViewModal = true;
+        },
+
+        openEditModal(id) {
+            this.selectedUser = this.reviewersList.find(u => u.id === id) || null;
+            this.showEditModal = true;
+        },
 
         triggerConfirm(title, message, buttonText, action, isDelete = false, formId = null) {
             this.confirmTitle = title;
@@ -22,151 +37,262 @@
             this.confirmFormId = formId;
             this.showConfirmModal = true;
         }
-    }" class="max-w-7xl mx-auto space-y-8 animate-[fadeInUp_0.5s_ease-out]">
+    }" class="w-full max-w-7xl mx-auto space-y-8 min-w-0">
         
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-end pb-6 border-b border-slate-200">
+        <!-- Header & Executive Actions -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pb-6 border-b border-slate-200">
             <div>
-                <h1 class="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Reviewers</h1>
-                <p class="text-slate-500 mt-2 text-sm">Directory of system reviewers.</p>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight font-heading">Manage Reviewers</h1>
+                <p class="text-slate-500 mt-1.5 text-sm">Directory of ethics review board members and evaluators (SOP 03, SOP 07).</p>
             </div>
-            <div class="flex gap-2 mt-4 md:mt-0">
-                <button @click="showAddModal = true" class="px-4 py-2 bg-[#8B0000] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#6d0000] transition-colors shadow-md flex items-center gap-2">
-                    <i class="fas fa-user-shield"></i> Add Reviewer
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <button @click="showAddModal = true" 
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#8B0000] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#6d0000] active:scale-[0.98] transition-all shadow-xs focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 focus:outline-none min-h-[44px]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Reviewer
                 </button>
             </div>
         </div>
 
-        <!-- Search & Filter -->
-        <form x-data="{ filterAffiliation: '{{ request('status') }}' }" method="GET" action="{{ route('super_admin.manage_reviewers') }}" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
-            <div class="relative flex-grow w-full md:w-auto">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input name="search" value="{{ request('search') }}" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none" placeholder="Search by name, email..." type="text" />
+        <!-- Executive Metrics Ledger -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Total Reviewers</span>
+                <span class="text-2xl font-extrabold text-slate-900 font-heading tabular-nums mt-1 block">
+                    {{ $totalReviewers ?? $users->total() }}
+                </span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Active Accounts</span>
+                <span class="text-2xl font-extrabold text-emerald-600 font-heading tabular-nums mt-1 block">
+                    {{ $activeCount ?? $users->where('is_verified', true)->count() }}
+                </span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Internal Reviewers</span>
+                <span class="text-2xl font-extrabold text-blue-700 font-heading tabular-nums mt-1 block">
+                    {{ $internalCount ?? 0 }}
+                </span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">External Reviewers</span>
+                <span class="text-2xl font-extrabold text-indigo-700 font-heading tabular-nums mt-1 block">
+                    {{ $externalCount ?? 0 }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Global Protocol Blindness / Researcher Identity Visibility Control -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-start sm:items-center gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-[#8B0000] border border-slate-200 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-sm font-extrabold text-slate-900 font-heading">Researcher Identity Visibility</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider {{ $globalVisibility ? 'text-emerald-600' : 'text-blue-700' }}">
+                            ({{ $globalVisibility ? 'Open Review' : 'Blind Review Active' }})
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5">Control whether reviewers can see researcher identifying information during protocol evaluations.</p>
+                </div>
             </div>
 
+            <form id="globalVisibilityForm" action="{{ route('super_admin.reviewers.global_visibility') }}" method="POST"
+                @submit.prevent="triggerConfirm(
+                    'Update Global Visibility?', 
+                    'This action will update the evaluation privacy policy for ALL reviewers in the system. Are you sure you want to proceed?', 
+                    'Yes, Apply Policy', 
+                    $el.action,
+                    false,
+                    'globalVisibilityForm'
+                )"
+                class="flex items-center gap-2 w-full md:w-auto justify-end">
+                @csrf
+                <div class="relative w-full sm:w-auto">
+                    <select name="show_researcher_identity" 
+                            aria-label="Researcher Identity Visibility Setting"
+                            class="w-full sm:w-auto pl-3.5 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[40px]">
+                        <option value="0" @selected(!$globalVisibility)>Hide Identities (Blind Review)</option>
+                        <option value="1" @selected($globalVisibility)>Show Identities (Open Review)</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+                <button type="submit" 
+                        class="shrink-0 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xs min-h-[40px]">
+                    Apply Policy
+                </button>
+            </form>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <form method="GET" action="{{ route('super_admin.manage_reviewers') }}" class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+            <!-- Search -->
+            <div class="relative flex-grow min-w-0">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input name="search" 
+                       value="{{ request('search') }}" 
+                       type="text"
+                       placeholder="Search by name, email..." 
+                       aria-label="Search by name, email"
+                       class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]" />
+            </div>
+            
             <!-- Affiliation Filter -->
-            <div class="relative w-full md:w-40">
-                <select x-model="filterAffiliation" name="status" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
+            <div class="relative w-full md:w-44">
+                <select x-model="filterAffiliation" 
+                        name="status" 
+                        aria-label="Filter by Affiliation"
+                        class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
                     <option value="">All Affiliations</option>
-                    <option value="internal" {{ request('status') == 'internal' ? 'selected' : '' }}>Internal</option>
+                    <option value="internal" {{ request('status') == 'internal' ? 'selected' : '' }}>Internal (WMSU)</option>
                     <option value="external" {{ request('status') == 'external' ? 'selected' : '' }}>External</option>
                 </select>
-                <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
             </div>
 
             <!-- College Filter -->
-            <div class="relative w-full md:w-48">
-                <select :disabled="filterAffiliation === 'external'" :class="{ 'opacity-60 cursor-not-allowed bg-slate-100': filterAffiliation === 'external' }" name="college" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
+            <div class="relative w-full md:w-52">
+                <select :disabled="filterAffiliation === 'external'" 
+                        :class="{ 'opacity-50 cursor-not-allowed bg-slate-100': filterAffiliation === 'external' }" 
+                        name="college" 
+                        aria-label="Filter by College"
+                        class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
                     <option value="">All Colleges</option>
                     @foreach($colleges as $college)
                         <option value="{{ $college->name }}" {{ request('college') == $college->name ? 'selected' : '' }}>{{ $college->name }}</option>
                     @endforeach
                 </select>
-                <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
             </div>
 
             <!-- Account Status Filter -->
-            <div class="relative w-full md:w-40">
-                <select name="account_status" class="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
+            <div class="relative w-full md:w-44">
+                <select name="account_status" 
+                        aria-label="Filter by Account Status"
+                        class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
                     <option value="">All Statuses</option>
                     <option value="active" {{ request('account_status') == 'active' ? 'selected' : '' }}>Active</option>
                     <option value="deactivated" {{ request('account_status') == 'deactivated' ? 'selected' : '' }}>Deactivated</option>
+                    <option value="pending" {{ request('account_status') == 'pending' ? 'selected' : '' }}>Pending</option>
                 </select>
-                <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
             </div>
 
-
-
-            <div class="flex gap-2 w-full md:w-auto">
-                <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#7A0000] transition-colors flex items-center gap-2 shadow-lg shadow-red-900/20">
-                    <i class="fas fa-filter"></i> Apply
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <button type="submit" 
+                        class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] active:scale-[0.98] transition-all shadow-xs focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 focus:outline-none min-h-[44px]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    Apply
                 </button>
+
+                @if(request('search') || request('status') || request('college') || request('account_status'))
+                <a href="{{ route('super_admin.manage_reviewers') }}" 
+                   title="Reset all filters"
+                   class="inline-flex items-center justify-center px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors min-h-[44px]">
+                    Reset
+                </a>
+                @endif
             </div>
         </form>
 
-
-        <div class="flex items-center justify-between bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 mt-6">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                    <i class="fas fa-eye text-lg"></i>
-                </div>
-                <div>
-                    <h3 class="text-sm font-bold text-slate-900">Researcher Identity Visibility</h3>
-                    <p class="text-[11px] text-slate-500">Toggle whether all reviewers can see researcher names/emails.</p>
-                </div>
-            </div>
-            <form id="globalVisibilityForm" action="{{ route('super_admin.reviewers.global_visibility') }}" method="POST"
-                @submit.prevent="triggerConfirm(
-                    'Update Global Visibility?', 
-                    'This action will apply the chosen visibility setting to ALL reviewers in the system. Are you sure you want to proceed?', 
-                    'Yes, Apply to All', 
-                    $el.action,
-                    false,
-                    'globalVisibilityForm'
-                )">
-                @csrf
-                <div class="flex items-center gap-3">
-                    <select name="show_researcher_identity" class="pl-4 pr-10 py-2 bg-white border border-emerald-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500 transition-all outline-none appearance-none cursor-pointer text-slate-700">
-                        <option value="0" @selected(!$globalVisibility)>Hide Identities (Blind)</option>
-                        <option value="1" @selected($globalVisibility)>Show Identities (Open)</option>
-                    </select>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm">
-                        Apply Globally
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100">
-            <div class="overflow-x-auto md:overflow-visible">
-                <table class="w-full text-left border-collapse">
+        <!-- Reviewers Data Ledger -->
+        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse min-w-[760px]">
                     <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                            <th class="p-6">Name / Role</th>
-                            <th class="p-6">Contact Info</th>
-                            <th class="p-6">Affiliation</th>
-                            <th class="p-6">Reviewed Titles</th>
-                            <th class="p-6">Status</th>
-                            <th class="p-6 text-right">Actions</th>
+                        <tr class="bg-slate-50/80 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                            <th class="py-4 px-6">Reviewer / Role</th>
+                            <th class="py-4 px-6">Contact Email</th>
+                            <th class="py-4 px-6">Affiliation & College</th>
+                            <th class="py-4 px-6">Reviewed Titles</th>
+                            <th class="py-4 px-6">Account Status</th>
+                            <th class="py-4 px-6 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse($users as $user)
-                        <tr class="group hover:bg-slate-50 transition-colors">
-                            <td class="p-6">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold shadow-sm border border-blue-100">
-                                        {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <!-- Name / Role -->
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-3.5">
+                                    <div class="w-10 h-10 rounded-full bg-slate-100 text-[#8B0000] border border-slate-200 flex items-center justify-center font-bold text-sm shrink-0 font-heading">
+                                        {{ strtoupper(substr($user->first_name, 0, 1)) }}{{ strtoupper(substr($user->last_name, 0, 1)) }}
                                     </div>
-                                    <div>
-                                        <p class="font-bold text-slate-800 text-base">{{ $user->first_name }} {{ $user->middle_name ? $user->middle_name . ' ' : '' }}{{ $user->last_name }}</p>
-                                        <p class="text-xs text-slate-400">{{ $user->role }}</p>
+                                    <div class="min-w-0">
+                                        <p class="font-bold text-slate-900 text-sm truncate">
+                                            {{ $user->first_name }} {{ $user->middle_name ? $user->middle_name . ' ' : '' }}{{ $user->last_name }}
+                                        </p>
+                                        <p class="text-xs text-slate-500 truncate mt-0.5">
+                                            {{ $user->reviewer?->college ?? ($user->reviewer?->external_user ? 'External Ethics Reviewer' : 'Ethics Committee Reviewer') }}
+                                        </p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-6 text-sm text-slate-600">
-                                <div class="flex items-center gap-2 group-hover:text-[#8B0000] transition-colors">
-                                    <i class="far fa-envelope text-slate-400"></i> {{ $user->email }}
+
+                            <!-- Contact Email -->
+                            <td class="py-4 px-6">
+                                <a href="mailto:{{ $user->email }}" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-[#8B0000] transition-colors group">
+                                    <svg class="w-4 h-4 text-slate-400 group-hover:text-[#8B0000] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    <span class="truncate">{{ $user->email }}</span>
+                                </a>
+                            </td>
+
+                            <!-- Affiliation & College (High-Contrast Semantic Typography - NO pills, NO dots) -->
+                            <td class="py-4 px-6">
+                                <div class="flex flex-col gap-0.5">
+                                    @if(!$user->reviewer?->external_user)
+                                        <span class="text-xs font-bold uppercase tracking-wider text-blue-700">Internal</span>
+                                        <span class="text-xs text-slate-500 truncate max-w-[220px]" title="{{ $user->reviewer?->college ?? 'WMSU Review Board' }}">
+                                            {{ $user->reviewer?->college ?? 'WMSU Review Board' }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-700">External</span>
+                                        <span class="text-xs text-slate-500 truncate max-w-[220px]" title="External Institutional Affiliate">
+                                            External Affiliate
+                                        </span>
+                                    @endif
                                 </div>
                             </td>
-                            <td class="p-6">
-                                @if(!$user->reviewer?->external_user)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Internal
-                                </span>
-                                @else
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-100">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span> External
-                                </span>
-                                @endif
-                            </td>
+
+                            <!-- Reviewed Titles -->
                             @php
                                 $reviewedTitles = \App\Models\Research_title::where('Status', 'Reviewed')
                                     ->whereJsonContains('assigned_reviewers', (string) $user->id)
                                     ->get(['id','Study_Protocol_title']);
                                 $reviewedCount = $reviewedTitles->count();
                             @endphp
-                            <td class="p-6">
+                            <td class="py-4 px-6">
                                 @if($reviewedCount > 0)
                                     <button type="button"
                                         onclick="openReviewedModal(
@@ -174,37 +300,39 @@
                                             {{ $reviewedCount }},
                                             {{ json_encode($reviewedTitles->map(fn($t) => ['id' => $t->id, 'title' => $t->Study_Protocol_title])) }}
                                         )"
-                                        class="flex items-center gap-2 group hover:text-[#8B0000] transition-colors">
-                                        <span class="text-sm font-extrabold text-[#8B0000] bg-red-50 border border-red-200 rounded-full px-2.5 py-0.5 group-hover:bg-red-100 transition-colors">
-                                            {{ $reviewedCount }}
-                                        </span>
-                                        <span class="text-xs text-slate-500 font-medium group-hover:text-[#8B0000] transition-colors">
-                                            {{ $reviewedCount === 1 ? 'title' : 'titles' }}
-                                        </span>
-                                        <i class="fas fa-external-link-alt text-[9px] text-slate-300 group-hover:text-[#8B0000] transition-colors"></i>
+                                        class="inline-flex items-center gap-1.5 text-xs font-bold text-[#8B0000] hover:text-[#6d0000] transition-colors group">
+                                        <span class="tabular-nums font-heading font-extrabold">{{ $reviewedCount }}</span>
+                                        <span class="text-slate-500 group-hover:text-[#8B0000]">{{ $reviewedCount === 1 ? 'protocol' : 'protocols' }}</span>
+                                        <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-[#8B0000] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
                                     </button>
                                 @else
-                                    <span class="text-xs font-medium text-slate-400 italic">No reviews yet</span>
+                                    <span class="text-xs text-slate-400 italic">No reviews yet</span>
                                 @endif
                             </td>
-                            <td class="p-6">
-                                <div class="flex items-center gap-1.5 pl-1">
-                                    @if($user->is_verified)
-                                        <div class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]"></div>
-                                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Active</span>
-                                    @elseif($user->email_verified_at)
-                                        <div class="w-1.5 h-1.5 rounded-full bg-red-400"></div>
-                                        <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Deactivated</span>
-                                    @else
-                                        <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
-                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Pending</span>
-                                    @endif
-                                </div>
+
+                            <!-- Status (High-Contrast Semantic Typography - NO pills, NO dots) -->
+                            <td class="py-4 px-6">
+                                @if($user->is_verified)
+                                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Active</span>
+                                @elseif($user->email_verified_at)
+                                    <span class="text-xs font-bold uppercase tracking-wider text-rose-600">Deactivated</span>
+                                @else
+                                    <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Pending</span>
+                                @endif
                             </td>
-                            <td class="p-6 text-right relative">
+
+                            <!-- Actions -->
+                            <td class="py-4 px-6 text-right">
                                 <div x-data="{ open: false }" class="relative inline-block text-left">
-                                    <button @click="open = !open" @click.away="open = false" class="p-2 text-slate-500 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-all">
-                                        <i class="fas fa-ellipsis-v"></i>
+                                    <button @click="open = !open" 
+                                            @click.away="open = false" 
+                                            aria-label="Reviewer Actions Menu"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                        </svg>
                                     </button>
                                     
                                     <div x-show="open" 
@@ -214,45 +342,77 @@
                                          x-transition:leave="transition ease-in duration-75"
                                          x-transition:leave-start="transform opacity-100 scale-100"
                                          x-transition:leave-end="transform opacity-0 scale-95"
-                                         class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" 
+                                         class="absolute right-0 z-20 mt-1.5 w-48 origin-top-right rounded-xl bg-white shadow-lg border border-slate-200/80 py-1 focus:outline-none" 
                                          style="display: none;">
-                                        <div class="py-1" role="menu" aria-orientation="vertical">
-                                            <button @click="selectedUser = {{ $user }}; showViewModal = true" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2 transition-colors">
-                                                <i class="fas fa-eye w-4"></i> View Details
-                                            </button>
-                                            
-                                            <button type="button" 
-                                                    @click="triggerConfirm(
-                                                        '{{ $user->is_verified ? 'Deactivate Account' : 'Activate Account' }}', 
-                                                        'Are you sure you want to {{ $user->is_verified ? 'deactivate' : 'activate' }} {{ $user->first_name }}\'s account?', 
-                                                        '{{ $user->is_verified ? 'Deactivate' : 'Activate' }}', 
-                                                        '{{ route('super_admin.reviewers.toggle_status', $user->id) }}',
-                                                        false
-                                                    )" 
-                                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2 transition-colors">
-                                                <i class="fas fa-ban w-4"></i> {{ $user->is_verified ? 'Deactivate' : 'Activate' }}
-                                            </button>
+                                        
+                                        <!-- View Details -->
+                                        <button @click="open = false; openViewModal({{ $user->id }})" 
+                                                class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors">
+                                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            View Details
+                                        </button>
 
-                                            <button type="button" 
-                                                    @click="triggerConfirm(
-                                                        'Delete Reviewer Account', 
-                                                        'Are you sure you want to delete this reviewer? This action cannot be undone and all associated data will be removed.', 
-                                                        'Delete Reviewer', 
-                                                        '{{ route('super_admin.reviewers.delete', $user->id) }}',
-                                                        true
-                                                    )" 
-                                                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
-                                                <i class="fas fa-trash w-4"></i> Delete Reviewer
-                                            </button>
-                                        </div>
+                                        <!-- Edit Profile -->
+                                        <button @click="open = false; openEditModal({{ $user->id }})" 
+                                                class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors">
+                                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                            Edit Profile
+                                        </button>
+                                        
+                                        <!-- Toggle Status -->
+                                        <button type="button" 
+                                                @click="open = false; triggerConfirm(
+                                                    '{{ $user->is_verified ? 'Deactivate Account' : 'Activate Account' }}', 
+                                                    'Are you sure you want to {{ $user->is_verified ? 'deactivate' : 'activate' }} {{ $user->first_name }} {{ $user->last_name }}\'s reviewer account?', 
+                                                    '{{ $user->is_verified ? 'Deactivate' : 'Activate' }}', 
+                                                    '{{ route('super_admin.reviewers.toggle_status', $user->id) }}',
+                                                    false
+                                                )" 
+                                                class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors">
+                                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                            </svg>
+                                            {{ $user->is_verified ? 'Deactivate' : 'Activate' }}
+                                        </button>
+
+                                        <div class="my-1 border-t border-slate-100"></div>
+
+                                        <!-- Delete Reviewer -->
+                                        <button type="button" 
+                                                @click="open = false; triggerConfirm(
+                                                    'Delete Reviewer Account', 
+                                                    'Are you sure you want to delete {{ $user->first_name }} {{ $user->last_name }}\'s reviewer account? This administrative action cannot be undone.', 
+                                                    'Delete Reviewer', 
+                                                    '{{ route('super_admin.reviewers.delete', $user->id) }}',
+                                                    true
+                                                )" 
+                                                class="w-full text-left px-4 py-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors">
+                                            <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Delete Reviewer
+                                        </button>
                                     </div>
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="p-8 text-center text-slate-500">
-                                No Reviewers found.
+                            <td colspan="6" class="py-12 px-6 text-center">
+                                <div class="max-w-sm mx-auto space-y-2">
+                                    <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                        </svg>
+                                    </div>
+                                    <p class="font-bold text-slate-800 text-sm">No reviewers found</p>
+                                    <p class="text-xs text-slate-500">No reviewer accounts match your current query or filter criteria.</p>
+                                </div>
                             </td>
                         </tr>
                         @endforelse
@@ -260,60 +420,60 @@
                 </table>
             </div>
             
-            <div class="p-4 border-t border-slate-100 bg-slate-50">
+            @if($users->hasPages())
+            <div class="p-4 border-t border-slate-200/80 bg-slate-50/50">
                 {{ $users->links() }}
             </div>
+            @endif
         </div>
 
-        <!-- Reviewed Titles Modal (shared, JS-driven) -->
-        <div id="reviewedTitlesModal" class="fixed inset-0 z-[9999] hidden" aria-modal="true" role="dialog">
-            <!-- Backdrop -->
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeReviewedModal()"></div>
+        <!-- Reviewed Titles Modal (JS-driven, Frosted Scrim) -->
+        <div id="reviewedTitlesModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-modal="true" role="dialog">
+            <!-- Frosted Scrim Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" onclick="closeReviewedModal()"></div>
 
-            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-lg flex flex-col max-h-[80vh]"
-                     style="animation: fadeInUp 0.25s ease-out">
-
-                    <!-- Modal Header -->
-                    <div class="px-6 pt-6 pb-4 border-b border-slate-100 flex items-start justify-between gap-4 flex-shrink-0">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8B0000] to-red-700 flex items-center justify-center shadow-lg shadow-red-900/20 flex-shrink-0">
-                                <i class="fas fa-clipboard-check text-white text-sm"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-base font-bold text-slate-900" id="reviewedModalReviewerName">Reviewer</h3>
-                                <p class="text-xs text-slate-500 mt-0.5">
-                                    <span id="reviewedModalCount" class="font-bold text-[#8B0000]">0</span>
-                                    <span id="reviewedModalLabel"> reviewed protocols</span>
-                                </p>
-                            </div>
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200/80 flex flex-col max-h-[85vh]">
+                    <!-- Header -->
+                    <div class="bg-white px-6 py-5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900 font-heading" id="reviewedModalReviewerName">Reviewer Protocols</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                <span id="reviewedModalCount" class="font-bold text-[#8B0000]">0</span>
+                                <span id="reviewedModalLabel"> evaluated protocols</span>
+                            </p>
                         </div>
-                        <button onclick="closeReviewedModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0">
-                            <i class="fas fa-times"></i>
+                        <button onclick="closeReviewedModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
 
-                    <!-- Search inside modal -->
-                    <div class="px-6 py-3 border-b border-slate-50 flex-shrink-0">
+                    <!-- Search Filter inside modal -->
+                    <div class="px-6 py-3 border-b border-slate-100 shrink-0 bg-slate-50/50">
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-slate-400 text-xs"></i>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
                             </div>
                             <input type="text" id="reviewedModalSearch"
                                 oninput="filterReviewedTitles(this.value)"
-                                placeholder="Filter titles..."
-                                class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all">
+                                placeholder="Filter reviewed protocol titles..."
+                                aria-label="Filter reviewed protocol titles"
+                                class="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all">
                         </div>
                     </div>
 
                     <!-- Title List -->
-                    <div class="overflow-y-auto flex-1 px-6 py-4" id="reviewedTitlesList">
+                    <div class="overflow-y-auto flex-1 px-6 py-4 divide-y divide-slate-100" id="reviewedTitlesList">
                         <!-- Populated by JS -->
                     </div>
 
                     <!-- Footer -->
-                    <div class="px-6 py-4 border-t border-slate-100 flex-shrink-0 flex justify-end">
-                        <button onclick="closeReviewedModal()" class="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">
+                    <div class="px-6 py-4 border-t border-slate-200 shrink-0 flex justify-end bg-slate-50/50">
+                        <button onclick="closeReviewedModal()" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors min-h-[44px]">
                             Close
                         </button>
                     </div>
@@ -325,298 +485,243 @@
         <div x-show="showAddModal" 
              class="fixed inset-0 z-50 overflow-y-auto" 
              style="display: none;"
-             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0">
             
-            <!-- Backdrop -->
-            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showAddModal = false"></div>
+            <!-- Frosted Scrim Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" @click="showAddModal = false"></div>
 
-            <!-- Modal Panel -->
             <div class="flex min-h-full items-center justify-center p-4 text-center">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200/80"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-98"
                      x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                     x-transition:leave-end="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-98">
                     
                     <!-- Header -->
-                    <div class="bg-white px-6 pt-6 pb-4 border-b border-slate-50">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
-                                    <i class="fas fa-user-plus text-[#8B0000] text-lg"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-900" id="modal-title">Add New Reviewer</h3>
-                                    <p class="text-xs text-slate-500">Create a new account for a reviewer.</p>
-                                </div>
-                            </div>
-                            <button @click="showAddModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                                <i class="fas fa-times text-lg"></i>
-                            </button>
+                    <div class="bg-white px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900 font-heading">Add New Reviewer</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Register a new evaluator for the ethics review committee (SOP 03).</p>
                         </div>
+                        <button @click="showAddModal = false" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
 
                     <!-- Body -->
-                    <div class="px-6 py-6" x-data="{ 
-                        colleges: {{ Js::from($colleges) }},
-                        selectedCollege: '',
-                        selectedDept: '',
-                        selectedProgram: '',
+                    <form action="{{ route('super_admin.reviewers.create') }}" method="POST" class="p-6 space-y-4">
+                        @csrf
+
+                        @if ($errors->any())
+                            <div class="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <p>{{ $error }}</p>
+                                @endforeach
+                            </div>
+                        @endif
                         
-                        get currentDepartments() {
-                            const college = this.colleges.find(c => c.name === this.selectedCollege);
-                            return college ? college.departments : [];
-                        },
-                        
-                        get currentPrograms() {
-                            const dept = this.currentDepartments.find(d => d.name === this.selectedDept);
-                            return dept ? dept.programs : [];
-                        }
-                    }">
-                        <form action="{{ route('super_admin.reviewers.create') }}" method="POST" class="space-y-5">
-                            @csrf
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="space-y-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
+                                <input type="text" name="first_name" required placeholder="John" value="{{ old('first_name') }}" 
+                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all placeholder:text-slate-400 min-h-[44px]">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Middle Name</label>
+                                <input type="text" name="middle_name" placeholder="Quincy" value="{{ old('middle_name') }}" 
+                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all placeholder:text-slate-400 min-h-[44px]">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
+                                <input type="text" name="last_name" required placeholder="Doe" value="{{ old('last_name') }}" 
+                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all placeholder:text-slate-400 min-h-[44px]">
+                            </div>
+                        </div>
 
-                            @if ($errors->any())
-                                <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-                                    <ul class="list-disc pl-5 space-y-1">
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-                            
-                            <div class="grid grid-cols-3 gap-4">
-                                <div class="space-y-1.5">
-                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
-                                    <div class="relative">
-                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="first_name" required placeholder="John" value="{{ old('first_name') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
-                                    </div>
-                                </div>
-                                <div class="space-y-1.5">
-                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Middle Name</label>
-                                    <div class="relative">
-                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="middle_name" placeholder="Quincy" value="{{ old('middle_name') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
-                                    </div>
-                                </div>
-                                <div class="space-y-1.5">
-                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
-                                    <div class="relative">
-                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="last_name" required placeholder="Doe" value="{{ old('last_name') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
-                                    </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
+                            <input type="email" name="email" required placeholder="reviewer@example.com" value="{{ old('email') }}" 
+                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all placeholder:text-slate-400 min-h-[44px]">
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">College Unit (Optional)</label>
+                            <div class="relative">
+                                <select name="college" class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
+                                    <option value="">Select College (Optional)</option>
+                                    @foreach($colleges as $college)
+                                        <option value="{{ $college->name }}" @selected(old('college') == $college->name)>{{ $college->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="space-y-1.5 w-full col-span-2">
-                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
-                                    <div class="relative">
-                                        <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="email" name="email" required placeholder="reviewer@example.com" value="{{ old('email') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Expertise / Specialization</label>
+                            <input type="text" name="expertise" placeholder="e.g. Clinical Trials, Public Health, Bioethics" value="{{ old('expertise') }}" 
+                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all placeholder:text-slate-400 min-h-[44px]">
+                            <p class="text-[11px] text-slate-500 mt-1">Comma-separated list of research disciplines or ethics review qualifications.</p>
+                        </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="space-y-1.5 w-full col-span-2">
-                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">College (Optional)</label>
-                                    <div class="relative">
-                                        <select name="college" x-model="selectedCollege" @change="selectedDept = ''; selectedProgram = ''" class="w-full pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all outline-none appearance-none cursor-pointer">
-                                            <option value="" selected>Select College (Optional)</option>
-                                            <template x-for="college in colleges" :key="college.id">
-                                                <option :value="college.name" x-text="college.name"></option>
-                                            </template>
-                                        </select>
-                                        <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="space-y-1.5 w-full col-span-2">
-                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Expertise (Comma separated)</label>
-                                    <div class="relative">
-                                        <i class="fas fa-lightbulb absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="expertise" placeholder="e.g. Data Science, Machine Learning" value="{{ old('expertise') }}" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all placeholder:text-slate-300">
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="training_completed" value="1" @checked(old('training_completed'))
+                                       class="w-4 h-4 text-[#8B0000] rounded border-slate-300 focus:ring-[#8B0000]">
+                                <span class="text-xs font-bold text-slate-800">Ethics Training Completed</span>
+                            </label>
 
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="external_user" value="1" @checked(old('external_user'))
+                                       class="w-4 h-4 text-[#8B0000] rounded border-slate-300 focus:ring-[#8B0000]">
+                                <span class="text-xs font-bold text-slate-800">External Evaluator</span>
+                            </label>
+                        </div>
 
-
-                            <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 mt-2">
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <div class="relative flex items-center">
-                                        <input type="checkbox" name="training_completed" value="1" class="peer sr-only">
-                                        <div class="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-[#8B0000] peer-checked:border-[#8B0000] transition-all flex items-center justify-center">
-                                            <i class="fas fa-check text-white text-xs opacity-0 peer-checked:opacity-100 transition-opacity"></i>
-                                        </div>
-                                    </div>
-                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider group-hover:text-[#8B0000] transition-colors">Training Completed</span>
-                                </label>
-
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <div class="relative flex items-center">
-                                        <input type="checkbox" name="external_user" value="1" class="peer sr-only">
-                                        <div class="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-[#8B0000] peer-checked:border-[#8B0000] transition-all flex items-center justify-center">
-                                            <i class="fas fa-check text-white text-xs opacity-0 peer-checked:opacity-100 transition-opacity"></i>
-                                        </div>
-                                    </div>
-                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider group-hover:text-[#8B0000] transition-colors">External User</span>
-                                </label>
-                            </div>
-
-
-
-                            <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-50 mt-6">
-                                <button type="button" @click="showAddModal = false" class="px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition-colors">
-                                    Cancel
-                                </button>
-                                <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-[#8B0000] to-[#600000] text-white text-sm font-bold rounded-xl shadow-lg shadow-red-900/20 hover:shadow-red-900/30 hover:-translate-y-0.5 transition-all">
-                                    Create Account
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200">
+                            <button type="button" @click="showAddModal = false" class="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors min-h-[44px]">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white text-sm font-bold rounded-xl shadow-xs hover:bg-[#6d0000] active:scale-[0.98] transition-all min-h-[44px]">
+                                Create Account
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
-        <!-- View User Modal -->
+        <!-- View Reviewer Details Modal -->
         <div x-show="showViewModal" 
              class="fixed inset-0 z-50 overflow-y-auto" 
              style="display: none;"
-             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0">
             
-            <!-- Backdrop -->
-            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showViewModal = false"></div>
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" @click="showViewModal = false"></div>
 
-            <!-- Modal Panel -->
             <div class="flex min-h-full items-center justify-center p-4 text-center">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200/80"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-98"
                      x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                     x-transition:leave-end="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-98">
                     
                     <!-- Header -->
-                    <div class="bg-white px-6 pt-6 pb-4 border-b border-slate-50">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                                    <i class="fas fa-user-circle text-blue-600 text-lg"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-900">Reviewer Details</h3>
-                                    <p class="text-xs text-slate-500">View complete reviewer information.</p>
-                                </div>
-                            </div>
-                            <button @click="showViewModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                                <i class="fas fa-times text-lg"></i>
-                            </button>
+                    <div class="bg-white px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900 font-heading">Reviewer Details</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Evaluation credentials, disciplines, and review board status.</p>
                         </div>
+                        <button @click="showViewModal = false" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
 
                     <!-- Body -->
-                    <div class="px-6 py-6 space-y-6" x-if="selectedUser">
-                        <!-- Profile Header -->
-                        <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                            <div class="w-16 h-16 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center text-2xl font-bold text-[#8B0000]">
-                                <span x-text="selectedUser.first_name.charAt(0) + selectedUser.last_name.charAt(0)"></span>
+                    <div class="p-6 space-y-6" x-show="selectedUser">
+                        <!-- Profile Card -->
+                        <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                            <div class="w-14 h-14 rounded-full bg-white border border-slate-200 shadow-xs flex items-center justify-center text-xl font-extrabold text-[#8B0000] font-heading shrink-0">
+                                <span x-text="(selectedUser?.first_name?.charAt(0) || '') + (selectedUser?.last_name?.charAt(0) || '')"></span>
                             </div>
-                            <div>
-                                <h4 class="text-lg font-bold text-slate-900" x-text="selectedUser.first_name + (selectedUser.middle_name ? ' ' + selectedUser.middle_name : '') + ' ' + selectedUser.last_name"></h4>
-                                <p class="text-sm text-slate-500" x-text="selectedUser.email"></p>
-                                <div class="mt-2 text-sm flex gap-2">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
-                                          :class="selectedUser.is_verified ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'">
-                                        <span class="w-1.5 h-1.5 rounded-full" :class="selectedUser.is_verified ? 'bg-emerald-500' : 'bg-red-500'"></span>
-                                        <span x-text="selectedUser.is_verified ? 'Active' : 'Deactivated'"></span>
+                            <div class="min-w-0 flex-1">
+                                <h4 class="text-base font-extrabold text-slate-900 font-heading truncate" 
+                                    x-text="selectedUser ? (selectedUser.first_name + (selectedUser.middle_name ? ' ' + selectedUser.middle_name : '') + ' ' + selectedUser.last_name) : ''"></h4>
+                                <p class="text-xs text-slate-500 truncate mt-0.5" x-text="selectedUser?.email"></p>
+                                
+                                <div class="mt-2 flex items-center gap-3">
+                                    <span class="text-xs font-bold uppercase tracking-wider"
+                                          :class="selectedUser?.is_verified ? 'text-emerald-600' : (selectedUser?.email_verified_at ? 'text-rose-600' : 'text-amber-600')"
+                                          x-text="selectedUser?.is_verified ? 'ACTIVE' : (selectedUser?.email_verified_at ? 'DEACTIVATED' : 'PENDING')">
+                                    </span>
+                                    <span class="text-slate-300">|</span>
+                                    <span class="text-xs font-bold uppercase tracking-wider"
+                                          :class="selectedUser?.reviewer?.external_user ? 'text-indigo-700' : 'text-blue-700'"
+                                          x-text="selectedUser?.reviewer?.external_user ? 'EXTERNAL' : 'INTERNAL'">
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Details Grid -->
-                        <div class="grid grid-cols-1 gap-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="space-y-1 w-full col-span-2">
-                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">College</label>
-                                    <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
-                                        <i class="fas fa-university text-slate-400"></i>
-                                        <span x-text="selectedUser.reviewer?.college || 'None'"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="space-y-1 w-full col-span-2">
-                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Expertise</label>
-                                    <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
-                                        <i class="fas fa-lightbulb text-slate-400"></i>
-                                        <span x-text="(selectedUser.reviewer?.expertise && selectedUser.reviewer.expertise.length) ? selectedUser.reviewer.expertise.join(', ') : 'None specified'"></span>
-                                    </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1 col-span-2">
+                                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">College / Institutional Unit</span>
+                                <div class="text-sm font-semibold text-slate-900 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                                    <span x-text="selectedUser?.reviewer?.college || 'WMSU Review Board'"></span>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="space-y-1">
-                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Status Details</label>
-                                    <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200 text-sm h-full">
-                                        <div class="flex flex-col gap-2">
-                                            <span class="inline-flex items-center gap-2">
-                                                <i class="fas px-1" :class="selectedUser.reviewer?.training_completed ? 'fa-check text-green-500' : 'fa-times text-red-500'"></i>
-                                                Training Completed
-                                            </span>
-                                            <span class="inline-flex items-center gap-2">
-                                                <i class="fas px-1" :class="selectedUser.reviewer?.external_user ? 'fa-check text-green-500' : 'fa-times text-slate-300'"></i>
-                                                External User
-                                            </span>
-                                        </div>
-                                    </div>
+                            <div class="space-y-1 col-span-2">
+                                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Areas of Expertise</span>
+                                <div class="text-sm font-semibold text-slate-900 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                                    <span x-text="(selectedUser?.reviewer?.expertise && selectedUser.reviewer.expertise.length) ? selectedUser.reviewer.expertise.join(', ') : 'None specified'"></span>
                                 </div>
-                                <div class="space-y-2 flex flex-col justify-between">
-                                    <div class="space-y-1">
-                                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Role</label>
-                                        <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
-                                            <i class="fas fa-id-badge text-slate-400"></i>
-                                            <span class="capitalize" x-text="selectedUser.role"></span>
-                                        </div>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Joined Date</label>
-                                        <div class="flex items-center gap-2 text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
-                                            <i class="fas fa-calendar-alt text-slate-400"></i>
-                                            <span x-text="new Date(selectedUser.created_at).toLocaleDateString()"></span>
-                                        </div>
-                                    </div>
+                            </div>
+
+                            <div class="space-y-1 col-span-2 sm:col-span-1">
+                                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Training Status</span>
+                                <div class="text-sm font-semibold bg-slate-50 p-3 rounded-xl border border-slate-200/80"
+                                     :class="selectedUser?.reviewer?.training_completed ? 'text-emerald-700' : 'text-slate-600'">
+                                    <span x-text="selectedUser?.reviewer?.training_completed ? 'Training Completed' : 'Pending Training'"></span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1 col-span-2 sm:col-span-1">
+                                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Protocol Blindness</span>
+                                <div class="text-sm font-semibold text-slate-900 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                                    <span x-text="selectedUser?.reviewer?.show_researcher_identity ? 'Open Evaluation' : 'Blind Evaluation'"></span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1 col-span-2 sm:col-span-1">
+                                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Joined Date</span>
+                                <div class="text-sm font-semibold text-slate-900 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                                    <span x-text="selectedUser?.created_at ? new Date(selectedUser.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—'"></span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1 col-span-2 sm:col-span-1">
+                                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Affiliation Type</span>
+                                <div class="text-sm font-semibold text-slate-900 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                                    <span x-text="selectedUser?.reviewer?.external_user ? 'External Evaluator' : 'Internal Faculty'"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Footer -->
-                        <div class="pt-4 border-t border-slate-50 flex justify-end gap-3">
-                            <button @click="showViewModal = false; showEditModal = true" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
-                                <i class="fas fa-edit mr-1.5"></i> Edit Profile
+                        <!-- Actions Footer -->
+                        <div class="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+                            <button @click="showViewModal = false; openEditModal(selectedUser.id)" 
+                                    class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors min-h-[44px] inline-flex items-center gap-2">
+                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Edit Profile
                             </button>
-                            <button @click="showViewModal = false" class="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
+                            <button @click="showViewModal = false" 
+                                    class="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-colors min-h-[44px]">
                                 Close Details
                             </button>
                         </div>
@@ -629,99 +734,83 @@
         <div x-show="showEditModal" 
              class="fixed inset-0 z-50 overflow-y-auto" 
              style="display: none;"
-             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0">
             
-            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showEditModal = false"></div>
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" @click="showEditModal = false"></div>
 
             <div class="flex min-h-full items-center justify-center p-4 text-center">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200/80"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-98"
                      x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                     x-transition:leave-end="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-98">
                     
-                    <div class="bg-white px-6 pt-6 pb-4 border-b border-slate-50">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                                    <i class="fas fa-user-edit text-blue-600 text-lg"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-900">Edit Reviewer Profile</h3>
-                                    <p class="text-xs text-slate-500">Update reviewer details.</p>
-                                </div>
-                            </div>
-                            <button @click="showEditModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                                <i class="fas fa-times text-lg"></i>
-                            </button>
+                    <!-- Header -->
+                    <div class="bg-white px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900 font-heading">Edit Reviewer Profile</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Update credentials and individual protocol visibility.</p>
                         </div>
+                        <button @click="showEditModal = false" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
 
-                    <div class="px-6 py-6" x-if="selectedUser">
-                        <form :action="'/super-admin/reviewers/' + selectedUser.id + '/update'" method="POST" class="space-y-5">
+                    <!-- Body -->
+                    <div class="p-6" x-show="selectedUser">
+                        <form :action="'/super-admin/reviewers/' + selectedUser?.id + '/update'" method="POST" class="space-y-4">
                             @csrf
                             
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="space-y-1.5">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="space-y-1">
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
-                                    <div class="relative">
-                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="first_name" :value="selectedUser.first_name" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
-                                    </div>
+                                    <input type="text" name="first_name" :value="selectedUser?.first_name" required 
+                                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
                                 </div>
-                                <div class="space-y-1.5">
+                                <div class="space-y-1">
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Middle Name</label>
-                                    <div class="relative">
-                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="middle_name" :value="selectedUser.middle_name" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
-                                    </div>
+                                    <input type="text" name="middle_name" :value="selectedUser?.middle_name" 
+                                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
                                 </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-4">
-                                <div class="space-y-1.5">
+                                <div class="space-y-1">
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
-                                    <div class="relative">
-                                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text" name="last_name" :value="selectedUser.last_name" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
-                                    </div>
+                                    <input type="text" name="last_name" :value="selectedUser?.last_name" required 
+                                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
                                 </div>
                             </div>
 
-                            <div class="space-y-1.5">
+                            <div class="space-y-1">
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
-                                <div class="relative">
-                                    <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                    <input type="email" name="email" :value="selectedUser.email" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:bg-white outline-none transition-all">
-                                </div>
+                                <input type="email" name="email" :value="selectedUser?.email" required 
+                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
                             </div>
 
-                            <div class="space-y-1.5 pt-2">
-                                <label class="flex items-center gap-3 cursor-pointer p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors">
-                                    <div class="relative flex items-center">
-                                        <input type="checkbox" name="show_researcher_identity" value="1" class="sr-only peer" :checked="selectedUser.reviewer?.show_researcher_identity">
-                                        <div class="block bg-slate-300 w-10 h-6 rounded-full peer-checked:bg-[#8B0000] transition-colors"></div>
-                                        <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-slate-800">Show Researcher Identity</span>
-                                        <span class="text-xs text-slate-500 font-normal">Allow this reviewer to see the researcher's name and email during evaluations.</span>
+                            <div class="pt-2">
+                                <label class="flex items-start gap-3.5 cursor-pointer p-4 bg-slate-50 border border-slate-200/80 rounded-xl hover:bg-slate-100/70 transition-colors">
+                                    <input type="checkbox" name="show_researcher_identity" value="1" 
+                                           :checked="selectedUser?.reviewer?.show_researcher_identity"
+                                           class="w-4 h-4 text-[#8B0000] rounded border-slate-300 focus:ring-[#8B0000] mt-0.5">
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-900 block">Show Researcher Identity</span>
+                                        <span class="text-xs text-slate-500 font-normal block mt-0.5">Allow this reviewer to inspect researcher names and credentials during protocol reviews.</span>
                                     </div>
                                 </label>
                             </div>
 
-                            <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-50 mt-6">
-                                <button type="button" @click="showEditModal = false" class="px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition-colors">
+                            <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200">
+                                <button type="button" @click="showEditModal = false" class="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors min-h-[44px]">
                                     Cancel
                                 </button>
-                                <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-800 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-900/20 hover:shadow-blue-900/30 hover:-translate-y-0.5 transition-all">
+                                <button type="submit" class="px-6 py-2.5 bg-[#8B0000] text-white text-sm font-bold rounded-xl shadow-xs hover:bg-[#6d0000] active:scale-[0.98] transition-all min-h-[44px]">
                                     Save Changes
                                 </button>
                             </div>
@@ -730,58 +819,65 @@
                 </div>
             </div>
         </div>
+
         <!-- Confirmation Modal -->
         <div x-show="showConfirmModal" 
-             class="fixed inset-0 z-[100] overflow-y-auto" 
+             class="fixed inset-0 z-50 overflow-y-auto" 
              style="display: none;"
-             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0">
             
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @click="showConfirmModal = false"></div>
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" @click="showConfirmModal = false"></div>
 
             <div class="flex min-h-full items-center justify-center p-4 text-center">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-100"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-200/80"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-98"
                      x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                     x-transition:leave-end="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-98">
                     
-                    <div class="bg-white px-6 pt-8 pb-6 text-center">
-                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full" :class="confirmIsDelete ? 'bg-red-50' : 'bg-amber-50'">
-                            <i class="fas" :class="confirmIsDelete ? 'fa-exclamation-triangle text-red-600 text-2xl' : 'fa-info-circle text-amber-600 text-2xl'"></i>
+                    <div class="bg-white p-6 text-center">
+                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full" 
+                             :class="confirmIsDelete ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path x-show="confirmIsDelete" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <path x-show="!confirmIsDelete" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
                         </div>
                         <div class="mt-4">
-                            <h3 class="text-xl font-bold text-slate-900" x-text="confirmTitle"></h3>
-                            <p class="mt-3 text-sm text-slate-500 leading-relaxed" x-text="confirmMessage"></p>
+                            <h3 class="text-lg font-extrabold text-slate-900 font-heading" x-text="confirmTitle"></h3>
+                            <p class="mt-2 text-xs text-slate-500 leading-relaxed" x-text="confirmMessage"></p>
                         </div>
                     </div>
 
-                    <div class="bg-slate-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-center gap-3">
-                        <button type="button" @click="showConfirmModal = false" class="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl transition-all duration-200">
+                    <div class="bg-slate-50/80 px-6 py-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                        <button type="button" @click="showConfirmModal = false" class="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors min-h-[44px]">
                             Cancel
                         </button>
+                        
                         <div class="w-full sm:w-auto">
+                            <!-- Direct Route Form -->
                             <form :action="confirmFormAction" method="POST" x-show="!confirmFormId">
                                 @csrf
-                                <template x-if="confirmIsDelete">
-                                    @method('DELETE')
-                                </template>
+                                <input type="hidden" name="_method" value="DELETE" :disabled="!confirmIsDelete">
                                 <button type="submit" 
-                                        class="w-full px-8 py-2.5 text-sm font-bold text-white rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-                                        :class="confirmIsDelete ? 'bg-red-600 hover:bg-red-700 shadow-red-900/20' : 'bg-[#8B0000] hover:bg-[#7A0000] shadow-red-900/20'"
+                                        class="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-white rounded-xl shadow-xs transition-all active:scale-[0.98] min-h-[44px]"
+                                        :class="confirmIsDelete ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#8B0000] hover:bg-[#6d0000]'"
                                         x-text="confirmButtonText">
                                 </button>
                             </form>
+
+                            <!-- External Form Trigger (e.g. Global Visibility) -->
                             <button x-show="confirmFormId" 
                                     @click="document.getElementById(confirmFormId).submit()"
                                     type="button"
-                                    class="w-full px-8 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+                                    class="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-xs transition-all active:scale-[0.98] min-h-[44px]"
                                     x-text="confirmButtonText">
                             </button>
                         </div>
@@ -797,11 +893,11 @@
     const _viewFilesBase = '{{ url('admin/view_files') }}';
 
     function openReviewedModal(reviewerName, count, titlesData) {
-        _allReviewedTitles = titlesData; // array of {id, title}
+        _allReviewedTitles = titlesData;
 
         document.getElementById('reviewedModalReviewerName').textContent = reviewerName;
         document.getElementById('reviewedModalCount').textContent = count;
-        document.getElementById('reviewedModalLabel').textContent = count === 1 ? ' reviewed protocol' : ' reviewed protocols';
+        document.getElementById('reviewedModalLabel').textContent = count === 1 ? ' evaluated protocol' : ' evaluated protocols';
         document.getElementById('reviewedModalSearch').value = '';
 
         renderReviewedTitles(titlesData);
@@ -829,8 +925,7 @@
         if (!items || items.length === 0) {
             container.innerHTML = `
                 <div class="py-10 text-center text-slate-400">
-                    <i class="fas fa-search text-2xl mb-3 text-slate-300"></i>
-                    <p class="text-sm font-medium">No titles match your search.</p>
+                    <p class="text-sm font-medium">No protocols match your search query.</p>
                 </div>`;
             return;
         }
@@ -839,19 +934,21 @@
             let displayTitle = escapeHtml(item.title);
             if (highlight) {
                 const regex = new RegExp(`(${escapeRegex(highlight)})`, 'gi');
-                displayTitle = displayTitle.replace(regex, '<mark class="bg-yellow-100 text-yellow-900 rounded px-0.5">$1</mark>');
+                displayTitle = displayTitle.replace(regex, '<mark class="bg-amber-100 text-amber-900 rounded px-0.5">$1</mark>');
             }
             const viewUrl = `${_viewFilesBase}/${item.id}`;
             return `
-                <div class="flex items-center gap-3 py-3 ${i !== 0 ? 'border-t border-slate-50' : ''}">
-                    <div class="w-6 h-6 rounded-full bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
+                <div class="flex items-center gap-3 py-3 ${i !== 0 ? 'border-t border-slate-100' : ''}">
+                    <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
                         <span class="text-[10px] font-extrabold text-[#8B0000]">${i + 1}</span>
                     </div>
-                    <p class="text-sm text-slate-700 font-medium leading-snug flex-1">${displayTitle}</p>
+                    <p class="text-sm text-slate-800 font-medium leading-snug flex-1">${displayTitle}</p>
                     <a href="${viewUrl}"
-                       class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#8B0000] bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 transition-colors whitespace-nowrap"
-                       title="View protocol files">
-                        <i class="fas fa-folder-open text-[10px]"></i>
+                       class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#8B0000] bg-slate-50 border border-slate-200 hover:bg-red-50 hover:border-red-200 transition-colors whitespace-nowrap min-h-[32px]"
+                       title="View protocol review dossier">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                         View Details
                     </a>
                 </div>`;
@@ -866,7 +963,6 @@
         return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    // Close on Escape key
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') closeReviewedModal();
     });

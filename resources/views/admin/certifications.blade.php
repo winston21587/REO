@@ -9,7 +9,7 @@
              @keydown.escape.window="filterDrawerOpen = false">
             <div class="min-w-0">
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Certifications</h1>
-                <p class="text-slate-500 mt-1 sm:mt-1.5 text-xs sm:text-sm">View approved protocols and manage clearance certificates.</p>
+                <p class="text-slate-500 mt-1 sm:mt-1.5 text-xs sm:text-sm">View approved submissions and issue ethics clearance certificates.</p>
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">

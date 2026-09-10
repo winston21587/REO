@@ -98,7 +98,7 @@
                             </button>
                         @else
                             <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap text-amber-800">
-                                <span>Pending Generation</span>
+                                <span>Ready to Issue</span>
                             </span>
                         @endif
                     </div>
@@ -230,7 +230,7 @@
                                     </button>
                                 @else
                                     <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap text-amber-800">
-                                        <span>Pending Generation</span>
+                                        <span>Ready to Issue</span>
                                     </span>
                                 @endif
                             </td>
@@ -268,8 +268,8 @@
                 <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
                     <i class="fas fa-search text-xl" aria-hidden="true"></i>
                 </div>
-                <h4 class="text-sm font-semibold text-slate-900 mb-1">No matching protocols found</h4>
-                <p class="text-xs text-slate-500 max-w-sm mb-4 leading-relaxed">No approved protocols match your current search or filter criteria. Try adjusting your parameters or clear all filters.</p>
+                <h4 class="text-sm font-semibold text-slate-900 mb-1">No matching submissions found</h4>
+                <p class="text-xs text-slate-500 max-w-sm mb-4 leading-relaxed">No approved submissions match your current search or filter criteria. Try adjusting your parameters or clear all filters.</p>
                 <a href="{{ route('admin.certifications') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200/80 transition-colors shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer">
                     <i class="fas fa-times-circle text-slate-400" aria-hidden="true"></i> Clear All Filters
                 </a>
@@ -277,8 +277,8 @@
                 <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
                     <i class="fas fa-folder-open text-xl" aria-hidden="true"></i>
                 </div>
-                <h4 class="text-sm font-semibold text-slate-900 mb-1">No Approved Protocols Found</h4>
-                <p class="text-xs text-slate-500 max-w-sm leading-relaxed">There are currently no approved protocols with generated clearance certificates.</p>
+                <h4 class="text-sm font-semibold text-slate-900 mb-1">No Approved Submissions Found</h4>
+                <p class="text-xs text-slate-500 max-w-sm leading-relaxed">There are currently no approved submissions awaiting certificates.</p>
             @endif
         </div>
     @endif

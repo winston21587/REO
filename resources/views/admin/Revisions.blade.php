@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-200 w-full min-w-0">
             <div class="min-w-0">
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Revisions</h1>
-                <p class="text-slate-500 mt-1 sm:mt-1.5 text-xs sm:text-sm">Manage protocols requiring or submitting revisions.</p>
+                <p class="text-slate-500 mt-1 sm:mt-1.5 text-xs sm:text-sm">Manage submissions that need revisions or were resubmitted.</p>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
                 <div class="relative flex-1 sm:flex-initial min-w-0">
@@ -80,7 +80,7 @@
 
                                             <!-- Status Section -->
                                             <div class="p-4 border-b border-slate-100">
-                                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">Protocol Status</label>
+                                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">Revision Status</label>
                                                 <div class="space-y-2">
                                                     @php $selectedStatuses = request('statuses', ['Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions', 'Reviewed', 'Panel Deliberation']); @endphp
                                                     <label class="flex items-center gap-2.5 cursor-pointer group py-0.5">
@@ -101,7 +101,7 @@
                                                     </label>
                                                     <label class="flex items-center gap-2.5 cursor-pointer group py-0.5">
                                                         <input type="checkbox" name="revisions_status[]" value="Panel Deliberation" class="revisions-filter-input rounded text-pink-600 focus:ring-pink-500 cursor-pointer" {{ in_array('Panel Deliberation', $selectedStatuses) ? 'checked' : '' }}>
-                                                        <span class="text-sm font-medium text-slate-700 group-hover:text-pink-700 transition-colors">Panel Deliberation</span>
+                                                        <span class="text-sm font-medium text-slate-700 group-hover:text-pink-700 transition-colors">Committee Review</span>
                                                     </label>
                                                 </div>
                                             </div>
@@ -149,7 +149,7 @@
                                                     </label>
                                                     <label class="flex items-center gap-2.5 cursor-pointer group py-0.5">
                                                         <input type="checkbox" name="revisions_reviewer_decisions[]" value="Panel Deliberation" class="revisions-filter-input rounded text-pink-600 focus:ring-pink-500 cursor-pointer" {{ in_array('Panel Deliberation', $selectedDecisions) ? 'checked' : '' }}>
-                                                        <span class="text-sm font-medium text-slate-700 group-hover:text-pink-700 transition-colors">Panel Deliberation</span>
+                                                        <span class="text-sm font-medium text-slate-700 group-hover:text-pink-700 transition-colors">Committee Review</span>
                                                     </label>
                                                 </div>
                                             </div>

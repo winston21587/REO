@@ -1,147 +1,239 @@
 <x-admin_layout title="Website Content Manager">
-    <div class="max-w-7xl mx-auto py-8 relative">
+    <div class="w-full max-w-7xl mx-auto space-y-8 min-w-0">
         
+        <!-- Header & Top Action -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pb-6 border-b border-slate-200">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight font-heading">Website Content</h1>
+                <p class="text-slate-500 mt-1.5 text-sm">Public portal branding, landing pages, hero banners, and disclosure policies.</p>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <a href="{{ route('index') }}" target="_blank" 
+                   class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-all shadow-xs min-h-[44px]">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    Preview Portal
+                </a>
+            </div>
+        </div>
+
         @if(session('success'))
-            <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2 animate-[fadeIn_0.5s]">
-                <i class="fas fa-check-circle"></i>
-                <span>{{ session('success') }}</span>
+            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 shadow-xs">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-bold text-emerald-900">{{ session('success') }}</p>
+                    <p class="text-xs text-emerald-700">All public portal assets and text content have been updated.</p>
+                </div>
             </div>
         @endif
 
-        <form action="{{ route('admin.cms.content.update') }}" method="POST" enctype="multipart/form-data">
+        <!-- Executive Metrics Ribbon -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Managed Sections</span>
+                <span class="text-2xl font-extrabold text-slate-900 font-heading tabular-nums mt-1 block">7</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Hero Slides</span>
+                <span class="text-2xl font-extrabold text-blue-700 font-heading tabular-nums mt-1 block">3 Active</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Legal Disclosures</span>
+                <span class="text-2xl font-extrabold text-indigo-700 font-heading tabular-nums mt-1 block">3 Policies</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Portal Status</span>
+                <span class="text-2xl font-extrabold text-emerald-600 font-heading tabular-nums mt-1 block">LIVE</span>
+            </div>
+        </div>
+
+        <form action="{{ route('admin.cms.content.update') }}" method="POST" enctype="multipart/form-data" id="websiteContentForm" class="space-y-8">
             @csrf
             
-            <div class="flex flex-col lg:flex-row gap-8 items-start">
+            <!-- Mobile Horizontal Anchor Pills (< lg) -->
+            <div class="lg:hidden bg-white p-2 rounded-2xl border border-slate-200/80 shadow-xs overflow-x-auto flex items-center gap-1.5 scrollbar-none">
+                <a href="#section-branding" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">Branding</a>
+                <a href="#section-hero" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">Hero Slides</a>
+                <a href="#section-mission" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">Mission & Vision</a>
+                <a href="#section-purpose" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">Purpose & Join</a>
+                <a href="#section-auth" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">Auth Pages</a>
+                <a href="#section-legal" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">Legal</a>
+                <a href="#section-footer" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">Footer</a>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8 items-start min-w-0">
                 
-                <!-- Quick Navigation Sidebar -->
-                <div class="hidden lg:block w-64 flex-shrink-0 sticky top-4">
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-700">
-                            <i class="fas fa-list-ul mr-2 text-[#8B0000]"></i> Sections
+                <!-- Desktop Sticky Navigation Sidebar -->
+                <div class="hidden lg:block w-64 shrink-0 sticky top-6">
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
+                        <div class="px-5 py-4 border-b border-slate-200/80">
+                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Content Directory</span>
+                            <span class="text-sm font-extrabold text-slate-900 font-heading block mt-0.5">Jump to Section</span>
                         </div>
                         <nav class="p-2 space-y-1">
-                            <a href="#section-general" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-red-50 hover:text-[#8B0000] font-medium transition-colors">
-                                <i class="fas fa-cog w-5 text-center mr-1"></i> General
+                            <a href="#section-branding" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] transition-colors">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                </svg>
+                                General Branding
                             </a>
-                            <a href="#section-hero" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-red-50 hover:text-[#8B0000] font-medium transition-colors">
-                                <i class="fas fa-images w-5 text-center mr-1"></i> Hero Slider
+                            <a href="#section-hero" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] transition-colors">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Hero Slider (3 Slides)
                             </a>
-                            <a href="#section-mission" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-red-50 hover:text-[#8B0000] font-medium transition-colors">
-                                <i class="fas fa-bullseye w-5 text-center mr-1"></i> Mission & Vision
+                            <a href="#section-mission" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] transition-colors">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                Mission, Vision & Goals
                             </a>
-                            <a href="#section-purpose" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-red-50 hover:text-[#8B0000] font-medium transition-colors">
-                                <i class="fas fa-shield-alt w-5 text-center mr-1"></i> Purpose & Join
+                            <a href="#section-purpose" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] transition-colors">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                Purpose & Join Sections
                             </a>
-                            <a href="#section-auth" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-red-50 hover:text-[#8B0000] font-medium transition-colors">
-                                <i class="fas fa-lock w-5 text-center mr-1"></i> Auth Pages
+                            <a href="#section-auth" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] transition-colors">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                Auth Page Backdrops
                             </a>
-                            <a href="#section-legal" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-red-50 hover:text-[#8B0000] font-medium transition-colors">
-                                <i class="fas fa-gavel w-5 text-center mr-1"></i> Legal Pages
+                            <a href="#section-legal" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] transition-colors">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Legal Disclosures
                             </a>
-                            <a href="#section-footer" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-red-50 hover:text-[#8B0000] font-medium transition-colors">
-                                <i class="fas fa-shoe-prints w-5 text-center mr-1"></i> Footer
+                            <a href="#section-footer" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] transition-colors">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                Footer Information
                             </a>
                         </nav>
                     </div>
                 </div>
 
-                <!-- Main Content Area -->
-                <div class="flex-1 space-y-8 w-full">
+                <!-- Main Content Editor Sections -->
+                <div class="flex-1 space-y-8 w-full min-w-0">
                     
-                    <!-- General Settings (Logo) -->
-                    <div id="section-general" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 scroll-mt-24">
-                        <div class="flex items-center justify-between mb-6 border-b pb-4">
-                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-[#8B0000]">
-                                    <i class="fas fa-cog"></i>
-                                </div>
-                                General Branding
-                            </h3>
-                        </div>
-                        <div class="grid md:grid-cols-2 gap-8">
+                    <!-- 1. General Branding (Logo) -->
+                    <div id="section-branding" class="bg-white p-6 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 scroll-mt-24 space-y-6">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Website Logo</label>
-                                <div class="flex items-start gap-6">
-                                    <div class="flex-shrink-0">
-                                        @if(isset($contents['website_logo']))
-                                            <div class="w-24 h-24 rounded-lg border border-slate-200 p-2 flex items-center justify-center bg-slate-50">
-                                                <img src="{{ asset($contents['website_logo']) }}" class="max-w-full max-h-full object-contain">
-                                            </div>
-                                        @else
-                                            <div class="w-24 h-24 rounded-lg border border-slate-200 p-2 flex items-center justify-center bg-slate-50 text-slate-300">
-                                                <i class="fas fa-image text-3xl"></i>
-                                            </div>
-                                        @endif
+                                <h3 class="text-lg font-extrabold text-slate-900 font-heading">General Branding</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Primary institutional seal and emblem across header, footer, and authentication screens.</p>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">BRANDING</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                            <!-- Preview Box -->
+                            <div class="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl border border-slate-200/80 text-center">
+                                @if(isset($contents['website_logo']))
+                                    <div class="w-28 h-28 p-2 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center mb-3">
+                                        <img src="{{ asset($contents['website_logo']) }}" alt="Website Logo" class="max-w-full max-h-full object-contain">
                                     </div>
-                                    <div class="flex-1">
-                                        <input type="file" name="website_logo" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#8B0000]/10 file:text-[#8B0000] hover:file:bg-[#8B0000]/20 mb-2">
-                                        <p class="text-xs text-slate-500">Recommended: PNG with transparent background. Used in Header, Footer, and Auth pages.</p>
+                                    <a href="{{ asset($contents['website_logo']) }}" target="_blank" 
+                                       class="text-xs font-bold text-[#8B0000] hover:underline inline-flex items-center gap-1">
+                                        View Current Asset
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </a>
+                                @else
+                                    <div class="w-28 h-28 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 mb-3">
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
                                     </div>
+                                    <span class="text-xs text-slate-400 font-medium">No custom logo</span>
+                                @endif
+                            </div>
+
+                            <!-- Upload Inputs -->
+                            <div class="md:col-span-2 space-y-3">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Upload New Logo</label>
+                                <input type="file" name="website_logo" accept="image/*" 
+                                       class="w-full text-sm text-slate-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border file:border-slate-200 file:text-xs file:font-bold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100 cursor-pointer min-h-[44px]">
+                                <div class="space-y-1 text-xs text-slate-500">
+                                    <p class="font-medium">• Recommended format: Transparent PNG or SVG asset.</p>
+                                    <p>• Displayed in Portal Navigation Header, System Footer, and Public Login/Registration screens.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Hero Section (Slider) -->
-                    <div id="section-hero" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 scroll-mt-24">
-                        <div class="flex items-center justify-between mb-6 border-b pb-4">
-                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-[#8B0000]">
-                                    <i class="fas fa-images"></i>
-                                </div>
-                                Hero Slider
-                            </h3>
-                            <span class="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-500 rounded">3 Slides</span>
+                    <!-- 2. Hero Section (Slider - 3 Slides) -->
+                    <div id="section-hero" class="bg-white p-6 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 scroll-mt-24 space-y-6">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-900 font-heading">Hero Slider</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Primary welcoming banner sequence on the public research portal.</p>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">3 SLIDES</span>
                         </div>
                         
-                        <div class="grid grid-cols-1 gap-8">
-                             @for($i=1; $i<=3; $i++)
-                                <div class="bg-white p-0 md:p-4 rounded-xl border border-slate-100/50 md:border-slate-200 md:bg-slate-50">
-                                    <h4 class="font-bold text-[#8B0000] mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
-                                        <span class="w-6 h-6 rounded-full bg-[#8B0000] text-white flex items-center justify-center text-xs">{{ $i }}</span>
-                                        Slide {{ $i }}
-                                    </h4>
-                                    <div class="grid md:grid-cols-2 gap-6">
-                                        <div class="space-y-4">
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
-                                                <input type="text" name="hero_title_{{ $i }}" value="{{ $contents['hero_title_' . $i] ?? 'Empty' }}" 
-                                                    class="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8B0000] outline-none transition-shadow">
+                        <div class="space-y-6">
+                            @for($i=1; $i<=3; $i++)
+                                <div class="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-7 h-7 rounded-lg bg-[#8B0000] text-white flex items-center justify-center font-heading font-extrabold text-xs">
+                                                0{{ $i }}
                                             </div>
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Description</label>
+                                            <h4 class="font-extrabold text-slate-900 text-sm font-heading">Slide 0{{ $i }} Headline & Imagery</h4>
+                                        </div>
+                                        @if(isset($contents['hero_image_' . $i]))
+                                            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Image Attached</span>
+                                        @else
+                                            <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600">Default Backdrop</span>
+                                        @endif
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div class="space-y-3">
+                                            <div class="space-y-1">
+                                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Slide Title</label>
+                                                <input type="text" name="hero_title_{{ $i }}" 
+                                                       value="{{ ($contents['hero_title_' . $i] ?? '') !== 'Empty' ? ($contents['hero_title_' . $i] ?? '') : '' }}" 
+                                                       placeholder="e.g. Advancing Research Excellence"
+                                                       class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all placeholder:text-slate-400 min-h-[44px]">
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Slide Description</label>
                                                 <textarea name="hero_text_{{ $i }}" rows="3" 
-                                                    class="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8B0000] outline-none transition-shadow">{{ $contents['hero_text_' . $i] ?? 'Empty' }}</textarea>
+                                                          placeholder="Brief paragraph summarizing this feature banner..."
+                                                          class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all placeholder:text-slate-400 leading-relaxed">{{ ($contents['hero_text_' . $i] ?? '') !== 'Empty' ? ($contents['hero_text_' . $i] ?? '') : '' }}</textarea>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Background Image</label>
-                                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-lg hover:bg-slate-50 transition-colors relative group">
-                                                <div class="space-y-1 text-center">
-                                                     @if(isset($contents['hero_image_' . $i]))
-                                                        <div class="mb-2">
-                                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                                <i class="fas fa-check-circle mr-1"></i> Uploaded
-                                                            </span>
-                                                        </div>
-                                                    @else
-                                                        <i class="fas fa-image text-slate-400 text-3xl mb-2"></i>
-                                                    @endif
-                                                    <div class="flex text-sm text-slate-600 justify-center">
-                                                        <label class="relative cursor-pointer bg-white rounded-md font-medium text-[#8B0000] hover:text-red-700 focus-within:outline-none">
-                                                            <span>Upload a file</span>
-                                                            <input type="file" name="hero_image_{{ $i }}" accept="image/*" class="sr-only">
-                                                        </label>
-                                                        <p class="pl-1">or drag and drop</p>
+
+                                        <div class="space-y-2">
+                                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Background Photography</label>
+                                            
+                                            @if(isset($contents['hero_image_' . $i]))
+                                                <div class="relative rounded-xl overflow-hidden border border-slate-200 aspect-[16/7] bg-slate-900 group">
+                                                    <img src="{{ asset($contents['hero_image_' . $i]) }}" alt="Slide {{ $i }}" class="w-full h-full object-cover">
+                                                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                        <a href="{{ asset($contents['hero_image_' . $i]) }}" target="_blank" 
+                                                           class="px-3 py-1.5 bg-white/90 rounded-lg text-xs font-bold text-slate-900 shadow-sm hover:bg-white transition-colors">
+                                                            View Full Image
+                                                        </a>
                                                     </div>
-                                                    <p class="text-xs text-slate-500">PNG, JPG, GIF up to 10MB</p>
                                                 </div>
-                                                @if(isset($contents['hero_image_' . $i]))
-                                                    <a href="{{ asset($contents['hero_image_' . $i]) }}" target="_blank" class="absolute top-2 right-2 bg-white/90 p-1.5 rounded-full text-slate-600 hover:text-[#8B0000] shadow-sm border border-slate-200" title="Preview">
-                                                        <i class="fas fa-external-link-alt"></i>
-                                                    </a>
-                                                @endif
-                                            </div>
+                                            @endif
+
+                                            <input type="file" name="hero_image_{{ $i }}" accept="image/*" 
+                                                   class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-bold file:bg-white file:text-slate-700 hover:file:bg-slate-50 cursor-pointer min-h-[40px]">
+                                            <p class="text-[11px] text-slate-500">Supported: High-res JPG/PNG (1920x800 recommended).</p>
                                         </div>
                                     </div>
                                 </div>
@@ -149,259 +241,316 @@
                         </div>
                     </div>
 
-                    <!-- Mission / Vision / Goals -->
-                    <div id="section-mission" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 scroll-mt-24">
-                        <div class="flex items-center justify-between mb-6 border-b pb-4">
-                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-[#8B0000]">
-                                    <i class="fas fa-bullseye"></i>
-                                </div>
-                                Mission, Vision & Goals
-                            </h3>
+                    <!-- 3. Mission / Vision / Goals -->
+                    <div id="section-mission" class="bg-white p-6 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 scroll-mt-24 space-y-6">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-900 font-heading">Mission, Vision & Goals</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Foundational institutional ethics commitments published on the public portal.</p>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">FOUNDATIONAL</span>
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            @foreach(['mission', 'vision', 'goals'] as $item)
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-bold text-slate-700 capitalize">
-                                        {{ $item }}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            @foreach(['mission' => 'Institutional Mission', 'vision' => 'Strategic Vision', 'goals' => 'Core Objectives & Goals'] as $item => $heading)
+                                <div class="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-2.5">
+                                    <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider">
+                                        {{ $heading }}
                                     </label>
-                                    <textarea name="{{ $item }}_text" rows="6" 
-                                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#8B0000] outline-none transition-shadow text-sm leading-relaxed">{{ $contents[$item . '_text'] ?? 'Empty' }}</textarea>
+                                    <textarea name="{{ $item }}_text" rows="7" 
+                                              placeholder="Enter {{ strtolower($heading) }} statement..."
+                                              class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all leading-relaxed placeholder:text-slate-400">{{ ($contents[$item . '_text'] ?? '') !== 'Empty' ? ($contents[$item . '_text'] ?? '') : '' }}</textarea>
                                 </div>
                             @endforeach
                         </div>
                     </div>
 
-                    <!-- Purpose & Join Us -->
-                    <div id="section-purpose" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 scroll-mt-24">
-                        <div class="flex items-center justify-between mb-6 border-b pb-4">
-                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-[#8B0000]">
-                                    <i class="fas fa-columns"></i>
-                                </div>
-                                Content Sections
-                            </h3>
+                    <!-- 4. Purpose & Join Us -->
+                    <div id="section-purpose" class="bg-white p-6 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 scroll-mt-24 space-y-6">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-900 font-heading">Purpose & Join Us</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Informational story sections displayed to prospective researchers and committee members.</p>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">PORTAL SECTIONS</span>
                         </div>
 
-                         <div class="space-y-8">
+                        <div class="space-y-6">
                             <!-- Purpose -->
-                            <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 relative">
-                                <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                    <i class="fas fa-shield-alt text-[#8B0000]"></i> Our Purpose
-                                </h4>
-                                <div class="grid md:grid-cols-3 gap-6">
-                                    <div class="md:col-span-2 space-y-4">
-                                        <div>
-                                            <label class="text-xs font-bold text-slate-500 uppercase">Headline</label>
-                                            <input type="text" name="purpose_title" value="{{ $contents['purpose_title'] ?? 'Empty' }}" class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8B0000] outline-none">
+                            <div class="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-extrabold text-slate-900 text-sm font-heading">Our Purpose & Mandate</h4>
+                                    @if(isset($contents['purpose_image']))
+                                        <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Asset Loaded</span>
+                                    @endif
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                    <div class="md:col-span-2 space-y-3">
+                                        <div class="space-y-1">
+                                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Headline</label>
+                                            <input type="text" name="purpose_title" 
+                                                   value="{{ ($contents['purpose_title'] ?? '') !== 'Empty' ? ($contents['purpose_title'] ?? '') : '' }}" 
+                                                   placeholder="e.g. Safeguarding Research Ethics"
+                                                   class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
                                         </div>
-                                        <div>
-                                            <label class="text-xs font-bold text-slate-500 uppercase">Content</label>
-                                            <textarea name="purpose_text" rows="3" class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8B0000] outline-none">{{ $contents['purpose_text'] ?? 'Empty' }}</textarea>
+                                        <div class="space-y-1">
+                                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Content Narrative</label>
+                                            <textarea name="purpose_text" rows="4" 
+                                                      placeholder="Detailed explanation of the research ethics office purpose..."
+                                                      class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all leading-relaxed">{{ ($contents['purpose_text'] ?? '') !== 'Empty' ? ($contents['purpose_text'] ?? '') : '' }}</textarea>
                                         </div>
                                     </div>
-                                    <div>
-                                        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Image</label>
-                                        <div class="relative group">
-                                            @if(isset($contents['purpose_image']))
-                                                <img src="{{ asset($contents['purpose_image']) }}" class="w-full h-32 object-cover rounded-lg border border-slate-200 mb-2">
-                                                <a href="{{ asset($contents['purpose_image']) }}" target="_blank" class="absolute top-2 right-2 bg-white/90 p-1.5 rounded-full text-slate-600 hover:text-[#8B0000] shadow-sm"><i class="fas fa-external-link-alt"></i></a>
-                                            @endif
-                                            <input type="file" name="purpose_image" accept="image/*" class="text-xs text-slate-500 w-full file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:bg-[#8B0000]/10 file:text-[#8B0000] hover:file:bg-[#8B0000]/20">
-                                        </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Feature Image</label>
+                                        @if(isset($contents['purpose_image']))
+                                            <div class="relative rounded-xl overflow-hidden border border-slate-200 aspect-[16/10] bg-slate-900 group">
+                                                <img src="{{ asset($contents['purpose_image']) }}" alt="Purpose" class="w-full h-full object-cover">
+                                                <a href="{{ asset($contents['purpose_image']) }}" target="_blank" 
+                                                   class="absolute top-2 right-2 p-1.5 bg-white/90 rounded-lg text-slate-700 hover:text-[#8B0000] shadow-xs">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                </a>
+                                            </div>
+                                        @endif
+                                        <input type="file" name="purpose_image" accept="image/*" 
+                                               class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-bold file:bg-white file:text-slate-700 hover:file:bg-slate-50 cursor-pointer min-h-[40px]">
                                     </div>
                                 </div>
                             </div>
 
-                             <!-- Join Us -->
-                            <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 relative">
-                                <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                    <i class="fas fa-user-plus text-[#8B0000]"></i> Join Us
-                                </h4>
-                                <div class="grid md:grid-cols-3 gap-6">
-                                    <div class="md:col-span-2 space-y-4">
-                                        <div>
-                                            <label class="text-xs font-bold text-slate-500 uppercase">Title</label>
-                                            <input type="text" name="join_title" value="{{ $contents['join_title'] ?? 'Empty' }}" class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8B0000] outline-none">
+                            <!-- Join Us -->
+                            <div class="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-extrabold text-slate-900 text-sm font-heading">Call to Action: Join Us</h4>
+                                    @if(isset($contents['join_image']))
+                                        <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Asset Loaded</span>
+                                    @endif
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                    <div class="md:col-span-2 space-y-3">
+                                        <div class="space-y-1">
+                                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">CTA Title</label>
+                                            <input type="text" name="join_title" 
+                                                   value="{{ ($contents['join_title'] ?? '') !== 'Empty' ? ($contents['join_title'] ?? '') : '' }}" 
+                                                   placeholder="e.g. Conduct Ethical Research with Us"
+                                                   class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
                                         </div>
-                                        <div>
-                                            <label class="text-xs font-bold text-slate-500 uppercase">Content</label>
-                                            <textarea name="join_text" rows="3" class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8B0000] outline-none">{{ $contents['join_text'] ?? 'Empty' }}</textarea>
+                                        <div class="space-y-1">
+                                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Invitation Text</label>
+                                            <textarea name="join_text" rows="4" 
+                                                      placeholder="Guidance for researchers and reviewers wishing to collaborate..."
+                                                      class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all leading-relaxed">{{ ($contents['join_text'] ?? '') !== 'Empty' ? ($contents['join_text'] ?? '') : '' }}</textarea>
                                         </div>
                                     </div>
-                                    <div>
-                                        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Image</label>
-                                        <div class="relative group">
-                                            @if(isset($contents['join_image']))
-                                                <img src="{{ asset($contents['join_image']) }}" class="w-full h-32 object-cover rounded-lg border border-slate-200 mb-2">
-                                                <a href="{{ asset($contents['join_image']) }}" target="_blank" class="absolute top-2 right-2 bg-white/90 p-1.5 rounded-full text-slate-600 hover:text-[#8B0000] shadow-sm"><i class="fas fa-external-link-alt"></i></a>
-                                            @endif
-                                            <input type="file" name="join_image" accept="image/*" class="text-xs text-slate-500 w-full file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:bg-[#8B0000]/10 file:text-[#8B0000] hover:file:bg-[#8B0000]/20">
-                                        </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Feature Image</label>
+                                        @if(isset($contents['join_image']))
+                                            <div class="relative rounded-xl overflow-hidden border border-slate-200 aspect-[16/10] bg-slate-900 group">
+                                                <img src="{{ asset($contents['join_image']) }}" alt="Join Us" class="w-full h-full object-cover">
+                                                <a href="{{ asset($contents['join_image']) }}" target="_blank" 
+                                                   class="absolute top-2 right-2 p-1.5 bg-white/90 rounded-lg text-slate-700 hover:text-[#8B0000] shadow-xs">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                </a>
+                                            </div>
+                                        @endif
+                                        <input type="file" name="join_image" accept="image/*" 
+                                               class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-bold file:bg-white file:text-slate-700 hover:file:bg-slate-50 cursor-pointer min-h-[40px]">
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                     <!-- Auth Pages -->
-                    <div id="section-auth" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 scroll-mt-24">
-                        <div class="flex items-center justify-between mb-6 border-b pb-4">
-                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-[#8B0000]">
-                                    <i class="fas fa-lock"></i>
-                                </div>
-                                Auth Page Images
-                            </h3>
+                    <!-- 5. Auth Page Backdrops -->
+                    <div id="section-auth" class="bg-white p-6 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 scroll-mt-24 space-y-6">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-900 font-heading">Authentication Backdrops</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Hero background photography utilized on the Login and Registration screens.</p>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">AUTH SCREENS</span>
                         </div>
-                        <div class="grid md:grid-cols-2 gap-8">
-                             <!-- Login -->
-                            <div class="border border-slate-100 rounded-xl p-4">
-                                <h4 class="font-bold text-sm text-slate-700 mb-3">Login Background</h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Login Backdrop -->
+                            <div class="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
+                                <h4 class="font-extrabold text-slate-900 text-sm font-heading">Login Screen Backdrop</h4>
                                 @if(isset($contents['login_image']))
-                                    <img src="{{ asset($contents['login_image']) }}" class="w-full h-40 object-cover rounded-lg mb-3 border border-slate-200">
+                                    <div class="relative rounded-xl overflow-hidden border border-slate-200 aspect-[16/9] bg-slate-900 group">
+                                        <img src="{{ asset($contents['login_image']) }}" alt="Login Backdrop" class="w-full h-full object-cover">
+                                        <a href="{{ asset($contents['login_image']) }}" target="_blank" 
+                                           class="absolute top-2 right-2 p-1.5 bg-white/90 rounded-lg text-slate-700 hover:text-[#8B0000] shadow-xs">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                        </a>
+                                    </div>
                                 @else
-                                    <div class="w-full h-40 bg-slate-100 rounded-lg mb-3 flex items-center justify-center text-slate-300">
-                                        <i class="fas fa-image text-3xl"></i>
+                                    <div class="aspect-[16/9] rounded-xl bg-slate-100 border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span class="text-xs mt-1">Default background active</span>
                                     </div>
                                 @endif
-                                <input type="file" name="login_image" accept="image/*" class="text-xs text-slate-500 w-full file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
+                                <input type="file" name="login_image" accept="image/*" 
+                                       class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-bold file:bg-white file:text-slate-700 hover:file:bg-slate-50 cursor-pointer min-h-[40px]">
                             </div>
-                             <!-- Register -->
-                             <div class="border border-slate-100 rounded-xl p-4">
-                                <h4 class="font-bold text-sm text-slate-700 mb-3">Register Background</h4>
+
+                            <!-- Register Backdrop -->
+                            <div class="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
+                                <h4 class="font-extrabold text-slate-900 text-sm font-heading">Register Screen Backdrop</h4>
                                 @if(isset($contents['register_image']))
-                                    <img src="{{ asset($contents['register_image']) }}" class="w-full h-40 object-cover rounded-lg mb-3 border border-slate-200">
+                                    <div class="relative rounded-xl overflow-hidden border border-slate-200 aspect-[16/9] bg-slate-900 group">
+                                        <img src="{{ asset($contents['register_image']) }}" alt="Register Backdrop" class="w-full h-full object-cover">
+                                        <a href="{{ asset($contents['register_image']) }}" target="_blank" 
+                                           class="absolute top-2 right-2 p-1.5 bg-white/90 rounded-lg text-slate-700 hover:text-[#8B0000] shadow-xs">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                        </a>
+                                    </div>
                                 @else
-                                    <div class="w-full h-40 bg-slate-100 rounded-lg mb-3 flex items-center justify-center text-slate-300">
-                                        <i class="fas fa-image text-3xl"></i>
+                                    <div class="aspect-[16/9] rounded-xl bg-slate-100 border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span class="text-xs mt-1">Default background active</span>
                                     </div>
                                 @endif
-                                <input type="file" name="register_image" accept="image/*" class="text-xs text-slate-500 w-full file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
+                                <input type="file" name="register_image" accept="image/*" 
+                                       class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-bold file:bg-white file:text-slate-700 hover:file:bg-slate-50 cursor-pointer min-h-[40px]">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Legal Pages -->
-                    <div id="section-legal" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 scroll-mt-24">
-                         <div class="flex items-center justify-between mb-8 border-b pb-4">
-                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-[#8B0000]">
-                                    <i class="fas fa-gavel"></i>
-                                </div>
-                                Legal Pages
-                            </h3>
+                    <!-- 6. Legal & Compliance Disclosures -->
+                    <div id="section-legal" class="bg-white p-6 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 scroll-mt-24 space-y-6">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-900 font-heading">Legal & Compliance Disclosures</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Statutory privacy policies, terms of service, and accessibility statements (HTML enabled).</p>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-700">COMPLIANCE</span>
                         </div>
                         
-                        <div class="space-y-10">
-                            @foreach(['Privacy Policy' => 'privacy', 'Terms of Service' => 'terms', 'Accessibility' => 'accessibility'] as $label => $key)
-                                <div class="relative">
-                                     <div class="mb-4 flex items-center gap-3">
-                                        <div class="h-6 w-1 bg-[#8B0000] rounded-full"></div>
-                                        <h4 class="font-bold text-slate-800 text-lg">{{ $label }}</h4>
-                                     </div>
-                                     
-                                     <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                                        <div class="grid md:grid-cols-3 gap-8">
-                                            <div class="md:col-span-2">
-                                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Page Content (HTML Allowed)</label>
-                                                 <textarea name="{{ $key }}_content" rows="12" 
-                                                    class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000] outline-none transition-all shadow-sm resize-y leading-relaxed"
-                                                    placeholder="Enter content for {{ $label }}...">{{ $contents[$key . '_content'] ?? '' }}</textarea>
-                                            </div>
-                                            <div>
-                                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Header Image</label>
-                                                 <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                                                      @if(isset($contents[$key . '_header_image']))
-                                                        <div class="relative group mb-3 rounded-lg overflow-hidden">
-                                                            <img src="{{ asset($contents[$key . '_header_image']) }}" class="w-full h-32 object-cover">
-                                                            <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <a href="{{ asset($contents[$key . '_header_image']) }}" target="_blank" class="text-white text-xs bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm hover:bg-white hover:text-red-900 transition-colors">
-                                                                    View Full
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    @else
-                                                        <div class="w-full h-32 bg-slate-100 rounded-lg mb-3 flex flex-col items-center justify-center text-slate-400 border border-dashed border-slate-300">
-                                                            <i class="fas fa-image text-2xl mb-1"></i>
-                                                            <span class="text-[10px]">No image</span>
-                                                        </div>
-                                                    @endif
-                                                    <input type="file" name="{{ $key }}_header_image" accept="image/*" class="text-xs text-slate-500 w-full file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#8B0000]/10 file:text-[#8B0000] hover:file:bg-[#8B0000]/20 cursor-pointer">
-                                                 </div>
-                                            </div>
+                        <div class="space-y-6">
+                            @foreach(['Privacy Policy' => 'privacy', 'Terms of Service' => 'terms', 'Accessibility Statement' => 'accessibility'] as $label => $key)
+                                <div class="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-extrabold text-slate-900 text-sm font-heading">{{ $label }}</h4>
+                                        <span class="text-[11px] font-mono font-bold text-slate-500">/legal/{{ $key }}</span>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                        <div class="md:col-span-2 space-y-1.5">
+                                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Document Content (HTML Formatted)</label>
+                                            <textarea name="{{ $key }}_content" rows="10" 
+                                                      class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all shadow-xs leading-relaxed"
+                                                      placeholder="Enter HTML or markdown content for {{ $label }}...">{{ $contents[$key . '_content'] ?? '' }}</textarea>
                                         </div>
-                                     </div>
+                                        <div class="space-y-2">
+                                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Header Cover Image</label>
+                                            @if(isset($contents[$key . '_header_image']))
+                                                <div class="relative rounded-xl overflow-hidden border border-slate-200 aspect-[16/9] bg-slate-900 group">
+                                                    <img src="{{ asset($contents[$key . '_header_image']) }}" alt="{{ $label }}" class="w-full h-full object-cover">
+                                                    <a href="{{ asset($contents[$key . '_header_image']) }}" target="_blank" 
+                                                       class="absolute top-2 right-2 p-1.5 bg-white/90 rounded-lg text-slate-700 hover:text-[#8B0000] shadow-xs">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <div class="aspect-[16/9] rounded-xl bg-slate-100 border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400">
+                                                    <span class="text-xs">No cover image</span>
+                                                </div>
+                                            @endif
+                                            <input type="file" name="{{ $key }}_header_image" accept="image/*" 
+                                                   class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-bold file:bg-white file:text-slate-700 hover:file:bg-slate-50 cursor-pointer min-h-[40px]">
+                                        </div>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
                     </div>
 
-
-
-                    <!-- Footer -->
-                    <div id="section-footer" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 scroll-mt-24 mb-20">
-                        <div class="flex items-center justify-between mb-6 border-b pb-4">
-                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-[#8B0000]">
-                                    <i class="fas fa-shoe-prints"></i>
-                                </div>
-                                Footer Information
-                            </h3>
+                    <!-- 7. Footer Information & Direct Contact -->
+                    <div id="section-footer" class="bg-white p-6 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 scroll-mt-24 space-y-6">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-900 font-heading">Footer & Institutional Contact</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Physical office location, secretariat contact lines, and social links.</p>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">FOOTER</span>
                         </div>
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <div class="space-y-4">
-                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Short Description</label>
-                                    <textarea name="footer_description" rows="4" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000] outline-none transition-all shadow-sm">{{ $contents['footer_description'] ?? 'Empty' }}</textarea>
-                                 </div>
-                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Facebook URL</label>
-                                    <div class="relative">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><i class="fab fa-facebook"></i></span>
-                                        <input type="text" name="footer_facebook" value="{{ $contents['footer_facebook'] ?? 'Empty' }}" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000] outline-none transition-all shadow-sm">
-                                    </div>
-                                 </div>
-                             </div>
-                             <div class="space-y-4">
-                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Email Address</label>
-                                     <div class="relative">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><i class="fas fa-envelope"></i></span>
-                                        <input type="text" name="footer_email" value="{{ $contents['footer_email'] ?? 'reo@wmsu.edu.ph' }}" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000] outline-none transition-all shadow-sm">
-                                    </div>
-                                 </div>
-                                 <div class="grid grid-cols-2 gap-4">
-                                     <div>
-                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Phone</label>
-                                        <div class="relative">
-                                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><i class="fas fa-phone"></i></span>
-                                            <input type="text" name="footer_phone" value="{{ $contents['footer_phone'] ?? 'Empty' }}" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000] outline-none transition-all shadow-sm">
-                                        </div>
-                                     </div>
-                                     <div>
-                                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Address</label>
-                                         <textarea name="footer_address" rows="3" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000] outline-none transition-all shadow-sm">{{ $contents['footer_address'] ?? 'Empty' }}</textarea>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="space-y-4">
+                                <div class="space-y-1">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Footer Mission Statement</label>
+                                    <textarea name="footer_description" rows="3" 
+                                              placeholder="Concise mandate for the bottom of every public portal page..."
+                                              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all leading-relaxed">{{ ($contents['footer_description'] ?? '') !== 'Empty' ? ($contents['footer_description'] ?? '') : '' }}</textarea>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Official Facebook URL</label>
+                                    <input type="text" name="footer_facebook" 
+                                           value="{{ ($contents['footer_facebook'] ?? '') !== 'Empty' ? ($contents['footer_facebook'] ?? '') : '' }}" 
+                                           placeholder="https://facebook.com/WMSUREO"
+                                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Secretariat Email</label>
+                                    <input type="email" name="footer_email" 
+                                           value="{{ $contents['footer_email'] ?? 'reo@wmsu.edu.ph' }}" 
+                                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="space-y-1">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Office Contact Telephone / Mobile</label>
+                                    <input type="text" name="footer_phone" 
+                                           value="{{ ($contents['footer_phone'] ?? '') !== 'Empty' ? ($contents['footer_phone'] ?? '') : '' }}" 
+                                           placeholder="e.g. (062) 991-1771 loc 1234"
+                                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Office Physical Address</label>
+                                    <textarea name="footer_address" rows="5" 
+                                              placeholder="Research Ethics Office, Western Mindanao State University, Normal Road, Baliwasan..."
+                                              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all leading-relaxed">{{ ($contents['footer_address'] ?? '') !== 'Empty' ? ($contents['footer_address'] ?? '') : '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sticky Bottom Action Bar -->
+                    <div class="sticky bottom-6 z-30 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5 text-xs text-slate-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span>Changes apply instantly across all public portal routes.</span>
+                        </div>
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <a href="{{ route('index') }}" target="_blank" class="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors text-center min-h-[44px]">
+                                Preview Portal
+                            </a>
+                            <button type="submit" 
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#8B0000] text-white rounded-xl text-sm font-bold hover:bg-[#6d0000] active:scale-[0.98] transition-all shadow-xs focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 focus:outline-none min-h-[44px]">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                Save Changes
+                            </button>
+                        </div>
                     </div>
 
                 </div>
             </div>
-
-            <!-- Fixed Save Button -->
-            <div class="fixed bottom-6 right-8 z-50 animate-[fadeInUp_0.5s]">
-                <button type="submit" class="group bg-[#8B0000] text-white px-6 py-3 rounded-full font-bold hover:bg-red-800 transition-all shadow-xl shadow-red-900/20 transform hover:-translate-y-1 hover:scale-105 flex items-center gap-3 ring-2 ring-white border border-[#8B0000]">
-                    <span class="bg-white/20 p-1.5 rounded-full group-hover:bg-white/30 transition-colors">
-                        <i class="fas fa-save text-sm"></i>
-                    </span>
-                    <span class="text-sm tracking-wide">Save Changes</span>
-                </button>
-            </div>
-
         </form>
     </div>
 </x-admin_layout>

@@ -118,7 +118,7 @@
                         @if($data->Status === 'Waiting for Revision')
                             <span class="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-red-600 whitespace-nowrap">Modifications Required</span>
                         @elseif($data->Status === 'Panel Deliberation')
-                            <span class="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-pink-700 whitespace-nowrap">Panel Deliberation</span>
+                            <span class="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-pink-700 whitespace-nowrap">Committee Review</span>
                         @endif
                     </div>
 
@@ -307,7 +307,7 @@
                                     @if($data->Status === 'Waiting for Revision')
                                         <span class="inline-flex items-center text-[11px] font-bold uppercase tracking-wide text-red-600 whitespace-nowrap">Modifications Required</span>
                                     @elseif($data->Status === 'Panel Deliberation')
-                                        <span class="inline-flex items-center text-[11px] font-bold uppercase tracking-wide text-pink-700 whitespace-nowrap">Panel Deliberation</span>
+                                        <span class="inline-flex items-center text-[11px] font-bold uppercase tracking-wide text-pink-700 whitespace-nowrap">Committee Review</span>
                                     @else
                                         <span class="inline-flex items-center text-[11px] font-medium text-slate-400 italic whitespace-nowrap">Not Assigned</span>
                                     @endif
@@ -370,7 +370,7 @@
                     <i class="fas fa-folder-open text-xl" aria-hidden="true"></i>
                 </div>
                 <h4 class="text-sm font-semibold text-slate-900 mb-1">No active revisions</h4>
-                <p class="text-xs text-slate-500 max-w-sm leading-relaxed">There are currently no research protocols requiring or submitting revisions.</p>
+                <p class="text-xs text-slate-500 max-w-sm leading-relaxed">There are currently no submissions requiring or submitting revisions.</p>
             @endif
         </div>
     @endif

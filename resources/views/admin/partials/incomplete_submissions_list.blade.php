@@ -11,16 +11,9 @@
                         title="{{ $sub->Study_Protocol_title }}">{{ $sub->Study_Protocol_title }}</h3>
 
                     @if($hasNewFilesUploaded)
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300/80 shadow-2xs shrink-0"
+                        <span class="inline-flex items-center text-xs font-semibold text-amber-800 whitespace-nowrap shrink-0"
                             title="Researcher has uploaded revised files for review.">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" aria-hidden="true"></span>
                             Files Updated
-                        </span>
-                    @else
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-900 border border-rose-300/80 shadow-2xs shrink-0"
-                            title="Protocol has pending deficiency tags.">
-                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500" aria-hidden="true"></span>
-                            Deficiencies
                         </span>
                     @endif
                 </div>

@@ -51,9 +51,8 @@
                 @click="activeTab = 'recent'"
                 :class="activeTab === 'recent' ? 'bg-white text-slate-950 shadow-xs font-extrabold border-slate-300' : 'text-slate-700 hover:text-slate-950 font-semibold border-transparent'"
                 class="flex-1 py-2 px-2.5 min-h-[40px] rounded-lg text-xs transition-all border flex items-center justify-center gap-1.5 touch-manipulation active:scale-[0.98] focus:outline-none focus:ring-1 focus:ring-[#8B0000]">
-                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" aria-hidden="true"></span>
                 <span class="truncate">Recent</span>
-                <span class="tabular-nums px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-950 border border-amber-300 shrink-0">
+                <span class="tabular-nums px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
                     {{ $pendingSubmissions->total() }}
                 </span>
             </button>
@@ -66,9 +65,8 @@
                 @click="activeTab = 'incomplete'"
                 :class="activeTab === 'incomplete' ? 'bg-white text-slate-950 shadow-xs font-extrabold border-slate-300' : 'text-slate-700 hover:text-slate-950 font-semibold border-transparent'"
                 class="flex-1 py-2 px-2.5 min-h-[40px] rounded-lg text-xs transition-all border flex items-center justify-center gap-1.5 touch-manipulation active:scale-[0.98] focus:outline-none focus:ring-1 focus:ring-[#8B0000]">
-                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" aria-hidden="true"></span>
                 <span class="truncate">Incomplete</span>
-                <span class="tabular-nums px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-950 border border-rose-300 shrink-0">
+                <span class="tabular-nums px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
                     {{ $incompleteSubmissions->total() }}
                 </span>
             </button>
@@ -231,10 +229,10 @@
                         <i class="fas fa-gavel text-7xl text-white"></i>
                     </div>
                     <div class="relative z-10 pr-3 sm:pr-4">
-                        <h2 class="text-white font-extrabold text-xl sm:text-2xl leading-tight" id="modal-title">Completeness & Intake Triage</h2>
+                        <h2 class="text-white font-extrabold text-xl sm:text-2xl leading-tight" id="modal-title">Check Submission Completeness</h2>
                         <p class="text-slate-200 text-xs sm:text-sm mt-1 leading-relaxed line-clamp-2 sm:line-clamp-none font-medium">Verify document presence, official receipt validity, and researcher CV status before routing to committee review.</p>
                     </div>
-                    <button type="button" onclick="closeTriage()" aria-label="Close triage dialog"
+                    <button type="button" onclick="closeTriage()" aria-label="Close dialog"
                         class="relative z-10 text-white/80 hover:text-white active:scale-95 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-white/10 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 shrink-0 touch-manipulation">
                         <i class="fas fa-times text-base sm:text-lg" aria-hidden="true"></i>
                     </button>
@@ -528,7 +526,7 @@
                 <div class="p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-100 bg-slate-50/80 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 flex-shrink-0">
                     <p class="text-xs text-slate-500 hidden sm:flex items-center gap-1.5">
                         <i class="fas fa-info-circle text-slate-400" aria-hidden="true"></i>
-                        <span>Review all documents thoroughly before submitting triage determination.</span>
+                        <span>Review all documents thoroughly before submitting your review decision.</span>
                     </p>
                     <div class="flex flex-col-reverse sm:flex-row items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
                         <button type="button" onclick="closeTriage()"
@@ -536,7 +534,7 @@
                         <button type="submit" id="triageSubmitBtn"
                             class="w-full sm:w-auto px-6 py-2.5 min-h-[44px] bg-gradient-to-r from-[#8B0000] to-[#a30000] hover:from-[#780000] hover:to-[#8B0000] text-white font-bold text-sm rounded-xl shadow-md shadow-red-950/20 active:scale-[0.98] transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 flex items-center justify-center gap-2 touch-manipulation">
                             <i id="triageSubmitBtnIcon" class="fas fa-undo-alt text-white/90" aria-hidden="true"></i>
-                            <span id="triageSubmitBtnText">Return with Deficiencies</span>
+                            <span id="triageSubmitBtnText">Return for Corrections</span>
                         </button>
                     </div>
                 </div>
@@ -826,7 +824,7 @@
                     submitBtnIcon.className = 'fas fa-undo-alt text-white/90';
                 }
                 if (submitBtnText) {
-                    submitBtnText.textContent = 'Return with Deficiencies';
+                    submitBtnText.textContent = 'Return for Corrections';
                 }
             }
         }
@@ -1381,7 +1379,7 @@
                 Swal.fire({
                     title: isTimeout ? 'Request Timed Out' : 'System Error',
                     text: isTimeout 
-                        ? 'The server took too long to process the triage determination. Please check your network connection and try again.'
+                        ? 'The server took too long to process your decision. Please check your network connection and try again.'
                         : 'Something went wrong while connecting to the server. Please check your network connection.',
                     icon: isTimeout ? 'error' : 'warning',
                     confirmButtonText: 'Close',

@@ -39,7 +39,7 @@
                                 'Pending Assignment' => [
                                     'text' => 'text-slate-500 italic',
                                     'dot' => 'bg-slate-400',
-                                    'label' => 'Pending Assignment'
+                                    'label' => 'Needs Reviewer'
                                 ],
                                 'Reviewer Assigned' => [
                                     'text' => 'text-blue-700',
@@ -261,7 +261,7 @@
                                         'Pending Assignment' => [
                                             'text' => 'text-slate-500 italic',
                                             'dot' => 'bg-slate-400',
-                                            'label' => 'Pending Assignment'
+                                            'label' => 'Needs Reviewer'
                                         ],
                                         'Reviewer Assigned' => [
                                             'text' => 'text-blue-700',

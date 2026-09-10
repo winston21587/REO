@@ -76,11 +76,15 @@ class SuperAdminFeeController extends Controller
 
         // Calculate total revenue ONLY for submissions with a VERIFIED Official Receipt
         $revenueQuery = clone $query;
-        $totalRevenue = $revenueQuery->where('is_or_verified', true)
-                                     ->sum('category_fee_at_submission');
+        $totalRevenue = (float) $revenueQuery->where('is_or_verified', true)
+                                             ->sum('category_fee_at_submission');
+        $pendingRevenue = (float) (clone $query)->where('is_or_verified', false)
+                                               ->sum('category_fee_at_submission');
+        $verifiedCount = (clone $query)->where('is_or_verified', true)->count();
+        $totalCount = (clone $query)->count();
 
-        $submissions = $query->orderBy('created_at', 'desc')->paginate(10);
+        $submissions = $query->with(['researcher.user', 'user'])->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
-        return view('super_admin.revenue_logs', compact('submissions', 'totalRevenue'));
+        return view('super_admin.revenue_logs', compact('submissions', 'totalRevenue', 'pendingRevenue', 'verifiedCount', 'totalCount'));
     }
 }

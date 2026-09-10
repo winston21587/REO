@@ -16,7 +16,7 @@
             <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Active Protocols</h1>
-                    <p class="text-slate-500 mt-1 sm:mt-2 text-xs sm:text-sm">Monitor and manage research protocols undergoing initial ethical review and revision assessment.</p>
+                    <p class="text-slate-500 mt-1 sm:mt-2 text-xs sm:text-sm">Track and manage research submissions undergoing ethics review.</p>
                 </div>
                 <div class="flex gap-2 sm:gap-3 mt-1 xl:mt-0 w-full xl:w-auto">
                     <form action="{{ route('admin.applications') }}" method="GET" class="relative flex w-full xl:w-auto items-center gap-2 sm:gap-3" id="activeProtocolsForm">

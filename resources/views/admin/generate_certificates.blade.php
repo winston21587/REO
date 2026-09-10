@@ -23,8 +23,7 @@
                         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight">
                             Document Issuance Studio
                         </h1>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">
                             Approved Protocol
                         </span>
                     </div>

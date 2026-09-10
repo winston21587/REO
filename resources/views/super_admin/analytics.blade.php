@@ -216,7 +216,7 @@
                 <button type="button" 
                         onclick="openFilterModal()" 
                         aria-label="Open comprehensive filter options{{ $activeFilterCount > 0 ? ', ' . $activeFilterCount . ' active filters applied' : '' }}" 
-                        class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 hover:from-red-800 hover:to-red-900 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-2 shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
+                        class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-[#8B0000] hover:bg-[#700000] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-2 shadow-xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
                     <i class="fas fa-filter text-xs" aria-hidden="true"></i>
                     <span>Filter Data</span>
                     @if($activeFilterCount > 0)
@@ -1601,7 +1601,7 @@
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-[200px] truncate" title="${safeName}">${safeName}</td>
                             <td class="px-4 py-3 text-sm text-slate-600 max-w-[220px] truncate" title="${safeEmail}">${safeEmail}</td>
-                            <td class="px-4 py-3 text-sm"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${item.affiliation === 'Internal' ? 'bg-blue-50 text-blue-700 border-blue-200/80' : 'bg-orange-50 text-orange-700 border-orange-200/80'}">${safeAffil}</span></td>
+                            <td class="px-4 py-3 text-sm"><span class="text-xs font-bold uppercase tracking-wider ${item.affiliation === 'Internal' ? 'text-blue-700' : 'text-indigo-700'}">${safeAffil}</span></td>
                             <td class="px-4 py-3 text-sm text-slate-500 max-w-[180px] truncate" title="${safeCollege}">${safeCollege}</td>
                         </tr>
                     `;

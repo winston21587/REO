@@ -132,48 +132,17 @@
                             </span>
                             @php
                                 $statusLower = strtolower($researchTitle->Status ?? '');
-                                $statusConfig = match(true) {
-                                    str_contains($statusLower, 'disapproved') || str_contains($statusLower, 'major') => [
-                                        'bg' => 'bg-rose-50',
-                                        'text' => 'text-rose-800',
-                                        'border' => 'border-rose-300',
-                                        'dot' => 'bg-rose-600',
-                                    ],
-                                    str_contains($statusLower, 'waiting') || str_contains($statusLower, 'minor') => [
-                                        'bg' => 'bg-amber-50',
-                                        'text' => 'text-amber-800',
-                                        'border' => 'border-amber-300',
-                                        'dot' => 'bg-amber-500',
-                                    ],
-                                    str_contains($statusLower, 'reviewed') || str_contains($statusLower, 'approved') => [
-                                        'bg' => 'bg-emerald-50',
-                                        'text' => 'text-emerald-800',
-                                        'border' => 'border-emerald-300',
-                                        'dot' => 'bg-emerald-600',
-                                    ],
-                                    str_contains($statusLower, 'under review') || str_contains($statusLower, 'reviewing') => [
-                                        'bg' => 'bg-indigo-50',
-                                        'text' => 'text-indigo-800',
-                                        'border' => 'border-indigo-300',
-                                        'dot' => 'bg-indigo-600',
-                                    ],
-                                    str_contains($statusLower, 'reviewer assigned') => [
-                                        'bg' => 'bg-blue-50',
-                                        'text' => 'text-blue-800',
-                                        'border' => 'border-blue-300',
-                                        'dot' => 'bg-blue-600',
-                                    ],
-                                    default => [
-                                        'bg' => 'bg-slate-100',
-                                        'text' => 'text-slate-800',
-                                        'border' => 'border-slate-300',
-                                        'dot' => 'bg-slate-500',
-                                    ]
+                                $statusTextColor = match(true) {
+                                    str_contains($statusLower, 'disapproved') || str_contains($statusLower, 'major') => 'text-rose-700',
+                                    str_contains($statusLower, 'waiting') || str_contains($statusLower, 'minor') => 'text-amber-700',
+                                    str_contains($statusLower, 'reviewed') || str_contains($statusLower, 'approved') => 'text-emerald-700',
+                                    str_contains($statusLower, 'under review') || str_contains($statusLower, 'reviewing') => 'text-indigo-700',
+                                    str_contains($statusLower, 'reviewer assigned') => 'text-blue-700',
+                                    default => 'text-slate-700'
                                 };
                             @endphp
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} border {{ $statusConfig['border'] }} shadow-2xs">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $statusConfig['dot'] }} shrink-0"></span>
-                                <span>{{ $researchTitle->Status }}</span>
+                            <span class="inline-flex items-center text-xs font-bold uppercase tracking-wider {{ $statusTextColor }}">
+                                {{ $researchTitle->Status }}
                             </span>
                         </div>
                         <h1 class="font-heading font-bold text-base sm:text-lg text-slate-950 tracking-tight leading-tight mt-0.5 truncate" title="{{ $researchTitle->Study_Protocol_title }}">
@@ -536,8 +505,8 @@
                                     <span class="text-white font-bold">Complete Review</span>
                                 </button>
                             @else
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200">
-                                    <i class="fas fa-lock text-[9px]"></i> Finalized
+                                <span class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-emerald-700">
+                                    <i class="fas fa-lock text-[10px]"></i> Finalized
                                 </span>
                             @endif
                         </div>
@@ -902,9 +871,8 @@
                                                             <p class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></p>
                                                         </div>
                                                         <span x-show="activeFile && activeFile.id === file.id"
-                                                              class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
-                                                            <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
-                                                            <span>Viewing</span>
+                                                              class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 shrink-0">
+                                                            Viewing
                                                         </span>
                                                     </button>
                                                 </template>
@@ -956,9 +924,8 @@
                                                         <p class="text-[10px] tabular-nums text-slate-400 font-normal" x-text="file.uploaded_at"></p>
                                                     </div>
                                                     <span x-show="activeFile && activeFile.id === file.id"
-                                                          class="flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
-                                                        <i class="fas fa-eye text-[9px]" aria-hidden="true"></i>
-                                                        <span>Viewing</span>
+                                                          class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 shrink-0">
+                                                        Viewing
                                                     </span>
                                                 </button>
                                             </template>

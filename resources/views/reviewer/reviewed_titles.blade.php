@@ -31,9 +31,8 @@
             <div class="group relative overflow-hidden rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all duration-200 flex flex-col p-5 sm:p-6">
                 <!-- Status Badge Header -->
                 <div class="mb-3.5 flex items-center justify-between gap-2">
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200/80">
-                        <i class="fas fa-check text-[9px] text-emerald-600" aria-hidden="true"></i>
-                        <span>Evaluated</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">
+                        Evaluated
                     </span>
                     <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider truncate" title="System Status: {{ $title->Status }}">
                         {{ $title->Status ?? 'Completed' }}

@@ -638,8 +638,7 @@
                                                     <h3 id="cert-modal-title-{{ $title->id }}" class="text-base font-extrabold text-slate-900 font-heading tracking-tight">
                                                         Official Clearance Documents
                                                     </h3>
-                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-800 border border-emerald-200/80">
-                                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">
                                                         Approved & Issued
                                                     </span>
                                                 </div>

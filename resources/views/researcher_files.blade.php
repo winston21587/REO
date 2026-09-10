@@ -20,43 +20,13 @@
             $submitIcon = $isRevision ? 'fa-paper-plane' : 'fa-check-circle';
 
             $statusLower = strtolower($researchTitle->Status ?? '');
-            $statusConfig = match(true) {
-                str_contains($statusLower, 'modifications required') || str_contains($statusLower, 'disapproved') || str_contains($statusLower, 'major') => [
-                    'bg' => 'bg-rose-50',
-                    'text' => 'text-rose-800',
-                    'border' => 'border-rose-300',
-                    'dot' => 'bg-rose-600',
-                ],
-                str_contains($statusLower, 'waiting') || str_contains($statusLower, 'minor') || str_contains($statusLower, 'incomplete') => [
-                    'bg' => 'bg-amber-50',
-                    'text' => 'text-amber-800',
-                    'border' => 'border-amber-300',
-                    'dot' => 'bg-amber-500',
-                ],
-                str_contains($statusLower, 'reviewed') || str_contains($statusLower, 'approved') => [
-                    'bg' => 'bg-emerald-50',
-                    'text' => 'text-emerald-800',
-                    'border' => 'border-emerald-300',
-                    'dot' => 'bg-emerald-600',
-                ],
-                str_contains($statusLower, 'under review') => [
-                    'bg' => 'bg-indigo-50',
-                    'text' => 'text-indigo-800',
-                    'border' => 'border-indigo-300',
-                    'dot' => 'bg-indigo-600',
-                ],
-                str_contains($statusLower, 'reviewer assigned') => [
-                    'bg' => 'bg-blue-50',
-                    'text' => 'text-blue-800',
-                    'border' => 'border-blue-300',
-                    'dot' => 'bg-blue-600',
-                ],
-                default => [
-                    'bg' => 'bg-slate-100',
-                    'text' => 'text-slate-800',
-                    'border' => 'border-slate-300',
-                    'dot' => 'bg-slate-500',
-                ]
+            $statusTextColor = match(true) {
+                str_contains($statusLower, 'modifications required') || str_contains($statusLower, 'disapproved') || str_contains($statusLower, 'major') => 'text-rose-700',
+                str_contains($statusLower, 'waiting') || str_contains($statusLower, 'minor') || str_contains($statusLower, 'incomplete') => 'text-amber-700',
+                str_contains($statusLower, 'reviewed') || str_contains($statusLower, 'approved') => 'text-emerald-700',
+                str_contains($statusLower, 'under review') => 'text-indigo-700',
+                str_contains($statusLower, 'reviewer assigned') => 'text-blue-700',
+                default => 'text-slate-700'
             };
 
             $allFiles = $researchTitle->files->merge($researchTitle->adminFiles ?? collect());
@@ -234,9 +204,8 @@
                             <span class="font-mono text-xs font-semibold tabular-nums text-slate-700 bg-slate-50 border border-slate-200 px-2.5 py-0.5 rounded-md shadow-2xs">
                                 {{ $researchTitle->reoc_code ?? ('#'.str_pad($researchTitle->id, 5, '0', STR_PAD_LEFT)) }}
                             </span>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} border {{ $statusConfig['border'] }} shadow-2xs">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $statusConfig['dot'] }} shrink-0"></span>
-                                <span>{{ $researchTitle->Status }}</span>
+                            <span class="inline-flex items-center text-xs font-bold uppercase tracking-wider {{ $statusTextColor }}">
+                                {{ $researchTitle->Status }}
                             </span>
                         </div>
                         <h1 class="font-heading font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-tight mt-0.5 truncate" title="{{ $researchTitle->Study_Protocol_title }}">
@@ -1320,9 +1289,8 @@
                                         <span class="font-mono text-xs font-bold tabular-nums text-slate-900 bg-slate-100 border border-slate-300 px-2.5 py-0.5 rounded-md shadow-2xs">
                                             {{ $researchTitle->reoc_code ?? ('#'.str_pad($researchTitle->id, 5, '0', STR_PAD_LEFT)) }}
                                         </span>
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} border {{ $statusConfig['border'] }} shadow-2xs">
-                                            <span class="w-1.5 h-1.5 rounded-full {{ $statusConfig['dot'] }} shrink-0"></span>
-                                            <span>{{ $researchTitle->Status }}</span>
+                                        <span class="inline-flex items-center text-xs font-bold uppercase tracking-wider {{ $statusTextColor }}">
+                                            {{ $researchTitle->Status }}
                                         </span>
                                     </div>
                                     <h3 id="drawer-title" class="font-heading font-bold text-base sm:text-lg text-slate-950 truncate" title="{{ $researchTitle->Study_Protocol_title }}">

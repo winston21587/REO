@@ -149,7 +149,7 @@ aria-modal="true">
                                         <div title="Review Classification must be set before assigning reviewers." class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium text-slate-400 bg-slate-50/70 rounded-xl cursor-not-allowed select-none text-left min-h-[44px]">
                                             <i class="fas fa-users-slash w-4 text-center text-slate-300"></i> 
                                             <span>Assign Reviewer(s)</span>
-                                            <span class="ml-auto text-[11px] font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full border border-slate-300 leading-none whitespace-nowrap">
+                                            <span class="ml-auto text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                                                 Classification Required
                                             </span>
                                         </div>
@@ -182,7 +182,7 @@ aria-modal="true">
                                                  class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl select-none text-slate-300 min-h-[44px]">
                                                 <i class="fas fa-lock w-4 text-slate-300 text-center"></i>
                                                 <span class="text-sm font-medium flex-1 truncate">Generate Recommendation Letter</span>
-                                                <span class="ml-auto text-[11px] font-bold bg-amber-50 text-amber-900 px-2 py-0.5 rounded-full border border-amber-200/90 leading-none whitespace-nowrap">
+                                                <span class="ml-auto text-xs font-bold uppercase tracking-wider text-amber-700 whitespace-nowrap">
                                                     OR Required
                                                 </span>
                                             </div>
@@ -192,7 +192,7 @@ aria-modal="true">
                                                     class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium text-slate-400 bg-slate-50/70 rounded-xl cursor-not-allowed select-none text-left min-h-[44px]">
                                                     <i class="fas fa-clock w-4 text-slate-400 text-center"></i>
                                                     <span>Awaiting Receipt Submission</span>
-                                                    <span class="ml-auto text-[11px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200 leading-none whitespace-nowrap">
+                                                    <span class="ml-auto text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                                                         Notified
                                                     </span>
                                                 </button>
@@ -204,7 +204,7 @@ aria-modal="true">
                                                     class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium text-amber-900 bg-amber-50/50 hover:bg-amber-100/70 rounded-xl transition-colors text-left border border-amber-200/50 cursor-pointer min-h-[44px]">
                                                     <i class="fas fa-bell w-4 text-amber-600 text-center"></i>
                                                     <span>Send Receipt Reminder</span>
-                                                    <span class="ml-auto text-[11px] font-bold bg-amber-100/80 text-amber-900 px-2 py-0.5 rounded-full border border-amber-200 leading-none">
+                                                    <span class="ml-auto text-xs font-bold uppercase tracking-wider text-amber-700">
                                                         OR Required
                                                     </span>
                                                 </button>

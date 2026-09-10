@@ -242,6 +242,46 @@
                 </div>
             </div>
         </aside>
+        <script>
+            (function() {
+                try {
+                    const sidebar = document.getElementById("super-admin-sidebar-nav");
+                    if (!sidebar) return;
+                    
+                    // 1. Immediately restore scroll position before initial paint (prevents flicker)
+                    const saved = localStorage.getItem("superAdminSidebarScroll");
+                    if (saved !== null) {
+                        sidebar.scrollTop = parseInt(saved, 10);
+                    }
+                    
+                    // 2. If active item is outside visible range, ensure it's in view
+                    const active = sidebar.querySelector(".active");
+                    if (active) {
+                        const rect = active.getBoundingClientRect();
+                        const navRect = sidebar.getBoundingClientRect();
+                        if (rect.top < navRect.top || rect.bottom > navRect.bottom) {
+                            active.scrollIntoView({ block: "nearest" });
+                            localStorage.setItem("superAdminSidebarScroll", sidebar.scrollTop);
+                        }
+                    }
+
+                    // 3. Save scroll position on scroll, click, and beforeunload
+                    sidebar.addEventListener("scroll", function () {
+                        localStorage.setItem("superAdminSidebarScroll", sidebar.scrollTop);
+                    }, { passive: true });
+
+                    sidebar.addEventListener("click", function (e) {
+                        if (e.target.closest("a")) {
+                            localStorage.setItem("superAdminSidebarScroll", sidebar.scrollTop);
+                        }
+                    });
+
+                    window.addEventListener("beforeunload", function () {
+                        localStorage.setItem("superAdminSidebarScroll", sidebar.scrollTop);
+                    });
+                } catch (e) {}
+            })();
+        </script>
 
         <!-- Mobile Drawer Backdrop -->
         <div x-show="mobileOpen"
@@ -426,22 +466,6 @@
                 </div>
             </div>
         </main>
-        <script>
-            // Sidebar Scroll Memory
-            document.addEventListener("DOMContentLoaded", function () {
-                const sidebar = document.getElementById("super-admin-sidebar-nav");
-                
-                // Restore scroll position
-                if (localStorage.getItem("superAdminSidebarScroll")) {
-                    sidebar.scrollTop = localStorage.getItem("superAdminSidebarScroll");
-                }
-
-                // Save scroll position on scroll
-                sidebar.addEventListener("scroll", function () {
-                    localStorage.setItem("superAdminSidebarScroll", sidebar.scrollTop);
-                });
-            });
-        </script>
     </div>
     <x-toast />
 </body>

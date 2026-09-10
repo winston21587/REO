@@ -36,13 +36,9 @@
                     <h3 class="font-bold text-sm text-slate-900 tracking-tight leading-tight" 
                         x-text="status?.can_submit ? 'Ready to Submit' : 'Submission Quota Reached'"></h3>
                     
-                    <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0"
-                          :class="status?.can_submit 
-                              ? 'bg-emerald-100/70 text-emerald-800 border border-emerald-200/60' 
-                              : 'bg-red-100 text-red-800 border border-red-200'">
-                        <span class="w-1.5 h-1.5 rounded-full" :class="status?.can_submit ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'"></span>
-                        <span x-text="(status?.status?.daily?.remaining ?? 10) + ' Left'"></span>
-                    </span>
+                    <span class="text-xs font-bold uppercase tracking-wider shrink-0"
+                          :class="status?.can_submit ? 'text-emerald-700' : 'text-rose-700'"
+                          x-text="(status?.status?.daily?.remaining ?? 10) + ' Left'"></span>
                 </div>
 
                 <p class="text-xs mt-1 flex items-center justify-between text-slate-500 group-hover:text-slate-700 transition-colors">

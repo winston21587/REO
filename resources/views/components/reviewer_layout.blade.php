@@ -252,8 +252,7 @@
             <header class="hidden lg:flex h-20 bg-white/90 backdrop-blur-md border-b border-slate-200/80 items-center justify-between px-8 sticky top-0 z-30 shrink-0 print:hidden">
                 <div class="flex items-center gap-3">
                     <h2 class="text-lg font-bold text-slate-900 font-heading tracking-tight">{{ $title ?? 'Reviewer Workspace' }}</h2>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200/80">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">
                         Reviewer Active
                     </span>
                 </div>

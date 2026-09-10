@@ -29,25 +29,18 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             @forelse($titles as $title)
             @php
-                $statusClass = match($title->Status) {
-                    'Approved' => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
-                    'Disapproved' => 'bg-rose-50 text-rose-800 border-rose-200/80',
-                    'Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions' => 'bg-amber-50 text-amber-800 border-amber-200/80',
-                    default => 'bg-red-50 text-brand-primary border-red-200/70',
-                };
-                $dotClass = match($title->Status) {
-                    'Approved' => 'bg-emerald-500',
-                    'Disapproved' => 'bg-rose-500',
-                    'Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions' => 'bg-amber-500',
-                    default => 'bg-brand-primary',
+                $statusTextColor = match($title->Status) {
+                    'Approved' => 'text-emerald-700',
+                    'Disapproved' => 'text-rose-700',
+                    'Waiting for Revision', 'Revision Submitted', 'Reviewing Revisions' => 'text-amber-700',
+                    default => 'text-[#8B0000]',
                 };
             @endphp
             <div class="group relative overflow-hidden rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all duration-200 flex flex-col p-5 sm:p-6">
                 <!-- Status Badge Header -->
                 <div class="mb-3.5 flex items-center justify-between gap-2">
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border {{ $statusClass }}">
-                        <span class="w-1.5 h-1.5 rounded-full {{ $dotClass }}"></span>
-                        <span class="truncate">{{ $title->Status ?? 'Under Review' }}</span>
+                    <span class="text-xs font-bold uppercase tracking-wider {{ $statusTextColor }} truncate">
+                        {{ $title->Status ?? 'Under Review' }}
                     </span>
                     
                     @if(!empty($title->reoc_code))

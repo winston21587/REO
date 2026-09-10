@@ -1,7 +1,7 @@
 <x-user_layout>
-    <x-skeleton-loader />
+    <x-boneyard-skeleton role="researcher" type="researcher" contentId="page-content" />
     
-    <div id="page-content" style="display: none;" class="max-w-5xl mx-auto pb-28 sm:pb-12 animate-[fadeInUp_0.5s_ease-out]">
+    <div id="page-content" class="max-w-5xl mx-auto pb-28 sm:pb-12 animate-[fadeInUp_0.5s_ease-out]">
 
         <!-- Welcome Section & Primary Action (Desktop/Tablet Only) -->
         <div class="flex items-center justify-between gap-4 mb-6 md:mb-8 pt-3 md:pt-5 border-b border-slate-200/80 pb-4 md:pb-6">

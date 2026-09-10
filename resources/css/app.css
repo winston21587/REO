@@ -49,3 +49,28 @@
 html {
     scroll-behavior: smooth;
 }
+
+/* Boneyard Skeleton Pulse & Shimmer Tokens */
+@keyframes boneyard-pulse {
+    0%, 100% {
+        background-color: #e2e8f0;
+        opacity: 0.95;
+    }
+    50% {
+        background-color: #f1f5f9;
+        opacity: 0.6;
+    }
+}
+
+.boneyard-bone {
+    animation: boneyard-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    pointer-events: none;
+    user-select: none;
+    will-change: opacity, background-color;
+}
+
+.boneyard-container {
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}

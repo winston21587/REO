@@ -1,7 +1,7 @@
 <x-user_layout>
-    <x-skeleton-loader />
+    <x-boneyard-skeleton role="researcher" type="researcher" contentId="page-content" />
 
-    <div id="page-content" style="display: none;" class="max-w-7xl mx-auto pt-2 pb-28 sm:py-12 px-3.5 sm:px-6 lg:px-8 animate-[fadeInUp_0.5s_ease-out] relative"
+    <div id="page-content" class="max-w-7xl mx-auto pt-2 pb-28 sm:py-12 px-3.5 sm:px-6 lg:px-8 animate-[fadeInUp_0.5s_ease-out] relative"
         x-data="submissionForm()"
         x-cloak>
 

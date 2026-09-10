@@ -64,7 +64,7 @@
         }
     </style>
 
-    <div id="analytics-dashboard" class="max-w-7xl mx-auto w-full space-y-8 animate-[fadeInUp_0.5s_ease-out] selection:bg-[#8B0000] selection:text-white pt-3 sm:pt-4">
+    <div id="analytics-dashboard" class="max-w-7xl mx-auto w-full space-y-8 selection:bg-[#8B0000] selection:text-white pt-3 sm:pt-4">
 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-slate-200 gap-4">
             <div>
@@ -568,7 +568,7 @@
         </div>
 
         <!-- Pending / Ongoing Proposals Table -->
-        <section id="pipeline-proposals-section" class="bg-white rounded-2xl shadow-lg border border-slate-100 mt-8 overflow-hidden animate-[fadeInUp_0.7s_ease-out]" style="content-visibility: auto; contain-intrinsic-size: 1px 400px;">
+        <section id="pipeline-proposals-section" class="bg-white rounded-2xl shadow-lg border border-slate-100 mt-8 overflow-hidden" style="content-visibility: auto; contain-intrinsic-size: 1px 400px;">
             <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 relative overflow-hidden">
                 <div class="absolute right-0 top-0 opacity-5 p-4 transform translate-x-4 -translate-y-4">
                     <i class="fas fa-tasks text-6xl text-[#8b0000]"></i>

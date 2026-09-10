@@ -328,7 +328,10 @@
 
             <!-- Page Body with Mobile Bottom Clearance -->
             <div class="flex-1 {{ request()->routeIs('reviewer.view_files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5' : 'overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8' }} flex flex-col relative z-0 print:overflow-visible print:p-0 print:pb-0">
-                {{ $slot }}
+                <x-boneyard-skeleton role="reviewer" type="reviewer" contentId="reviewer-page-content" />
+                <div id="reviewer-page-content" class="w-full flex-1 flex flex-col">
+                    {{ $slot }}
+                </div>
             </div>
 
             <!-- ===== MOBILE BOTTOM NAVIGATION BAR (Visible on Mobile/Tablet) ===== -->

@@ -22,6 +22,7 @@
     <link rel="icon" type="image/x-icon" href="{{ !empty($cms['website_logo']) ? asset($cms['website_logo']) : asset('images/reoc-nobg.png') }}">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -339,7 +340,10 @@
             </div>
 
             <div class="flex-1 {{ request()->routeIs('admin.view_files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5 pt-16 md:pt-3.5 lg:pt-3.5' : 'overflow-y-auto p-4 sm:p-5 lg:p-6 pt-16 md:pt-5 lg:pt-6' }} flex flex-col">
-                {{ $slot }}
+                <x-boneyard-skeleton role="admin" type="admin" contentId="admin-page-content" />
+                <div id="admin-page-content" class="w-full flex-1 flex flex-col">
+                    {{ $slot }}
+                </div>
             </div>
         </main>
         <script>

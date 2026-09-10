@@ -32,7 +32,7 @@
         }
     </style>
 
-    <div class="max-w-7xl mx-auto w-full min-h-[calc(100vh-5rem)] flex flex-col justify-between animate-[fadeInUp_0.5s_ease-out] selection:bg-[#8B0000] selection:text-white pt-3 sm:pt-4"
+    <div class="max-w-7xl mx-auto w-full min-h-[calc(100vh-5rem)] flex flex-col justify-between selection:bg-[#8B0000] selection:text-white pt-3 sm:pt-4"
          x-data="{ 
              activeTab: '{{ request('incomplete_page') || request('incomplete_search') || request('incomplete_sort') ? 'incomplete' : 'recent' }}' 
          }">

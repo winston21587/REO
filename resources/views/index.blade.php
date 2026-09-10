@@ -1,5 +1,5 @@
 <x-layout>
-  @include('loading-screen.loading-screen')
+  <x-boneyard-skeleton role="guest" type="landing" contentId="content" />
 
   <div id="content">
     <div class="slider-container relative w-full h-screen overflow-hidden">

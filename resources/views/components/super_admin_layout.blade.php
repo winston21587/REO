@@ -66,6 +66,21 @@
         main ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        /* Completely hide scrollbars on sidebar navigation across all browsers */
+        aside nav,
+        #super-admin-sidebar-nav,
+        .sidebar-no-scrollbar {
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
+        }
+        aside nav::-webkit-scrollbar,
+        #super-admin-sidebar-nav::-webkit-scrollbar,
+        .sidebar-no-scrollbar::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
     </style>
 </head>
 
@@ -90,7 +105,7 @@
                 </div>
             </div>
 
-            <nav id="super-admin-sidebar-nav" class="flex-1 px-4 py-6 space-y-8 overflow-y-auto custom-scrollbar">
+            <nav id="super-admin-sidebar-nav" class="flex-1 px-4 py-6 space-y-8 overflow-y-auto sidebar-no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
 
                 <div>
                     <p class="px-4 text-[10px] font-extrabold text-slate-300 uppercase tracking-widest mb-3">Review Process
@@ -265,7 +280,7 @@
                 </button>
             </div>
 
-            <nav class="flex-1 px-4 py-6 space-y-6 overflow-y-auto custom-scrollbar">
+            <nav class="flex-1 px-4 py-6 space-y-6 overflow-y-auto sidebar-no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 <div>
                     <p class="px-4 text-[10px] font-extrabold text-slate-300 uppercase tracking-widest mb-3">Review Process</p>
                     <div class="space-y-1">

@@ -24,6 +24,7 @@ use App\Models\UserNotification;
 use App\Models\Meeting;
 use App\Models\AgendaItem;
 use Carbon\Carbon;
+use DateTime;
 use App\Models\TitleLog;
 
 
@@ -346,6 +347,7 @@ class AdminController extends Controller
         $exactStart = $request->input('exact_start');
         $exactEnd = $request->input('exact_end');
         $hasExactDates = !empty($exactStart) && !empty($exactEnd);
+        $isAllTime = ($startMonth == 1 && $endMonth == 12 && $startYear === 'all' && $endYear === 'all' && !$hasExactDates);
 
         // New Filter Logic
         $selectedStatus = $request->input('status', null);
@@ -857,8 +859,8 @@ class AdminController extends Controller
                 ? 'All Submissions recorded in ' . $minYear 
                 : 'All Recorded Submissions (' . $minYear . ' – ' . $maxYear . ')';
         } elseif ($startYear === $endYear) {
-            $mStartName = DateTime::createFromFormat('!m', $startMonth)->format('F');
-            $mEndName = DateTime::createFromFormat('!m', $endMonth)->format('F');
+            $mStartName = \DateTime::createFromFormat('!m', $startMonth)->format('F');
+            $mEndName = \DateTime::createFromFormat('!m', $endMonth)->format('F');
             if ($startMonth == 1 && $endMonth == 12) {
                 $dateRangeSubtitle = 'Full Calendar Year ' . $startYear;
             } elseif ($startMonth == $endMonth) {
@@ -867,8 +869,8 @@ class AdminController extends Controller
                 $dateRangeSubtitle = $mStartName . ' — ' . $mEndName . ' ' . $startYear;
             }
         } else {
-            $mStartName = DateTime::createFromFormat('!m', $startMonth)->format('M');
-            $mEndName = DateTime::createFromFormat('!m', $endMonth)->format('M');
+            $mStartName = \DateTime::createFromFormat('!m', $startMonth)->format('M');
+            $mEndName = \DateTime::createFromFormat('!m', $endMonth)->format('M');
             $dateRangeSubtitle = "{$mStartName} {$startYear} — {$mEndName} {$endYear}";
         }
 

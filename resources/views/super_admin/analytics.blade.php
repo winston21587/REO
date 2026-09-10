@@ -47,6 +47,21 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        /* Suppress sidebar scrollbar */
+        aside nav,
+        #super-admin-sidebar-nav,
+        #admin-sidebar-nav {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        aside nav::-webkit-scrollbar,
+        #super-admin-sidebar-nav::-webkit-scrollbar,
+        #admin-sidebar-nav::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
     </style>
 
     <div id="analytics-dashboard" class="max-w-7xl mx-auto w-full space-y-8 animate-[fadeInUp_0.5s_ease-out] selection:bg-[#8B0000] selection:text-white pt-3 sm:pt-4">
@@ -56,40 +71,235 @@
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight">Analytics & Reports</h1>
                 <p class="text-slate-500 mt-1 sm:mt-2 text-xs sm:text-sm">Real-time insights into research submission performance.</p>
             </div>
-            <div class="flex gap-2 sm:gap-3 items-center flex-wrap justify-start sm:justify-end w-full md:w-auto">
-                <button onclick="openFilterModal()" aria-label="Open filter options" class="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-2 shadow-2xs min-h-[38px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
-                    <i class="fas fa-filter text-xs" aria-hidden="true"></i> Filter Data
+            @php
+                $currentYear = (int)date('Y');
+                $lastYear = $currentYear - 1;
+                $currentMonth = (int)date('n');
+                $hasExactDates = !empty(request('exact_start')) && !empty(request('exact_end'));
+
+                $isAllTimePreset = (!$hasExactDates && (int)$startMonth === 1 && (int)$endMonth === 12 && $startYear === 'all' && $endYear === 'all');
+                $isThisYearPreset = (!$hasExactDates && (int)$startMonth === 1 && (int)$endMonth === 12 && (string)$startYear === (string)$currentYear && (string)$endYear === (string)$currentYear);
+                $isLastYearPreset = (!$hasExactDates && (int)$startMonth === 1 && (int)$endMonth === 12 && (string)$startYear === (string)$lastYear && (string)$endYear === (string)$lastYear);
+                $isThisMonthPreset = (!$hasExactDates && (int)$startMonth === $currentMonth && (int)$endMonth === $currentMonth && (string)$startYear === (string)$currentYear && (string)$endYear === (string)$currentYear);
+
+                $activeFilterCount = 0;
+                if (!$isAllTimePreset) $activeFilterCount++;
+                if (!empty($selectedStatus)) $activeFilterCount++;
+                if (!empty($selectedReviewType)) $activeFilterCount++;
+                if (!empty($selectedThesisType)) $activeFilterCount++;
+                if (!empty($selectedCategory)) $activeFilterCount++;
+                if (!empty($selectedAffiliation)) $activeFilterCount++;
+                if (!empty($selectedCollege) && $selectedAffiliation !== 'External') $activeFilterCount++;
+
+                $timeframeLabel = 'All Time';
+                if ($isThisYearPreset) {
+                    $timeframeLabel = "This Year ({$currentYear})";
+                } elseif ($isLastYearPreset) {
+                    $timeframeLabel = "Last Year ({$lastYear})";
+                } elseif ($isThisMonthPreset) {
+                    $timeframeLabel = date('M Y');
+                } elseif (!$isAllTimePreset && !empty($dateRangeSubtitle)) {
+                    $timeframeLabel = $dateRangeSubtitle;
+                }
+            @endphp
+
+            <div class="flex flex-wrap sm:flex-nowrap gap-2.5 sm:gap-3 mt-4 md:mt-0 items-center justify-start md:justify-end shrink-0">
+                <!-- 1. Interactive Timeframe Dropdown (No Overlap with Filter Drawer) -->
+                <div x-data="{ timeDropdownOpen: false }" class="relative inline-block text-left" @keydown.escape.window="timeDropdownOpen = false">
+                    <button type="button" 
+                            @click="timeDropdownOpen = !timeDropdownOpen" 
+                            @click.away="timeDropdownOpen = false"
+                            aria-haspopup="true"
+                            :aria-expanded="timeDropdownOpen.toString()"
+                            aria-label="Timeframe preset: {{ $timeframeLabel }}. Click to change range." 
+                            class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-[#8B0000] rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-2xs flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] active:scale-[0.98]">
+                        <i class="fas fa-calendar-alt text-[#8B0000] text-xs" aria-hidden="true"></i>
+                        <span class="max-w-[150px] sm:max-w-[180px] truncate">{{ $timeframeLabel }}</span>
+                        <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="{ 'rotate-180 text-[#8B0000]': timeDropdownOpen }" aria-hidden="true"></i>
+                    </button>
+
+                    <div x-show="timeDropdownOpen"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute left-0 md:left-auto md:right-0 z-50 mt-2 w-60 origin-top-right rounded-2xl bg-white p-1.5 shadow-xl ring-1 ring-black/5 border border-slate-100 focus:outline-none"
+                         style="display: none;">
+                        <div class="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">Quick Timeframe</div>
+                        
+                        <!-- All Time -->
+                        <button type="button" 
+                                onclick="applyTimePreset('all')" 
+                                @click="timeDropdownOpen = false"
+                                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer {{ $isAllTimePreset ? 'bg-red-50 text-[#8B0000] font-bold' : 'text-slate-700 hover:bg-slate-50 hover:text-[#8B0000]' }}">
+                            <span class="flex items-center gap-2.5">
+                                <i class="fas fa-infinity text-xs w-4 text-center {{ $isAllTimePreset ? 'text-[#8B0000]' : 'text-slate-400' }}" aria-hidden="true"></i>
+                                All Time
+                            </span>
+                            @if($isAllTimePreset)
+                                <i class="fas fa-check text-xs text-[#8B0000]" aria-hidden="true"></i>
+                            @endif
+                        </button>
+
+                        <!-- This Year -->
+                        <button type="button" 
+                                onclick="applyTimePreset('this_year')" 
+                                @click="timeDropdownOpen = false"
+                                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer {{ $isThisYearPreset ? 'bg-red-50 text-[#8B0000] font-bold' : 'text-slate-700 hover:bg-slate-50 hover:text-[#8B0000]' }}">
+                            <span class="flex items-center gap-2.5">
+                                <i class="fas fa-calendar text-xs w-4 text-center {{ $isThisYearPreset ? 'text-[#8B0000]' : 'text-slate-400' }}" aria-hidden="true"></i>
+                                This Year ({{ $currentYear }})
+                            </span>
+                            @if($isThisYearPreset)
+                                <i class="fas fa-check text-xs text-[#8B0000]" aria-hidden="true"></i>
+                            @endif
+                        </button>
+
+                        <!-- Last Year -->
+                        <button type="button" 
+                                onclick="applyTimePreset('last_year')" 
+                                @click="timeDropdownOpen = false"
+                                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer {{ $isLastYearPreset ? 'bg-red-50 text-[#8B0000] font-bold' : 'text-slate-700 hover:bg-slate-50 hover:text-[#8B0000]' }}">
+                            <span class="flex items-center gap-2.5">
+                                <i class="fas fa-calendar-minus text-xs w-4 text-center {{ $isLastYearPreset ? 'text-[#8B0000]' : 'text-slate-400' }}" aria-hidden="true"></i>
+                                Last Year ({{ $lastYear }})
+                            </span>
+                            @if($isLastYearPreset)
+                                <i class="fas fa-check text-xs text-[#8B0000]" aria-hidden="true"></i>
+                            @endif
+                        </button>
+
+                        <!-- This Month -->
+                        <button type="button" 
+                                onclick="applyTimePreset('this_month')" 
+                                @click="timeDropdownOpen = false"
+                                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer {{ $isThisMonthPreset ? 'bg-red-50 text-[#8B0000] font-bold' : 'text-slate-700 hover:bg-slate-50 hover:text-[#8B0000]' }}">
+                            <span class="flex items-center gap-2.5">
+                                <i class="fas fa-calendar-day text-xs w-4 text-center {{ $isThisMonthPreset ? 'text-[#8B0000]' : 'text-slate-400' }}" aria-hidden="true"></i>
+                                This Month ({{ date('M Y') }})
+                            </span>
+                            @if($isThisMonthPreset)
+                                <i class="fas fa-check text-xs text-[#8B0000]" aria-hidden="true"></i>
+                            @endif
+                        </button>
+
+                        <!-- Past 6 Months -->
+                        <button type="button" 
+                                onclick="applyTimePreset('past_6_months')" 
+                                @click="timeDropdownOpen = false"
+                                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer text-slate-700 hover:bg-slate-50 hover:text-[#8B0000]">
+                            <span class="flex items-center gap-2.5">
+                                <i class="fas fa-history text-xs w-4 text-center text-slate-400" aria-hidden="true"></i>
+                                Past 6 Months
+                            </span>
+                        </button>
+
+                        <div class="my-1 border-t border-slate-100"></div>
+
+                        <!-- Custom Date Range Option (Opens Filter Drawer) -->
+                        <button type="button" 
+                                onclick="openCustomDateFilter()" 
+                                @click="timeDropdownOpen = false"
+                                class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#8B0000] hover:bg-red-50 flex items-center justify-between transition-colors cursor-pointer">
+                            <span class="flex items-center gap-2.5">
+                                <i class="fas fa-sliders-h text-xs w-4 text-center text-[#8B0000]" aria-hidden="true"></i>
+                                Custom Range...
+                            </span>
+                            <i class="fas fa-chevron-right text-[10px] text-[#8B0000]/60" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Filter Data Button (Opens Comprehensive Drawer) -->
+                <button type="button" 
+                        onclick="openFilterModal()" 
+                        aria-label="Open comprehensive filter options{{ $activeFilterCount > 0 ? ', ' . $activeFilterCount . ' active filters applied' : '' }}" 
+                        class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-gradient-to-r from-[#8B0000] to-red-700 hover:from-red-800 hover:to-red-900 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-2 shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
+                    <i class="fas fa-filter text-xs" aria-hidden="true"></i>
+                    <span>Filter Data</span>
+                    @if($activeFilterCount > 0)
+                        <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white text-[#8B0000] text-[11px] font-black shadow-xs">
+                            {{ $activeFilterCount }}
+                        </span>
+                    @endif
                 </button>
 
                 <div class="hidden sm:block h-8 w-px bg-slate-200"></div>
 
-                <button id="exportPdfBtn" onclick="exportToPdf()" aria-label="Export report as PDF" class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 hover:text-[#8B0000] hover:border-[#8B0000]/30 active:scale-[0.98] transition-all shadow-2xs flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
-                    <i class="fas fa-download text-xs" aria-hidden="true"></i> Export PDF
-                </button>
+                <!-- 3. Consolidated Export Dropdown (Eliminates Button Overflow and Wrapping) -->
+                <div x-data="{ exportDropdownOpen: false }" class="relative inline-block text-left" @keydown.escape.window="exportDropdownOpen = false">
+                    <button type="button"
+                            @click="exportDropdownOpen = !exportDropdownOpen"
+                            @click.away="exportDropdownOpen = false"
+                            aria-haspopup="true"
+                            :aria-expanded="exportDropdownOpen.toString()"
+                            aria-label="Export report data options"
+                            class="min-h-[38px] px-3.5 sm:px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-[#8B0000] rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-2xs flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] active:scale-[0.98]">
+                        <i class="fas fa-download text-xs text-slate-400" aria-hidden="true"></i>
+                        <span>Export</span>
+                        <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="{ 'rotate-180 text-[#8B0000]': exportDropdownOpen }" aria-hidden="true"></i>
+                    </button>
 
-                <a href="{{ route('super_admin.analytics.export', request()->query()) }}" id="exportCsvBtn" aria-label="Export report data as CSV file" class="px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-[#8B0000] rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 hover:border-[#8B0000]/30 active:scale-[0.98] transition-all shadow-2xs flex items-center gap-2 min-h-[38px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
-                    <i class="fas fa-file-csv text-sm" aria-hidden="true"></i> Export CSV
-                </a>
-                <!-- EXPORT TO WORD BTN -->
-                <a href="{{ route('super_admin.analytics.export_word', request()->query()) }}" id="exportWordBtn" aria-label="Export report data as Word document" class="px-3.5 sm:px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:text-[#8B0000] hover:border-[#8B0000]/30 hover:bg-slate-50 active:scale-[0.98] rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-2xs flex items-center gap-2 min-h-[38px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2">
-                    <i class="fas fa-file-word text-[#8B0000]" aria-hidden="true"></i> Export Word
-                </a>
+                    <div x-show="exportDropdownOpen"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute right-0 z-50 mt-2 w-52 origin-top-right rounded-2xl bg-white p-1.5 shadow-xl ring-1 ring-black/5 border border-slate-100 focus:outline-none"
+                         style="display: none;">
+                        <div class="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">Available Formats</div>
+                        
+                        <button type="button" 
+                                id="exportPdfBtn" 
+                                onclick="exportToPdf();" 
+                                @click="exportDropdownOpen = false"
+                                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors cursor-pointer">
+                            <i class="fas fa-file-pdf text-red-600 w-4 text-center text-sm" aria-hidden="true"></i>
+                            <span>Export as PDF</span>
+                        </button>
+
+                        <a href="{{ route('super_admin.analytics.export', request()->query()) }}" 
+                           id="exportCsvBtn" 
+                           @click="exportDropdownOpen = false"
+                           class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors cursor-pointer">
+                            <i class="fas fa-file-csv text-emerald-600 w-4 text-center text-sm" aria-hidden="true"></i>
+                            <span>Export to CSV</span>
+                        </a>
+
+                        <a href="{{ route('super_admin.analytics.export_word', request()->query()) }}" 
+                           id="exportWordBtn" 
+                           @click="exportDropdownOpen = false"
+                           class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors cursor-pointer">
+                            <i class="fas fa-file-word text-blue-600 w-4 text-center text-sm" aria-hidden="true"></i>
+                            <span>Export to Word</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
         
         <!-- Active Filters Display -->
-        <div class="flex flex-wrap gap-2 -mt-4 mb-2">
+        @php
+            $hasActiveDateFilter = !$isAllTimePreset;
+            $hasAnyActiveFilters = $activeFilterCount > 0;
+        @endphp
+
+        @if($hasAnyActiveFilters)
+        <div class="flex flex-wrap items-center gap-2 -mt-4 mb-2">
+            <span class="text-xs font-bold text-slate-400 mr-0.5 flex items-center gap-1.5">
+                <i class="fas fa-sliders-h text-[11px]" aria-hidden="true"></i> Active Filters:
+            </span>
+            @if($hasActiveDateFilter)
             <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs border border-slate-200 min-h-[32px]">
-                <i class="fas fa-calendar-alt text-slate-400" aria-hidden="true"></i>
-                @if($isAllTime ?? ($startMonth == 1 && $endMonth == 12 && $startYear === 'all' && $endYear === 'all'))
-                    All Time
-                @else
-                    {{ $dateRangeSubtitle ?? 'Custom Period' }}
-                @endif
-                @if(!($isAllTime ?? ($startMonth == 1 && $endMonth == 12 && $startYear === 'all' && $endYear === 'all')))
-                    <button type="button" onclick="clearFilter('date')" aria-label="Remove date filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
-                @endif
+                <i class="fas fa-calendar-alt text-[#8B0000]" aria-hidden="true"></i>
+                {{ $dateRangeSubtitle ?? 'Custom Period' }}
+                <button type="button" onclick="clearFilter('date')" aria-label="Remove date filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
             </div>
+            @endif
             @if($selectedStatus) 
             <div class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs border border-slate-200 min-h-[32px]">
                 <i class="fas fa-info-circle text-slate-400" aria-hidden="true"></i> {{ $selectedStatus }}
@@ -126,7 +336,11 @@
                 <button type="button" onclick="clearFilter('college')" aria-label="Remove college filter" class="inline-flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full hover:bg-slate-200 text-slate-400 hover:text-[#8B0000] transition-colors ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"><i class="fas fa-times text-xs" aria-hidden="true"></i></button>
             </div> 
             @endif
+            <button type="button" onclick="resetFilters()" class="text-xs font-bold text-[#8B0000] hover:text-red-900 hover:underline px-2 py-1 transition-colors cursor-pointer ml-1">
+                Clear all
+            </button>
         </div>
+        @endif
 
 
 
@@ -617,17 +831,25 @@
                 }, 300); // match standard tailwind transition duration
             }
 
-            function prepareFilterSubmit() {
+            function handleFilterSubmit(e) {
                 const applyBtn = document.getElementById('applyFilterBtn');
                 const resetBtn = document.getElementById('resetFilterBtn');
                 if (applyBtn) {
-                    applyBtn.disabled = true;
-                    applyBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                    applyBtn.classList.add('pointer-events-none', 'opacity-80');
                     applyBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1.5" aria-hidden="true"></i> Applying...';
                 }
                 if (resetBtn) {
-                    resetBtn.disabled = true;
-                    resetBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    resetBtn.classList.add('pointer-events-none', 'opacity-50');
+                }
+
+                // If exact dates are not both set, ensure month/year dropdowns are enabled so they submit cleanly
+                const exactStart = document.getElementById('filter_exact_start');
+                const exactEnd = document.getElementById('filter_exact_end');
+                if (!exactStart?.value || !exactEnd?.value) {
+                    ['filter_start_month', 'filter_end_month', 'filter_start_year', 'filter_end_year'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.disabled = false;
+                    });
                 }
             }
 
@@ -635,14 +857,18 @@
                 const resetBtn = document.getElementById('resetFilterBtn');
                 const applyBtn = document.getElementById('applyFilterBtn');
                 if (resetBtn) {
-                    resetBtn.disabled = true;
-                    resetBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                    resetBtn.classList.add('pointer-events-none', 'opacity-80');
                     resetBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1.5" aria-hidden="true"></i> Resetting...';
                 }
                 if (applyBtn) {
-                    applyBtn.disabled = true;
-                    applyBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    applyBtn.classList.add('pointer-events-none', 'opacity-50');
                 }
+
+                // Ensure all fields are enabled before reset
+                ['filter_start_month', 'filter_end_month', 'filter_start_year', 'filter_end_year'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.disabled = false;
+                });
 
                 document.getElementById('filter_start_month').value = '1';
                 document.getElementById('filter_end_month').value = '12';
@@ -680,6 +906,64 @@
                 }
                 
                 document.getElementById('filterModalForm').submit();
+            }
+
+            function applyTimePreset(preset) {
+                const startMonth = document.getElementById('filter_start_month');
+                const endMonth = document.getElementById('filter_end_month');
+                const startYear = document.getElementById('filter_start_year');
+                const endYear = document.getElementById('filter_end_year');
+                const exactStart = document.getElementById('filter_exact_start');
+                const exactEnd = document.getElementById('filter_exact_end');
+
+                if (!startMonth || !endMonth || !startYear || !endYear) return;
+
+                if (exactStart) exactStart.value = '';
+                if (exactEnd) exactEnd.value = '';
+
+                const currentYear = '{{ date('Y') }}';
+                const lastYear = '{{ date('Y') - 1 }}';
+                const currentMonth = '{{ (int)date('n') }}';
+
+                if (preset === 'all') {
+                    startMonth.value = '1';
+                    endMonth.value = '12';
+                    startYear.value = 'all';
+                    endYear.value = 'all';
+                } else if (preset === 'this_year') {
+                    startMonth.value = '1';
+                    endMonth.value = '12';
+                    startYear.value = currentYear;
+                    endYear.value = currentYear;
+                } else if (preset === 'last_year') {
+                    startMonth.value = '1';
+                    endMonth.value = '12';
+                    startYear.value = lastYear;
+                    endYear.value = lastYear;
+                } else if (preset === 'this_month') {
+                    startMonth.value = currentMonth;
+                    endMonth.value = currentMonth;
+                    startYear.value = currentYear;
+                    endYear.value = currentYear;
+                } else if (preset === 'past_6_months') {
+                    if (exactStart && exactEnd) {
+                        exactStart.value = '{{ date('Y-m-d', strtotime('-6 months')) }}';
+                        exactEnd.value = '{{ date('Y-m-d') }}';
+                    }
+                }
+
+                document.getElementById('filterModalForm').submit();
+            }
+
+            function openCustomDateFilter() {
+                openFilterModal();
+                setTimeout(() => {
+                    const exactStart = document.getElementById('filter_exact_start');
+                    if (exactStart) {
+                        exactStart.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        exactStart.focus();
+                    }
+                }, 350);
             }
 
             document.addEventListener('DOMContentLoaded', function() {
@@ -921,7 +1205,7 @@
                 </div>
 
                 <!-- Complete Filter Form -->
-                <form id="filterModalForm" method="GET" action="{{ route('super_admin.analytics') }}" class="flex-1 flex flex-col">
+                <form id="filterModalForm" method="GET" action="{{ route('super_admin.analytics') }}" onsubmit="handleFilterSubmit(event)" class="flex-1 flex flex-col">
                     <div class="p-6 space-y-8 flex-1">
                         <!-- Date Range & Basic Status -->
                         <div>
@@ -1124,7 +1408,7 @@
                             <button type="button" id="resetFilterBtn" onclick="resetFilters()" class="flex-1 min-h-[44px] py-3 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-400">
                                 Reset All Filters
                             </button>
-                            <button type="submit" id="applyFilterBtn" onclick="prepareFilterSubmit()" class="flex-1 min-h-[44px] py-3 bg-[#8B0000] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
+                            <button type="submit" id="applyFilterBtn" class="flex-1 min-h-[44px] py-3 bg-[#8B0000] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-900 transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1">
                                 <i class="fas fa-check" aria-hidden="true"></i> Apply Filters
                             </button>
                         </div>

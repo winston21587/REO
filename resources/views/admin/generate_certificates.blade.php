@@ -191,7 +191,7 @@
                      ========================================== --}}
                 <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col">
                     {{-- Header banner --}}
-                    <div class="bg-gradient-to-r from-[#8B0000] via-[#9e0202] to-[#b01010] px-6 py-4 flex items-center justify-between text-white">
+                    <div class="bg-[#8B0000] bg-gradient-to-r from-[#8B0000] via-[#9e0202] to-[#b01010] px-6 py-4 flex items-center justify-between text-white" style="background-color: #8B0000; background-image: linear-gradient(to right, #8B0000, #9e0202, #b01010);">
                         <div class="flex items-center gap-3 min-w-0">
                             <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 shadow-xs">
                                 <i class="fas fa-award text-base text-white" aria-hidden="true"></i>
@@ -249,7 +249,7 @@
                      ========================================== --}}
                 <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col">
                     {{-- Header banner --}}
-                    <div class="bg-gradient-to-r from-slate-800 via-slate-900 to-slate-950 px-6 py-4 flex items-center justify-between text-white">
+                    <div class="bg-slate-900 bg-gradient-to-r from-slate-800 via-slate-900 to-slate-950 px-6 py-4 flex items-center justify-between text-white" style="background-color: #0f172a; background-image: linear-gradient(to right, #1e293b, #0f172a, #020617);">
                         <div class="flex items-center gap-3 min-w-0">
                             <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 shadow-xs">
                                 <i class="fas fa-file-invoice text-base text-white" aria-hidden="true"></i>
@@ -394,9 +394,10 @@
                 </a>
                 
                 <button type="submit" id="submitBtn"
-                    class="h-11 min-h-[44px] px-7 rounded-xl bg-gradient-to-r from-[#8B0000] to-[#a51d1d] hover:from-[#730000] hover:to-[#8B0000] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8B0000]">
-                    <i class="fas fa-stamp text-sm" aria-hidden="true"></i>
-                    <span id="submitLabel">Issue & Seal Clearance Documents</span>
+                    class="btn-seal-issue h-11 min-h-[44px] px-7 rounded-xl bg-[#8B0000] hover:bg-[#730000] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8B0000]"
+                    style="background-color: #8B0000; background-image: linear-gradient(135deg, #8B0000 0%, #a51d1d 100%); color: #ffffff;">
+                    <i class="fas fa-stamp text-sm text-white" aria-hidden="true"></i>
+                    <span id="submitLabel" class="text-white">Issue & Seal Clearance Documents</span>
                 </button>
             </div>
         </div>

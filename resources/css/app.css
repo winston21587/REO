@@ -74,3 +74,24 @@ html {
     user-select: none;
     transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* Triage & Modal Action Button State Themes */
+.btn-triage-return {
+    background-color: #8B0000 !important;
+    background-image: linear-gradient(to right, #8B0000, #a30000) !important;
+    color: #ffffff !important;
+}
+.btn-triage-return:hover {
+    background-color: #700000 !important;
+    background-image: linear-gradient(to right, #700000, #8B0000) !important;
+}
+
+.btn-triage-accept {
+    background-color: #047857 !important;
+    background-image: linear-gradient(to right, #047857, #065f46) !important;
+    color: #ffffff !important;
+}
+.btn-triage-accept:hover {
+    background-color: #065f46 !important;
+    background-image: linear-gradient(to right, #065f46, #064e3b) !important;
+}

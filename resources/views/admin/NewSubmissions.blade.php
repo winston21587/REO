@@ -532,8 +532,8 @@
                         <button type="button" onclick="closeTriage()"
                             class="w-full sm:w-auto px-5 py-2.5 min-h-[44px] flex items-center justify-center text-slate-600 font-bold text-sm hover:bg-white hover:text-slate-800 active:scale-[0.98] rounded-xl transition-all border border-transparent hover:border-slate-200 text-center touch-manipulation">Cancel</button>
                         <button type="submit" id="triageSubmitBtn"
-                            class="w-full sm:w-auto px-6 py-2.5 min-h-[44px] bg-gradient-to-r from-[#8B0000] to-[#a30000] hover:from-[#780000] hover:to-[#8B0000] text-white font-bold text-sm rounded-xl shadow-md shadow-red-950/20 active:scale-[0.98] transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 flex items-center justify-center gap-2 touch-manipulation">
-                            <i id="triageSubmitBtnIcon" class="fas fa-undo-alt text-white/90" aria-hidden="true"></i>
+                            class="btn-triage-return w-full sm:w-auto px-6 py-2.5 min-h-[44px] bg-[#8B0000] hover:bg-[#780000] text-white font-bold text-sm rounded-xl shadow-md shadow-red-950/20 active:scale-[0.98] transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-2 flex items-center justify-center gap-2 touch-manipulation">
+                            <i id="triageSubmitBtnIcon" class="fas fa-undo-alt text-white" aria-hidden="true"></i>
                             <span id="triageSubmitBtnText">Return for Corrections</span>
                         </button>
                     </div>
@@ -793,11 +793,11 @@
                 }
 
                 if (submitBtn) {
-                    submitBtn.classList.remove('from-[#8B0000]', 'to-[#a30000]', 'hover:from-[#780000]', 'hover:to-[#8B0000]', 'focus:ring-[#8B0000]', 'shadow-red-950/20', 'bg-[#8B0000]', 'hover:bg-[#6d0000]', 'shadow-red-900/20');
-                    submitBtn.classList.add('from-emerald-700', 'to-emerald-800', 'hover:from-emerald-800', 'hover:to-emerald-900', 'focus:ring-emerald-700', 'shadow-emerald-950/20');
+                    submitBtn.classList.remove('btn-triage-return', 'bg-[#8B0000]', 'hover:bg-[#780000]', 'from-[#8B0000]', 'to-[#a30000]', 'hover:from-[#780000]', 'hover:to-[#8B0000]', 'focus:ring-[#8B0000]', 'shadow-red-950/20', 'shadow-red-900/20');
+                    submitBtn.classList.add('btn-triage-accept', 'bg-emerald-700', 'hover:bg-emerald-800', 'focus:ring-emerald-700', 'shadow-emerald-950/20');
                 }
                 if (submitBtnIcon) {
-                    submitBtnIcon.className = 'fas fa-calendar-check text-emerald-200';
+                    submitBtnIcon.className = 'fas fa-calendar-check text-white';
                 }
                 if (submitBtnText) {
                     submitBtnText.textContent = 'Accept & Schedule Deadline';
@@ -817,11 +817,11 @@
                 }
 
                 if (submitBtn) {
-                    submitBtn.classList.remove('from-emerald-700', 'to-emerald-800', 'hover:from-emerald-800', 'hover:to-emerald-900', 'focus:ring-emerald-700', 'shadow-emerald-950/20', 'bg-emerald-800', 'hover:bg-emerald-700');
-                    submitBtn.classList.add('from-[#8B0000]', 'to-[#a30000]', 'hover:from-[#780000]', 'hover:to-[#8B0000]', 'focus:ring-[#8B0000]', 'shadow-red-950/20');
+                    submitBtn.classList.remove('btn-triage-accept', 'bg-emerald-700', 'hover:bg-emerald-800', 'from-emerald-700', 'to-emerald-800', 'hover:from-emerald-800', 'hover:to-emerald-900', 'focus:ring-emerald-700', 'shadow-emerald-950/20', 'bg-emerald-800', 'hover:bg-emerald-700');
+                    submitBtn.classList.add('btn-triage-return', 'bg-[#8B0000]', 'hover:bg-[#780000]', 'focus:ring-[#8B0000]', 'shadow-red-950/20');
                 }
                 if (submitBtnIcon) {
-                    submitBtnIcon.className = 'fas fa-undo-alt text-white/90';
+                    submitBtnIcon.className = 'fas fa-undo-alt text-white';
                 }
                 if (submitBtnText) {
                     submitBtnText.textContent = 'Return for Corrections';

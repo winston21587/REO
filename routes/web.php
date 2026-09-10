@@ -392,11 +392,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reviewer/re-evaluation', [\App\Http\Controllers\ReviewerController::class, 'reEvaluation'])->name('reviewer.reevaluation');
         Route::get('/reviewer/reviewed-titles', [\App\Http\Controllers\ReviewerController::class, 'reviewedTitles'])->name('reviewer.reviewed_titles');
         Route::get('/reviewer/view-files/{id}', [\App\Http\Controllers\ReviewerController::class, 'viewFiles'])->name('reviewer.view_files');
-        Route::get('/reviewer/file-serve/{id}', [\App\Http\Controllers\ReviewerController::class, 'serveFile'])->name('reviewer.serve_file');
-        Route::delete('/reviewer/file-delete/{id}', [\App\Http\Controllers\ReviewerController::class, 'deleteFile'])->name('reviewer.file.delete');
-        Route::post('/reviewer/protocols/{id}/upload', [\App\Http\Controllers\ReviewerController::class, 'uploadFile'])->name('reviewer.upload');
-        Route::post('/reviewer/protocols/{id}/complete', [\App\Http\Controllers\ReviewerController::class, 'completeReview'])->name('reviewer.complete_review');
-        Route::post('/reviewer/file-remark/{fileId}', [\App\Http\Controllers\ReviewerController::class, 'saveFileRemark'])->name('reviewer.save_file_remark');
+        Route::get('/reviewer/file-serve/{id}', [\App\Http\Controllers\ReviewerController::class, 'serveFile'])->middleware('throttle:120,1')->name('reviewer.serve_file');
+        Route::delete('/reviewer/file-delete/{id}', [\App\Http\Controllers\ReviewerController::class, 'deleteFile'])->middleware('throttle:30,1')->name('reviewer.file.delete');
+        Route::post('/reviewer/protocols/{id}/upload', [\App\Http\Controllers\ReviewerController::class, 'uploadFile'])->middleware('throttle:20,1')->name('reviewer.upload');
+        Route::post('/reviewer/protocols/{id}/complete', [\App\Http\Controllers\ReviewerController::class, 'completeReview'])->middleware('throttle:15,1')->name('reviewer.complete_review');
+        Route::post('/reviewer/file-remark/{fileId}', [\App\Http\Controllers\ReviewerController::class, 'saveFileRemark'])->middleware('throttle:60,1')->name('reviewer.save_file_remark');
     });
 
 });

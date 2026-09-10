@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         'rate_limit_submissions' => \App\Http\Middleware\RateLimitSubmissions::class,
     ]);
+
+    $middleware->web(append: [
+        \App\Http\Middleware\SecurityHeaders::class,
+    ]);
         
     $middleware->redirectGuestsTo(fn (Illuminate\Http\Request $request) => route('login'));
     $middleware->redirectUsersTo(function (Illuminate\Http\Request $request) {

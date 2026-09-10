@@ -85,7 +85,7 @@ class ReviewerController extends Controller
             abort(401, 'Unauthenticated.');
         }
 
-        if (in_array($user->role ?? '', ['admin', 'superadmin'])) {
+        if (in_array($user->role ?? '', ['admin', 'superadmin', 'super_admin'], true)) {
             return;
         }
 
@@ -98,11 +98,11 @@ class ReviewerController extends Controller
 
         // 2. Check legacy JSON column assigned_reviewers
         $assigned = $title->assigned_reviewers;
-        if (is_array($assigned) && in_array((string) $userId, array_map('strval', $assigned))) {
+        if (is_array($assigned) && in_array((string) $userId, array_map('strval', $assigned), true)) {
             return;
         } elseif (is_string($assigned)) {
             $decoded = json_decode($assigned, true);
-            if (is_array($decoded) && in_array((string) $userId, array_map('strval', $decoded))) {
+            if (is_array($decoded) && in_array((string) $userId, array_map('strval', $decoded), true)) {
                 return;
             }
         }
@@ -170,14 +170,36 @@ class ReviewerController extends Controller
 
         $this->authorizeReviewerAssignment($researchTitle);
 
+        // Path Traversal Defense: Reject relative traversal sequences or null bytes
+        if (str_contains($file->filepath, '..') || str_contains($file->filepath, "\0")) {
+            abort(403, 'Invalid file path sequence detected.');
+        }
+
         $path = ltrim(str_replace('storage/', '', $file->filepath), '/');
 
         $respondWithFile = function (string $fullPath) use ($file) {
-            $mimeType = \Illuminate\Support\Facades\File::mimeType($fullPath) ?: 'application/octet-stream';
+            $realPath = realpath($fullPath);
+            $allowedStorage = realpath(storage_path('app/public'));
+            $allowedPublic = realpath(public_path());
+
+            // Ensure canonical path stays strictly inside approved storage directories
+            $isWithinAllowedStorage = $allowedStorage && $realPath && str_starts_with($realPath, $allowedStorage);
+            $isWithinAllowedPublic = $allowedPublic && $realPath && str_starts_with($realPath, $allowedPublic);
+
+            if (!$realPath || (!$isWithinAllowedStorage && !$isWithinAllowedPublic)) {
+                abort(403, 'Unauthorized file path access.');
+            }
+
+            $mimeType = \Illuminate\Support\Facades\File::mimeType($realPath) ?: 'application/octet-stream';
             $disposition = request()->boolean('download') ? 'attachment' : 'inline';
-            return response()->file($fullPath, [
+
+            // Sanitize filename for Content-Disposition against response splitting / CRLF injection
+            $safeHeaderFilename = str_replace(["\r", "\n", '"', ';', '\\'], '', $file->filename);
+
+            return response()->file($realPath, [
                 'Content-Type' => $mimeType,
-                'Content-Disposition' => "{$disposition}; filename=\"{$file->filename}\"",
+                'Content-Disposition' => "{$disposition}; filename=\"{$safeHeaderFilename}\"",
+                'X-Content-Type-Options' => 'nosniff',
             ]);
         };
 
@@ -238,22 +260,34 @@ class ReviewerController extends Controller
         $this->authorizeReviewerAssignment($researchTitle);
 
         $request->validate([
-            'category' => 'required|string',
-            'files' => 'required|array',
+            'category' => 'required|string|max:100',
+            'files' => 'required|array|min:1|max:10',
             'files.*' => 'file|mimes:pdf,doc,docx|max:20480'
         ], [
+            'category.max' => 'Category cannot exceed 100 characters.',
+            'files.max' => 'You cannot upload more than 10 files at once.',
             'files.*.mimes' => 'Evaluation files must be in PDF, DOC, or DOCX format.',
             'files.*.max' => 'Each evaluation file must not exceed 20MB in size.'
         ]);
 
-        DB::transaction(function () use ($request, $id) {
-            foreach ($request->file('files') as $file) {
-                $originalExt = $file->getClientOriginalExtension();
-                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $modifiedName = $originalName . '_reviewer.' . $originalExt;
+        $allowedExtensions = ['pdf', 'doc', 'docx'];
 
-                // Ensure consistent path usage with Admin logic
-                $path = $file->storeAs('uploads/research_files', time() . '_' . $modifiedName, 'public_uploads');
+        DB::transaction(function () use ($request, $id, $allowedExtensions) {
+            foreach ($request->file('files') as $file) {
+                $originalExt = strtolower($file->getClientOriginalExtension());
+                if (!in_array($originalExt, $allowedExtensions, true)) {
+                    abort(422, 'Invalid file format detected.');
+                }
+
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                // Sanitize filename against traversal characters, null bytes, and non-alphanumeric symbols
+                $sanitizedBaseName = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $originalName);
+                $sanitizedBaseName = substr($sanitizedBaseName, 0, 100);
+                $modifiedName = $sanitizedBaseName . '_reviewer.' . $originalExt;
+
+                // Random cryptographically secure token to prevent predictable filenames and race condition collisions
+                $secureDiskName = time() . '_' . bin2hex(random_bytes(8)) . '_' . $modifiedName;
+                $path = $file->storeAs('uploads/research_files', $secureDiskName, 'public_uploads');
 
                 researcher_files::create([
                     'research_title_id' => $id,
@@ -261,7 +295,7 @@ class ReviewerController extends Controller
                     'filepath' => 'uploads/research_files/' . basename($path),
                     'filetype' => $originalExt,
                     'uploaded_by' => Auth::id(),
-                    'category' => 'Reviewer Uploads - ' . $request->input('category'),
+                    'category' => 'Reviewer Uploads - ' . strip_tags($request->input('category')),
                     'revision_number' => 0
                 ]);
             }
@@ -286,11 +320,13 @@ class ReviewerController extends Controller
             $researchTitle = Research_title::find($file->research_title_id);
         }
 
-        if ($researchTitle) {
-            $this->authorizeReviewerAssignment($researchTitle);
+        if (!$researchTitle) {
+            abort(404, 'Associated research protocol not found.');
         }
 
-        if ($file->uploaded_by !== Auth::id() && !in_array(Auth::user()->role ?? '', ['admin', 'superadmin'])) {
+        $this->authorizeReviewerAssignment($researchTitle);
+
+        if ($file->uploaded_by !== Auth::id() && !in_array(Auth::user()->role ?? '', ['admin', 'superadmin', 'super_admin'], true)) {
             if ($request->expectsJson()) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized deletion.'], 403);
             }
@@ -304,6 +340,10 @@ class ReviewerController extends Controller
             return back()->with('error', 'Cannot delete non-evaluation files.');
         }
 
+        if (str_contains($file->filepath, '..') || str_contains($file->filepath, "\0")) {
+            abort(403, 'Invalid file path sequence.');
+        }
+
         DB::transaction(function () use ($file) {
             // Standardize file path and safely delete physical file
             $cleanPath = ltrim(str_replace(['storage/', 'public/'], '', $file->filepath), '/');
@@ -313,7 +353,11 @@ class ReviewerController extends Controller
             } elseif (Storage::disk('public')->exists($cleanPath)) {
                 Storage::disk('public')->delete($cleanPath);
             } elseif (file_exists(public_path($file->filepath))) {
-                @unlink(public_path($file->filepath));
+                $realPublic = realpath(public_path($file->filepath));
+                $allowedPublic = realpath(public_path());
+                if ($realPublic && $allowedPublic && str_starts_with($realPublic, $allowedPublic)) {
+                    @unlink($realPublic);
+                }
             }
 
             $file->delete();
@@ -382,20 +426,35 @@ class ReviewerController extends Controller
                 $latestUpload->save();
             }
 
-            // Save per-file remarks submitted from modal
+            // Save per-file remarks submitted from modal with strict BOLA / IDOR protection
             $fileRemarks = $request->input('file_remarks', []);
-            foreach ($fileRemarks as $fileId => $remark) {
-                if (!empty(trim($remark))) {
-                    \App\Models\ReviewerFileRemark::updateOrCreate(
-                        [
-                            'reviewer_id' => Auth::id(),
-                            'file_id' => $fileId
-                        ],
-                        [
-                            'remarks' => trim($remark),
-                            'research_title_id' => $id
-                        ]
-                    );
+            if (is_array($fileRemarks)) {
+                // Get all valid file IDs belonging to this protocol
+                $validFileIds = $submission->files->pluck('id')
+                    ->merge($submission->adminFiles->pluck('id'))
+                    ->map(fn($fid) => (int)$fid)
+                    ->all();
+
+                foreach ($fileRemarks as $fileId => $remark) {
+                    $cleanFileId = (int)$fileId;
+                    // BOLA Defense: Verify file belongs strictly to this protocol
+                    if (!in_array($cleanFileId, $validFileIds, true)) {
+                        continue;
+                    }
+
+                    $cleanRemark = trim(strip_tags((string)$remark));
+                    if ($cleanRemark !== '') {
+                        \App\Models\ReviewerFileRemark::updateOrCreate(
+                            [
+                                'reviewer_id' => Auth::id(),
+                                'file_id' => $cleanFileId
+                            ],
+                            [
+                                'remarks' => $cleanRemark,
+                                'research_title_id' => $id
+                            ]
+                        );
+                    }
                 }
             }
 
@@ -487,11 +546,16 @@ class ReviewerController extends Controller
 
     public function saveFileRemark(Request $request, $fileId)
     {
+        $cleanFileId = (int)$fileId;
+        if ($cleanFileId <= 0) {
+            return response()->json(['success' => false, 'message' => 'Invalid file identifier.'], 422);
+        }
+
         $request->validate(['remarks' => 'nullable|string|max:2000']);
 
-        $remark = trim($request->input('remarks', ''));
+        $remark = trim(strip_tags($request->input('remarks', '')));
 
-        $file = \App\Models\researcher_files::findOrFail($fileId);
+        $file = \App\Models\researcher_files::findOrFail($cleanFileId);
 
         // Explicitly resolve the research title from the file
         $researchTitle = $file->effective_research_title;
@@ -505,15 +569,15 @@ class ReviewerController extends Controller
 
         $this->authorizeReviewerAssignment($researchTitle);
 
-        DB::transaction(function () use ($fileId, $remark, $researchTitle) {
+        DB::transaction(function () use ($cleanFileId, $remark, $researchTitle) {
             if ($remark === '') {
                 // Delete existing remark if cleared
                 \App\Models\ReviewerFileRemark::where('reviewer_id', Auth::id())
-                    ->where('file_id', $fileId)
+                    ->where('file_id', $cleanFileId)
                     ->delete();
             } else {
                 \App\Models\ReviewerFileRemark::updateOrCreate(
-                    ['reviewer_id' => Auth::id(), 'file_id' => $fileId],
+                    ['reviewer_id' => Auth::id(), 'file_id' => $cleanFileId],
                     ['remarks' => $remark, 'research_title_id' => $researchTitle->id]
                 );
             }

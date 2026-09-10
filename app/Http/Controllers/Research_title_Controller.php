@@ -209,7 +209,8 @@ class Research_title_Controller extends Controller
         $titles = Research_title::with(['files', 'adminFiles', 'appointment', 'titleLogs.user'])
             ->where('researcher_id', $user->researcher->id)
             ->orderBy('created_at', 'desc')
-            ->paginate(9);
+            ->paginate(9)
+            ->withQueryString();
 
         // Preload assigned reviewer users to prevent N+1 queries in details modal
         $allReviewerIds = $titles->pluck('assigned_reviewers')->flatten()->filter()->unique();

@@ -155,6 +155,17 @@ class AdminController extends Controller
         // Full list of WMSU Colleges
         $colleges = College::all();
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'html' => view('admin.partials.users_table', compact('users'))->render(),
+                'usersData' => $users->items(),
+                'totalResearchers' => $totalResearchers,
+                'activeCount' => $activeCount,
+                'internalCount' => $internalCount,
+                'externalCount' => $externalCount,
+            ]);
+        }
+
         return view('admin.manage_users', compact('users', 'colleges', 'totalResearchers', 'activeCount', 'internalCount', 'externalCount'));
     }
 
@@ -3171,7 +3182,7 @@ class AdminController extends Controller
             $query->orderBy('updated_at', 'desc');
         }
 
-        $datas = $query->paginate(5);
+        $datas = $query->paginate(5)->withQueryString();
 
         if ($request->ajax()) {
             $html = view('admin.partials.active_revisions_list', compact('datas'))->render();
@@ -3183,8 +3194,45 @@ class AdminController extends Controller
 
     public function certifications(Request $request)
     {
+        $baseApprovedQuery = Research_title::where('Status', 'Approved');
+
+        $awaitingCount = (clone $baseApprovedQuery)->where(function ($query) {
+            $query->whereDoesntHave('adminFiles', function ($q) {
+                $q->where('filetype', 'certificate');
+            })->orWhereDoesntHave('adminFiles', function ($q) {
+                $q->where('filetype', 'Approval Letter');
+            });
+        })->count();
+
+        $certifiedCount = (clone $baseApprovedQuery)->whereHas('adminFiles', function ($q) {
+            $q->where('filetype', 'certificate');
+        })->whereHas('adminFiles', function ($q) {
+            $q->where('filetype', 'Approval Letter');
+        })->count();
+
+        $tab = $request->input('tab', 'awaiting');
+        if (!in_array($tab, ['awaiting', 'certified'])) {
+            $tab = 'awaiting';
+        }
+
         $query = Research_title::with(['researcher.user', 'files', 'adminFiles', 'user'])
             ->where('Status', 'Approved');
+
+        if ($tab === 'certified') {
+            $query->whereHas('adminFiles', function ($q) {
+                $q->where('filetype', 'certificate');
+            })->whereHas('adminFiles', function ($q) {
+                $q->where('filetype', 'Approval Letter');
+            });
+        } else {
+            $query->where(function ($q) {
+                $q->whereDoesntHave('adminFiles', function ($sq) {
+                    $sq->where('filetype', 'certificate');
+                })->orWhereDoesntHave('adminFiles', function ($sq) {
+                    $sq->where('filetype', 'Approval Letter');
+                });
+            });
+        }
 
         if ($request->filled('review_types') && is_array($request->review_types)) {
             $query->whereIn('Review_Type', $request->review_types);
@@ -3208,14 +3256,19 @@ class AdminController extends Controller
             $query->orderBy('updated_at', 'desc');
         }
 
-        $datas = $query->paginate(5);
+        $datas = $query->paginate(5)->withQueryString();
 
         if ($request->ajax()) {
-            $html = view('admin.partials.active_certifications_list', compact('datas'))->render();
-            return response()->json(['html' => $html]);
+            $html = view('admin.partials.active_certifications_list', compact('datas', 'tab', 'awaitingCount', 'certifiedCount'))->render();
+            return response()->json([
+                'html' => $html,
+                'tab' => $tab,
+                'awaitingCount' => $awaitingCount,
+                'certifiedCount' => $certifiedCount,
+            ]);
         }
 
-        return view('admin.certifications', compact('datas'));
+        return view('admin.certifications', compact('datas', 'tab', 'awaitingCount', 'certifiedCount'));
     }
     public function meetings()
     {

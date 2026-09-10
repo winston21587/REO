@@ -43,6 +43,53 @@ public function boot()
 
             $view->with('notifications', $userNotifications[$userId])
                  ->with('unreadCount', $unreadCounts[$userId]);
+
+            // Share review workflow counts for Admin and Super Admin sidebars (cached per request)
+            if (in_array(Auth::user()->role ?? '', ['admin', 'super_admin'])) {
+                static $sidebarCounts = null;
+                if ($sidebarCounts === null) {
+                    $sidebarCounts = [
+                        'pendingIntake' => \App\Models\Research_title::whereIn('Status', [
+                            'Pending',
+                            'Incomplete',
+                            'Incomplete Resubmitted',
+                            'Rejected'
+                        ])->count(),
+                        'activeProtocols' => \App\Models\Research_title::whereIn('Status', [
+                            'Incomplete - Awaiting Hardcopy',
+                            'Incomplete Hardcopy',
+                            'Hardcopy Received',
+                            'Reviewer Assigned',
+                            'Under Review',
+                            'Reviewed'
+                        ])->count(),
+                        'revisions' => \App\Models\Research_title::whereIn('Status', [
+                            'Waiting for Revision',
+                            'Revision Submitted',
+                            'Reviewing Revisions',
+                            'Reviewed',
+                            'Panel Deliberation'
+                        ])->count(),
+                        // Awaiting Certification: Approved but missing Certificate or Approval Letter
+                        'pendingCertifications' => \App\Models\Research_title::where('Status', 'Approved')
+                            ->where(function ($query) {
+                                $query->whereDoesntHave('adminFiles', function ($q) {
+                                    $q->where('filetype', 'certificate');
+                                })->orWhereDoesntHave('adminFiles', function ($q) {
+                                    $q->where('filetype', 'Approval Letter');
+                                });
+                            })->count(),
+                        // Certified: Approved and has both Certificate & Approval Letter
+                        'totalCertified' => \App\Models\Research_title::where('Status', 'Approved')
+                            ->whereHas('adminFiles', function ($q) {
+                                $q->where('filetype', 'certificate');
+                            })->whereHas('adminFiles', function ($q) {
+                                $q->where('filetype', 'Approval Letter');
+                            })->count(),
+                    ];
+                }
+                $view->with('sidebarCounts', $sidebarCounts);
+            }
         }
         
         // Share CMS content globally (cached per request)

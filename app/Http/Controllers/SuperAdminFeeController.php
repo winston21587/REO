@@ -83,7 +83,18 @@ class SuperAdminFeeController extends Controller
         $verifiedCount = (clone $query)->where('is_or_verified', true)->count();
         $totalCount = (clone $query)->count();
 
-        $submissions = $query->with(['researcher.user', 'user'])->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+        $submissions = $query->with(['researcher.user', 'user'])->orderBy('created_at', 'desc')->paginate(7)->withQueryString();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'html' => view('super_admin.partials.revenue_logs_table', compact('submissions'))->render(),
+                'totalRevenue' => number_format($totalRevenue, 2),
+                'pendingRevenue' => number_format($pendingRevenue, 2),
+                'verifiedCount' => $verifiedCount,
+                'totalCount' => $totalCount,
+                'clearanceRate' => $totalCount > 0 ? number_format(($verifiedCount / $totalCount) * 100, 1) : '0.0',
+            ]);
+        }
 
         return view('super_admin.revenue_logs', compact('submissions', 'totalRevenue', 'pendingRevenue', 'verifiedCount', 'totalCount'));
     }

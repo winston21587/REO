@@ -275,10 +275,14 @@
                 </a>
             @else
                 <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-                    <i class="fas fa-folder-open text-xl" aria-hidden="true"></i>
+                    <i class="{{ ($tab ?? 'awaiting') === 'certified' ? 'fas fa-certificate' : 'fas fa-folder-open' }} text-xl" aria-hidden="true"></i>
                 </div>
-                <h4 class="text-sm font-semibold text-slate-900 mb-1">No Approved Submissions Found</h4>
-                <p class="text-xs text-slate-500 max-w-sm leading-relaxed">There are currently no approved submissions awaiting certificates.</p>
+                <h4 class="text-sm font-semibold text-slate-900 mb-1">
+                    {{ ($tab ?? 'awaiting') === 'certified' ? 'No Certified Records Found' : 'No Submissions Awaiting Certification' }}
+                </h4>
+                <p class="text-xs text-slate-500 max-w-sm leading-relaxed">
+                    {{ ($tab ?? 'awaiting') === 'certified' ? 'There are currently no completed certificates in the archive.' : 'There are currently no approved submissions awaiting certificate issuance.' }}
+                </p>
             @endif
         </div>
     @endif

@@ -38,15 +38,18 @@
         },
 
         get filteredTitles() {
-            if (!this.selectedUser || !this.selectedUser.researcher || !this.selectedUser.researcher.research_titles) return [];
-            if (!this.titleSearch) return this.selectedUser.researcher.research_titles;
+            if (!this.selectedUser || !this.selectedUser.researcher) return [];
+            const titles = this.selectedUser.researcher.research_titles || this.selectedUser.researcher.researchTitles || [];
+            if (!this.titleSearch) return titles;
             const search = this.titleSearch.toLowerCase();
-            return this.selectedUser.researcher.research_titles.filter(t => 
+            return titles.filter(t => 
                 (t.Study_Protocol_title && t.Study_Protocol_title.toLowerCase().includes(search)) || 
                 (t.Status && t.Status.toLowerCase().includes(search))
             );
         }
-    }" class="w-full max-w-7xl mx-auto space-y-8 min-w-0">
+    }" 
+    @users-updated.window="usersList = $event.detail.users"
+    class="w-full max-w-7xl mx-auto space-y-8 min-w-0">
         
         <!-- Header & Executive Actions -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pb-6 border-b border-slate-200">
@@ -69,32 +72,32 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
                 <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Total Researchers</span>
-                <span class="text-2xl font-extrabold text-slate-900 font-heading tabular-nums mt-1 block">
+                <span id="metric-total-researchers" class="text-2xl font-extrabold text-slate-900 font-heading tabular-nums mt-1 block">
                     {{ $totalResearchers ?? $users->total() }}
                 </span>
             </div>
             <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
                 <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Active Accounts</span>
-                <span class="text-2xl font-extrabold text-emerald-600 font-heading tabular-nums mt-1 block">
+                <span id="metric-active-researchers" class="text-2xl font-extrabold text-emerald-600 font-heading tabular-nums mt-1 block">
                     {{ $activeCount ?? $users->where('is_verified', true)->count() }}
                 </span>
             </div>
             <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
                 <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Internal Faculty</span>
-                <span class="text-2xl font-extrabold text-blue-700 font-heading tabular-nums mt-1 block">
+                <span id="metric-internal-researchers" class="text-2xl font-extrabold text-blue-700 font-heading tabular-nums mt-1 block">
                     {{ $internalCount ?? 0 }}
                 </span>
             </div>
             <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
                 <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">External Investigators</span>
-                <span class="text-2xl font-extrabold text-indigo-700 font-heading tabular-nums mt-1 block">
+                <span id="metric-external-researchers" class="text-2xl font-extrabold text-indigo-700 font-heading tabular-nums mt-1 block">
                     {{ $externalCount ?? 0 }}
                 </span>
             </div>
         </div>
 
         <!-- Search & Filter Controls -->
-        <form method="GET" action="{{ route('admin.manage_users') }}" class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+        <form id="users-filter-form" method="GET" action="{{ route('admin.manage_users') }}" class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row gap-4 items-stretch md:items-center">
             <!-- Search -->
             <div class="relative flex-grow min-w-0">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -107,7 +110,7 @@
                        type="text"
                        placeholder="Search by name, email..." 
                        aria-label="Search by name, email"
-                       class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm md:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]" />
+                       class="user-filter-input w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm md:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]" />
             </div>
             
             <!-- Affiliation Filter -->
@@ -115,7 +118,7 @@
                 <select x-model="filterAffiliation" 
                         name="status" 
                         aria-label="Filter by Affiliation"
-                        class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
+                        class="user-filter-input w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
                     <option value="">All Affiliations</option>
                     <option value="internal" {{ request('status') == 'internal' ? 'selected' : '' }}>Internal (WMSU)</option>
                     <option value="external" {{ request('status') == 'external' ? 'selected' : '' }}>External</option>
@@ -133,7 +136,7 @@
                         :class="{ 'opacity-50 cursor-not-allowed bg-slate-100': filterAffiliation === 'external' }" 
                         name="college" 
                         aria-label="Filter by College"
-                        class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
+                        class="user-filter-input w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
                     <option value="">All Colleges</option>
                     @foreach($colleges as $college)
                         <option value="{{ $college->name }}" {{ request('college') == $college->name ? 'selected' : '' }}>{{ $college->name }}</option>
@@ -150,7 +153,7 @@
             <div class="relative w-full md:w-44">
                 <select name="account_status" 
                         aria-label="Filter by Account Status"
-                        class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
+                        class="user-filter-input w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all appearance-none cursor-pointer min-h-[44px]">
                     <option value="">All Statuses</option>
                     <option value="active" {{ request('account_status') == 'active' ? 'selected' : '' }}>Active</option>
                     <option value="deactivated" {{ request('account_status') == 'deactivated' ? 'selected' : '' }}>Deactivated</option>
@@ -172,201 +175,18 @@
                     Apply
                 </button>
 
-                @if(request('search') || request('status') || request('college') || request('account_status'))
-                <a href="{{ route('admin.manage_users') }}" 
+                <a id="users-filter-reset" 
+                   href="{{ route('admin.manage_users') }}" 
                    title="Reset all filters"
-                   class="inline-flex items-center justify-center px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors min-h-[44px]">
+                   class="{{ (request('search') || request('status') || request('college') || request('account_status')) ? '' : 'hidden ' }}inline-flex items-center justify-center px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors min-h-[44px]">
                     Reset
                 </a>
-                @endif
             </div>
         </form>
 
         <!-- Researchers Data Ledger -->
-        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[760px]">
-                    <thead>
-                        <tr class="bg-slate-50/80 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                            <th class="py-4 px-6">Researcher / Role</th>
-                            <th class="py-4 px-6">Contact Email</th>
-                            <th class="py-4 px-6">Affiliation & College</th>
-                            <th class="py-4 px-6">Account Status</th>
-                            <th class="py-4 px-6 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @forelse($users as $user)
-                        <tr class="hover:bg-slate-50/70 transition-colors">
-                            <!-- Name / Role -->
-                            <td class="py-4 px-6">
-                                <div class="flex items-center gap-3.5">
-                                    <div class="w-10 h-10 rounded-full bg-slate-100 text-[#8B0000] border border-slate-200 flex items-center justify-center font-bold text-sm shrink-0 font-heading">
-                                        {{ strtoupper(substr($user->first_name, 0, 1)) }}{{ strtoupper(substr($user->last_name, 0, 1)) }}
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="font-bold text-slate-900 text-sm truncate">
-                                            {{ $user->first_name }} {{ $user->middle_name ? $user->middle_name . ' ' : '' }}{{ $user->last_name }}
-                                        </p>
-                                        <p class="text-xs text-slate-500 truncate mt-0.5">
-                                            {{ $user->researcher?->college ?? ($user->researcher?->external_user ? ($user->researcher?->institute ?? 'External Investigator') : 'Researcher') }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <!-- Contact Email -->
-                            <td class="py-4 px-6">
-                                <a href="mailto:{{ $user->email }}" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-[#8B0000] transition-colors group">
-                                    <svg class="w-4 h-4 text-slate-400 group-hover:text-[#8B0000] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                    <span class="truncate">{{ $user->email }}</span>
-                                </a>
-                            </td>
-
-                            <!-- Affiliation & College (High-Contrast Semantic Typography - NO pills, NO dots) -->
-                            <td class="py-4 px-6">
-                                <div class="flex flex-col gap-0.5">
-                                    @if(!$user->researcher?->external_user)
-                                        <span class="text-xs font-bold uppercase tracking-wider text-blue-700">Internal</span>
-                                        <span class="text-xs text-slate-500 truncate max-w-[220px]" title="{{ $user->researcher?->college ?? 'WMSU Faculty/Staff' }}">
-                                            {{ $user->researcher?->college ?? 'WMSU Faculty/Staff' }}
-                                        </span>
-                                    @else
-                                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-700">External</span>
-                                        <span class="text-xs text-slate-500 truncate max-w-[220px]" title="{{ $user->researcher?->institute ?? 'External Institution' }}">
-                                            {{ $user->researcher?->institute ?? 'External Institution' }}
-                                        </span>
-                                    @endif
-                                </div>
-                            </td>
-
-                            <!-- Status (High-Contrast Semantic Typography - NO pills, NO dots) -->
-                            <td class="py-4 px-6">
-                                @if($user->is_verified)
-                                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Active</span>
-                                @elseif($user->email_verified_at)
-                                    <span class="text-xs font-bold uppercase tracking-wider text-rose-600">Deactivated</span>
-                                @else
-                                    <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Pending</span>
-                                @endif
-                            </td>
-
-                            <!-- Actions -->
-                            <td class="py-4 px-6 text-right">
-                                <div x-data="{ open: false }" class="relative inline-block text-left">
-                                    <button @click="open = !open" 
-                                            @click.away="open = false" 
-                                            aria-label="Actions for {{ $user->first_name }}"
-                                            class="w-9 h-9 inline-flex items-center justify-center text-slate-500 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                        </svg>
-                                    </button>
-                                    
-                                    <div x-show="open" 
-                                         x-transition:enter="transition ease-out duration-100"
-                                         x-transition:enter-start="transform opacity-0 scale-95"
-                                         x-transition:enter-end="transform opacity-100 scale-100"
-                                         x-transition:leave="transition ease-in duration-75"
-                                         x-transition:leave-start="transform opacity-100 scale-100"
-                                         x-transition:leave-end="transform opacity-0 scale-95"
-                                         class="absolute right-0 z-20 mt-1 w-52 origin-top-right rounded-xl bg-white shadow-xl border border-slate-200/80 focus:outline-none overflow-hidden py-1.5" 
-                                         style="display: none;">
-                                        
-                                        <!-- View Details Trigger -->
-                                        <button @click="openViewModal({{ $user->id }}); open = false;" 
-                                                class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors cursor-pointer">
-                                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            View Dossier
-                                        </button>
-
-                                        <!-- Edit Profile Trigger -->
-                                        <button @click="openEditModal({{ $user->id }}); open = false;" 
-                                                class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors cursor-pointer">
-                                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                            Edit Profile
-                                        </button>
-                                        
-                                        <!-- Toggle Status Trigger -->
-                                        <button type="button" 
-                                                @click="open = false; triggerConfirm(
-                                                    '{{ $user->is_verified ? 'Deactivate Account' : 'Activate Account' }}', 
-                                                    'Are you sure you want to {{ $user->is_verified ? 'deactivate' : 'activate' }} the account for {{ $user->first_name }} {{ $user->last_name }}?', 
-                                                    '{{ $user->is_verified ? 'Deactivate Account' : 'Activate Account' }}', 
-                                                    '{{ route('admin.users.toggle_status', $user->id) }}',
-                                                    false
-                                                )" 
-                                                class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors cursor-pointer">
-                                            @if($user->is_verified)
-                                                <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                                </svg>
-                                                Deactivate Account
-                                            @else
-                                                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                Activate Account
-                                            @endif
-                                        </button>
-
-                                        <div class="border-t border-slate-100 my-1"></div>
-
-                                        <!-- Delete Researcher Trigger -->
-                                        <button type="button" 
-                                                @click="open = false; triggerConfirm(
-                                                    'Delete Researcher Record', 
-                                                    'Are you sure you want to delete {{ $user->first_name }} {{ $user->last_name }}? This action is permanent and removes all associated investigator records.', 
-                                                    'Confirm Deletion', 
-                                                    '{{ route('admin.users.delete', $user->id) }}',
-                                                    true
-                                                )" 
-                                                class="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer">
-                                            <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                            Delete User
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="py-12 text-center">
-                                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </div>
-                                <h3 class="text-sm font-bold text-slate-800">No Researchers Found</h3>
-                                <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">No investigator records match your search or filter criteria.</p>
-                                @if(request('search') || request('status') || request('college') || request('account_status'))
-                                <div class="mt-4">
-                                    <a href="{{ route('admin.manage_users') }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#8B0000] hover:underline uppercase tracking-wider">
-                                        Clear All Filters
-                                    </a>
-                                </div>
-                                @endif
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            @if($users->hasPages())
-            <div class="p-4 border-t border-slate-200/80 bg-slate-50/50">
-                {{ $users->links() }}
-            </div>
-            @endif
+        <div id="users-table-wrapper" class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
+            @include('admin.partials.users_table')
         </div>
 
         <!-- Add Researcher Modal (Frosted Scrim Rule) -->
@@ -793,4 +613,151 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableWrapper = document.getElementById('users-table-wrapper');
+            const form = document.getElementById('users-filter-form');
+
+            function fetchUsers(targetUrl, pushState = true) {
+                if (!tableWrapper) return;
+                
+                tableWrapper.style.opacity = '0.5';
+                tableWrapper.style.pointerEvents = 'none';
+
+                let url;
+                if (targetUrl instanceof URLSearchParams) {
+                    url = new URL('{{ route('admin.manage_users') }}', window.location.origin);
+                    targetUrl.forEach((value, key) => {
+                        if (value !== '') {
+                            url.searchParams.set(key, value);
+                        }
+                    });
+                } else if (typeof targetUrl === 'string') {
+                    url = new URL(targetUrl, window.location.origin);
+                } else {
+                    url = new URL(window.location.href);
+                }
+
+                fetch(url.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.html) {
+                        tableWrapper.innerHTML = data.html;
+                        if (window.Alpine) {
+                            window.Alpine.initTree(tableWrapper);
+                        }
+                    }
+
+                    if (data.usersData) {
+                        window.dispatchEvent(new CustomEvent('users-updated', {
+                            detail: { users: data.usersData }
+                        }));
+                    }
+
+                    if (data.totalResearchers !== undefined) {
+                        const el = document.getElementById('metric-total-researchers');
+                        if (el) el.textContent = data.totalResearchers;
+                    }
+                    if (data.activeCount !== undefined) {
+                        const el = document.getElementById('metric-active-researchers');
+                        if (el) el.textContent = data.activeCount;
+                    }
+                    if (data.internalCount !== undefined) {
+                        const el = document.getElementById('metric-internal-researchers');
+                        if (el) el.textContent = data.internalCount;
+                    }
+                    if (data.externalCount !== undefined) {
+                        const el = document.getElementById('metric-external-researchers');
+                        if (el) el.textContent = data.externalCount;
+                    }
+
+                    if (pushState && url.toString() !== window.location.href) {
+                        window.history.pushState({}, '', url.toString());
+                    }
+
+                    updateResetButton(url.toString());
+                })
+                .catch(error => {
+                    console.error('AJAX Users Pagination error:', error);
+                    window.location.href = url.toString();
+                })
+                .finally(() => {
+                    tableWrapper.style.opacity = '1';
+                    tableWrapper.style.pointerEvents = 'auto';
+                });
+            }
+
+            function updateResetButton(urlStr) {
+                try {
+                    const parsed = new URL(urlStr, window.location.origin);
+                    const hasFilters = parsed.searchParams.get('search') || 
+                                       parsed.searchParams.get('status') || 
+                                       parsed.searchParams.get('college') ||
+                                       parsed.searchParams.get('account_status');
+                    const resetBtn = document.getElementById('users-filter-reset');
+                    if (resetBtn) {
+                        if (hasFilters) {
+                            resetBtn.classList.remove('hidden');
+                        } else {
+                            resetBtn.classList.add('hidden');
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            // Form Submit Interception
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    fetchUsers(new URLSearchParams(formData));
+                });
+            }
+
+            // Filter Inputs Auto-Submit on Change
+            document.querySelectorAll('.user-filter-input').forEach(function(input) {
+                if (input.tagName === 'SELECT') {
+                    input.addEventListener('change', function() {
+                        if (form) {
+                            const formData = new FormData(form);
+                            fetchUsers(new URLSearchParams(formData));
+                        }
+                    });
+                }
+            });
+
+            // Reset Button Delegation
+            const resetBtn = document.getElementById('users-filter-reset');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (form) form.reset();
+                    fetchUsers('{{ route('admin.manage_users') }}');
+                });
+            }
+
+            // Pagination Link Delegation
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('#users-table-wrapper nav a') || e.target.closest('.filter-pagination a');
+                if (link && link.href) {
+                    e.preventDefault();
+                    fetchUsers(link.href);
+                }
+            });
+
+            // Browser Back/Forward navigation
+            window.addEventListener('popstate', function() {
+                fetchUsers(window.location.href, false);
+            });
+        });
+    </script>
 </x-admin_layout>

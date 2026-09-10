@@ -137,6 +137,28 @@
             </div>
         </div>
 
+        {{-- Status Navigation Tabs (Option A) --}}
+        <div class="flex items-center gap-1 sm:gap-2 border-b border-slate-200">
+            <button type="button"
+                    data-tab-value="awaiting"
+                    class="cert-tab-btn pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer {{ ($tab ?? 'awaiting') === 'awaiting' ? 'border-[#8B0000] text-[#8B0000]' : 'border-transparent text-slate-500 hover:text-slate-800' }}">
+                <span>Awaiting Certification</span>
+                <span id="tab-badge-awaiting"
+                      class="px-2 py-0.5 rounded-full text-xs font-bold tabular-nums {{ ($tab ?? 'awaiting') === 'awaiting' ? 'bg-[#8B0000]/10 text-[#8B0000]' : 'bg-slate-100 text-slate-600' }}">
+                    {{ $awaitingCount ?? 0 }}
+                </span>
+            </button>
+            <button type="button"
+                    data-tab-value="certified"
+                    class="cert-tab-btn pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer {{ ($tab ?? 'awaiting') === 'certified' ? 'border-[#8B0000] text-[#8B0000]' : 'border-transparent text-slate-500 hover:text-slate-800' }}">
+                <span>Certified Archive</span>
+                <span id="tab-badge-certified"
+                      class="px-2 py-0.5 rounded-full text-xs font-bold tabular-nums {{ ($tab ?? 'awaiting') === 'certified' ? 'bg-[#8B0000]/10 text-[#8B0000]' : 'bg-slate-100 text-slate-600' }}">
+                    {{ $certifiedCount ?? 0 }}
+                </span>
+            </button>
+        </div>
+
         {{-- Certifications Ledger Card Wrapper --}}
         <div id="certifications-wrapper" class="flex-1 flex flex-col min-h-[400px]">
             @include('admin.partials.active_certifications_list')
@@ -260,6 +282,21 @@
         document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('cert_search_input');
             let debounceTimer;
+            let currentTab = new URLSearchParams(window.location.search).get('tab') || '{{ $tab ?? "awaiting" }}';
+
+            const updateTabStyles = (active) => {
+                document.querySelectorAll('.cert-tab-btn').forEach(btn => {
+                    const val = btn.getAttribute('data-tab-value');
+                    const badge = btn.querySelector('span:last-child');
+                    if (val === active) {
+                        btn.className = 'cert-tab-btn pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer border-[#8B0000] text-[#8B0000]';
+                        if (badge) badge.className = 'px-2 py-0.5 rounded-full text-xs font-bold tabular-nums bg-[#8B0000]/10 text-[#8B0000]';
+                    } else {
+                        btn.className = 'cert-tab-btn pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer border-transparent text-slate-500 hover:text-slate-800';
+                        if (badge) badge.className = 'px-2 py-0.5 rounded-full text-xs font-bold tabular-nums bg-slate-100 text-slate-600';
+                    }
+                });
+            };
 
             const fetchCertifications = (params) => {
                 const url = `{{ route('admin.certifications') }}?${params.toString()}`;
@@ -276,6 +313,18 @@
                         if (wrapper && data.html) {
                             wrapper.innerHTML = data.html;
                         }
+                        if (data.awaitingCount !== undefined) {
+                            const badge = document.getElementById('tab-badge-awaiting');
+                            if (badge) badge.textContent = data.awaitingCount;
+                        }
+                        if (data.certifiedCount !== undefined) {
+                            const badge = document.getElementById('tab-badge-certified');
+                            if (badge) badge.textContent = data.certifiedCount;
+                        }
+                        if (data.tab) {
+                            currentTab = data.tab;
+                            updateTabStyles(currentTab);
+                        }
                         window.history.pushState({}, '', url);
                     })
                     .catch(error => console.error('Error fetching certifications:', error));
@@ -285,6 +334,8 @@
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     const params = new URLSearchParams(window.location.search);
+
+                    params.set('tab', currentTab);
 
                     if (searchInput) {
                         if (searchInput.value) params.set('search', searchInput.value);
@@ -307,6 +358,17 @@
                 }, 300);
             };
 
+            // Tab button clicks
+            document.querySelectorAll('.cert-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const selected = btn.getAttribute('data-tab-value');
+                    if (selected === currentTab) return;
+                    currentTab = selected;
+                    updateTabStyles(currentTab);
+                    triggerFetch(true);
+                });
+            });
+
             if (searchInput) {
                 searchInput.addEventListener('input', () => triggerFetch(true));
             }
@@ -321,8 +383,18 @@
                 if (link) {
                     e.preventDefault();
                     const url = new URL(link.href);
-                    fetchCertifications(new URLSearchParams(url.search));
+                    const params = new URLSearchParams(url.search);
+                    params.set('tab', currentTab);
+                    fetchCertifications(params);
                 }
+            });
+
+            // Browser back/forward navigation
+            window.addEventListener('popstate', () => {
+                const params = new URLSearchParams(window.location.search);
+                currentTab = params.get('tab') || 'awaiting';
+                updateTabStyles(currentTab);
+                fetchCertifications(params);
             });
         });
     </script>

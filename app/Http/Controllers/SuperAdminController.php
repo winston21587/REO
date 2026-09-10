@@ -49,8 +49,15 @@ class SuperAdminController extends Controller
             }
         }
 
-        $users = $query->latest()->paginate(10)->withQueryString();
+        $users = $query->with('admin')->latest()->paginate(10)->withQueryString();
         $colleges = College::all();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'html' => view('super_admin.partials.admins_table', compact('users'))->render(),
+                'usersData' => $users->items(),
+            ]);
+        }
 
         $totalAdmins = User::where('role', 'admin')->count();
         $activeCount = User::where('role', 'admin')->where('is_verified', true)->count();
@@ -189,6 +196,20 @@ class SuperAdminController extends Controller
         }
 
         $users = $query->latest()->paginate(10)->withQueryString();
+
+        // Batch prefetch reviewed titles to eliminate N+1 database queries (backend.md)
+        $reviewedTitlesAll = \App\Models\Research_title::where('Status', 'Reviewed')
+            ->whereNotNull('assigned_reviewers')
+            ->get(['id', 'Study_Protocol_title', 'assigned_reviewers']);
+
+        $users->getCollection()->transform(function($user) use ($reviewedTitlesAll) {
+            $user->reviewed_titles = $reviewedTitlesAll->filter(function($title) use ($user) {
+                $assigned = $title->assigned_reviewers ?? [];
+                return in_array((string)$user->id, array_map('strval', (array)$assigned), true);
+            })->map(fn($t) => ['id' => $t->id, 'title' => $t->Study_Protocol_title])->values();
+            return $user;
+        });
+
         $colleges = College::with('departments.programs')->get();
 
         $globalVisibility = \App\Models\Reviewer::where('show_researcher_identity', true)->exists();
@@ -197,6 +218,17 @@ class SuperAdminController extends Controller
         $activeCount = User::where('role', 'reviewer')->where('is_verified', true)->count();
         $internalCount = User::where('role', 'reviewer')->whereHas('reviewer', fn($q) => $q->where('external_user', false))->count();
         $externalCount = User::where('role', 'reviewer')->whereHas('reviewer', fn($q) => $q->where('external_user', true))->count();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'html' => view('super_admin.partials.reviewers_table', compact('users'))->render(),
+                'usersData' => $users->items(),
+                'totalReviewers' => $totalReviewers,
+                'activeCount' => $activeCount,
+                'internalCount' => $internalCount,
+                'externalCount' => $externalCount,
+            ]);
+        }
 
         return view('super_admin.manage_reviewers', compact('users', 'colleges', 'globalVisibility', 'totalReviewers', 'activeCount', 'internalCount', 'externalCount'));
     }

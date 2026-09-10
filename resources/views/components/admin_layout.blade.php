@@ -127,25 +127,33 @@
                             class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white transition-all {{ request()->routeIs('admin.NewSubmissions') ? 'active font-bold text-white' : '' }}">
                             <i class="fas fa-inbox w-5 text-center"></i>
                             <span class="flex-1">Initial Intake</span>
-                            @if($pendingCount = \App\Models\Research_title::where('Status', 'Pending')->count())
-                                <span
-                                    class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $pendingCount }}</span>
+                            @if(!empty($sidebarCounts['pendingIntake']))
+                                <span class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $sidebarCounts['pendingIntake'] }}</span>
                             @endif
                         </a>
                         <a href="{{ route('admin.applications') }}"
                             class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all {{ request()->routeIs('admin.applications') ? 'active' : '' }}">
                             <i class="fas fa-folder-open w-5 text-center"></i>
                             <span class="flex-1">Active Protocols</span>
+                            @if(!empty($sidebarCounts['activeProtocols']))
+                                <span class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $sidebarCounts['activeProtocols'] }}</span>
+                            @endif
                         </a>
                         <a href="{{ route('admin.revisions') }}"
                             class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all {{ request()->routeIs('admin.revisions') ? 'active' : '' }}">
                             <i class="fas fa-sync-alt w-5 text-center"></i>
                             <span class="flex-1">Revisions</span>
+                            @if(!empty($sidebarCounts['revisions']))
+                                <span class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $sidebarCounts['revisions'] }}</span>
+                            @endif
                         </a>
                         <a href="{{ route('admin.certifications') }}"
                             class="nav-item flex items-center gap-3 px-4 py-3 rounded-r-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all {{ request()->routeIs('admin.certifications') ? 'active' : '' }}">
                             <i class="fas fa-certificate w-5 text-center"></i>
                             <span class="flex-1">Certifications</span>
+                            @if(!empty($sidebarCounts['pendingCertifications']))
+                                <span class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $sidebarCounts['pendingCertifications'] }}</span>
+                            @endif
                         </a>
                     </div>
                 </div>
@@ -250,24 +258,33 @@
                             class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white transition-all {{ request()->routeIs('admin.NewSubmissions') ? 'active font-bold text-white' : '' }}">
                             <i class="fas fa-inbox w-5 text-center"></i>
                             <span class="flex-1">Initial Intake</span>
-                            @if($pendingCount = \App\Models\Research_title::where('Status', 'Pending')->count())
-                                <span class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $pendingCount }}</span>
+                            @if(!empty($sidebarCounts['pendingIntake']))
+                                <span class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $sidebarCounts['pendingIntake'] }}</span>
                             @endif
                         </a>
                         <a href="{{ route('admin.applications') }}"
                             class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all {{ request()->routeIs('admin.applications') ? 'active' : '' }}">
                             <i class="fas fa-folder-open w-5 text-center"></i>
                             <span class="flex-1">Active Protocols</span>
+                            @if(!empty($sidebarCounts['activeProtocols']))
+                                <span class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $sidebarCounts['activeProtocols'] }}</span>
+                            @endif
                         </a>
                         <a href="{{ route('admin.revisions') }}"
                             class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all {{ request()->routeIs('admin.revisions') ? 'active' : '' }}">
                             <i class="fas fa-sync-alt w-5 text-center"></i>
                             <span class="flex-1">Revisions</span>
+                            @if(!empty($sidebarCounts['revisions']))
+                                <span class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $sidebarCounts['revisions'] }}</span>
+                            @endif
                         </a>
                         <a href="{{ route('admin.certifications') }}"
                             class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all {{ request()->routeIs('admin.certifications') ? 'active' : '' }}">
                             <i class="fas fa-certificate w-5 text-center"></i>
                             <span class="flex-1">Certifications</span>
+                            @if(!empty($sidebarCounts['pendingCertifications']))
+                                <span class="bg-[#8B0000] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">{{ $sidebarCounts['pendingCertifications'] }}</span>
+                            @endif
                         </a>
                     </div>
                 </div>

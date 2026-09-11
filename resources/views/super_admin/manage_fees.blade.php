@@ -101,9 +101,11 @@
         <!-- Filter & Search Toolbar -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div class="flex-1 min-w-0 max-w-md relative">
-                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
                 <input type="text" id="categorySearch" placeholder="Search categories..." oninput="filterCategoriesTable()"
                        class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[40px]">
             </div>
@@ -245,7 +247,7 @@
                                 <div class="space-y-1">
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Submission Tariff Fee (₱) <span class="text-rose-600">*</span></label>
                                     <div class="relative">
-                                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₱</span>
+                                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sm font-bold text-slate-400">₱</div>
                                         <input type="number" step="0.01" min="0" name="fee" required placeholder="0.00"
                                                class="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
                                     </div>
@@ -312,7 +314,7 @@
                                 <div class="space-y-1">
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Submission Tariff Fee (₱) <span class="text-rose-600">*</span></label>
                                     <div class="relative">
-                                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₱</span>
+                                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sm font-bold text-slate-400">₱</div>
                                         <input type="number" step="0.01" min="0" name="fee" id="edit_fee" required
                                                class="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none transition-all min-h-[44px]">
                                     </div>

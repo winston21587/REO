@@ -427,7 +427,7 @@
                             @php
                                 $remarksByReviewer = $allFileRemarks->flatten()->groupBy('reviewer_id');
                             @endphp
-                            <div class="p-3 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                            <div class="p-3 space-y-2 max-h-[300px] overflow-y-auto no-scrollbar">
                                 @foreach($remarksByReviewer as $reviewerId => $remarks)
                                     @php
                                         $reviewer = $remarks->first()->reviewer;
@@ -521,7 +521,7 @@
                     
                     <!-- Segmented Control Tab Bar with Interactive Revision Selector -->
                     <div class="p-1.5 border-b border-slate-200/80 bg-slate-50/50 shrink-0 relative" x-data="{ revDropdownOpen: false }">
-                        <div id="document-tab-bar" class="flex gap-1 overflow-x-auto custom-scrollbar p-0.5 bg-slate-100/80 rounded-xl border border-slate-200/80 cursor-grab select-none">
+                        <div id="document-tab-bar" class="flex gap-1 overflow-x-auto no-scrollbar p-0.5 bg-slate-100/80 rounded-xl border border-slate-200/80 cursor-grab select-none">
                             @if($letters->isNotEmpty())
                                 <button type="button" @click="activeTab = 'letters'; if (letters.length > 0 && letters[0].files.length > 0 && (!activeFile || activeFile.group !== 'Letters')) { selectFile(letters[0].files[0]); }"
                                     :class="activeTab === 'letters' ? 'bg-white text-rose-950 shadow-2xs border border-rose-200 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-medium'"
@@ -628,7 +628,7 @@
                                     </span>
                                     <span class="text-slate-600 font-bold tabular-nums bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">{{ $revisionFolders->count() }} rounds</span>
                                 </div>
-                                <div class="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                                <div class="max-h-64 overflow-y-auto no-scrollbar divide-y divide-slate-100">
                                     @foreach($revisionFolders->sortKeys() as $revNum => $revFiles)
                                         @php
                                             $revDate = $revFiles->first()?->created_at?->format('M d, Y') ?? '';
@@ -671,7 +671,7 @@
                     </div>
 
                     <!-- Scrollable Category & File Accordion List Area -->
-                    <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2">
+                    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-2">
 
                         <!-- Letters Tab List -->
                         <div x-show="activeTab === 'letters'" style="display:none;">
@@ -1051,7 +1051,7 @@
                             </div>
 
                             <!-- Drawer Body Content -->
-                            <div class="flex-1 overflow-y-auto custom-scrollbar">
+                            <div class="flex-1 overflow-y-auto no-scrollbar">
                                 
                                 <!-- Tab 1: Complete Audit Trail -->
                                 <div x-show="drawerTab === 'audit'" class="h-full flex flex-col">

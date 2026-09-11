@@ -597,26 +597,33 @@ class Research_title_Controller extends Controller
             return $respondWithFile($storagePath);
         }
 
+        // 6. Institutional fallback view if physical binary missing from disk
         return response(
             '<!DOCTYPE html>
-            <html lang="en">
+            <html lang="en" style="height:100%;min-height:100%;margin:0;padding:0;">
             <head>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <title>Document Unavailable</title>
                 <script src="https://cdn.tailwindcss.com"></script>
+                <style>
+                    html, body { height: 100% !important; min-height: 100% !important; margin: 0 !important; padding: 0 !important; }
+                    body { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; }
+                </style>
             </head>
-            <body class="bg-slate-50 flex items-center justify-center min-h-screen p-4 font-sans text-slate-700 antialiased">
-                <div class="max-w-sm w-full bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-xs">
-                    <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto mb-3 text-slate-500">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <body class="bg-slate-50/80 flex flex-col items-center justify-center h-full min-h-full p-6 font-sans text-slate-700 antialiased" style="height:100%;min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0;padding:1.5rem;box-sizing:border-box;">
+                <div class="max-w-md w-full bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 text-center shadow-xs">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200/80 flex items-center justify-center mx-auto mb-3.5 text-slate-500 shadow-2xs">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
-                    <h3 class="text-xs font-semibold text-slate-900 mb-1">Document Unavailable on Disk</h3>
-                    <p class="text-[11px] text-slate-500 mb-3 leading-relaxed break-all font-mono">' . htmlspecialchars($file->filename) . '</p>
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200/60">
-                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                        <span>Archived or Hardcopy Record</span>
-                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/80 mb-2">
+                        Archived or Hardcopy Record
+                    </span>
+                    <h3 class="text-sm font-bold text-slate-900 mb-1">Document Unavailable on Disk</h3>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed break-all font-mono bg-slate-50 py-1.5 px-2.5 rounded-lg border border-slate-200/60 max-w-sm mx-auto">' . htmlspecialchars($file->filename) . '</p>
+                    <p class="text-[11px] text-slate-400 max-w-xs mx-auto leading-normal">
+                        This document is registered in the institutional evaluation record. The physical binary file is stored in hardcopy or offline archives.
+                    </p>
                 </div>
             </body>
             </html>',

@@ -22,10 +22,12 @@
                     <form action="{{ route('admin.applications') }}" method="GET" class="relative flex w-full xl:w-auto items-center gap-2 sm:gap-3" id="activeProtocolsForm">
                         <!-- Search Input -->
                         <div class="relative flex-1 w-full sm:w-64 md:w-72">
+                            <div class="absolute inset-y-0 left-0 pl-3 sm:pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fas fa-search text-xs sm:text-sm" aria-hidden="true"></i>
+                            </div>
                             <input type="text" name="search" id="search_input" value="{{ request('search') }}" placeholder="Search protocols..."
                                 aria-label="Search active protocols"
                                 class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 h-10 sm:h-11 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs bg-white">
-                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs sm:text-sm"></i>
                         </div>
 
                         <!-- Filter Drawer Toggle -->

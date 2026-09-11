@@ -97,11 +97,13 @@
                     <div class="flex gap-2 mt-2.5" x-data="{ expanded: false }">
                         <div class="relative flex-1">
                             <label for="recent_search_input" class="sr-only">Search recent submissions by protocol title</label>
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fas fa-search text-xs" aria-hidden="true"></i>
+                            </div>
                             <input type="text" name="recent_search" id="recent_search_input"
                                 value="{{ request('recent_search') }}" placeholder="Search submissions..."
                                 aria-label="Search recent submissions by protocol title"
                                 class="w-full pl-8 pr-3 py-1.5 h-9 min-h-[36px] border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent bg-white placeholder:text-slate-400 caret-[#8B0000] transition-colors shadow-2xs">
-                            <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs" aria-hidden="true"></i>
                         </div>
                         <div class="relative">
                             <button type="button" @click="expanded = !expanded" @click.outside="expanded = false"
@@ -165,11 +167,13 @@
                     <div class="flex gap-2 mt-2.5" x-data="{ expanded: false }">
                         <div class="relative flex-1">
                             <label for="incomplete_search_input" class="sr-only">Search incomplete submissions by protocol title</label>
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fas fa-search text-xs" aria-hidden="true"></i>
+                            </div>
                             <input type="text" name="incomplete_search" id="incomplete_search_input"
                                 value="{{ request('incomplete_search') }}" placeholder="Search incomplete..."
                                 aria-label="Search incomplete submissions by protocol title"
                                 class="w-full pl-8 pr-3 py-1.5 h-9 min-h-[36px] border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent bg-white placeholder:text-slate-400 caret-[#8B0000] transition-colors shadow-2xs">
-                            <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs" aria-hidden="true"></i>
                         </div>
                         <div class="relative">
                             <button type="button" @click="expanded = !expanded" @click.outside="expanded = false"

@@ -60,6 +60,19 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        /* Completely hide scrollbars across all browsers */
+        .sidebar-no-scrollbar,
+        .no-scrollbar {
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
+        }
+        .sidebar-no-scrollbar::-webkit-scrollbar,
+        .no-scrollbar::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
     </style>
 </head>
 
@@ -193,7 +206,7 @@
             </div>
         </header>
         <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col min-w-0 relative z-0 pb-20 lg:pb-0 {{ request()->routeIs('manage.files*') ? 'lg:h-full lg:max-h-full lg:overflow-hidden' : '' }}">
+        <div class="flex-1 flex flex-col min-w-0 relative z-0 pb-20 lg:pb-0 {{ request()->routeIs('manage.files*') ? 'lg:h-full lg:max-h-full lg:overflow-hidden min-h-0' : '' }}">
 
 
 

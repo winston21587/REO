@@ -243,39 +243,69 @@
                     </button>
 
                     <div x-show="exportDropdownOpen"
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="transform opacity-100 scale-100"
-                         x-transition:leave-end="transform opacity-0 scale-95"
-                         class="absolute right-0 z-50 mt-2 w-52 origin-top-right rounded-2xl bg-white p-1.5 shadow-xl ring-1 ring-black/5 border border-slate-100 focus:outline-none"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="transform opacity-0 scale-95 -translate-y-1"
+                         x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="transform opacity-0 scale-95 -translate-y-1"
+                         class="absolute right-0 z-50 mt-2 w-64 origin-top-right rounded-2xl bg-white p-2 shadow-xl ring-1 ring-black/5 border border-slate-100 focus:outline-none"
                          style="display: none;">
-                        <div class="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">Available Formats</div>
+                        <div class="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                            <span>Available Formats</span>
+                            <span class="text-[9px] font-semibold text-slate-400 font-mono">3 EXPORTS</span>
+                        </div>
                         
+                        <!-- 1. PDF Export -->
                         <button type="button" 
                                 id="exportPdfBtn" 
                                 onclick="exportToPdf();" 
                                 @click="exportDropdownOpen = false"
-                                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors cursor-pointer">
-                            <i class="fas fa-file-pdf text-red-600 w-4 text-center text-sm" aria-hidden="true"></i>
-                            <span>Export as PDF</span>
+                                class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-red-50/60 hover:text-[#8B0000] flex items-center gap-3 transition-colors cursor-pointer group min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]">
+                            <div class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-100 group-hover:scale-105 transition-transform">
+                                <i class="fas fa-file-pdf text-sm" aria-hidden="true"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-slate-800 group-hover:text-[#8B0000] flex items-center justify-between">
+                                    <span>Export as PDF</span>
+                                    <span class="text-[10px] font-mono font-bold text-slate-400 uppercase">.pdf</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 truncate">Official Executive Report</div>
+                            </div>
                         </button>
 
+                        <!-- 2. CSV Export -->
                         <a href="{{ route('super_admin.analytics.export', request()->query()) }}" 
                            id="exportCsvBtn" 
                            @click="exportDropdownOpen = false"
-                           class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors cursor-pointer">
-                            <i class="fas fa-file-csv text-emerald-600 w-4 text-center text-sm" aria-hidden="true"></i>
-                            <span>Export to CSV</span>
+                           class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-emerald-50/60 hover:text-emerald-800 flex items-center gap-3 transition-colors cursor-pointer group min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 group-hover:scale-105 transition-transform">
+                                <i class="fas fa-file-csv text-sm" aria-hidden="true"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-slate-800 group-hover:text-emerald-800 flex items-center justify-between">
+                                    <span>Export to CSV</span>
+                                    <span class="text-[10px] font-mono font-bold text-slate-400 uppercase">.csv</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 truncate">National Ethics Registry Dataset</div>
+                            </div>
                         </a>
 
+                        <!-- 3. Word Export -->
                         <a href="{{ route('super_admin.analytics.export_word', request()->query()) }}" 
                            id="exportWordBtn" 
                            @click="exportDropdownOpen = false"
-                           class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#8B0000] flex items-center gap-2.5 transition-colors cursor-pointer">
-                            <i class="fas fa-file-word text-blue-600 w-4 text-center text-sm" aria-hidden="true"></i>
-                            <span>Export to Word</span>
+                           class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-blue-50/60 hover:text-blue-800 flex items-center gap-3 transition-colors cursor-pointer group min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100 group-hover:scale-105 transition-transform">
+                                <i class="fas fa-file-word text-sm" aria-hidden="true"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-slate-800 group-hover:text-blue-800 flex items-center justify-between">
+                                    <span>Export to Word</span>
+                                    <span class="text-[10px] font-mono font-bold text-slate-400 uppercase">.docx</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 truncate">Standard Institutional Document</div>
+                            </div>
                         </a>
                     </div>
                 </div>
@@ -579,20 +609,26 @@
                     <p class="text-xs text-slate-500 font-medium mt-0.5">List of submissions currently being reviewed or awaiting action.</p>
                 </div>
                 <div class="flex items-center gap-2 relative z-10">
-                    <span class="px-3 py-1 bg-[#8B0000] text-white text-xs font-bold rounded-lg shadow-sm tabular-nums">{{ $stuckProposals->total() }} In Progress</span>
+                    <button type="button" 
+                            onclick="openDetailsModal('in_progress', 'Submissions In Progress')" 
+                            class="px-3 py-1 bg-[#8B0000] hover:bg-[#6e0000] text-white text-xs font-bold rounded-lg shadow-sm tabular-nums cursor-pointer transition-all hover:shadow-md flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                            title="View All Submissions In Progress">
+                        <i class="fas fa-list-ul text-[10px]" aria-hidden="true"></i>
+                        <span>{{ $stuckProposals->total() }} In Progress (View All)</span>
+                    </button>
                 </div>
             </div>
             
             <!-- Mobile Card Layout (md:hidden) -->
             <div class="md:hidden divide-y divide-slate-100">
                 @forelse($stuckProposals as $proposal)
-                    <div class="p-4 space-y-3 hover:bg-slate-50 transition-colors">
+                    <div onclick="window.location.href='{{ route('admin.view_files', $proposal->id) }}'" class="p-4 space-y-3 hover:bg-slate-50 cursor-pointer transition-colors">
                         <div class="flex items-start justify-between gap-3">
-                            <div class="font-bold text-slate-800 text-sm line-clamp-2" title="{{ $proposal->Study_Protocol_title }}">
+                            <a href="{{ route('admin.view_files', $proposal->id) }}" class="font-bold text-slate-800 text-sm line-clamp-2 hover:text-[#8B0000] transition-colors" title="{{ $proposal->Study_Protocol_title }}">
                                 {{ $proposal->Study_Protocol_title }}
-                            </div>
+                            </a>
                             @if(Auth::user()->role === 'super_admin' || Auth::user()->role === 'admin')
-                            <a href="{{ route('admin.view_files', $proposal->id) }}" class="shrink-0 inline-flex items-center justify-center w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#8B0000] hover:border-[#8B0000] hover:shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1" aria-label="View submission {{ $proposal->Study_Protocol_title }}">
+                            <a href="{{ route('admin.view_files', $proposal->id) }}" onclick="event.stopPropagation()" class="shrink-0 inline-flex items-center justify-center w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#8B0000] hover:border-[#8B0000] hover:shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1" aria-label="View submission {{ $proposal->Study_Protocol_title }}">
                                 <i class="fas fa-external-link-alt text-xs" aria-hidden="true"></i>
                             </a>
                             @endif
@@ -648,11 +684,11 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse($stuckProposals as $proposal)
-                            <tr class="hover:bg-slate-50 transition-colors group">
+                            <tr onclick="window.location.href='{{ route('admin.view_files', $proposal->id) }}'" class="hover:bg-slate-50 cursor-pointer transition-colors group">
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-slate-800 text-sm max-w-md truncate group-hover:text-[#8B0000] transition-colors" title="{{ $proposal->Study_Protocol_title }}">
+                                    <a href="{{ route('admin.view_files', $proposal->id) }}" class="font-bold text-slate-800 text-sm max-w-md truncate block group-hover:text-[#8B0000] transition-colors" title="{{ $proposal->Study_Protocol_title }}">
                                         {{ $proposal->Study_Protocol_title }}
-                                    </div>
+                                    </a>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-semibold text-slate-700 flex items-center gap-2">
@@ -962,7 +998,7 @@
                 const dailyData = @json($dailyData);
                 const dayLabels = @json($dayLabels);
 
-                new Chart(ctxDaily, {
+                window.trendChartInstance = new Chart(ctxDaily, {
                     type: 'line',
                     data: {
                         labels: dayLabels,
@@ -983,6 +1019,9 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        onHover: (event, chartElement) => {
+                            event.native.target.style.cursor = chartElement.length > 0 ? 'pointer' : 'default';
+                        },
                         onClick: (e, elements) => {
                             if (elements.length > 0) {
                                 const index = elements[0].index;
@@ -991,7 +1030,18 @@
                                 const year = "{{ $startYear === 'all' && $endYear === 'all' ? '' : ($startYear !== 'all' ? $startYear : date('Y')) }}";
                                 const month = "{{ $startMonth !== 'all' ? $startMonth : '' }}";
                                 
-                                if (label.includes(' ')) {
+                                if (label.startsWith('Week of ')) {
+                                    const rawDateStr = label.replace('Week of ', '');
+                                    const yearVal = year ? year : new Date().getFullYear();
+                                    const tempDate = new Date(rawDateStr + ", " + yearVal);
+                                    if (!isNaN(tempDate)) {
+                                        const startIso = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0') + '-' + String(tempDate.getDate()).padStart(2, '0');
+                                        const endTemp = new Date(tempDate.getTime() + 6 * 86400000);
+                                        const endIso = endTemp.getFullYear() + '-' + String(endTemp.getMonth() + 1).padStart(2, '0') + '-' + String(endTemp.getDate()).padStart(2, '0');
+                                        extraParams.exact_start = startIso;
+                                        extraParams.exact_end = endIso;
+                                    }
+                                } else if (label.includes(' ')) {
                                    // "Apr 2026"
                                    const tempDate = new Date(label);
                                    if (!isNaN(tempDate)) {
@@ -1086,6 +1136,18 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const label = filteredLabels[index];
+                                if (label && label !== 'No Submissions') {
+                                    openDetailsModal('distribution', 'Status: ' + label, { distribution_status: label });
+                                }
+                            }
+                        },
+                        onHover: (event, chartElement) => {
+                            event.native.target.style.cursor = chartElement.length > 0 ? 'pointer' : 'default';
+                        },
                         plugins: {
                             legend: {
                                 position: window.innerWidth < 768 ? 'bottom' : 'right',
@@ -1104,6 +1166,7 @@
                         }
                     }
                 });
+                window.pieChartInstance = pieChartInstance;
 
                 let doughnutResizeTimer;
                 window.addEventListener('resize', () => {
@@ -1133,18 +1196,23 @@
                 });
             }
 
-            // --- Export to PDF Function (On-Demand Loading Saves >550KB initial payload) ---
+            // --- Export to PDF Function (Official Institutional Multi-Page Generator) ---
             async function exportToPdf() {
-                const element = document.getElementById('analytics-dashboard');
                 const btn = document.getElementById('exportPdfBtn');
-                
-                // Visual feedback
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Generating...';
+                const reportEl = document.getElementById('analytics-pdf-report');
+                if (!reportEl) {
+                    alert('PDF report template not found.');
+                    return;
+                }
+
+                // Visual feedback on button
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Preparing Report...';
                 btn.disabled = true;
 
                 try {
-                    // Load heavy libraries only when requested
+
+                    // 2. Load heavy libraries on-demand
                     if (typeof html2canvas === 'undefined') {
                         await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
                     }
@@ -1152,28 +1220,61 @@
                         await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
                     }
 
-                    // Capture element via html2canvas
-                    const canvas = await html2canvas(element, {
-                        scale: 2, // Higher quality
+                    // Wait 150ms for images to render into DOM
+                    await new Promise(resolve => setTimeout(resolve, 150));
+
+                    // 3. Render report container via html2canvas with retina scale (2x)
+                    const canvas = await html2canvas(reportEl, {
+                        scale: 2,
                         useCORS: true,
-                        logging: false
+                        logging: false,
+                        backgroundColor: '#ffffff'
                     });
 
-                    const imgData = canvas.toDataURL('image/png');
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
                     const pdfConstructor = window.jspdf?.jsPDF || window.jsPDF;
-                    const pdf = new pdfConstructor('l', 'mm', 'a4'); // Landscape, mm, A4
+                    const pdf = new pdfConstructor('p', 'mm', 'a4'); // Portrait A4: 210 x 297 mm
                     
-                    const pageWidth = pdf.internal.pageSize.getWidth();
-                    const imgWidth = pageWidth;
+                    const pageWidth = 210;
+                    const pageHeight = 297;
+                    const margin = 10;
+                    const contentWidth = pageWidth - (margin * 2); // 190 mm
+                    const contentHeight = pageHeight - (margin * 2); // 277 mm
+                    
+                    const imgWidth = contentWidth;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
                     
-                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-                    pdf.save('Analytics_Report_{{ date("Y-m-d") }}.pdf');
+                    let heightLeft = imgHeight;
+                    let position = margin;
+                    
+                    // First page
+                    pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+                    heightLeft -= contentHeight;
+
+                    // Subsequent pages if content exceeds single page
+                    while (heightLeft > 0) {
+                        position -= contentHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+                        heightLeft -= contentHeight;
+                    }
+
+                    // Add running institutional footer & page numbers on every page
+                    const totalPages = pdf.internal.getNumberOfPages();
+                    for (let i = 1; i <= totalPages; i++) {
+                        pdf.setPage(i);
+                        pdf.setFontSize(8);
+                        pdf.setTextColor(100, 116, 139); // slate-500
+                        pdf.text('Western Mindanao State University • Research Ethics Oversight Committee (REOC)', margin, 290);
+                        pdf.text(`Page ${i} of ${totalPages}`, pageWidth - margin, 290, { align: 'right' });
+                    }
+
+                    pdf.save('WMSU_REOC_Analytics_Report_{{ date("Y-m-d") }}.pdf');
                 } catch (err) {
                     console.error('PDF Generation Error:', err);
                     alert('Failed to generate PDF. Please try again.');
                 } finally {
-                    btn.innerHTML = originalText;
+                    btn.innerHTML = originalHtml;
                     btn.disabled = false;
                 }
             }
@@ -1439,9 +1540,12 @@
 
     <!-- Details Modal -->
     <div id="detailsModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="detailsModalTitle" role="dialog" aria-modal="true" onclick="if(event.target===this) closeDetailsModal()">
-        <div class="bg-white shadow-2xl rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden transform transition-transform scale-95 duration-300 flex flex-col" id="detailsModalPanel">
+        <div class="bg-white shadow-2xl rounded-2xl w-full max-w-6xl 2xl:max-w-7xl max-h-[90vh] overflow-hidden transform transition-transform scale-95 duration-300 flex flex-col" id="detailsModalPanel">
             <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
-                <h3 id="detailsModalTitle" class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2"></h3>
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <h3 id="detailsModalTitle" class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2 truncate"></h3>
+                    <span id="detailsModalBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 shrink-0"></span>
+                </div>
                 <button type="button" onclick="closeDetailsModal()" aria-label="Close details modal" class="w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl flex items-center justify-center text-slate-400 hover:text-[#8B0000] hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer transition-colors">
                     <i class="fas fa-times text-lg" aria-hidden="true"></i>
                 </button>
@@ -1551,93 +1655,474 @@
                 .replace(/'/g, '&#039;');
         }
 
-        function renderDetailsTable(data, type, contentElem) {
+        let currentModalData = [];
+        let currentModalType = '';
+        let currentModalTitle = '';
+
+        window.toggleResearcherProtocols = function(idx) {
+            const drawer = document.getElementById('protocols-drawer-' + idx);
+            const chevron = document.getElementById('chevron-' + idx);
+            if (!drawer) return;
+            if (drawer.classList.contains('hidden')) {
+                drawer.classList.remove('hidden');
+                if (chevron) chevron.classList.add('rotate-180', 'text-[#8B0000]');
+            } else {
+                drawer.classList.add('hidden');
+                if (chevron) chevron.classList.remove('rotate-180', 'text-[#8B0000]');
+            }
+        };
+
+        window.toggleAllResearcherProtocols = function(expand) {
+            const drawers = document.querySelectorAll('[id^="protocols-drawer-"]');
+            const chevrons = document.querySelectorAll('[id^="chevron-"]');
+            drawers.forEach(d => {
+                if (expand) d.classList.remove('hidden');
+                else d.classList.add('hidden');
+            });
+            chevrons.forEach(c => {
+                if (expand) c.classList.add('rotate-180', 'text-[#8B0000]');
+                else c.classList.remove('rotate-180', 'text-[#8B0000]');
+            });
+        };
+
+        window.filterModalContent = function(query) {
+            const clean = (query || '').toLowerCase().trim();
+            const container = document.getElementById('modalTableWrapper');
+            const countElem = document.getElementById('modalToolbarCount');
+            if (!container) return;
+
+            if (!clean) {
+                if (countElem) countElem.innerText = `${currentModalData.length} Total Record${currentModalData.length === 1 ? '' : 's'}`;
+                renderTableMarkup(currentModalData, currentModalType, container);
+                return;
+            }
+
+            let filtered = [];
+            if (currentModalType === 'researchers') {
+                filtered = currentModalData.filter(item => {
+                    const name = (item.name || '').toLowerCase();
+                    const email = (item.email || '').toLowerCase();
+                    const college = (item.college || '').toLowerCase();
+                    const dept = (item.department || '').toLowerCase();
+                    const affil = (item.affiliation || '').toLowerCase();
+                    const hasProto = (item.protocols || []).some(p => 
+                        (p.title || '').toLowerCase().includes(clean) || 
+                        (p.status || '').toLowerCase().includes(clean) ||
+                        (p.category || '').toLowerCase().includes(clean)
+                    );
+                    return name.includes(clean) || email.includes(clean) || college.includes(clean) || dept.includes(clean) || affil.includes(clean) || hasProto;
+                });
+            } else {
+                filtered = currentModalData.filter(item => {
+                    const title = (item.title || '').toLowerCase();
+                    const researcher = (item.researcher || '').toLowerCase();
+                    const email = (item.researcher_email || '').toLowerCase();
+                    const status = (item.status || '').toLowerCase();
+                    const college = (item.college || '').toLowerCase();
+                    const dept = (item.department || '').toLowerCase();
+                    const category = (item.category || '').toLowerCase();
+                    const reviewType = (item.review_type || '').toLowerCase();
+                    return title.includes(clean) || researcher.includes(clean) || email.includes(clean) || status.includes(clean) || college.includes(clean) || dept.includes(clean) || category.includes(clean) || reviewType.includes(clean);
+                });
+            }
+
+            if (countElem) countElem.innerText = `${filtered.length} of ${currentModalData.length} Records`;
+            renderTableMarkup(filtered, currentModalType, container);
+        };
+
+        function getStatusBadge(status) {
+            const s = (status || '').toLowerCase();
+            if (s.includes('disapproved') || s.includes('reject')) {
+                return 'text-rose-700';
+            }
+            if (s.includes('approved') || s.includes('complete') || s.includes('exempt')) {
+                return 'text-emerald-700';
+            }
+            if (s.includes('review') || s.includes('received')) {
+                return 'text-blue-700';
+            }
+            if (s.includes('revis')) {
+                return 'text-amber-800';
+            }
+            return 'text-slate-600';
+        }
+
+        function renderTableMarkup(data, type, container) {
             if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 px-4">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-400 mb-3 shadow-2xs">
+                            <i class="fas fa-search text-lg" aria-hidden="true"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-slate-700">No Matching Records</h4>
+                        <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">No records match your search filter in this category. Try adjusting your query.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+
+            // --- 1. Top Submitting Entities Banner (if college_specific) ---
+            if (type === 'college_specific') {
+                const entityName = escapeHtml(data[0] ? (data[0].college || 'Entity Submissions') : 'Entity');
+                const entityCount = data.length;
+                html += `
+                    <div class="mb-4 p-3 sm:p-4 bg-gradient-to-r from-red-50/50 via-slate-50 to-white border border-red-100/70 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-xl bg-[#8B0000] text-white flex items-center justify-center shrink-0 shadow-sm">
+                                <i class="fas fa-university text-base" aria-hidden="true"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-[#8B0000] uppercase tracking-wider">Submitting Entity</div>
+                                <h4 class="text-base font-extrabold text-slate-800 truncate" title="${entityName}">${entityName}</h4>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-2xs">
+                                <i class="fas fa-layer-group text-[#8B0000]"></i>
+                                <span>${entityCount} Total Submissions</span>
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '<div class="overflow-x-auto w-full rounded-xl border border-slate-200/80 shadow-2xs bg-white"><table class="w-full text-left border-collapse">';
+
+            // --- 2. Table Headers by Type ---
+            if (type === 'researchers') {
+                html += `
+                    <thead>
+                        <tr class="text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/90">
+                            <th scope="col" class="px-5 py-3.5">Researcher</th>
+                            <th scope="col" class="px-5 py-3.5">Affiliation & College</th>
+                            <th scope="col" class="px-5 py-3.5 text-right sm:text-left">Submitted Protocols & Files</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                `;
+                data.forEach((item, idx) => {
+                    const safeName = escapeHtml(item.name || 'Unspecified');
+                    const safeEmail = escapeHtml(item.email || 'Not Provided');
+                    const safeAffil = escapeHtml(item.affiliation || 'Not Provided');
+                    const safeCollege = escapeHtml(item.college || 'Not Provided');
+                    const safeDept = escapeHtml(item.department || '');
+                    const hasProtocols = item.protocols && item.protocols.length > 0;
+                    const initial = escapeHtml(item.name ? item.name.charAt(0).toUpperCase() : 'U');
+
+                    let drawerContent = '';
+                    if (hasProtocols) {
+                        drawerContent = item.protocols.map(p => {
+                            const pTitle = escapeHtml(p.title || 'Untitled Protocol');
+                            const pUrl = escapeHtml(p.view_url || '#');
+                            const pStatus = escapeHtml(p.status || '');
+                            const pCat = escapeHtml(p.category || 'General');
+                            const pDate = escapeHtml(p.date || 'N/A');
+
+                            return `
+                                <div class="py-2.5 first:pt-1 last:pb-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 px-3 rounded-xl transition-colors border border-transparent hover:border-slate-200/70">
+                                    <div class="min-w-0 flex-1">
+                                        <a href="${pUrl}" class="text-xs sm:text-sm font-bold text-slate-800 hover:text-[#8B0000] transition-colors block truncate" title="${pTitle}">
+                                            <i class="fas fa-file-alt text-[#8B0000] mr-1.5 text-xs"></i>${pTitle}
+                                        </a>
+                                        <div class="flex flex-wrap items-center gap-2 mt-0.5 text-[11px] text-slate-500">
+                                            <span>Category: <strong class="text-slate-700 font-semibold">${pCat}</strong></span>
+                                            <span>•</span>
+                                            <span class="tabular-nums">Date: ${pDate}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                                        ${pStatus ? `<span class="text-xs font-semibold uppercase tracking-wider ${getStatusBadge(p.status)}">${pStatus}</span>` : ''}
+                                        <a href="${pUrl}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B0000] hover:bg-[#6e0000] text-white rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                            <i class="fas fa-folder-open text-xs"></i> View Files
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    html += `
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="px-5 py-4 align-middle">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-9 h-9 rounded-full bg-red-50 text-[#8B0000] border border-red-200/80 flex items-center justify-center text-xs font-extrabold shrink-0 shadow-2xs">
+                                        ${initial}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-bold text-slate-800 truncate" title="${safeName}">${safeName}</div>
+                                        <div class="text-xs text-slate-500 truncate" title="${safeEmail}">${safeEmail}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-5 py-4 align-middle">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${item.affiliation === 'Internal' ? 'bg-blue-50 text-blue-700 border border-blue-200/80' : 'bg-indigo-50 text-indigo-700 border border-indigo-200/80'}">${safeAffil}</span>
+                                <div class="text-xs text-slate-700 font-semibold truncate mt-0.5" title="${safeCollege}">${safeCollege}</div>
+                                ${safeDept ? `<div class="text-[11px] text-slate-500 truncate" title="${safeDept}">${safeDept}</div>` : ''}
+                            </td>
+                            <td class="px-5 py-4 align-middle text-right sm:text-left">
+                                ${hasProtocols ? `
+                                    <button type="button" 
+                                            onclick="toggleResearcherProtocols(${idx})" 
+                                            class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50/70 hover:border-red-300 text-xs font-bold text-slate-700 hover:text-[#8B0000] transition-all cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                                            title="Click to expand protocols for ${safeName}">
+                                        <i class="fas fa-folder text-[#8B0000] text-xs"></i>
+                                        <span>${item.protocols.length} Protocol${item.protocols.length === 1 ? '' : 's'}</span>
+                                        <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="chevron-${idx}"></i>
+                                    </button>
+                                ` : `
+                                    <span class="text-xs text-slate-400 italic px-2">0 protocols</span>
+                                `}
+                            </td>
+                        </tr>
+                        ${hasProtocols ? `
+                            <tr id="protocols-drawer-${idx}" class="hidden bg-slate-50/70 border-b border-slate-200 transition-all">
+                                <td colspan="3" class="px-4 sm:px-6 py-4">
+                                    <div class="bg-white rounded-2xl border border-slate-200/80 p-3.5 shadow-2xs space-y-2.5">
+                                        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between px-1">
+                                            <span>Submitted Protocols by <strong class="text-slate-800">${safeName}</strong></span>
+                                            <span class="text-slate-400 tabular-nums">${item.protocols.length} item${item.protocols.length === 1 ? '' : 's'}</span>
+                                        </div>
+                                        <div class="divide-y divide-slate-100 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                                            ${drawerContent}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        ` : ''}
+                    `;
+                });
+            } else if (type === 'revisions') {
+                html += `
+                    <thead>
+                        <tr class="text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/90">
+                            <th scope="col" class="px-5 py-3.5">Protocol Details</th>
+                            <th scope="col" class="px-5 py-3.5">Researcher</th>
+                            <th scope="col" class="px-5 py-3.5">Revision Status</th>
+                            <th scope="col" class="px-5 py-3.5 text-center">Revision History</th>
+                            <th scope="col" class="px-5 py-3.5">Date</th>
+                            <th scope="col" class="px-5 py-3.5 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                `;
+                data.forEach(item => {
+                    const safeTitle = escapeHtml(item.title || 'Untitled');
+                    const safeResearcher = escapeHtml(item.researcher || 'Unknown');
+                    const safeCollege = escapeHtml(item.college || 'Unassigned');
+                    const safeStatus = escapeHtml(item.status || 'Unknown');
+                    const safeReview = escapeHtml(item.review_type || 'Standard');
+                    const safeDate = escapeHtml(item.date || 'Not Provided');
+                    const safeRevisions = escapeHtml(item.revisions || '0');
+                    const feedbacksCount = item.feedbacks_count || 0;
+                    const viewUrl = escapeHtml(item.view_url || '#');
+
+                    html += `
+                        <tr onclick="window.location.href='${viewUrl}'" class="hover:bg-amber-50/30 cursor-pointer transition-colors group">
+                            <td class="px-5 py-3.5 max-w-xs">
+                                <a href="${viewUrl}" onclick="event.stopPropagation()" class="text-sm font-bold text-slate-800 group-hover:text-[#8B0000] transition-colors truncate block" title="${safeTitle}">
+                                    ${safeTitle}
+                                </a>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/80">${safeReview}</span>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 max-w-[190px]">
+                                <div class="text-sm font-semibold text-slate-800 truncate" title="${safeResearcher}">${safeResearcher}</div>
+                                <div class="text-xs text-slate-500 truncate" title="${safeCollege}">${safeCollege}</div>
+                            </td>
+                            <td class="px-5 py-3.5 text-sm">
+                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap ${getStatusBadge(item.status)}">
+                                    ${safeStatus}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200 shadow-2xs">
+                                    <i class="fas fa-history text-[10px]" aria-hidden="true"></i>
+                                    <span>${safeRevisions} Revisions</span>
+                                </span>
+                                ${feedbacksCount > 0 ? `<div class="text-[10px] text-slate-500 font-medium mt-0.5">${feedbacksCount} feedback notes</div>` : ''}
+                            </td>
+                            <td class="px-5 py-3.5 text-xs text-slate-500 tabular-nums whitespace-nowrap font-medium">${safeDate}</td>
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                                <a href="${viewUrl}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B0000] hover:bg-[#6e0000] text-white rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                    <i class="fas fa-folder-open text-xs"></i> View Files
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else if (type === 'college_specific') {
+                html += `
+                    <thead>
+                        <tr class="text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/90">
+                            <th scope="col" class="px-5 py-3.5">Protocol Details</th>
+                            <th scope="col" class="px-5 py-3.5">Lead Researcher</th>
+                            <th scope="col" class="px-5 py-3.5">Review Type</th>
+                            <th scope="col" class="px-5 py-3.5">Status</th>
+                            <th scope="col" class="px-5 py-3.5">Submission Date</th>
+                            <th scope="col" class="px-5 py-3.5 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                `;
+                data.forEach(item => {
+                    const safeTitle = escapeHtml(item.title || 'Untitled');
+                    const safeCategory = escapeHtml(item.category || 'General');
+                    const safeResearcher = escapeHtml(item.researcher || 'Unknown');
+                    const safeEmail = escapeHtml(item.researcher_email || '');
+                    const safeReview = escapeHtml(item.review_type || 'Standard');
+                    const safeStatus = escapeHtml(item.status || 'Unknown');
+                    const safeDate = escapeHtml(item.date || 'Not Provided');
+                    const viewUrl = escapeHtml(item.view_url || '#');
+
+                    html += `
+                        <tr onclick="window.location.href='${viewUrl}'" class="hover:bg-red-50/40 cursor-pointer transition-colors group">
+                            <td class="px-5 py-3.5 max-w-xs">
+                                <a href="${viewUrl}" onclick="event.stopPropagation()" class="text-sm font-bold text-slate-800 group-hover:text-[#8B0000] transition-colors truncate block" title="${safeTitle}">
+                                    ${safeTitle}
+                                </a>
+                                <div class="text-xs text-slate-500 mt-0.5 truncate" title="Category: ${safeCategory}">
+                                    Category: <span class="font-semibold text-slate-700">${safeCategory}</span>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 max-w-[190px]">
+                                <div class="text-sm font-semibold text-slate-800 truncate" title="${safeResearcher}">${safeResearcher}</div>
+                                ${safeEmail ? `<div class="text-xs text-slate-500 truncate" title="${safeEmail}">${safeEmail}</div>` : ''}
+                            </td>
+                            <td class="px-5 py-3.5 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
+                                    ${safeReview}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5 whitespace-nowrap">
+                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap ${getStatusBadge(item.status)}">
+                                    ${safeStatus}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5 text-xs text-slate-500 tabular-nums whitespace-nowrap font-medium">${safeDate}</td>
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                                <a href="${viewUrl}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-[#8B0000] text-slate-700 hover:text-[#8B0000] hover:bg-red-50/50 rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                    <i class="fas fa-folder-open text-[#8B0000]"></i> View Files
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                // --- 3. Default Submissions / Stages / Pipeline / Distribution Layout ---
+                html += `
+                    <thead>
+                        <tr class="text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/90">
+                            <th scope="col" class="px-5 py-3.5">Protocol Details</th>
+                            <th scope="col" class="px-5 py-3.5">Researcher & Affiliation</th>
+                            <th scope="col" class="px-5 py-3.5">Status</th>
+                            <th scope="col" class="px-5 py-3.5">Date</th>
+                            <th scope="col" class="px-5 py-3.5 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                `;
+                data.forEach(item => {
+                    const safeTitle = escapeHtml(item.title || 'Untitled');
+                    const safeResearcher = escapeHtml(item.researcher || 'Unknown');
+                    const safeCollege = escapeHtml(item.college || 'Unassigned');
+                    const safeReview = escapeHtml(item.review_type || 'Standard');
+                    const safeStatus = escapeHtml(item.status || 'Unknown');
+                    const safeDate = escapeHtml(item.date || 'Not Provided');
+                    const viewUrl = escapeHtml(item.view_url || '#');
+
+                    html += `
+                        <tr onclick="window.location.href='${viewUrl}'" class="hover:bg-red-50/40 cursor-pointer transition-colors group">
+                            <td class="px-5 py-3.5 max-w-xs">
+                                <a href="${viewUrl}" onclick="event.stopPropagation()" class="text-sm font-bold text-slate-800 group-hover:text-[#8B0000] transition-colors truncate block" title="${safeTitle}">
+                                    ${safeTitle}
+                                </a>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/80">${safeReview}</span>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 max-w-[190px]">
+                                <div class="text-sm font-semibold text-slate-800 truncate" title="${safeResearcher}">${safeResearcher}</div>
+                                <div class="text-xs text-slate-500 truncate" title="${safeCollege}">${safeCollege}</div>
+                            </td>
+                            <td class="px-5 py-3.5 text-sm">
+                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap ${getStatusBadge(item.status)}">
+                                    ${safeStatus}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5 text-xs text-slate-500 tabular-nums whitespace-nowrap font-medium">${safeDate}</td>
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                                <a href="${viewUrl}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-[#8B0000] text-slate-700 hover:text-[#8B0000] hover:bg-red-50/50 rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                    <i class="fas fa-folder-open text-[#8B0000]"></i> View Files
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function renderDetailsTable(data, type, contentElem) {
+            currentModalData = Array.isArray(data) ? data : [];
+            currentModalType = type;
+
+            const badgeElem = document.getElementById('detailsModalBadge');
+            if (badgeElem) {
+                badgeElem.innerText = `${currentModalData.length} records`;
+                badgeElem.classList.remove('hidden');
+            }
+
+            if (currentModalData.length === 0) {
                 contentElem.innerHTML = `
                     <div class="text-center py-16 px-4">
                         <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-400 mb-3 shadow-xs">
                             <i class="fas fa-folder-open text-xl" aria-hidden="true"></i>
                         </div>
-                        <h4 class="text-sm font-bold text-slate-700">No Submissions Found</h4>
+                        <h4 class="text-sm font-bold text-slate-700">No Records Found</h4>
                         <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">There are no records matching this category in the selected timeframe. Try broadening your date or status filters.</p>
                     </div>
                 `;
                 return;
             }
 
-            const getStatusBadge = (status) => {
-                const s = (status || '').toLowerCase();
-                if (s.includes('approved') || s.includes('complete') || s.includes('exempt')) {
-                    return 'text-emerald-700';
-                }
-                if (s.includes('review') || s.includes('received')) {
-                    return 'text-blue-700';
-                }
-                if (s.includes('revis')) {
-                    return 'text-amber-800';
-                }
-                return 'text-slate-600';
-            };
+            let toolbarHtml = `
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 shadow-2xs">
+                            <i class="fas fa-list-check text-slate-500"></i>
+                            <span id="modalToolbarCount">${currentModalData.length} Total Record${currentModalData.length === 1 ? '' : 's'}</span>
+                        </span>
+                        ${type === 'researchers' ? `
+                            <div class="flex items-center gap-1 ml-1">
+                                <button type="button" onclick="toggleAllResearcherProtocols(true)" class="px-2.5 py-1 text-xs font-bold text-slate-600 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-[#8B0000]">
+                                    <i class="fas fa-chevron-down text-[10px] mr-1"></i>Expand All
+                                </button>
+                                <span class="text-slate-300">|</span>
+                                <button type="button" onclick="toggleAllResearcherProtocols(false)" class="px-2.5 py-1 text-xs font-bold text-slate-600 hover:text-[#8B0000] hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-[#8B0000]">
+                                    <i class="fas fa-chevron-up text-[10px] mr-1"></i>Collapse All
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="relative w-full sm:w-72">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-xs text-slate-400 pointer-events-none" aria-hidden="true"></i>
+                        <input type="text" 
+                               id="modalSearchFilter" 
+                               placeholder="Search in records..." 
+                               oninput="filterModalContent(this.value)" 
+                               class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all text-slate-800 placeholder-slate-400">
+                    </div>
+                </div>
+                <div id="modalTableWrapper"></div>
+            `;
 
-            let html = '<div class="overflow-x-auto w-full"><table class="w-full text-left border-collapse">';
-            if (type === 'researchers') {
-                html += `
-                    <thead>
-                        <tr class="text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/75">
-                            <th scope="col" class="px-4 py-3">Name</th>
-                            <th scope="col" class="px-4 py-3">Email</th>
-                            <th scope="col" class="px-4 py-3">Affiliation</th>
-                            <th scope="col" class="px-4 py-3">College</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                `;
-                data.forEach(item => {
-                    const safeName = escapeHtml(item.name || 'Unspecified');
-                    const safeEmail = escapeHtml(item.email || 'Not Provided');
-                    const safeAffil = escapeHtml(item.affiliation || 'Not Provided');
-                    const safeCollege = escapeHtml(item.college || 'Not Provided');
-                    html += `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-[200px] truncate" title="${safeName}">${safeName}</td>
-                            <td class="px-4 py-3 text-sm text-slate-600 max-w-[220px] truncate" title="${safeEmail}">${safeEmail}</td>
-                            <td class="px-4 py-3 text-sm"><span class="text-xs font-bold uppercase tracking-wider ${item.affiliation === 'Internal' ? 'text-blue-700' : 'text-indigo-700'}">${safeAffil}</span></td>
-                            <td class="px-4 py-3 text-sm text-slate-500 max-w-[180px] truncate" title="${safeCollege}">${safeCollege}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                html += `
-                    <thead>
-                        <tr class="text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/75">
-                            <th scope="col" class="px-4 py-3">Protocol Title</th>
-                            <th scope="col" class="px-4 py-3">Researcher</th>
-                            <th scope="col" class="px-4 py-3">Status</th>
-                            <th scope="col" class="px-4 py-3">Date</th>
-                            ${type === 'revisions' ? '<th scope="col" class="px-4 py-3 text-center">Revision #</th>' : ''}
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                `;
-                data.forEach(item => {
-                    const safeTitle = escapeHtml(item.title || 'Untitled');
-                    const safeResearcher = escapeHtml(item.researcher || 'Unknown');
-                    const safeStatus = escapeHtml(item.status || 'Unknown');
-                    const safeDate = escapeHtml(item.date || 'Not Provided');
-                    const safeRevisions = escapeHtml(item.revisions || '0');
-                    html += `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-4 py-3 text-sm font-semibold text-slate-700 max-w-xs truncate" title="${safeTitle}">${safeTitle}</td>
-                            <td class="px-4 py-3 text-sm text-slate-600 max-w-[180px] truncate" title="${safeResearcher}">${safeResearcher}</td>
-                            <td class="px-4 py-3 text-sm"><span class="inline-flex items-center text-xs font-semibold whitespace-nowrap ${getStatusBadge(item.status)}">${safeStatus}</span></td>
-                            <td class="px-4 py-3 text-sm text-slate-500 tabular-nums whitespace-nowrap">${safeDate}</td>
-                            ${type === 'revisions' ? `<td class="px-4 py-3 text-sm text-center font-bold text-[#8B0000] tabular-nums">${safeRevisions}</td>` : ''}
-                        </tr>
-                    `;
-                });
-            }
-            html += '</tbody></table></div>';
-            contentElem.innerHTML = html;
+            contentElem.innerHTML = toolbarHtml;
+            renderTableMarkup(currentModalData, type, document.getElementById('modalTableWrapper'));
         }
 
         function openDetailsModal(type, title, extraParams = {}) {
@@ -1714,6 +2199,8 @@
             }
             const modal = document.getElementById('detailsModal');
             const panel = document.getElementById('detailsModalPanel');
+            const badge = document.getElementById('detailsModalBadge');
+            if (badge) badge.classList.add('hidden');
             modal.classList.add('opacity-0');
             panel.classList.remove('scale-100');
             panel.classList.add('scale-95');
@@ -1756,5 +2243,211 @@
             }
         });
     </script>
+
+    <!-- Off-Screen Institutional Printable PDF Report Template (Captured by html2canvas for PDF Export) -->
+    <div id="analytics-pdf-report" style="position: fixed; left: -9999px; top: 0; width: 1000px; min-height: 1390px; display: flex; flex-direction: column; background: #ffffff; color: #0f172a; padding: 36px 40px; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <!-- Institutional Letterhead -->
+        <div style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #8B0000; padding-bottom: 16px;">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: #64748b; text-transform: uppercase;">Republic of the Philippines</div>
+            <div style="font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; margin-top: 3px;">WESTERN MINDANAO STATE UNIVERSITY</div>
+            <div style="font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; color: #8B0000; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 3px;">RESEARCH ETHICS OVERSIGHT COMMITTEE (REOC)</div>
+            <div style="font-size: 10.5px; color: #64748b; margin-top: 3px;">Normal Road, Baliwasan, Zamboanga City 7000 • reo@wmsu.edu.ph • www.wmsu.edu.ph</div>
+        </div>
+
+        <!-- Document Title & Metadata -->
+        <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 12px;">
+                <h1 style="font-family: 'Montserrat', sans-serif; font-size: 19px; font-weight: 800; color: #0f172a; margin: 0; text-transform: uppercase; letter-spacing: -0.01em;">Executive Analytics & Protocol Monitoring Report</h1>
+                <p style="font-size: 11.5px; color: #64748b; margin: 4px 0 0 0; font-weight: 500;">Comprehensive Research Protocol Submission Metrics & Institutional Review Analytics</p>
+            </div>
+
+            <!-- Metadata Box -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px;">
+                <div>
+                    <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 2px;">Reporting Scope</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.4;">{{ $overviewTitle }} ({{ $dateRangeSubtitle ?? 'All Time' }})</div>
+                </div>
+                <div>
+                    <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 2px;">Generated On</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.4;">{{ date('M d, Y • h:i A') }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 2px;">Superadministrator</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.4;">{{ Auth::user()->first_name ?? 'Super' }} {{ Auth::user()->last_name ?? 'Admin' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 2px;">Active Filters</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.4; word-break: break-word;">
+                        {{ $selectedStatus ?: 'All Statuses' }} • {{ $selectedReviewType ?: 'All Types' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1: Executive KPI Summary -->
+        <div style="margin-bottom: 20px;">
+            <div style="font-family: 'Montserrat', sans-serif; font-size: 12.5px; font-weight: 800; text-transform: uppercase; color: #8B0000; letter-spacing: 0.05em; margin-bottom: 10px;">1. Key Performance Indicators</div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; background: #ffffff;">
+                    <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: #64748b;">Total Submissions</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #0f172a; margin-top: 4px;">{{ number_format($totalSubmissions) }}</div>
+                    <div style="font-size: 10.5px; color: #16a34a; font-weight: 600; margin-top: 2px;">Recorded Intake Volume</div>
+                </div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; background: #ffffff;">
+                    <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: #64748b;">Approved Protocols</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #15803d; margin-top: 4px;">{{ number_format($approvedCount) }}</div>
+                    <div style="font-size: 10.5px; color: #64748b; font-weight: 600; margin-top: 2px;">{{ $approvalRate }}% Clearance Rate</div>
+                </div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; background: #ffffff;">
+                    <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: #64748b;">Revisions Required</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #b45309; margin-top: 4px;">{{ number_format($revisionsCount) }}</div>
+                    <div style="font-size: 10.5px; color: #64748b; font-weight: 600; margin-top: 2px;">{{ $revisionsRate }}% Revision Rate</div>
+                </div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; background: #ffffff;">
+                    <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: #64748b;">Active Researchers</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #1d4ed8; margin-top: 4px;">{{ number_format($activeResearchers) }}</div>
+                    <div style="font-size: 10.5px; color: #64748b; font-weight: 600; margin-top: 2px;">Registered Investigators</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Data Grid: Two Columns (Left: Monthly Submissions + Workflow Pipeline; Right: Status Distribution + Submitting Colleges) -->
+        <div style="display: flex; gap: 18px; align-items: flex-start; margin-bottom: 18px;">
+            {{-- Left Column (approx 40% width): Section 2 Monthly Submissions & Section 3 Pipeline Stages --}}
+            <div style="flex: 0.88; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+                {{-- Section 2: Monthly Submissions --}}
+                <div>
+                    <div style="font-family: 'Montserrat', sans-serif; font-size: 12.5px; font-weight: 800; text-transform: uppercase; color: #8B0000; letter-spacing: 0.05em; margin-bottom: 6px;">2. Monthly Submissions</div>
+                    <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; background: #ffffff;">
+                        <div style="font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Protocols Submitted Per Month</div>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 5px 6px; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; font-size: 10px; text-align: left; border-bottom: 2px solid #8B0000;">Month</th>
+                                    <th style="padding: 5px 6px; text-align: right; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; font-size: 10px; border-bottom: 2px solid #8B0000;">Protocols</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($dayLabels as $idx => $lbl)
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 4px 6px; font-weight: 600; color: #334155; font-size: 10.5px;">{{ $lbl }}</td>
+                                    <td style="padding: 4px 6px; text-align: right; font-weight: 700; color: #0f172a; font-size: 10.5px;">
+                                        {{ $dailyData[$idx] ?? 0 }}
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #f8fafc;">
+                                    <td style="padding: 5px 6px; font-weight: 800; color: #0f172a; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.05em; border-top: 2px solid #e2e8f0;">Total</td>
+                                    <td style="padding: 5px 6px; text-align: right; font-weight: 800; color: #8B0000; font-size: 11px; border-top: 2px solid #e2e8f0;">{{ array_sum($dailyData) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                {{-- Section 3: Workflow Pipeline Stages --}}
+                <div>
+                    <div style="font-family: 'Montserrat', sans-serif; font-size: 12.5px; font-weight: 800; text-transform: uppercase; color: #8B0000; letter-spacing: 0.05em; margin-bottom: 6px;">3. Workflow Pipeline Stages</div>
+                    <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; background: #ffffff;">
+                        <div style="font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Review Stages Breakdown</div>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 5px 6px; text-align: left; color: #64748b; font-size: 10px; font-weight: 700; border-bottom: 2px solid #e2e8f0;">Stage</th>
+                                    <th style="padding: 5px 6px; text-align: right; color: #64748b; font-size: 10px; font-weight: 700; border-bottom: 2px solid #e2e8f0;">Count</th>
+                                    <th style="padding: 5px 6px; text-align: right; color: #64748b; font-size: 10px; font-weight: 700; border-bottom: 2px solid #e2e8f0;">Share</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($pipelineStages as $stage)
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 5px 6px; font-weight: 600; color: #334155; font-size: 10.5px;">{{ $stage['label'] }}</td>
+                                    <td style="padding: 5px 6px; text-align: right; font-weight: 700; color: #0f172a; font-size: 10.5px;">{{ $stage['count'] }}</td>
+                                    <td style="padding: 5px 6px; text-align: right; color: #64748b; font-size: 10.5px;">{{ $totalSubmissions > 0 ? round(($stage['count'] / $totalSubmissions) * 100) : 0 }}%</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Right Column (approx 60% width): Approval Status Distribution & Expanded Submitting Colleges --}}
+            <div style="flex: 1.32; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+                {{-- Approval Status Distribution --}}
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; background: #ffffff;">
+                    @php
+                        $statusColorMap = [
+                            'Approved' => ['bg' => '#10b981', 'light' => '#ecfdf5'],
+                            'Intake / New' => ['bg' => '#a855f7', 'light' => '#faf5ff'],
+                            'Active Review' => ['bg' => '#3b82f6', 'light' => '#eff6ff'],
+                            'In Revision' => ['bg' => '#f59e0b', 'light' => '#fffbeb'],
+                            'Exempt' => ['bg' => '#64748b', 'light' => '#f8fafc'],
+                            'Rejected' => ['bg' => '#ef4444', 'light' => '#fef2f2']
+                        ];
+                    @endphp
+                    <div style="font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Approval Status Distribution</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 7px;">
+                        @foreach($approvalTrends as $statusLabel => $statusCount)
+                        @php
+                            $colors = $statusColorMap[$statusLabel] ?? ['bg' => '#8B0000', 'light' => '#fff5f5'];
+                            $pct = $totalSubmissions > 0 ? round(($statusCount / $totalSubmissions) * 100) : 0;
+                        @endphp
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-radius: 6px; background: {{ $colors['light'] }}; border-left: 3.5px solid {{ $colors['bg'] }};">
+                            <span style="font-size: 10px; font-weight: 600; color: #334155;">{{ $statusLabel }}</span>
+                            <span style="font-size: 10.5px; font-weight: 800; color: {{ $colors['bg'] }}; margin-left: 6px;">{{ $statusCount }} <span style="font-size: 9px; font-weight: 600; color: #64748b;">({{ $pct }}%)</span></span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Submitting Colleges & Entities --}}
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; background: #ffffff;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <div style="font-family: 'Montserrat', sans-serif; font-size: 12.5px; font-weight: 800; text-transform: uppercase; color: #8B0000; letter-spacing: 0.05em;">Submitting Colleges & Entities</div>
+                        <div style="font-size: 10px; font-weight: 600; color: #64748b;">All Entities ({{ count($allSubmitters) }})</div>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 5px 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; font-size: 10px; text-align: left; color: #475569; border-bottom: 2px solid #8B0000;">Entity / College</th>
+                                <th style="padding: 5px 6px; text-align: right; width: 60px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; font-size: 10px; color: #475569; border-bottom: 2px solid #8B0000;">Protocols</th>
+                                <th style="padding: 5px 6px; text-align: right; width: 45px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; font-size: 10px; color: #475569; border-bottom: 2px solid #8B0000;">Share</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($allSubmitters as $item)
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 3.5px 6px; font-weight: 600; color: #334155; line-height: 1.35; font-size: 10px;">{{ $item->name ?? 'Unspecified' }}</td>
+                                <td style="padding: 3.5px 6px; text-align: right; font-weight: 700; color: #0f172a; font-size: 10px;">{{ $item->count }}</td>
+                                <td style="padding: 3.5px 6px; text-align: right; color: #64748b; font-size: 10px;">{{ $totalSubmissions > 0 ? round(($item->count / $totalSubmissions) * 100) : 0 }}%</td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="3" style="padding: 6px; text-align: center; color: #94a3b8; font-size: 10px;">No data available</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Official Authentication & Sign-Off -->
+        <div style="margin-top: auto; padding-top: 20px; border-top: 1.5px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <div style="font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 38px;">Prepared By:</div>
+                <div style="border-bottom: 1.5px solid #334155; width: 250px;"></div>
+                <div style="font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 800; color: #0f172a; margin-top: 6px; text-transform: uppercase;">{{ Auth::user()->first_name ?? 'Super' }} {{ Auth::user()->last_name ?? 'Admin' }}</div>
+                <div style="font-size: 9.5px; color: #64748b; font-weight: 600; margin-top: 2px;">SUPERADMINISTRATOR, Research Ethics Office</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 38px;">Noted & Certified Correct:</div>
+                <div style="border-bottom: 1.5px solid #334155; width: 250px; margin-left: auto;"></div>
+                <div style="font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 800; color: #0f172a; margin-top: 6px; text-transform: uppercase;">REOC CHAIRPERSON / SECRETARIAT</div>
+                <div style="font-size: 9.5px; color: #64748b; font-weight: 600; margin-top: 2px;">Western Mindanao State University</div>
+            </div>
+        </div>
+    </div>
 </x-super_admin_layout>
 

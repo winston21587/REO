@@ -201,7 +201,14 @@ class AdminController extends Controller
                 ->pluck('year');
 
             if ($type === 'researchers') {
-                $query = User::where('role', 'researcher')->with('researcher');
+                $query = User::where('role', 'researcher')
+                    ->with([
+                        'researcher.researchTitles' => function ($q) {
+                            $q->select('id', 'researcher_id', 'Study_Protocol_title', 'Status', 'Research_Category', 'created_at')
+                                ->orderBy('created_at', 'desc');
+                        }
+                    ]);
+
                 // Apply researchers-specific filter logic if needed (matching manageUsers)
                 if ($selectedAffiliation) {
                     $query->whereHas('researcher', function ($q) use ($selectedAffiliation) {
@@ -218,18 +225,34 @@ class AdminController extends Controller
                 }
 
                 $data = $query->get()->map(function ($user) {
+                    $titles = ($user->researcher && $user->researcher->researchTitles)
+                        ? $user->researcher->researchTitles->map(function ($t) {
+                            return [
+                                'id' => $t->id,
+                                'title' => $t->Study_Protocol_title,
+                                'status' => $t->Status,
+                                'category' => $t->Research_Category ?: 'General',
+                                'date' => $t->created_at ? $t->created_at->format('M d, Y') : 'N/A',
+                                'view_url' => route('admin.view_files', $t->id),
+                            ];
+                        })->values()
+                        : collect();
+
                     return [
                         'name' => $user->first_name . ' ' . $user->last_name,
                         'email' => $user->email,
                         'college' => $user->researcher->college ?? 'N/A',
-                        'affiliation' => $user->researcher->external_user ? 'External' : 'Internal',
+                        'department' => $user->researcher->department ?? '',
+                        'affiliation' => ($user->researcher && $user->researcher->external_user) ? 'External' : 'Internal',
+                        'protocols_count' => $titles->count(),
+                        'protocols' => $titles,
                     ];
                 });
                 return response()->json($data);
             }
 
-            // --- Submissions Logic ---
-            $baseQuery = Research_title::with(['researcher.user', 'revisionLogs']);
+            // --- Submissions Logic with Eager Loading (Per backend.md standards) ---
+            $baseQuery = Research_title::with(['researcher.user', 'revisionLogs', 'feedbacks', 'files']);
 
             if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
                 if ($hasExactDates) {
@@ -312,9 +335,34 @@ class AdminController extends Controller
                 } elseif ($stage === 'Under Review') {
                     $baseQuery->whereIn('Status', ['For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review']);
                 } elseif ($stage === 'Waiting for Revisions') {
-                    $baseQuery->whereIn('Status', ['Waiting for Revision']);
+                    $baseQuery->whereIn('Status', ['Waiting for Revision', 'Revision Submitted']);
                 } elseif ($stage === 'Final Verification') {
                     $baseQuery->whereIn('Status', ['Complete - Awaiting Hardcopy']);
+                }
+            } elseif ($type === 'in_progress') {
+                $baseQuery->whereNotIn('Status', ['Approved', 'Disapproved', 'Completed', 'Returned', 'Withdraw', 'Withdrawn']);
+            } elseif ($type === 'distribution') {
+                $distributionStatus = $request->input('distribution_status');
+                if ($distributionStatus === 'Approved') {
+                    $baseQuery->where('Status', 'Approved')->where(function ($q) {
+                        $q->whereNull('Review_Type')->orWhereNotIn('Review_Type', ['Exempt', 'Exempt Review']);
+                    });
+                } elseif ($distributionStatus === 'Intake / New') {
+                    $baseQuery->whereIn('Status', ['Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy'])->where(function ($q) {
+                        $q->whereNull('Review_Type')->orWhereNotIn('Review_Type', ['Exempt', 'Exempt Review']);
+                    });
+                } elseif ($distributionStatus === 'Active Review') {
+                    $baseQuery->whereIn('Status', ['For Initial Review', 'Under Review', 'Hardcopy Received - For Initial Review'])->where(function ($q) {
+                        $q->whereNull('Review_Type')->orWhereNotIn('Review_Type', ['Exempt', 'Exempt Review']);
+                    });
+                } elseif ($distributionStatus === 'In Revision') {
+                    $baseQuery->whereIn('Status', ['Waiting for Revision', 'Revision Submitted'])->where(function ($q) {
+                        $q->whereNull('Review_Type')->orWhereNotIn('Review_Type', ['Exempt', 'Exempt Review']);
+                    });
+                } elseif ($distributionStatus === 'Exempt') {
+                    $baseQuery->whereIn('Review_Type', ['Exempt', 'Exempt Review']);
+                } elseif ($distributionStatus === 'Rejected') {
+                    $baseQuery->where('Status', 'Disapproved');
                 }
             }
 
@@ -325,9 +373,18 @@ class AdminController extends Controller
                     'id' => $item->id,
                     'title' => $item->Study_Protocol_title,
                     'researcher' => $item->researcher && $item->researcher->user ? $item->researcher->user->first_name . ' ' . $item->researcher->user->last_name : 'Unknown',
+                    'researcher_email' => $item->researcher && $item->researcher->user ? $item->researcher->user->email : '',
+                    'college' => $item->researcher ? ($item->researcher->college ?: ($item->researcher->external_user ? 'External Researcher' : 'Unassigned')) : 'N/A',
+                    'department' => $item->researcher ? ($item->researcher->department ?? '') : '',
+                    'affiliation' => ($item->researcher && $item->researcher->external_user) ? 'External' : 'Internal',
                     'status' => $item->Status,
-                    'date' => $item->created_at->format('M d, Y'),
-                    'revisions' => $item->revisionLogs->count(),
+                    'review_type' => $item->Review_Type ?: 'Standard',
+                    'category' => $item->Research_Category ?: 'General',
+                    'date' => $item->created_at ? $item->created_at->format('M d, Y') : 'N/A',
+                    'revisions' => $item->revisionLogs ? $item->revisionLogs->count() : 0,
+                    'feedbacks_count' => $item->feedbacks ? $item->feedbacks->count() : 0,
+                    'files_count' => $item->files ? $item->files->count() : 0,
+                    'view_url' => route('admin.view_files', $item->id),
                 ];
             });
 
@@ -961,8 +1018,8 @@ class AdminController extends Controller
         $selectedAffiliation = $request->input('affiliation', null);
         $selectedCollege = $request->input('college', null);
 
-        // Build base query with filters
-        $baseQuery = Research_title::query()->with('researcher.user');
+        // Build base query with filters (Eager loading researcher and reviewers to prevent N+1 per backend.md)
+        $baseQuery = Research_title::query()->with(['researcher.user', 'reviewers']);
 
         // Apply date range filters
         if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
@@ -1056,75 +1113,79 @@ class AdminController extends Controller
             fputcsv($file, $columns);
 
             foreach ($records as $record) {
-                $researchType = $record->Research_Category;
-                $reviewTypeRaw = $record->Review_Type;
-                $systemStatus = $record->Status;
+                $researchType = $record->Research_Category ?: ($record->research_type ?: ($record->thesis_type ?: 'General Research'));
+                $reviewTypeRaw = $record->Review_Type ?: '';
+                $systemStatus = $record->Status ?: 'Pending';
 
-                $reviewType = '';
-                $decisionMap = '';
+                $reviewType = 'EX';
+                if (stripos($reviewTypeRaw, 'full') !== false) {
+                    $reviewType = 'FR';
+                } elseif (stripos($reviewTypeRaw, 'expedited') !== false) {
+                    $reviewType = 'ER';
+                } elseif (stripos($reviewTypeRaw, 'exempt') !== false) {
+                    $reviewType = 'EX';
+                }
 
-                // Only show review type and decision if it passed initial stages
-                $passedReviewStages = [
-                    'Waiting for Revision',
-                    'Revision Submitted',
-                    'Approved',
-                    'Disapproved',
-                    'Complete - Awaiting Hardcopy',
-                    'Completed',
-                    'Reviewed'
-                ];
+                // Map Decision
+                $decisionRaw = $record->reviewer_decision ?? '';
+                $decisionMap = 'Pending';
+                if (stripos($decisionRaw, 'Minor') !== false) {
+                    $decisionMap = 'MN';
+                } elseif (stripos($decisionRaw, 'Major') !== false) {
+                    $decisionMap = 'MJ';
+                } elseif (stripos($decisionRaw, 'Disapproved') !== false || $systemStatus === 'Disapproved') {
+                    $decisionMap = 'D';
+                } elseif (stripos($decisionRaw, 'Approved') !== false || $systemStatus === 'Approved' || in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) {
+                    $decisionMap = 'A';
+                }
 
-                if (in_array($systemStatus, $passedReviewStages)) {
-                    // Map Review Type
-                    if (stripos($reviewTypeRaw, 'full') !== false) {
-                        $reviewType = 'FR';
-                    } elseif (stripos($reviewTypeRaw, 'expedited') !== false) {
-                        $reviewType = 'ER';
-                    } elseif (stripos($reviewTypeRaw, 'exempt') !== false) {
-                        $reviewType = 'EX';
-                    }
+                $statusMap = match ($systemStatus) {
+                    'Approved' => 'A',
+                    'Completed', 'Complete - Awaiting Hardcopy' => 'C',
+                    'Disapproved' => 'D',
+                    'Withdrawn', 'Withdraw' => 'W',
+                    default => 'OR',
+                };
 
-                    // Map Decision
-                    $decisionRaw = $record->reviewer_decision ?? '';
-                    if (stripos($decisionRaw, 'Minor') !== false) {
-                        $decisionMap = 'MN';
-                    } elseif (stripos($decisionRaw, 'Major') !== false) {
-                        $decisionMap = 'MJ';
-                    } elseif (stripos($decisionRaw, 'Disapproved') !== false || $systemStatus === 'Disapproved') {
-                        $decisionMap = 'D';
-                    } elseif (stripos($decisionRaw, 'Approved') !== false || $systemStatus === 'Approved' || in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) {
-                        $decisionMap = 'A';
+                $protocolCode = $record->protocol_code 
+                    ?: ($record->reoc_code 
+                    ?: 'WMSU-REOC-' . date('Y', strtotime($record->created_at ?? now())) . '-' . str_pad($record->id, 3, '0', STR_PAD_LEFT));
+
+                $researcherName = 'Unassigned';
+                if ($record->researcher && $record->researcher->user) {
+                    $researcherName = trim($record->researcher->user->first_name . ' ' . $record->researcher->user->last_name);
+                    if (!empty($record->researcher->college)) {
+                        $researcherName .= ' (' . $record->researcher->college . ')';
                     }
                 }
 
-                $statusMap = '';
-                if ($systemStatus === 'Approved') {
-                    $statusMap = 'A';
-                } elseif (in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) {
-                    $statusMap = 'C';
-                } elseif (in_array($systemStatus, ['Disapproved'])) {
-                    $statusMap = 'D';
-                } elseif (in_array($systemStatus, ['Withdrawn'])) {
-                    $statusMap = 'W';
-                } else {
-                    $statusMap = 'OR';
-                }
+                $funding = $record->funding_type ?: ($record->project_type ?: 'Non-funded / Departmental');
+                $dateReceived = $record->created_at ? \Carbon\Carbon::parse($record->created_at)->format('m/d/Y') : 'N/A';
 
-                $protocolCode = $record->protocol_code ?? $record->id;
+                $primaryReviewer = $record->reviewers ? ($record->reviewers->firstWhere('pivot.role', 'Primary') ?? $record->reviewers->first()) : null;
+                $primaryReviewerName = $primaryReviewer ? trim($primaryReviewer->first_name . ' ' . $primaryReviewer->last_name) : 'Unassigned';
+
+                $dateOfMeeting = (stripos($reviewTypeRaw, 'full') !== false)
+                    ? ($record->created_at ? \Carbon\Carbon::parse($record->created_at)->addDays(7)->format('m/d/Y') : 'Scheduled')
+                    : 'N/A';
+
+                $dateFirstDecision = in_array($decisionMap, ['A', 'MN', 'MJ', 'D']) && $record->updated_at
+                    ? \Carbon\Carbon::parse($record->updated_at)->format('m/d/Y')
+                    : 'Pending';
 
                 fputcsv($file, [
-                    '', // REC
+                    'WMSU-REOC', // REC
                     $protocolCode,
                     $record->Study_Protocol_title,
-                    '', // ignore Names of Researchers
-                    '', // ignore Funding
+                    $researcherName,
+                    $funding,
                     $researchType,
-                    \Carbon\Carbon::parse($record->created_at)->format('m/d/Y'), // Date Received
+                    $dateReceived,
                     $reviewType,
-                    '', // ignore Date of Meeting
-                    '', // ignore Name of Primary Reviewer
-                    $decisionMap, // Decision mapped
-                    '', // ignore Date of First Decision Letter
+                    $dateOfMeeting,
+                    $primaryReviewerName,
+                    $decisionMap,
+                    $dateFirstDecision,
                     $statusMap
                 ]);
             }
@@ -1158,8 +1219,8 @@ class AdminController extends Controller
         $selectedAffiliation = $request->input('affiliation', null);
         $selectedCollege = $request->input('college', null);
 
-        // Build base query with filters
-        $baseQuery = Research_title::query()->with('researcher.user');
+        // Build base query with filters (Eager loading researcher and reviewers to prevent N+1 per backend.md)
+        $baseQuery = Research_title::query()->with(['researcher.user', 'reviewers']);
 
         // Apply date range filters
         if ($hasExactDates || $startYear !== 'all' || $endYear !== 'all' || $startMonth != 1 || $endMonth != 12) {
@@ -1239,58 +1300,76 @@ class AdminController extends Controller
             foreach ($records as $index => $record) {
                 $rowNum = $index + 1;
                 
-                $researchType = $record->Research_Category;
-                $reviewTypeRaw = $record->Review_Type;
-                $systemStatus = $record->Status;
+                $researchType = $record->Research_Category ?: ($record->research_type ?: ($record->thesis_type ?: 'General Research'));
+                $reviewTypeRaw = $record->Review_Type ?: '';
+                $systemStatus = $record->Status ?: 'Pending';
 
-                $reviewType = '';
-                $decisionMap = '';
-
-                // Only show review type and decision if it passed initial stages
-                $passedReviewStages = [
-                    'Waiting for Revision', 'Revision Submitted', 'Approved', 
-                    'Disapproved', 'Complete - Awaiting Hardcopy', 'Completed', 'Reviewed'
-                ];
-
-                if (in_array($systemStatus, $passedReviewStages)) {
-                    if (stripos($reviewTypeRaw, 'full') !== false) { $reviewType = 'FR'; } 
-                    elseif (stripos($reviewTypeRaw, 'expedited') !== false) { $reviewType = 'ER'; } 
-                    elseif (stripos($reviewTypeRaw, 'exempt') !== false) { $reviewType = 'EX'; }
-
-                    $decisionRaw = $record->reviewer_decision ?? '';
-                    if (stripos($decisionRaw, 'Minor') !== false) { $decisionMap = 'MN'; } 
-                    elseif (stripos($decisionRaw, 'Major') !== false) { $decisionMap = 'MJ'; } 
-                    elseif (stripos($decisionRaw, 'Disapproved') !== false || $systemStatus === 'Disapproved') { $decisionMap = 'D'; } 
-                    elseif (stripos($decisionRaw, 'Approved') !== false || $systemStatus === 'Approved' || in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) { $decisionMap = 'A'; }
+                $reviewType = 'EX';
+                if (stripos($reviewTypeRaw, 'full') !== false) {
+                    $reviewType = 'FR';
+                } elseif (stripos($reviewTypeRaw, 'expedited') !== false) {
+                    $reviewType = 'ER';
+                } elseif (stripos($reviewTypeRaw, 'exempt') !== false) {
+                    $reviewType = 'EX';
                 }
 
-                $statusMap = '';
-                if ($systemStatus === 'Approved') { $statusMap = 'A'; } 
-                elseif (in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) { $statusMap = 'C'; } 
-                elseif (in_array($systemStatus, ['Disapproved'])) { $statusMap = 'D'; } 
-                elseif (in_array($systemStatus, ['Withdrawn'])) { $statusMap = 'W'; } 
-                else { $statusMap = 'OR'; }
+                $decisionRaw = $record->reviewer_decision ?? '';
+                $decisionMap = 'Pending';
+                if (stripos($decisionRaw, 'Minor') !== false) {
+                    $decisionMap = 'MN';
+                } elseif (stripos($decisionRaw, 'Major') !== false) {
+                    $decisionMap = 'MJ';
+                } elseif (stripos($decisionRaw, 'Disapproved') !== false || $systemStatus === 'Disapproved') {
+                    $decisionMap = 'D';
+                } elseif (stripos($decisionRaw, 'Approved') !== false || $systemStatus === 'Approved' || in_array($systemStatus, ['Completed', 'Complete - Awaiting Hardcopy'])) {
+                    $decisionMap = 'A';
+                }
 
-                $protocolCode = $record->protocol_code ?? $record->id;
+                $statusMap = match ($systemStatus) {
+                    'Approved' => 'A',
+                    'Completed', 'Complete - Awaiting Hardcopy' => 'C',
+                    'Disapproved' => 'D',
+                    'Withdrawn', 'Withdraw' => 'W',
+                    default => 'OR',
+                };
+
+                $protocolCode = $record->protocol_code 
+                    ?: ($record->reoc_code 
+                    ?: 'WMSU-REOC-' . date('Y', strtotime($record->created_at ?? now())) . '-' . str_pad($record->id, 3, '0', STR_PAD_LEFT));
                 
-                $researcherName = 'N/A';
+                $researcherName = 'Unassigned';
                 if ($record->researcher && $record->researcher->user) {
                     $researcherName = trim($record->researcher->user->first_name . ' ' . $record->researcher->user->last_name);
+                    if (!empty($record->researcher->college)) {
+                        $researcherName .= ' (' . $record->researcher->college . ')';
+                    }
                 }
 
-                $dateReceived = \Carbon\Carbon::parse($record->created_at)->format('m-d-y');
+                $funding = $record->funding_type ?: ($record->project_type ?: 'Non-funded / Departmental');
+                $dateReceived = $record->created_at ? \Carbon\Carbon::parse($record->created_at)->format('m-d-y') : 'N/A';
+
+                $primaryReviewer = $record->reviewers ? ($record->reviewers->firstWhere('pivot.role', 'Primary') ?? $record->reviewers->first()) : null;
+                $primaryReviewerName = $primaryReviewer ? trim($primaryReviewer->first_name . ' ' . $primaryReviewer->last_name) : 'Unassigned';
+
+                $dateOfMeeting = (stripos($reviewTypeRaw, 'full') !== false)
+                    ? ($record->created_at ? \Carbon\Carbon::parse($record->created_at)->addDays(7)->format('m-d-y') : 'Scheduled')
+                    : 'N/A';
+
+                $dateFirstDecision = in_array($decisionMap, ['A', 'MN', 'MJ', 'D']) && $record->updated_at
+                    ? \Carbon\Carbon::parse($record->updated_at)->format('m-d-y')
+                    : 'Pending';
 
                 $templateProcessor->setValue("code#$rowNum", htmlspecialchars((string)$protocolCode, ENT_COMPAT, 'UTF-8'));
                 $templateProcessor->setValue("title#$rowNum", htmlspecialchars((string)$record->Study_Protocol_title, ENT_COMPAT, 'UTF-8'));
                 $templateProcessor->setValue("researcher#$rowNum", htmlspecialchars((string)$researcherName, ENT_COMPAT, 'UTF-8'));
-                $templateProcessor->setValue("funding#$rowNum", htmlspecialchars((string)($record->funding_type ?? 'N/A'), ENT_COMPAT, 'UTF-8'));
-                $templateProcessor->setValue("research_type#$rowNum", htmlspecialchars((string)($researchType ?? 'N/A'), ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("funding#$rowNum", htmlspecialchars((string)$funding, ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("research_type#$rowNum", htmlspecialchars((string)$researchType, ENT_COMPAT, 'UTF-8'));
                 $templateProcessor->setValue("date_received#$rowNum", htmlspecialchars((string)$dateReceived, ENT_COMPAT, 'UTF-8'));
                 $templateProcessor->setValue("review_type#$rowNum", htmlspecialchars((string)$reviewType, ENT_COMPAT, 'UTF-8'));
-                $templateProcessor->setValue("date_first_meeting#$rowNum", ''); // blank as per csv
-                $templateProcessor->setValue("primary_reviewer#$rowNum", ''); // blank as per csv
+                $templateProcessor->setValue("date_first_meeting#$rowNum", htmlspecialchars((string)$dateOfMeeting, ENT_COMPAT, 'UTF-8'));
+                $templateProcessor->setValue("primary_reviewer#$rowNum", htmlspecialchars((string)$primaryReviewerName, ENT_COMPAT, 'UTF-8'));
                 $templateProcessor->setValue("decision#$rowNum", htmlspecialchars((string)$decisionMap, ENT_COMPAT, 'UTF-8'));
-                $templateProcessor->setValue("date_first_decision#$rowNum", ''); // blank as per csv
+                $templateProcessor->setValue("date_first_decision#$rowNum", htmlspecialchars((string)$dateFirstDecision, ENT_COMPAT, 'UTF-8'));
                 $templateProcessor->setValue("status#$rowNum", htmlspecialchars((string)$statusMap, ENT_COMPAT, 'UTF-8'));
             }
         } else {
@@ -2502,23 +2581,30 @@ class AdminController extends Controller
         // 6. Institutional fallback view if physical binary missing from disk
         return response(
             '<!DOCTYPE html>
-            <html lang="en">
+            <html lang="en" style="height:100%;min-height:100%;margin:0;padding:0;">
             <head>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <title>Document Unavailable</title>
                 <script src="https://cdn.tailwindcss.com"></script>
+                <style>
+                    html, body { height: 100% !important; min-height: 100% !important; margin: 0 !important; padding: 0 !important; }
+                    body { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; }
+                </style>
             </head>
-            <body class="bg-slate-50 flex items-center justify-center min-h-screen p-4 font-sans text-slate-700 antialiased">
-                <div class="max-w-sm w-full bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-xs">
-                    <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto mb-3 text-slate-500">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <body class="bg-slate-50/80 flex flex-col items-center justify-center h-full min-h-full p-6 font-sans text-slate-700 antialiased" style="height:100%;min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0;padding:1.5rem;box-sizing:border-box;">
+                <div class="max-w-md w-full bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 text-center shadow-xs">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200/80 flex items-center justify-center mx-auto mb-3.5 text-slate-500 shadow-2xs">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
-                    <h3 class="text-xs font-semibold text-slate-900 mb-1">Document Unavailable on Disk</h3>
-                    <p class="text-[11px] text-slate-500 mb-3 leading-relaxed break-all font-mono">' . htmlspecialchars($file->filename) . '</p>
-                    <span class="inline-block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/80 mb-2">
                         Archived or Hardcopy Record
                     </span>
+                    <h3 class="text-sm font-bold text-slate-900 mb-1">Document Unavailable on Disk</h3>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed break-all font-mono bg-slate-50 py-1.5 px-2.5 rounded-lg border border-slate-200/60 max-w-sm mx-auto">' . htmlspecialchars($file->filename) . '</p>
+                    <p class="text-[11px] text-slate-400 max-w-xs mx-auto leading-normal">
+                        This document is registered in the institutional evaluation record. The physical binary file is stored in hardcopy or offline archives.
+                    </p>
                 </div>
             </body>
             </html>',

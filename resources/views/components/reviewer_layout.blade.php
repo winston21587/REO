@@ -74,6 +74,19 @@
         main ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        /* Completely hide scrollbars across all browsers */
+        .sidebar-no-scrollbar,
+        .no-scrollbar {
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
+        }
+        .sidebar-no-scrollbar::-webkit-scrollbar,
+        .no-scrollbar::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
     </style>
 </head>
 
@@ -258,14 +271,6 @@
                     </span>
                 </div>
                 
-                <div class="flex items-center gap-4">
-                    <!-- Notification Trigger -->
-                    <button aria-label="Open notifications center"
-                            class="notification-trigger w-11 h-11 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-brand-primary hover:border-brand-primary/40 hover:bg-white hover:shadow-xs transition-all relative focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary group cursor-pointer">
-                        <i class="fas fa-bell text-base group-hover:scale-110 transition-transform" aria-hidden="true"></i>
-                        <span class="absolute top-2 right-2 w-2 h-2 bg-brand-primary rounded-full animate-pulse ring-2 ring-white hidden"></span>
-                    </button>
-                </div>
             </header>
             @endif
 
@@ -288,13 +293,6 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <!-- Mobile Notification Button -->
-                    <button aria-label="Open notifications"
-                            class="notification-trigger w-11 h-11 min-h-[44px] min-w-[44px] rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-700 active:bg-slate-100 relative focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer">
-                        <i class="fas fa-bell text-sm" aria-hidden="true"></i>
-                        <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-brand-primary rounded-full animate-pulse ring-2 ring-white hidden"></span>
-                    </button>
-
                     <!-- Mobile Drawer Toggle Button -->
                     <button @click="mobileDrawerOpen = true"
                             aria-label="Open reviewer menu"
@@ -304,32 +302,10 @@
                 </div>
             </header>
 
-            <!-- Notification Toast Card -->
-            <div id="notification-toast"
-                 class="fixed top-20 right-4 sm:right-6 hidden bg-white border border-slate-200 rounded-2xl shadow-xl p-4 z-[60] opacity-0 scale-95 transition-all duration-300 max-w-xs">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs">
-                        <i class="fas fa-bell text-base" aria-hidden="true"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-sm text-slate-900">New Protocol Notice</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">You have unread reviewer updates</p>
-                    </div>
-                    <button onclick="document.getElementById('notification-toast').classList.add('hidden')"
-                            aria-label="Dismiss notification toast"
-                            class="text-slate-400 hover:text-slate-600 p-1 shrink-0">
-                        <i class="fas fa-times text-sm" aria-hidden="true"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Global Notification Modal / Drawer Component -->
-            <x-notification-tab />
-
             <!-- Page Body with Mobile Bottom Clearance -->
-            <div class="flex-1 {{ request()->routeIs('reviewer.view_files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5' : 'overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8' }} flex flex-col relative z-0 print:overflow-visible print:p-0 print:pb-0">
+            <div class="flex-1 {{ request()->routeIs('reviewer.view_files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5 min-h-0' : 'overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8' }} flex flex-col relative z-0 print:overflow-visible print:p-0 print:pb-0">
                 <x-boneyard-skeleton role="reviewer" type="reviewer" contentId="reviewer-page-content" />
-                <div id="reviewer-page-content" class="w-full flex-1 flex flex-col">
+                <div id="reviewer-page-content" class="w-full flex-1 min-h-0 flex flex-col">
                     {{ $slot }}
                 </div>
             </div>
@@ -380,8 +356,6 @@
         </main>
     </div>
 
-    <!-- Global Notification Scripts -->
-    <x-notification-script />
     <x-toast />
 </body>
 

@@ -8,10 +8,10 @@
             </div>
             <div class="flex gap-2 mt-4 md:mt-0">
                 <form action="{{ route('admin.revisions') }}" method="GET" class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search revisions..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent w-64 shadow-sm">
-                    <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#8B0000]">
+                    <button type="submit" class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 hover:text-[#8B0000]">
                         <i class="fas fa-search"></i>
                     </button>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search revisions..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent w-64 shadow-sm">
                 </form>
             </div>
         </div>

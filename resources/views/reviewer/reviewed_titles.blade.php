@@ -16,12 +16,6 @@
                     <i class="fas fa-check-circle text-emerald-600" aria-hidden="true"></i>
                     <span>{{ $titles->count() }} {{ Str::plural('Protocol', $titles->count()) }}</span>
                 </div>
-                <!-- Desktop Notification Trigger -->
-                <button aria-label="Open notifications center"
-                        class="notification-trigger hidden lg:flex w-9 h-9 rounded-xl bg-white border border-slate-200/90 items-center justify-center text-slate-600 hover:text-brand-primary hover:border-brand-primary/40 hover:shadow-xs transition-all relative focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary group cursor-pointer shadow-2xs">
-                    <i class="fas fa-bell text-sm group-hover:scale-110 transition-transform" aria-hidden="true"></i>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-primary rounded-full animate-pulse ring-2 ring-white hidden"></span>
-                </button>
             </div>
         </div>
 

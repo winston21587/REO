@@ -78,13 +78,15 @@
         /* Completely hide scrollbars on sidebar navigation across all browsers */
         aside nav,
         #admin-sidebar-nav,
-        .sidebar-no-scrollbar {
+        .sidebar-no-scrollbar,
+        .no-scrollbar {
             -ms-overflow-style: none !important;
             scrollbar-width: none !important;
         }
         aside nav::-webkit-scrollbar,
         #admin-sidebar-nav::-webkit-scrollbar,
-        .sidebar-no-scrollbar::-webkit-scrollbar {
+        .sidebar-no-scrollbar::-webkit-scrollbar,
+        .no-scrollbar::-webkit-scrollbar {
             display: none !important;
             width: 0 !important;
             height: 0 !important;
@@ -379,9 +381,9 @@
                 </button>
             </div>
 
-            <div class="flex-1 {{ request()->routeIs('admin.view_files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5 pt-16 md:pt-3.5 lg:pt-3.5' : 'overflow-y-auto p-4 sm:p-5 lg:p-6 pt-16 md:pt-5 lg:pt-6' }} flex flex-col">
+            <div class="flex-1 {{ request()->routeIs('admin.view_files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5 pt-16 md:pt-3.5 lg:pt-3.5 min-h-0' : 'overflow-y-auto p-4 sm:p-5 lg:p-6 pt-16 md:pt-5 lg:pt-6' }} flex flex-col">
                 <x-boneyard-skeleton role="admin" type="admin" contentId="admin-page-content" />
-                <div id="admin-page-content" class="w-full flex-1 flex flex-col">
+                <div id="admin-page-content" class="w-full flex-1 min-h-0 flex flex-col">
                     {{ $slot }}
                 </div>
             </div>

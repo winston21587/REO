@@ -15,11 +15,13 @@
             <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
                 <!-- Search Input -->
                 <div class="relative flex-1 sm:flex-initial min-w-0">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i class="fas fa-search text-xs sm:text-sm" aria-hidden="true"></i>
+                    </div>
                     <input type="text" id="cert_search_input" value="{{ request('search') }}"
                            placeholder="Search certifications..."
                            aria-label="Search certifications"
                            class="h-10 sm:h-11 min-h-[38px] pl-10 pr-4 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent w-full sm:w-64 md:w-72 shadow-2xs bg-white transition-all">
-                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs sm:text-sm"></i>
                 </div>
 
                 <!-- Filter Drawer Trigger Button -->

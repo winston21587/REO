@@ -89,9 +89,11 @@ colleges.txt
 document.xml
 document2.xml
 
-# Internal design & product docs (local only)
-DESIGN.md
-PRODUCT.md
+# Archify visual check captures
+ARCHITECTURE.visual-check.*
+ARCHITECTURE.html
+ARCHITECTURE.visual-check.json
+.agents/architecture.candidate.json
 
 # Reverse engineering projects (unrelated)
 /Reverse Engineer/

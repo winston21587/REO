@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Research_title_Controller;
@@ -15,6 +16,38 @@ use App\Http\Controllers\CmsController;
 // ====================================================
 // PUBLIC ROUTES
 // ====================================================
+
+Route::get('/health', function () {
+    try {
+        $startTime = microtime(true);
+        DB::select('SELECT 1');
+        $dbLatency = round((microtime(true) - $startTime) * 1000, 2);
+
+        return response()->json([
+            'status' => 'healthy',
+            'timestamp' => now()->toIso8601String(),
+            'database' => [
+                'status' => 'connected',
+                'latency_ms' => $dbLatency,
+                'connection' => config('database.default'),
+            ],
+            'app' => [
+                'environment' => app()->environment(),
+                'version' => app()->version(),
+            ]
+        ], 200);
+    } catch (\Throwable $e) {
+        \Illuminate\Support\Facades\Log::error('Health check failed: ' . $e->getMessage());
+        return response()->json([
+            'status' => 'unhealthy',
+            'timestamp' => now()->toIso8601String(),
+            'database' => [
+                'status' => 'disconnected',
+                'error' => app()->environment('production') ? 'Database connection failure' : $e->getMessage(),
+            ],
+        ], 503);
+    }
+})->name('health');
 
 Route::get('/', function () {
     $contents = CmsContent::all()->pluck('value', 'key');

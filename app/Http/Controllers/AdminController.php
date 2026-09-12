@@ -45,22 +45,24 @@ class AdminController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'middle_name' => $request->middle_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'role' => 'researcher',
-            'is_verified' => true,
-            'password' => Hash::make($request->password), // User-defined password
-            'email_verified_at' => now(), // Auto-verify since admin created it
-        ]);
+        DB::transaction(function () use ($request) {
+            $user = User::create([
+                'first_name' => $request->first_name,
+                'middle_name' => $request->middle_name,
+                'last_name' => $request->last_name,
+                'email' => $request->email,
+                'role' => 'researcher',
+                'is_verified' => true,
+                'password' => Hash::make($request->password), // User-defined password
+                'email_verified_at' => now(), // Auto-verify since admin created it
+            ]);
 
-        Researcher::create([
-            'user_id' => $user->id,
-            'college' => $request->affiliation === 'external' ? null : $request->college,
-            'external_user' => $request->affiliation === 'external',
-        ]);
+            Researcher::create([
+                'user_id' => $user->id,
+                'college' => $request->affiliation === 'external' ? null : $request->college,
+                'external_user' => $request->affiliation === 'external',
+            ]);
+        });
 
 
         return back()->with('success', 'Researcher added successfully!');

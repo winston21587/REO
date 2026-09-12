@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Researcher;
 use Illuminate\Support\Facades\Hash;
@@ -119,32 +120,36 @@ class AuthController extends Controller
         $verificationCode = rand(100000, 999999);   
         // $verificationCode = 12345678;   
 
-            $user = User::create([
-            'first_name'  => $data['FirstName'],
-            'middle_name' => $data['MiddleName'] ?? null,
-            'last_name' => $data['LastName'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role'     => 'researcher', // default role
-            'verification_code' => $verificationCode,
-            'is_verified' => false,
-        ]);
+        $user = DB::transaction(function () use ($data, $verificationCode) {
+            $newUser = User::create([
+                'first_name'  => $data['FirstName'],
+                'middle_name' => $data['MiddleName'] ?? null,
+                'last_name' => $data['LastName'],
+                'email'    => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role'     => 'researcher', // default role
+                'verification_code' => $verificationCode,
+                'is_verified' => false,
+            ]);
 
             Researcher::create([
-                'user_id' => $user->id,
+                'user_id' => $newUser->id,
                 'college' => $data['college'] ?? null,
                 'department' => $data['department'] ?? null,
                 'contact' => $data['contact'] ?? null,
                 'program' => $data['program'] ?? null,
                 'external_user' => false,
             ]);
-    
 
-    // Send email with verification code
-        Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user));
+            return $newUser;
+        });
 
-        // Auth::login($user);
-        // return redirect()->route('home');
+        // Send email with verification code
+        try {
+            Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Registration verification email failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('verify.show', ['email' => $user->email])->with('success', 'We sent a verification code to your email.');
     }
@@ -174,30 +179,34 @@ class AuthController extends Controller
         $verificationCode = rand(100000, 999999);   
         // $verificationCode = 12345678;   
 
-            $user = User::create([
-            'first_name'  => $data['FirstName'],
-            'middle_name' => $data['MiddleName'] ?? null,
-            'last_name' => $data['LastName'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role'     => 'researcher', // default role
-            'verification_code' => $verificationCode,
-            'is_verified' => false,
-        ]);
+        $user = DB::transaction(function () use ($data, $verificationCode) {
+            $newUser = User::create([
+                'first_name'  => $data['FirstName'],
+                'middle_name' => $data['MiddleName'] ?? null,
+                'last_name' => $data['LastName'],
+                'email'    => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role'     => 'researcher', // default role
+                'verification_code' => $verificationCode,
+                'is_verified' => false,
+            ]);
 
             Researcher::create([
-                'user_id' => $user->id,
+                'user_id' => $newUser->id,
                 'contact' => $data['contact'] ?? null,
                 'institute' => $data['institute'] ?? null,
                 'external_user' => true,
             ]);
-    
 
-    // Send email with verification code
-        Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user));
+            return $newUser;
+        });
 
-        // Auth::login($user);
-        // return redirect()->route('home');
+        // Send email with verification code
+        try {
+            Mail::to($user->email)->send(new \App\Mail\VerifyEmail($user));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Registration verification email failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('verify.show', ['email' => $user->email])->with('success', 'We sent a verification code to your email.');
     }

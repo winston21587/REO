@@ -864,7 +864,8 @@
                         <div class="mb-2">
                             <label class="block text-sm font-bold text-slate-700 mb-2">Revision Deadline <span class="text-red-500">*</span></label>
                             <input type="date" id="revision-deadline-input" 
-                                class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent bg-slate-50">
+                                class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent bg-slate-50 cursor-pointer accent-[#8B0000]"
+                                onclick="this.showPicker && this.showPicker()">
                         </div>
                     </div>
                 `,
@@ -1059,7 +1060,7 @@
                     <div id="incompleteFields" class="hidden space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100 mt-4">
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1">Resubmission Deadline <span class="text-red-500">*</span></label>
-                            <input type="date" id="hc_appointment_date" value="${minDate}" min="${minDate}" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none">
+                            <input type="date" id="hc_appointment_date" value="${minDate}" min="${minDate}" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none cursor-pointer accent-[#8B0000]" onclick="this.showPicker && this.showPicker()">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-2">Missing Requirements</label>

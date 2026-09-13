@@ -1371,12 +1371,12 @@
                                     <div class="flex items-center gap-2 mt-2">
                                         <div class="relative flex-1">
                                             <label for="filter_exact_start" class="sr-only">Specific Start Date</label>
-                                            <input type="date" name="exact_start" id="filter_exact_start" aria-label="Specific Start Date" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value; toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
+                                            <input type="date" name="exact_start" id="filter_exact_start" aria-label="Specific Start Date" value="{{ request('exact_start') }}" onchange="document.getElementById('filter_exact_end').min = this.value; toggleExactDates()" onclick="this.showPicker && this.showPicker()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors accent-[#8B0000]">
                                         </div>
                                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 shrink-0" aria-hidden="true">to</span>
                                         <div class="relative flex-1">
                                             <label for="filter_exact_end" class="sr-only">Specific End Date</label>
-                                            <input type="date" name="exact_end" id="filter_exact_end" aria-label="Specific End Date" value="{{ request('exact_end') }}" onchange="toggleExactDates()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors">
+                                            <input type="date" name="exact_end" id="filter_exact_end" aria-label="Specific End Date" value="{{ request('exact_end') }}" onchange="toggleExactDates()" onclick="this.showPicker && this.showPicker()" class="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none shadow-sm cursor-pointer hover:border-slate-400 transition-colors accent-[#8B0000]">
                                         </div>
                                     </div>
                                 </fieldset>

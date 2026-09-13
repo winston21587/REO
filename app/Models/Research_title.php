@@ -80,6 +80,23 @@ class Research_title extends Model
         return $this->hasMany(Appointment::class, 'research_title_id');
     }
 
+    public function agendaItems()
+    {
+        return $this->hasMany(AgendaItem::class, 'protocol_id');
+    }
+
+    public function scheduledMeeting()
+    {
+        return $this->hasOneThrough(
+            Meeting::class,
+            AgendaItem::class,
+            'protocol_id',
+            'id',
+            'id',
+            'meeting_id'
+        )->where('meetings.meeting_date', '>=', now()->subDay());
+    }
+
     public function revisionLogs()
     {
         return $this->hasMany(RevisionLog::class, 'research_title_id')->orderBy('created_at', 'desc');

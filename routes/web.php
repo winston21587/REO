@@ -101,18 +101,18 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login');
     Route::get('register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('register/internal', [AuthController::class, 'register_internal'])->name('register.internal');
-    Route::post('register/external', [AuthController::class, 'register_external'])->name('register.external');
+    Route::post('register/internal', [AuthController::class, 'register_internal'])->middleware('throttle:5,1')->name('register.internal');
+    Route::post('register/external', [AuthController::class, 'register_external'])->middleware('throttle:5,1')->name('register.external');
 
     Route::get('/verify', [AuthController::class, 'showVerifyForm'])->name('verify.show');
-    Route::post('/verify', [AuthController::class, 'verifyCode'])->name('verify.submit');
-    Route::post('/verify/resend', [AuthController::class, 'resendVerificationCode'])->name('verify.resend');
+    Route::post('/verify', [AuthController::class, 'verifyCode'])->middleware('throttle:5,1')->name('verify.submit');
+    Route::post('/verify/resend', [AuthController::class, 'resendVerificationCode'])->middleware('throttle:3,1')->name('verify.resend');
 
     // Forgot Password
     Route::get('forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
-    Route::post('forgot-password', [AuthController::class, 'sendResetCode'])->name('password.email');
+    Route::post('forgot-password', [AuthController::class, 'sendResetCode'])->middleware('throttle:3,1')->name('password.email');
     Route::get('reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
-    Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1')->name('password.update');
 });
 
 Route::get('/legal/privacy-policy', function () {
@@ -146,6 +146,18 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/accept-terms', [AuthController::class, 'acceptTerms'])->name('accept.terms');
+
+    // Universal Role-Aware Dashboard Router
+    Route::get('/dashboard', function () {
+        $user = Auth::user();
+        return match($user?->role) {
+            'super_admin' => redirect()->route('super_admin.analytics'),
+            'admin'       => redirect()->route('admin.applications'),
+            'reviewer'    => redirect()->route('reviewer.dashboard'),
+            'researcher'  => redirect()->route('home'),
+            default       => redirect()->route('index'),
+        };
+    })->name('dashboard');
 
     // Force Password Change Routes
     Route::get('/password/change', [AuthController::class, 'showChangePassword'])->name('password.change');
@@ -360,6 +372,8 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/admin/agenda/{id}', [AdminController::class, 'updateAgendaItem'])->name('admin.agenda.update');
         Route::delete('/admin/agenda/{id}', [AdminController::class, 'destroyAgendaItem'])->name('admin.agenda.destroy');
         Route::put('/admin/meetings/{id}/status', [AdminController::class, 'updateMeetingStatus'])->name('admin.meetings.status');
+        Route::post('/admin/meetings/{id}/attendees', [AdminController::class, 'storeAttendee'])->name('admin.meetings.attendees.store');
+        Route::delete('/admin/meetings/{meetingId}/attendees/{attendeeId}', [AdminController::class, 'destroyAttendee'])->name('admin.meetings.attendees.destroy');
         Route::get('/admin/new', [AdminController::class, 'newSubmissions'])->name('admin.NewSubmissions');
         Route::get('/admin/Review', [AdminController::class, 'GetReview'])->name('admin.Review');
         Route::get('/admin/Revision', [AdminController::class, 'GetRevision'])->name('admin.Revision');
@@ -417,6 +431,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reviewer', [\App\Http\Controllers\ReviewerController::class, 'index'])->name('reviewer.dashboard');
         Route::get('/reviewer/re-evaluation', [\App\Http\Controllers\ReviewerController::class, 'reEvaluation'])->name('reviewer.reevaluation');
         Route::get('/reviewer/reviewed-titles', [\App\Http\Controllers\ReviewerController::class, 'reviewedTitles'])->name('reviewer.reviewed_titles');
+        Route::get('/reviewer/meetings', [\App\Http\Controllers\ReviewerController::class, 'meetings'])->name('reviewer.meetings');
+        Route::post('/reviewer/meetings/{id}/attendance', [\App\Http\Controllers\ReviewerController::class, 'confirmAttendance'])->middleware('throttle:30,1')->name('reviewer.meetings.attendance');
         Route::get('/reviewer/view-files/{id}', [\App\Http\Controllers\ReviewerController::class, 'viewFiles'])->name('reviewer.view_files');
         Route::get('/reviewer/file-serve/{id}', [\App\Http\Controllers\ReviewerController::class, 'serveFile'])->middleware('throttle:120,1')->name('reviewer.serve_file');
         Route::delete('/reviewer/file-delete/{id}', [\App\Http\Controllers\ReviewerController::class, 'deleteFile'])->middleware('throttle:30,1')->name('reviewer.file.delete');

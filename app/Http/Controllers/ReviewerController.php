@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Research_title;
 use App\Models\researcher_files;
+use App\Models\Meeting;
+use App\Models\MeetingAttendee;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -615,5 +617,72 @@ class ReviewerController extends Controller
             ->get();
 
         return view('reviewer.reviewed_titles', compact('titles'));
+    }
+
+    public function meetings()
+    {
+        $userId = Auth::id();
+
+        // 1. Fetch upcoming meetings relevant to this reviewer
+        $upcomingMeetings = Meeting::forReviewer($userId)
+            ->where('meeting_date', '>=', now()->startOfDay())
+            ->with([
+                'agendaItems' => function ($q) {
+                    $q->orderBy('order', 'asc')->with(['protocol.researcher.user', 'protocol.reviewers']);
+                },
+                'attendees' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                }
+            ])
+            ->orderBy('meeting_date', 'asc')
+            ->get();
+
+        // 2. Fetch past meetings attended by or relevant to this reviewer
+        $pastMeetings = Meeting::forReviewer($userId)
+            ->where('meeting_date', '<', now()->startOfDay())
+            ->with([
+                'agendaItems' => function ($q) {
+                    $q->orderBy('order', 'asc')->with(['protocol']);
+                },
+                'attendees' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                }
+            ])
+            ->orderBy('meeting_date', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('reviewer.meetings.index', compact('upcomingMeetings', 'pastMeetings', 'userId'));
+    }
+
+    public function confirmAttendance(Request $request, $meetingId)
+    {
+        $request->validate([
+            'status' => 'required|in:Confirmed,Regrets',
+            'remarks' => 'nullable|string|max:500',
+        ]);
+
+        $userId = Auth::id();
+        $meeting = Meeting::forReviewer($userId)->findOrFail($meetingId);
+
+        DB::transaction(function () use ($meeting, $userId, $request) {
+            MeetingAttendee::updateOrCreate(
+                [
+                    'meeting_id' => $meeting->id,
+                    'user_id' => $userId,
+                ],
+                [
+                    'role' => 'reviewer',
+                    'status' => $request->input('status'),
+                    'remarks' => $request->input('remarks'),
+                ]
+            );
+        });
+
+        $message = $request->status === 'Confirmed'
+            ? 'Your attendance has been confirmed.'
+            : 'Your regrets have been recorded.';
+
+        return back()->with('success', $message);
     }
 }

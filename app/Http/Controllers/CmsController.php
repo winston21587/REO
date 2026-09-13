@@ -157,16 +157,24 @@ class CmsController extends Controller
     // Category Routes unnecessary for now
     public function storeCategory(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255']);
-        ResearchCategory::create($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'active' => 'nullable|boolean',
+        ]);
+        ResearchCategory::create($validated);
         return back()->with('success', 'Category created successfully.');
     }
 
     public function updateCategory(Request $request, $id)
     {
-        $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'active' => 'nullable|boolean',
+        ]);
         $category = ResearchCategory::findOrFail($id);
-        $category->update($request->all());
+        $category->update($validated);
         return back()->with('success', 'Category updated successfully.');
     }
 
@@ -187,16 +195,24 @@ class CmsController extends Controller
     // --- Colleges ---
     public function storeCollege(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255', 'code' => 'required|string|max:10|unique:colleges', 'color_assign' => 'nullable|string']);
-        College::create($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:10|unique:colleges',
+            'color_assign' => 'nullable|string|max:50',
+        ]);
+        College::create($validated);
         return back()->with('success', 'College created successfully.');
     }
 
     public function updateCollege(Request $request, $id)
     {
-        $request->validate(['name' => 'required|string|max:255', 'code' => 'required|string|max:10|unique:colleges,code,' . $id]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:10|unique:colleges,code,' . $id,
+            'color_assign' => 'nullable|string|max:50',
+        ]);
         $college = College::findOrFail($id);
-        $college->update($request->all());
+        $college->update($validated);
         return back()->with('success', 'College updated successfully.');
     }
 
@@ -209,23 +225,23 @@ class CmsController extends Controller
     // --- Departments ---
     public function storeDepartment(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255', 
             'code' => 'required|string|max:10|unique:departments',
             'college_id' => 'required|exists:colleges,id'
         ]);
-        Department::create($request->all());
+        Department::create($validated);
         return back()->with('success', 'Department created successfully.');
     }
 
     public function updateDepartment(Request $request, $id)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255', 
             'code' => 'required|string|max:10|unique:departments,code,' . $id,
             'college_id' => 'required|exists:colleges,id'
         ]);
-        Department::findOrFail($id)->update($request->all());
+        Department::findOrFail($id)->update($validated);
         return back()->with('success', 'Department updated successfully.');
     }
 
@@ -237,16 +253,22 @@ class CmsController extends Controller
 
     public function storeProgram(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255', 'department_id' => 'required|exists:departments,id']);
-        Program::create($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'department_id' => 'required|exists:departments,id',
+        ]);
+        Program::create($validated);
         return back()->with('success', 'Program created successfully.');
     }
 
     public function updateProgram(Request $request, $id)
     {
-        $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'department_id' => 'nullable|exists:departments,id',
+        ]);
         $program = Program::findOrFail($id);
-        $program->update($request->all());
+        $program->update($validated);
         return back()->with('success', 'Program updated successfully.');
     }
 

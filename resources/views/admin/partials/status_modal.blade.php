@@ -199,7 +199,8 @@
                             </div>
                             <input type="date" id="appointmentDate" name="appointment_date"
                                 min="{{ date('Y-m-d', strtotime('+2 days')) }}"
-                                class="w-full pl-10 pr-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs transition-all cursor-pointer">
+                                class="w-full pl-10 pr-4 py-3 rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs transition-all cursor-pointer accent-[#8B0000]"
+                                onclick="this.showPicker && this.showPicker()">
                         </div>
                     </div>
 

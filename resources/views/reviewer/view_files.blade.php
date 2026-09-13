@@ -100,7 +100,7 @@
         $remarksByFileId = $myFileRemarks->map(fn($r) => $r->remarks)->toArray();
     @endphp
 
-    <div class="max-w-7xl mx-auto w-full flex-1 min-h-0 flex flex-col lg:h-full lg:max-h-full gap-2.5"
+    <div class="w-full flex-1 min-h-0 flex flex-col lg:h-full lg:max-h-full gap-2.5"
          x-data="{
             drawerOpen: false,
             drawerTab: 'details',
@@ -127,7 +127,7 @@
                     </a>
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2.5 flex-wrap">
-                            <span class="font-mono text-xs font-bold tabular-nums text-slate-800 bg-slate-100 border border-slate-200/90 px-2 py-0.5 rounded-md shadow-2xs">
+                            <span class="font-mono text-xs font-bold tabular-nums text-slate-600">
                                 {{ $researchTitle->reoc_code ?? ('#'.str_pad($researchTitle->id, 5, '0', STR_PAD_LEFT)) }}
                             </span>
                             @php
@@ -170,14 +170,15 @@
                         </span>
                         @if(!empty($researchTitle->Review_Type) && !in_array($researchTitle->Review_Type, ['Unassigned', 'N/A']))
                             @php
-                                $revTypeBadge = match($researchTitle->Review_Type) {
-                                    'Exempt Review' => 'bg-emerald-50 text-emerald-800 border-emerald-200/90',
-                                    'Expedited Review' => 'bg-blue-50 text-blue-800 border-blue-200/90',
-                                    'Full Board Review' => 'bg-amber-50 text-amber-900 border-amber-200/90',
-                                    default => 'bg-slate-100 text-slate-700 border-slate-200/90'
+                                $revTypeTextColor = match($researchTitle->Review_Type) {
+                                    'Exempt Review' => 'text-emerald-700',
+                                    'Expedited Review' => 'text-blue-700',
+                                    'Full Board Review' => 'text-amber-700',
+                                    default => 'text-slate-600'
                                 };
                             @endphp
-                            <span class="font-bold text-[11px] px-2 py-0.5 rounded-md border shadow-2xs {{ $revTypeBadge }}">
+                            <span class="text-slate-300">·</span>
+                            <span class="font-bold text-xs uppercase tracking-wider {{ $revTypeTextColor }}">
                                 {{ $researchTitle->Review_Type }}
                             </span>
                         @endif
@@ -217,7 +218,7 @@
         </div>
 
         <!-- Main 12-Column File Workspace Grid (Starts immediately below Header) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch flex-1 min-h-0 lg:h-full" 
+        <div class="flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-3 lg:flex-1 lg:min-h-0 lg:h-full" 
              x-data="{
                 activeFile: {{ $firstFile ? json_encode($firstFile) : 'null' }},
                 activeTab: 'original',
@@ -300,7 +301,7 @@
              }">
 
             <!-- ===== LEFT COLUMN — Document Viewer Studio & Contextual Remarks (7 Cols) ===== -->
-            <div class="lg:col-span-7 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
+            <div class="w-full lg:col-span-7 flex flex-col gap-2 shrink-0 lg:shrink lg:min-h-0 h-auto lg:h-full">
 
                 <!-- Viewer Header & Controls Bar -->
                 <div class="bg-gradient-to-r from-white via-white to-slate-50/90 px-4 py-2.5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-2.5 shrink-0">
@@ -345,7 +346,7 @@
                 </div>
 
                 <!-- Document Frame Container (Calm, High-Contrast Canvas Surface) -->
-                <div id="document-preview-container" class="bg-slate-900/[0.02] rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs relative flex-1 min-h-0 h-[360px] lg:h-full">
+                <div id="document-preview-container" class="bg-slate-900/[0.02] rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs relative h-[360px] sm:h-[450px] lg:h-full lg:flex-1 lg:min-h-0">
                     
                     <!-- PDF Viewer -->
                     <template x-if="activeFile && isPdf(activeFile)">
@@ -452,14 +453,14 @@
             </div>
 
             <!-- ===== RIGHT COLUMN — Document Ledger, Evaluation Actions & Submission (5 Cols) ===== -->
-            <div class="lg:col-span-5 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
+            <div class="w-full lg:col-span-5 flex flex-col gap-2 shrink-0 lg:shrink lg:min-h-0 h-auto lg:h-full">
 
                 <!-- Unified Review Action & Evaluation Documents Studio Card -->
                 <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden shrink-0"
                      x-data="{ uploadAccordionOpen: false, myUploadsOpen: false }">
                     
                     <!-- Main Action & Status Bar -->
-                    <div class="p-2.5 sm:p-3 flex items-center justify-between gap-2.5">
+                    <div class="p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div class="flex items-center gap-2.5 min-w-0">
                             @if($researchTitle->Status === 'Reviewed')
                                 <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
@@ -500,17 +501,17 @@
                         </div>
 
                         <!-- Action Buttons Group -->
-                        <div class="flex items-center gap-1.5 shrink-0">
+                        <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
                             @if($researchTitle->Status !== 'Reviewed')
                                 <button type="button" @click="uploadAccordionOpen = !uploadAccordionOpen"
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-[#8B0000] hover:border-slate-300 text-xs font-semibold transition-all shadow-2xs cursor-pointer active:scale-98">
+                                        class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-[#8B0000] hover:border-slate-300 text-xs font-semibold transition-all shadow-2xs cursor-pointer active:scale-98 min-h-[44px] sm:min-h-[38px]">
                                     <i class="fas fa-cloud-arrow-up text-xs text-slate-500"></i>
-                                    <span x-text="uploadAccordionOpen ? 'Close Upload' : 'Upload File'"></span>
+                                    <span x-text="uploadAccordionOpen ? 'Close' : 'Upload File'"></span>
                                 </button>
 
                                 <button type="button" @click="showModal = true"
                                         style="background-color: #047857; color: #ffffff;"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#047857] hover:bg-[#065f46] text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95">
+                                        class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#047857] hover:bg-[#065f46] text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 min-h-[44px] sm:min-h-[38px]">
                                     <i class="fas fa-clipboard-check text-xs text-white" aria-hidden="true"></i>
                                     <span class="text-white font-bold">Complete Review</span>
                                 </button>

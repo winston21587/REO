@@ -10,11 +10,7 @@
 
         <div>
 
-            <!-- Header -->
-            <div class="mb-6 sm:mb-8 text-center">
-                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 font-heading tracking-tight">New Submission</h1>
-                <p class="text-xs sm:text-sm text-slate-500 mt-1.5 sm:mt-2 max-w-xl mx-auto leading-relaxed">Submit your research protocol for ethics review. Please ensure all details are accurate and required documents are attached.</p>
-            </div>
+
 
             <form action="{{ route('submit.title') }}" method="POST" enctype="multipart/form-data"
                 class="grid grid-cols-1 lg:grid-cols-3 gap-8" id="submission-form">

@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AgendaItem extends Model
+class MeetingAttendee extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'meeting_id',
-        'section',
-        'content',
-        'order',
-        'protocol_id',
+        'user_id',
+        'role',
+        'status',
+        'remarks',
     ];
 
     public function meeting()
@@ -22,8 +22,8 @@ class AgendaItem extends Model
         return $this->belongsTo(Meeting::class);
     }
 
-    public function protocol()
+    public function user()
     {
-        return $this->belongsTo(Research_title::class, 'protocol_id');
+        return $this->belongsTo(User::class);
     }
 }

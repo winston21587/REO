@@ -8,7 +8,7 @@
         <div class="mb-6 sm:mb-8 border-b border-slate-200/80 pt-2 pb-5 sm:pb-6">
             <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                    <a href="{{ route('home') }}"
+                    <a href="{{ route('dashboard') }}"
                         class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-brand-primary transition-colors duration-150 mb-2.5 group py-1 min-h-[36px] rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary">
                         <i class="fas fa-arrow-left text-[11px] group-hover:-translate-x-0.5 transition-transform" aria-hidden="true"></i>
                         <span>Back to Dashboard</span>

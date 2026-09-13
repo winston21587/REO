@@ -113,18 +113,46 @@
 
             <!-- Desktop Navigation -->
             <div class="hidden md:flex items-center gap-6 nav-right">
-                <span class="text-sm font-medium transition-colors duration-300"
-                    :class="scrolled || mobileOpen ? 'text-slate-600' : 'text-white/80'">
-                    Have an account?
-                </span>
+                @auth
+                    @php
+                        $dashboardRoute = match(Auth::user()->role) {
+                            'reviewer' => route('reviewer.dashboard'),
+                            'admin', 'super_admin' => route('admin.applications'),
+                            default => route('home'),
+                        };
+                        $portalLabel = match(Auth::user()->role) {
+                            'reviewer' => 'Reviewer Workspace',
+                            'admin', 'super_admin' => 'Admin Console',
+                            default => 'Researcher Portal',
+                        };
+                    @endphp
+                    <span class="text-sm font-medium transition-colors duration-300"
+                        :class="scrolled || mobileOpen ? 'text-slate-600' : 'text-white/80'">
+                        Signed in as <strong class="font-semibold">{{ Auth::user()->first_name }}</strong>
+                    </span>
 
-                <button onclick="location.href='{{ route('login') }}'"
-                    class="px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 border-2"
-                    :class="scrolled || mobileOpen 
-                        ? 'bg-[#8B0000] text-white border-transparent hover:bg-[#700000]' 
-                        : 'bg-white text-[#8B0000] border-transparent hover:bg-slate-100'">
-                    Access Portal
-                </button>
+                    <button onclick="location.href='{{ $dashboardRoute }}'"
+                        class="px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 border-2 flex items-center gap-2"
+                        :class="scrolled || mobileOpen 
+                            ? 'bg-[#8B0000] text-white border-transparent hover:bg-[#700000]' 
+                            : 'bg-white text-[#8B0000] border-transparent hover:bg-slate-100'">
+                        <i class="fas fa-arrow-left text-xs"></i>
+                        Return to {{ $portalLabel }}
+                    </button>
+                @else
+                    <span class="text-sm font-medium transition-colors duration-300"
+                        :class="scrolled || mobileOpen ? 'text-slate-600' : 'text-white/80'">
+                        Have an account?
+                    </span>
+
+                    <button onclick="location.href='{{ route('login') }}'"
+                        class="px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 border-2"
+                        :class="scrolled || mobileOpen 
+                            ? 'bg-[#8B0000] text-white border-transparent hover:bg-[#700000]' 
+                            : 'bg-white text-[#8B0000] border-transparent hover:bg-slate-100'">
+                        Access Portal
+                    </button>
+                @endauth
             </div>
 
             <!-- Mobile Hamburger -->
@@ -141,29 +169,71 @@
             class="md:hidden absolute top-[80px] left-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-xl overflow-hidden">
 
             <div class="p-6 flex flex-col gap-6">
-                <!-- Welcome/Context -->
-                <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                    <div class="w-10 h-10 rounded-full bg-[#8B0000] text-white flex items-center justify-center">
-                        <i class="fas fa-university"></i>
+                @auth
+                    @php
+                        $mDashboardRoute = match(Auth::user()->role) {
+                            'reviewer' => route('reviewer.dashboard'),
+                            'admin', 'super_admin' => route('admin.applications'),
+                            default => route('home'),
+                        };
+                        $mRoleLabel = match(Auth::user()->role) {
+                            'reviewer' => 'Ethics Reviewer',
+                            'admin' => 'Administrator',
+                            'super_admin' => 'Super Administrator',
+                            default => 'Researcher',
+                        };
+                    @endphp
+                    <!-- Welcome/Context -->
+                    <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="w-10 h-10 rounded-full bg-[#8B0000] text-white flex items-center justify-center font-bold">
+                            {{ substr(Auth::user()->first_name ?? 'U', 0, 1) }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-800 truncate">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</p>
+                            <p class="text-xs text-rose-800 font-semibold uppercase tracking-wider">{{ $mRoleLabel }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="font-bold text-slate-800">Welcome Researcher!</p>
-                        <p class="text-xs text-slate-500">Access the portal to submit protocols.</p>
+
+                    <!-- Actions -->
+                    <div class="flex flex-col gap-3">
+                        <a href="{{ $mDashboardRoute }}"
+                            class="flex items-center justify-center gap-2 w-full bg-[#8B0000] text-white py-3 rounded-lg font-bold shadow-md hover:bg-[#7d0000] transition-colors min-h-[44px]">
+                            <i class="fas fa-arrow-left text-xs"></i> Return to Portal
+                        </a>
+
+                        <form method="POST" action="{{ route('logout') }}" class="w-full">
+                            @csrf
+                            <button type="submit"
+                                class="flex items-center justify-center gap-2 w-full bg-white text-slate-700 border border-slate-200 py-3 rounded-lg font-bold hover:bg-slate-50 hover:text-[#8B0000] transition-colors cursor-pointer min-h-[44px]">
+                                <i class="fas fa-sign-out-alt"></i> Sign Out
+                            </button>
+                        </form>
                     </div>
-                </div>
+                @else
+                    <!-- Welcome/Context -->
+                    <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="w-10 h-10 rounded-full bg-[#8B0000] text-white flex items-center justify-center">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800">Welcome Researcher!</p>
+                            <p class="text-xs text-slate-500">Access the portal to submit protocols.</p>
+                        </div>
+                    </div>
 
-                <!-- Actions -->
-                <div class="flex flex-col gap-3">
-                    <a href="{{ route('login') }}"
-                        class="flex items-center justify-center gap-2 w-full bg-[#8B0000] text-white py-3 rounded-lg font-bold shadow-md hover:bg-[#7d0000] transition-colors">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
+                    <!-- Actions -->
+                    <div class="flex flex-col gap-3">
+                        <a href="{{ route('login') }}"
+                            class="flex items-center justify-center gap-2 w-full bg-[#8B0000] text-white py-3 rounded-lg font-bold shadow-md hover:bg-[#7d0000] transition-colors min-h-[44px]">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
 
-                    <a href="{{ route('register') }}"
-                        class="flex items-center justify-center gap-2 w-full bg-white text-slate-700 border border-slate-200 py-3 rounded-lg font-bold hover:bg-slate-50 hover:text-[#8B0000] transition-colors">
-                        <i class="fas fa-user-plus"></i> Create Account
-                    </a>
-                </div>
+                        <a href="{{ route('register') }}"
+                            class="flex items-center justify-center gap-2 w-full bg-white text-slate-700 border border-slate-200 py-3 rounded-lg font-bold hover:bg-slate-50 hover:text-[#8B0000] transition-colors min-h-[44px]">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </a>
+                    </div>
+                @endauth
             </div>
         </div>
     </nav>

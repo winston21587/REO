@@ -78,7 +78,7 @@
 
 <body class="bg-[#faf8f8] text-slate-800 antialiased"
     x-data="{ sidebarOpen: true, mobileOpen: false, mobileMenuOpen: false }">
-    <div class="min-h-screen {{ request()->routeIs('manage.files*') ? 'lg:h-screen lg:max-h-screen lg:overflow-hidden' : '' }} bg-[#faf8f8] flex">
+    <div class="min-h-screen {{ request()->routeIs('manage.files*', 'settings*') ? 'lg:h-screen lg:max-h-screen lg:overflow-hidden' : '' }} bg-[#faf8f8] flex">
 
         <!-- Sidebar (Desktop Only) -->
         <aside
@@ -206,7 +206,7 @@
             </div>
         </header>
         <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col min-w-0 relative z-0 pb-20 lg:pb-0 {{ request()->routeIs('manage.files*') ? 'lg:h-full lg:max-h-full lg:overflow-hidden min-h-0' : '' }}">
+        <div class="flex-1 flex flex-col min-w-0 relative z-0 pb-20 lg:pb-0 {{ request()->routeIs('manage.files*', 'settings*') ? 'lg:h-full lg:max-h-full lg:overflow-hidden min-h-0' : '' }}">
 
 
 
@@ -247,7 +247,7 @@
             <!-- Global Notification Tab (Available for both Mobile & Desktop) -->
             <x-notification-tab />
 
-            <main class="flex-1 {{ request()->routeIs('manage.files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5 pt-16 lg:pt-3.5 flex flex-col min-h-0 h-full' : 'p-6 pt-20 lg:pt-6' }}">
+            <main class="flex-1 {{ request()->routeIs('manage.files*') ? 'overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-3.5 pt-16 lg:pt-3.5 flex flex-col min-h-0 h-full' : (request()->routeIs('settings*') ? 'p-3 sm:p-4 lg:p-5 pt-16 lg:pt-4 flex flex-col justify-start overflow-y-auto lg:overflow-hidden min-h-0 h-full' : 'p-6 pt-20 lg:pt-6') }}">
                 <x-profile />
                 {{ $slot }}
             </main>
@@ -292,18 +292,21 @@
 
             <!-- Menu Toggle -->
             <button @click="mobileMenuOpen = !mobileMenuOpen"
-                class="flex-1 flex flex-col items-center justify-center h-full text-slate-500 hover:text-brand-primary transition-colors group appearance-none focus:outline-none cursor-pointer">
-                <div class="w-6 h-6 rounded-full bg-slate-200 overflow-hidden mb-1 ring-1 ring-slate-100">
+                class="flex-1 flex flex-col items-center justify-center h-full transition-colors group appearance-none focus:outline-none cursor-pointer"
+                :class="mobileMenuOpen ? 'text-[#8B0000]' : 'text-slate-500 hover:text-[#8B0000]'"
+                aria-label="Toggle mobile menu"
+                :aria-expanded="mobileMenuOpen.toString()">
+                <div class="w-6 h-6 rounded-full overflow-hidden mb-1 ring-1 transition-all flex items-center justify-center"
+                     :class="mobileMenuOpen ? 'bg-[#8B0000] text-white ring-[#8B0000]/30' : 'bg-slate-200 text-slate-700 ring-slate-200'">
                     @if(Auth::check())
-                        <span
-                            class="flex items-center justify-center w-full h-full text-xs font-bold text-slate-600 bg-slate-200">
-                            {{ substr(Auth::user()->first_name, 0, 1) }}
+                        <span class="text-xs font-bold">
+                            {{ substr(Auth::user()->first_name ?? 'U', 0, 1) }}
                         </span>
                     @else
-                        <i class="fas fa-user text-xs text-slate-500 mt-1"></i>
+                        <i class="fa-solid fa-bars text-xs" aria-hidden="true"></i>
                     @endif
                 </div>
-                <span class="text-[10px] font-medium">Menu</span>
+                <span class="text-[10px]" :class="mobileMenuOpen ? 'font-bold text-[#8B0000]' : 'font-medium text-slate-500'">Menu</span>
             </button>
         </div>
     </nav>
@@ -314,7 +317,7 @@
         <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            x-transition:leave-end="opacity-0" class="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
             @click="mobileMenuOpen = false"></div>
 
         <!-- Drawer Content -->
@@ -322,79 +325,123 @@
             x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0"
             x-transition:leave-end="translate-y-full"
-            class="absolute bottom-0 left-0 w-full bg-white rounded-t-[32px] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col ring-1 ring-black/5">
+            class="absolute bottom-0 left-0 w-full bg-white rounded-t-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border-t border-slate-200/80">
 
             <!-- Handle & Header -->
-            <div
-                class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white relative shrink-0">
-                <div class="w-12 h-1.5 bg-slate-200 rounded-full absolute left-1/2 -translate-x-1/2 top-3"></div>
-                <h3 class="font-heading font-extrabold text-xl text-slate-800 mt-2">Menu</h3>
-                <button @click="mobileMenuOpen = false"
-                    class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-colors mt-2">
-                    <i class="fas fa-times"></i>
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white relative shrink-0">
+                <div class="w-10 h-1 bg-slate-200 rounded-full absolute left-1/2 -translate-x-1/2 top-2.5"></div>
+                <div class="mt-1">
+                    <h3 class="font-['Montserrat'] font-bold text-lg text-slate-900 tracking-tight leading-tight">Portal Menu</h3>
+                    <p class="text-xs text-slate-500 font-normal">Researcher navigation & account</p>
+                </div>
+                <button type="button" @click="mobileMenuOpen = false"
+                    class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors flex items-center justify-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] mt-1"
+                    aria-label="Close navigation menu">
+                    <i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i>
                 </button>
             </div>
 
-            <div class="p-6 space-y-6 overflow-y-auto">
-                <!-- Profile Card (Redesigned) -->
-                <div class="bg-gradient-to-r from-slate-900 to-[#8B0000] rounded-2xl p-1 shadow-lg relative group">
-                    <div
-                        class="bg-gradient-to-r from-slate-900 to-[#8B0000] rounded-xl p-5 flex items-center gap-4 relative overflow-hidden">
-                        <!-- Background Pattern -->
-                        <div class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4">
-                            <i class="fas fa-user-circle text-8xl text-white"></i>
-                        </div>
+            <div class="p-5 space-y-5 overflow-y-auto">
+                @php
+                    $authUser = Auth::user();
+                    $userInitials = $authUser ? strtoupper(substr($authUser->first_name ?? 'R', 0, 1) . substr($authUser->last_name ?? 'E', 0, 1)) : 'RE';
+                    $isExtResearcher = $authUser && $authUser->researcher && $authUser->researcher->external_user;
+                @endphp
 
-                        <!-- Content -->
-                        <div class="relative z-10 shrink-0">
-                            <div
-                                class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl font-bold border-2 border-white/50 text-white shadow-inner">
-                                {{ substr(Auth::user()->first_name ?? 'U', 0, 1) }}
+                <!-- Profile Identity Card -->
+                <div class="bg-gradient-to-br from-[#1a0505] via-[#2a0707] to-[#8B0000] rounded-2xl p-4.5 text-white shadow-md border border-white/10 relative overflow-hidden">
+                    <div class="flex items-center gap-3.5 relative z-10">
+                        <div class="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-base shadow-inner font-['Montserrat'] shrink-0">
+                            {{ $userInitials }}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h4 class="font-['Montserrat'] font-bold text-base text-white truncate leading-tight">
+                                {{ $authUser->first_name ?? 'Researcher' }} {{ $authUser->last_name ?? '' }}
+                            </h4>
+                            <p class="text-xs text-slate-300 truncate mt-0.5">{{ $authUser->email ?? '' }}</p>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-white/90 border border-white/15">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $isExtResearcher ? 'bg-amber-400' : 'bg-emerald-400' }}"></span>
+                                    <span>{{ $isExtResearcher ? 'External Researcher' : 'WMSU Researcher' }}</span>
+                                </span>
                             </div>
                         </div>
-                        <div class="relative z-10 min-w-0 flex-1 text-white">
-                            <h4 class="font-bold text-lg truncate leading-tight">
-                                {{ Auth::user()->first_name ?? 'User' }} {{ Auth::user()->last_name ?? '' }}
-                            </h4>
-                            <p class="text-white/70 text-sm truncate mb-1">{{ Auth::user()->email ?? '' }}</p>
-                            <a href="{{ route('settings') }}"
-                                class="text-xs font-bold text-yellow-400 hover:text-yellow-300 flex items-center gap-1">
-                                <span>Manage Profile</span>
-                                <i class="fas fa-arrow-right text-[10px]"></i>
-                            </a>
+                    </div>
+
+                    <!-- Manage Profile Quick Link -->
+                    <a href="{{ route('settings') }}" @click="mobileMenuOpen = false"
+                       class="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-white/90 hover:text-white transition-colors group cursor-pointer">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-id-card text-xs text-white/70 group-hover:text-white transition-colors" aria-hidden="true"></i>
+                            <span>Manage Researcher Profile</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-right text-xs text-white/60 group-hover:text-white group-hover:translate-x-0.5 transition-all" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+                <!-- Navigation Action Grid -->
+                <div class="grid grid-cols-2 gap-3.5">
+                    <!-- Settings Card -->
+                    <a href="{{ route('settings') }}" @click="mobileMenuOpen = false"
+                        class="flex flex-col p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all group active:scale-[0.98] cursor-pointer shadow-2xs">
+                        <div class="w-10 h-10 rounded-xl bg-[#8B0000]/10 text-[#8B0000] flex items-center justify-center text-sm mb-3 group-hover:scale-105 transition-transform shrink-0">
+                            <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                        </div>
+                        <span class="font-['Montserrat'] font-bold text-slate-800 text-xs sm:text-sm group-hover:text-[#8B0000] transition-colors leading-tight">Settings</span>
+                        <span class="text-xs text-slate-500 font-normal mt-0.5 truncate">Security & alerts</span>
+                    </a>
+
+                    <!-- Guidelines Card -->
+                    <a href="{{ route('instructions') }}" @click="mobileMenuOpen = false"
+                        class="flex flex-col p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all group active:scale-[0.98] cursor-pointer shadow-2xs">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-sm mb-3 group-hover:scale-105 transition-transform shrink-0">
+                            <i class="fa-solid fa-book-bookmark" aria-hidden="true"></i>
+                        </div>
+                        <span class="font-['Montserrat'] font-bold text-slate-800 text-xs sm:text-sm group-hover:text-blue-700 transition-colors leading-tight">Guidelines</span>
+                        <span class="text-xs text-slate-500 font-normal mt-0.5 truncate">Review & SOPs</span>
+                    </a>
+
+                    <!-- Downloadables Card -->
+                    <a href="{{ route('resources') }}" @click="mobileMenuOpen = false"
+                        class="flex flex-col p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all group active:scale-[0.98] cursor-pointer shadow-2xs">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm mb-3 group-hover:scale-105 transition-transform shrink-0">
+                            <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+                        </div>
+                        <span class="font-['Montserrat'] font-bold text-slate-800 text-xs sm:text-sm group-hover:text-emerald-700 transition-colors leading-tight">Downloadables</span>
+                        <span class="text-xs text-slate-500 font-normal mt-0.5 truncate">Forms & templates</span>
+                    </a>
+
+                    <!-- Submissions Ledger Card -->
+                    <a href="{{ route('home') }}" @click="mobileMenuOpen = false"
+                        class="flex flex-col p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all group active:scale-[0.98] cursor-pointer shadow-2xs">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-sm mb-3 group-hover:scale-105 transition-transform shrink-0">
+                            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                        </div>
+                        <span class="font-['Montserrat'] font-bold text-slate-800 text-xs sm:text-sm group-hover:text-amber-700 transition-colors leading-tight">Submissions</span>
+                        <span class="text-xs text-slate-500 font-normal mt-0.5 truncate">Status & tracker</span>
+                    </a>
+                </div>
+
+                <!-- Institutional Notice Banner -->
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between text-xs text-slate-600">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-[#8B0000]/10 text-[#8B0000] flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-slate-800 text-xs leading-tight">WMSU Research Ethics Office</div>
+                            <div class="text-xs text-slate-500">Official Ethics Review Portal</div>
                         </div>
                     </div>
+                    <span class="text-xs text-slate-400 font-medium shrink-0">REO</span>
                 </div>
 
-                <!-- Grid Menu (Redesigned) -->
-                <div class="grid grid-cols-2 gap-4">
-                    <a href="{{ route('instructions') }}"
-                        class="flex flex-col items-center p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-lg hover:-translate-y-0.5 transition-all group active:scale-95">
-                        <div
-                            class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-md">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        <span class="font-bold text-slate-700 text-sm">Guidelines</span>
-                    </a>
-                    <a href="{{ route('settings') }}"
-                        class="flex flex-col items-center p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-slate-300 hover:shadow-lg hover:-translate-y-0.5 transition-all group active:scale-95">
-                        <div
-                            class="w-12 h-12 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform shadow-xs group-hover:shadow-md">
-                            <i class="fas fa-cog"></i>
-                        </div>
-                        <span class="font-bold text-slate-700 text-sm">Settings</span>
-                    </a>
-                </div>
-
-                <!-- Sign Out (Redesigned) -->
+                <!-- Sign Out Action -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                        class="w-full py-4 rounded-xl border-2 border-slate-100 text-slate-600 font-bold hover:bg-red-50 hover:text-brand-primary hover:border-red-100 transition-all flex items-center justify-center gap-2 group active:scale-95 cursor-pointer">
-                        <span
-                            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors group-hover:bg-white">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </span>
+                        class="w-full py-3.5 px-4 rounded-xl border border-rose-200 bg-rose-50/60 hover:bg-rose-100/70 text-rose-700 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5 active:scale-[0.98] min-h-[46px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                        <i class="fa-solid fa-arrow-right-from-bracket text-xs" aria-hidden="true"></i>
                         <span>Sign Out</span>
                     </button>
                 </form>

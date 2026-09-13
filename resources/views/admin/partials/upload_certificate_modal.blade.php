@@ -58,13 +58,15 @@
                             <div>
                                 <label for="approval_date" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Date of Approval</label>
                                 <input type="date" id="approval_date" name="approval_date"
-                                       class="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-shadow"
+                                       class="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-shadow cursor-pointer accent-[#8B0000]"
+                                       onclick="this.showPicker && this.showPicker()"
                                        required>
                             </div>
                             <div>
                                 <label for="expiry_date" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Certificate Expiry Date</label>
                                 <input type="date" id="expiry_date" name="expiry_date"
-                                       class="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-shadow"
+                                       class="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-shadow cursor-pointer accent-[#8B0000]"
+                                       onclick="this.showPicker && this.showPicker()"
                                        required>
                             </div>
                         </div>
@@ -75,7 +77,8 @@
                                 <i class="fas fa-calendar-alt mr-1 text-amber-700"></i> Researcher Pickup Date
                             </label>
                             <input type="date" id="pickup_date" name="pickup_date"
-                                   class="block w-full rounded-xl border border-amber-300/80 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-shadow"
+                                   class="block w-full rounded-xl border border-amber-300/80 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-shadow cursor-pointer accent-[#8B0000]"
+                                   onclick="this.showPicker && this.showPicker()"
                                    required>
                             <p class="text-xs text-amber-800">The researcher will be notified to pick up the documents on this date.</p>
                         </div>

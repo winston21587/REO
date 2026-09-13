@@ -14,26 +14,33 @@
 
         <div class="flex flex-col xl:flex-row gap-8 h-full overflow-hidden">
             
+            @php
+                $currentMonth = now()->format('F Y');
+                $daysInMonth = now()->daysInMonth;
+                $todayDate = now()->day;
+                $firstDayOfWeek = now()->startOfMonth()->dayOfWeek;
+            @endphp
             <div class="xl:w-1/3 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="font-bold text-lg text-slate-800">October 2024</h2>
-                    <div class="flex gap-2">
-                        <button class="p-1 rounded hover:bg-slate-100 text-slate-500"><span class="material-symbols-outlined">chevron_left</span></button>
-                        <button class="p-1 rounded hover:bg-slate-100 text-slate-500"><span class="material-symbols-outlined">chevron_right</span></button>
+                    <h2 class="font-bold text-lg text-slate-800">{{ $currentMonth }}</h2>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-semibold px-2.5 py-1 bg-rose-50 text-[#8B0000] rounded-lg">Live Docket</span>
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-7 gap-2 text-center mb-2">
-                    @foreach(['S','M','T','W','T','F','S'] as $day)
-                        <div class="text-xs font-bold text-slate-400 uppercase">{{ $day }}</div>
+                <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                    @foreach(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $day)
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider py-1">{{ $day }}</div>
                     @endforeach
                 </div>
-                <div class="grid grid-cols-7 gap-2 text-center flex-1">
-                    {{-- Example Days --}}
-                    @for ($i = 1; $i <= 31; $i++)
-                        @php $isActive = $i == 5; @endphp
-                        <button class="h-10 w-10 mx-auto rounded-full flex items-center justify-center text-sm font-medium transition-all
-                            {{ $isActive ? 'bg-brand-primary text-white shadow-md' : 'text-slate-700 hover:bg-slate-100' }}">
+                <div class="grid grid-cols-7 gap-1 text-center">
+                    @for ($pad = 0; $pad < $firstDayOfWeek; $pad++)
+                        <div class="h-9 w-9 mx-auto"></div>
+                    @endfor
+                    @for ($i = 1; $i <= $daysInMonth; $i++)
+                        @php $isToday = ($i == $todayDate); @endphp
+                        <button type="button" class="h-9 w-9 mx-auto rounded-xl flex items-center justify-center text-xs font-semibold transition-all cursor-pointer
+                            {{ $isToday ? 'bg-[#8B0000] text-white shadow-sm ring-2 ring-[#8B0000]/30 font-bold' : 'text-slate-700 hover:bg-slate-100' }}">
                             {{ $i }}
                         </button>
                     @endfor
@@ -47,15 +54,15 @@
                 <div class="flex-1 overflow-y-auto p-6 space-y-4">
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-brand-primary/30 hover:shadow-md transition-all bg-white">
                         <div class="flex flex-col items-center justify-center min-w-[60px] bg-red-50 rounded-lg p-2 text-brand-primary">
-                            <span class="text-xs font-bold uppercase">OCT</span>
-                            <span class="text-xl font-extrabold leading-none">05</span>
+                            <span class="text-xs font-bold uppercase">{{ now()->format('M') }}</span>
+                            <span class="text-xl font-extrabold leading-none">{{ now()->format('d') }}</span>
                         </div>
                         <div class="flex-1">
-                            <h4 class="font-bold text-slate-900">AI Ethics Framework Review</h4>
+                            <h4 class="font-bold text-slate-900">Ethics Committee Consultation Session</h4>
                             <p class="text-sm text-slate-500 flex items-center gap-2 mt-1">
-                                <span class="material-symbols-outlined text-base">schedule</span> 11:30 AM - 12:30 PM
+                                <span class="material-symbols-outlined text-base">schedule</span> 10:00 AM - 11:30 AM
                                 <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-                                <span class="material-symbols-outlined text-base">person</span> Dr. David Lee
+                                <span class="material-symbols-outlined text-base">person</span> REO Secretariat
                             </p>
                         </div>
                         <div class="flex gap-2 w-full sm:w-auto">
@@ -78,22 +85,18 @@
             <div class="p-6 space-y-5">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Research Title</label>
-                    <select class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                    <select class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] outline-none">
                         <option>Select a pending protocol...</option>
-                        <option>Impact of Social Media...</option>
                     </select>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Date</label>
-                        <input type="date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-primary outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Time</label>
-                        <input type="time" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-primary outline-none">
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Appointment Date & Time</label>
+                    <input type="datetime-local" min="{{ now()->format('Y-m-d\TH:i') }}"
+                           class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8B0000] focus:border-transparent outline-none cursor-pointer accent-[#8B0000] font-medium text-slate-800"
+                           onclick="this.showPicker && this.showPicker()">
                 </div>
+
 
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Notes / Instructions</label>

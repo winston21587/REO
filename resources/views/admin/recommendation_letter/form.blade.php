@@ -258,7 +258,8 @@
                                 Revision Deadline <span class="text-red-500">*</span>
                             </label>
                             <input type="date" id="deadlineInput" required
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm"
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-sm cursor-pointer accent-[#8B0000]"
+                                onclick="this.showPicker && this.showPicker()"
                                 min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                             <p id="deadlineError" class="text-xs text-red-500 mt-1 hidden">Please select a revision deadline.</p>
                         </div>

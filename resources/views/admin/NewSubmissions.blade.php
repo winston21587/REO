@@ -470,7 +470,8 @@
                                 <input type="date" name="appointment_date" id="appointment_date_input"
                                     min="{{ date('Y-m-d', strtotime('+2 days')) }}"
                                     max="{{ date('Y-m-d', strtotime('+1 year')) }}"
-                                    class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-xs bg-slate-50 font-medium text-slate-700 caret-[#8B0000]">
+                                    class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-xs bg-slate-50 font-medium text-slate-700 caret-[#8B0000] cursor-pointer accent-[#8B0000]"
+                                    onclick="this.showPicker && this.showPicker()">
                             </div>
 
                             <!-- Incomplete Fields (Incomplete Decision) -->

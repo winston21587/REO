@@ -23,6 +23,7 @@ use App\Notifications\AppointmentNotification;
 use App\Models\UserNotification;
 use App\Models\Meeting;
 use App\Models\AgendaItem;
+use App\Models\MeetingAttendee;
 use Carbon\Carbon;
 use DateTime;
 use App\Models\TitleLog;
@@ -2534,21 +2535,35 @@ class AdminController extends Controller
     {
         $file = researcher_files::findOrFail($id);
 
+        // Path Traversal Defense: Reject relative traversal sequences or null bytes
+        if (str_contains($file->filepath, '..') || str_contains($file->filepath, "\0")) {
+            abort(403, 'Invalid file path sequence detected.');
+        }
+
         $path = ltrim(str_replace('storage/', '', $file->filepath), '/');
 
         $respondWithFile = function (string $fullPath) use ($file, $request) {
-            $mimeType = \Illuminate\Support\Facades\File::mimeType($fullPath) ?: 'application/octet-stream';
-            $isDownload = $request->has('download') || $request->boolean('download') || $request->query('download') == '1';
+            $realPath = realpath($fullPath);
+            $allowedStorage = realpath(storage_path('app/public'));
+            $allowedPublic = realpath(public_path());
 
-            if ($isDownload) {
-                return response()->download($fullPath, $file->filename, [
-                    'Content-Type' => $mimeType,
-                ]);
+            // Ensure canonical path stays strictly inside approved storage directories
+            $isWithinAllowedStorage = $allowedStorage && $realPath && str_starts_with($realPath, $allowedStorage);
+            $isWithinAllowedPublic = $allowedPublic && $realPath && str_starts_with($realPath, $allowedPublic);
+
+            if (!$realPath || (!$isWithinAllowedStorage && !$isWithinAllowedPublic)) {
+                abort(403, 'Unauthorized file path access.');
             }
 
-            return response()->file($fullPath, [
+            $mimeType = \Illuminate\Support\Facades\File::mimeType($realPath) ?: 'application/octet-stream';
+            $isDownload = $request->has('download') || $request->boolean('download') || $request->query('download') == '1';
+            $safeHeaderFilename = str_replace(["\r", "\n", '"', ';', '\\'], '', $file->filename);
+            $disposition = $isDownload ? 'attachment' : 'inline';
+
+            return response()->file($realPath, [
                 'Content-Type' => $mimeType,
-                'Content-Disposition' => "inline; filename=\"{$file->filename}\"",
+                'Content-Disposition' => "{$disposition}; filename=\"{$safeHeaderFilename}\"",
+                'X-Content-Type-Options' => 'nosniff',
             ]);
         };
 
@@ -3407,16 +3422,18 @@ class AdminController extends Controller
         ]);
 
         // Pre-populate standard agenda items
+        // Pre-populate standard SOP 18 agenda items
         $standardItems = [
-            ['section' => 'Preliminary', 'content' => 'Call to Order', 'order' => 1],
-            ['section' => 'Preliminary', 'content' => 'Invocation', 'order' => 2],
-            ['section' => 'Preliminary', 'content' => 'Determination of Quorum', 'order' => 3],
-            ['section' => 'Preliminary', 'content' => 'Approval of Agenda', 'order' => 4],
-            ['section' => 'Preliminary', 'content' => 'Reading and Approval of Minutes', 'order' => 5],
-            ['section' => 'Business Arising', 'content' => 'Review of Action Items', 'order' => 6],
-            ['section' => 'New Business', 'content' => 'Protocol Review', 'order' => 7],
-            ['section' => 'Other Matters', 'content' => 'Announcements', 'order' => 8],
-            ['section' => 'Closing', 'content' => 'Adjournment', 'order' => 9],
+            ['section' => 'Preliminary Matters', 'content' => 'Call to Order & Invocation', 'order' => 1],
+            ['section' => 'Preliminary Matters', 'content' => 'Declaration of Quorum (SOP 17: Min. 5 Members)', 'order' => 2],
+            ['section' => 'Preliminary Matters', 'content' => 'Approval of the Provisional Agenda', 'order' => 3],
+            ['section' => 'Preliminary Matters', 'content' => 'Disclosure of Conflict of Interest (COI)', 'order' => 4],
+            ['section' => 'Preliminary Matters', 'content' => 'Review and Approval of Minutes of the Previous Meeting', 'order' => 5],
+            ['section' => 'Business Arising', 'content' => 'Review of Action Items from Previous Meeting', 'order' => 6],
+            ['section' => 'New Business: Protocol Review', 'content' => 'Full Board Ethical Review of Study Protocols', 'order' => 7],
+            ['section' => 'New Business: Protocol Review', 'content' => 'Report on Expedited & Exempt Decisions for Ratification', 'order' => 8],
+            ['section' => 'Other Matters', 'content' => 'Other Matters, Queries & Administrative Announcements', 'order' => 9],
+            ['section' => 'Closing', 'content' => 'Next Meeting Schedule & Formal Adjournment', 'order' => 10],
         ];
 
         foreach ($standardItems as $item) {
@@ -3430,11 +3447,55 @@ class AdminController extends Controller
     {
         $meeting = Meeting::with([
             'agendaItems' => function ($query) {
-                $query->orderBy('order', 'asc');
-            }
+                $query->orderBy('order', 'asc')->with(['protocol.researcher.user', 'protocol.reviewers']);
+            },
+            'attendees.user',
         ])->findOrFail($id);
 
-        return view('admin.meetings.show', compact('meeting'));
+        $availableProtocols = Research_title::select('id', 'Study_Protocol_title', 'Status', 'Review_Type', 'Research_Category', 'researcher_id')
+            ->with('researcher.user')
+            ->whereIn('Status', ['Under Review', 'Panel Deliberation', 'Waiting for Revision', 'Approved', 'Reviewed'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        $availableReviewers = User::where('role', 'reviewer')->orderBy('last_name', 'asc')->get();
+
+        return view('admin.meetings.show', compact('meeting', 'availableProtocols', 'availableReviewers'));
+    }
+
+    public function storeAttendee(Request $request, $meetingId)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role' => 'required|string|in:reviewer,chair,secretariat,consultant',
+            'status' => 'nullable|string|in:Invited,Confirmed,Regrets,Attended',
+        ]);
+
+        $meeting = Meeting::findOrFail($meetingId);
+
+        DB::transaction(function () use ($meeting, $validated) {
+            MeetingAttendee::updateOrCreate(
+                [
+                    'meeting_id' => $meeting->id,
+                    'user_id' => $validated['user_id'],
+                ],
+                [
+                    'role' => $validated['role'],
+                    'status' => $validated['status'] ?? 'Invited',
+                ]
+            );
+        });
+
+        return back()->with('success', 'Attendee added successfully.');
+    }
+
+    public function destroyAttendee($meetingId, $attendeeId)
+    {
+        $attendee = MeetingAttendee::where('meeting_id', $meetingId)->findOrFail($attendeeId);
+        $attendee->delete();
+
+        return back()->with('success', 'Attendee removed successfully.');
     }
 
     public function destroyMeeting($id)
@@ -3450,6 +3511,7 @@ class AdminController extends Controller
             'section' => 'required|string',
             'content' => 'nullable|string',
             'order' => 'required|integer',
+            'protocol_id' => 'nullable|exists:research_title_information,id',
         ]);
 
         AgendaItem::create([
@@ -3457,6 +3519,7 @@ class AdminController extends Controller
             'section' => $request->section,
             'content' => $request->input('content'),
             'order' => $request->order,
+            'protocol_id' => $request->input('protocol_id'),
         ]);
 
         return back()->with('success', 'Agenda item added successfully.');
@@ -3469,11 +3532,13 @@ class AdminController extends Controller
         $request->validate([
             'section' => 'required|string',
             'content' => 'nullable|string',
+            'protocol_id' => 'nullable|exists:research_title_information,id',
         ]);
 
         $item->update([
             'section' => $request->section,
             'content' => $request->input('content'),
+            'protocol_id' => $request->input('protocol_id'),
         ]);
 
         return back()->with('success', 'Agenda item updated successfully.');

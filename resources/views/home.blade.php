@@ -211,6 +211,46 @@
                                 </div>
                             </div>
 
+                            @php
+                                $scheduledAgenda = $title->agendaItems->first(function($ai) {
+                                    return $ai->meeting && $ai->meeting->meeting_date >= now()->subDay();
+                                });
+                                $scheduledMeeting = $scheduledAgenda?->meeting;
+                            @endphp
+
+                            @if($scheduledMeeting)
+                                <div class="w-full mt-3 p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-red-50/90 via-orange-50/70 to-slate-50 border border-red-200/80 text-slate-800 shadow-2xs">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center shrink-0 shadow-2xs">
+                                                <i class="fas fa-calendar-check text-xs"></i>
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-[10px] font-bold uppercase tracking-wider bg-brand-primary/10 text-brand-primary px-2 py-0.5 rounded">
+                                                        Scheduled for Deliberation
+                                                    </span>
+                                                    <span class="text-[11px] font-semibold text-slate-500">SOP 19 Panel Deliberation</span>
+                                                </div>
+                                                <h4 class="text-xs sm:text-sm font-bold text-slate-900 mt-0.5">
+                                                    {{ $scheduledMeeting->title }}
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3 text-xs text-slate-600 self-start sm:self-auto shrink-0">
+                                            <span class="font-medium text-slate-900">
+                                                <i class="fas fa-calendar-day text-brand-primary mr-1"></i>
+                                                {{ $scheduledMeeting->meeting_date->format('M d, Y \a\t h:i A') }}
+                                            </span>
+                                            <span class="text-slate-500">
+                                                <i class="fas fa-map-marker-alt text-slate-400 mr-1"></i>
+                                                {{ $scheduledMeeting->venue ?? 'REOC Hall' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                             <!-- Mobile Progress Stepper (Single Fluid Track) -->
                             <div class="md:hidden pt-4 pb-2 border-t border-slate-100/80 mt-3">
                                 <!-- Horizontal Track & Nodes -->

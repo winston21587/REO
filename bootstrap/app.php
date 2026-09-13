@@ -30,6 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
         if ($user && $user->role === 'super_admin') {
             return route('super_admin.analytics');
         }
+        if ($user && $user->role === 'reviewer') {
+            return route('reviewer.dashboard');
+        }
         return route('home');
     });
     })

@@ -206,7 +206,7 @@ class Research_title_Controller extends Controller
         if (!$user->researcher) {
             return redirect()->back()->with('error', 'You are not registered as a researcher.');
         }
-        $titles = Research_title::with(['files', 'adminFiles', 'appointment', 'titleLogs.user'])
+        $titles = Research_title::with(['files', 'adminFiles', 'appointment', 'titleLogs.user', 'agendaItems.meeting'])
             ->where('researcher_id', $user->researcher->id)
             ->orderBy('created_at', 'desc')
             ->paginate(9)
@@ -222,7 +222,7 @@ class Research_title_Controller extends Controller
     // Show all files for a specific research title
     public function manageFiles($id)
     {
-        $researchTitle = Research_title::with(['files.reviewerRemarks.reviewer', 'adminFiles', 'titleLogs.user'])->findOrFail($id);
+        $researchTitle = Research_title::with(['files.reviewerRemarks.reviewer', 'adminFiles', 'titleLogs.user', 'agendaItems.meeting'])->findOrFail($id);
         $user = Auth::user();
 
         // Security: Ensure logged-in researcher owns this protocol
@@ -279,7 +279,7 @@ class Research_title_Controller extends Controller
         }
 
         $request->validate([
-            'file' => 'required|file|max:25600',
+            'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:25600',
             'file_id' => 'required|integer',
         ]);
 
@@ -361,7 +361,7 @@ class Research_title_Controller extends Controller
         }
 
         $request->validate([
-            'file' => 'required|file|max:25600',
+            'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:25600',
             'category' => 'required|string',
         ]);
 
@@ -419,7 +419,7 @@ class Research_title_Controller extends Controller
         }
 
         $request->validate([
-            'file' => 'required|file|max:25600',
+            'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:25600',
             'category' => 'required|string',
         ]);
 
@@ -538,35 +538,41 @@ class Research_title_Controller extends Controller
                 $q->where('researcher_files.id', $id);
             })->first();
 
-        if ($researchTitle && $user->researcher && $researchTitle->researcher_id !== $user->researcher->id) {
-            abort(403, 'Unauthorized.');
+        // Security check: ensure researcher owns this research title (Fail Closed)
+        if (!$researchTitle || !$user->researcher || (int)$researchTitle->researcher_id !== (int)$user->researcher->id) {
+            abort(403, 'Unauthorized file access.');
         }
 
-        $path = str_replace('storage/', '', $file->filepath);
+        // Path Traversal Defense: Reject relative traversal sequences or null bytes
+        if (str_contains($file->filepath, '..') || str_contains($file->filepath, "\0")) {
+            abort(403, 'Invalid file path sequence detected.');
+        }
+
+        $path = ltrim(str_replace('storage/', '', $file->filepath), '/');
         $isDownload = $request->boolean('download');
-        $extension = strtolower(pathinfo($file->filepath, PATHINFO_EXTENSION));
-        $mimeTypes = [
-            'pdf' => 'application/pdf',
-            'doc' => 'application/msword',
-            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'jpg' => 'image/jpeg',
-            'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-        ];
-        $mimeType = $mimeTypes[$extension] ?? 'application/octet-stream';
+        $safeFilename = str_replace(["\r", "\n", '"', ';', '\\'], '', $file->filename);
 
-        $safeFilename = str_replace(['"', "\r", "\n"], '', $file->filename);
-        $disposition = $isDownload ? 'attachment' : 'inline';
-        $headers = [
-            'Content-Type' => $mimeType,
-            'Content-Disposition' => $disposition . '; filename="' . $safeFilename . '"',
-        ];
+        $respondWithFile = function ($fullPath) use ($isDownload, $safeFilename) {
+            $realPath = realpath($fullPath);
+            $allowedStorage = realpath(storage_path('app/public'));
+            $allowedPublic = realpath(public_path());
 
-        $respondWithFile = function ($fullPath) use ($isDownload, $safeFilename, $headers) {
-            if ($isDownload) {
-                return response()->download($fullPath, $safeFilename, $headers);
+            // Ensure canonical path stays strictly inside approved storage directories
+            $isWithinAllowedStorage = $allowedStorage && $realPath && str_starts_with($realPath, $allowedStorage);
+            $isWithinAllowedPublic = $allowedPublic && $realPath && str_starts_with($realPath, $allowedPublic);
+
+            if (!$realPath || (!$isWithinAllowedStorage && !$isWithinAllowedPublic)) {
+                abort(403, 'Unauthorized file path access.');
             }
-            return response()->file($fullPath, $headers);
+
+            $mimeType = \Illuminate\Support\Facades\File::mimeType($realPath) ?: 'application/octet-stream';
+            $disposition = $isDownload ? 'attachment' : 'inline';
+
+            return response()->file($realPath, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => "{$disposition}; filename=\"{$safeHeaderFilename}\"",
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
         };
 
         // 1. Check Storage (Public Disk)

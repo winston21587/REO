@@ -117,8 +117,7 @@ class AuthController extends Controller
             return back()->withErrors(['FirstName' => 'A user with this name already exists. Please contact support or use a different name variations.'])->withInput();
         }
 
-        $verificationCode = rand(100000, 999999);   
-        // $verificationCode = 12345678;   
+        $verificationCode = random_int(100000, 999999);   
 
         $user = DB::transaction(function () use ($data, $verificationCode) {
             $newUser = User::create([
@@ -176,8 +175,7 @@ class AuthController extends Controller
             return back()->withErrors(['FirstName' => 'A user with this name already exists. Please contact support or use a different name variations.'])->withInput();
         }
 
-        $verificationCode = rand(100000, 999999);   
-        // $verificationCode = 12345678;   
+        $verificationCode = random_int(100000, 999999);   
 
         $user = DB::transaction(function () use ($data, $verificationCode) {
             $newUser = User::create([
@@ -303,7 +301,7 @@ public function showVerifyForm(Request $request)
         }
 
         // Generate a fresh OTP and resend
-        $verificationCode = rand(100000, 999999);
+        $verificationCode = random_int(100000, 999999);
         $user->verification_code = $verificationCode;
         $user->save();
 
@@ -331,7 +329,7 @@ public function showVerifyForm(Request $request)
             return back()->withErrors(['email' => 'No account found with that email address.']);
         }
 
-        $code = rand(100000, 999999);
+        $code = random_int(100000, 999999);
 
         $user->reset_code = $code;
         $user->reset_code_expires_at = Carbon::now()->addMinutes(10);

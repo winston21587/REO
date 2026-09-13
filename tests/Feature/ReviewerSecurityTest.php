@@ -223,4 +223,22 @@ class ReviewerSecurityTest extends TestCase
             'remarks' => 'Valid remark on own file',
         ]);
     }
+
+    /**
+     * Verify reviewer can access public gateway and is redirected to reviewer dashboard from guest routes.
+     */
+    public function test_authenticated_reviewer_accessing_public_gateway_and_guest_routes_redirects_correctly(): void
+    {
+        $reviewer = User::factory()->create(['role' => 'reviewer']);
+
+        // Public gateway should be accessible (HTTP 200) and show Reviewer Workspace button
+        $gatewayResponse = $this->actingAs($reviewer)->get(route('index'));
+        $gatewayResponse->assertOk();
+        $gatewayResponse->assertSee('Return to Reviewer Workspace');
+        $gatewayResponse->assertSee(route('reviewer.dashboard'));
+
+        // Visiting /login while authenticated as reviewer should redirect to reviewer dashboard (not 403 on /home)
+        $loginResponse = $this->actingAs($reviewer)->get(route('login'));
+        $loginResponse->assertRedirect(route('reviewer.dashboard'));
+    }
 }

@@ -158,7 +158,8 @@
                                id="filter_exact_date" 
                                name="exact_date" 
                                value="{{ request('exact_date') }}" 
-                               class="revenue-filter-input bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent min-h-[44px] cursor-pointer">
+                               onclick="this.showPicker && this.showPicker()"
+                               class="revenue-filter-input bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent min-h-[44px] cursor-pointer accent-[#8B0000]">
                     </div>
 
                 </div>

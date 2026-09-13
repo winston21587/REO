@@ -290,7 +290,8 @@
                                     </label>
                                     <input type="date" id="cover_approved_period" name="cover_approved_period"
                                         value="{{ old('cover_approved_period', now()->toDateString()) }}"
-                                        class="block w-full rounded-xl border border-slate-300/80 bg-slate-50/50 px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-700 focus:border-transparent transition-all"
+                                        class="block w-full rounded-xl border border-slate-300/80 bg-slate-50/50 px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all cursor-pointer accent-[#8B0000]"
+                                        onclick="this.showPicker && this.showPicker()"
                                         required>
                                     <p class="text-[11px] text-slate-400 mt-1">Start of validity window.</p>
                                 </div>
@@ -300,7 +301,8 @@
                                     </label>
                                     <input type="date" id="cover_expiry_date" name="cover_expiry_date"
                                         value="{{ old('cover_expiry_date', now()->addYear()->toDateString()) }}"
-                                        class="block w-full rounded-xl border border-slate-300/80 bg-slate-50/50 px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-700 focus:border-transparent transition-all"
+                                        class="block w-full rounded-xl border border-slate-300/80 bg-slate-50/50 px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all cursor-pointer accent-[#8B0000]"
+                                        onclick="this.showPicker && this.showPicker()"
                                         required>
                                     <p class="text-[11px] text-slate-400 mt-1">Standard: 1 year from approval.</p>
                                 </div>
@@ -358,7 +360,8 @@
                     </label>
                     <input type="date" id="pickup_date" name="pickup_date"
                         value="{{ old('pickup_date', now()->addDays(2)->toDateString()) }}"
-                        class="block w-full rounded-xl border border-amber-300/90 bg-amber-50/40 px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                        class="block w-full rounded-xl border border-amber-300/90 bg-amber-50/40 px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent transition-all cursor-pointer accent-[#8B0000]"
+                        onclick="this.showPicker && this.showPicker()"
                         required>
                     <p class="text-[11px] text-amber-800 mt-1">
                         The researcher will be prompted to pick up their sealed hardcopies on this date.

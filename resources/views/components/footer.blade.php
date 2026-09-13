@@ -39,7 +39,7 @@
             <div>
                 <h4 class="font-bold text-lg mb-6">Quick Access</h4>
                 <ul class="space-y-3 text-sm text-slate-400">
-                    <li><a href="{{ route('home') }}" class="hover:text-brand-primary transition-colors">Dashboard</a>
+                    <li><a href="{{ Auth::check() ? route('dashboard') : route('login') }}" class="hover:text-brand-primary transition-colors">Dashboard</a>
                     </li>
                     <li><a href="{{ route('resources') }}" class="hover:text-brand-primary transition-colors">Download
                             Forms</a></li>

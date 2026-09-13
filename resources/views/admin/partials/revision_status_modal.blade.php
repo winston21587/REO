@@ -182,7 +182,8 @@
                             </div>
                             <input type="date" id="revisionAppointmentDate" name="appointment_date"
                                 min="{{ date('Y-m-d') }}"
-                                class="h-11 min-h-[44px] w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs transition-all bg-white">
+                                class="h-11 min-h-[44px] w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-[#8B0000] focus:border-transparent shadow-2xs transition-all bg-white cursor-pointer accent-[#8B0000]"
+                                onclick="this.showPicker && this.showPicker()">
                         </div>
                     </div>
 

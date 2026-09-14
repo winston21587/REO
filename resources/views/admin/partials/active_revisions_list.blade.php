@@ -1,7 +1,7 @@
-<div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 flex flex-col flex-1 h-full min-h-[400px]">
+<div class="flex flex-col flex-1 h-full min-h-[400px] lg:bg-white lg:rounded-2xl lg:shadow-xs lg:border lg:border-slate-200/80">
     @if($datas->count() > 0)
         {{-- MOBILE & TABLET ADAPTIVE CARDS VIEW (Visible below lg: 1024px) --}}
-        <div class="block lg:hidden divide-y divide-slate-100 flex-grow">
+        <div class="block lg:hidden space-y-3.5 flex-grow">
             @foreach($datas as $data)
                 @php
                     $displayStatus = $data->Status === 'Panel Deliberation' ? 'Reviewed' : $data->Status;
@@ -52,24 +52,99 @@
                     $researcherName = trim(($data->researcher->user->first_name ?? $data->user->first_name ?? $data->Created_by ?? 'Unknown') . ' ' . ($data->researcher->user->last_name ?? $data->user->last_name ?? ''));
                     $researcherEmail = $data->researcher->user->email ?? $data->user->email ?? '';
                 @endphp
-                <div class="p-4 sm:p-5 space-y-3 hover:bg-slate-50/60 transition-colors">
-                    <!-- Card Header: Code + Date + Title + Action Trigger -->
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
-                                    #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-3 hover:border-slate-300 hover:shadow-sm transition-all">
+                    <!-- Top Metadata: Code + Classification + Date -->
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 flex-wrap min-w-0">
+                            <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md shrink-0">
+                                #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
+                            </span>
+                            @if(isset($typeBadgeConfig[$data->Review_Type]))
+                                <span class="text-xs font-bold uppercase tracking-wider {{ $typeBadgeConfig[$data->Review_Type]['text'] }} truncate">
+                                    {{ $data->Review_Type }}
                                 </span>
-                                <span class="text-xs text-slate-500 font-medium tabular-nums flex items-center gap-1.5">
-                                    <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>Updated {{ $data->updated_at->format('M d, Y') }}
-                                </span>
-                            </div>
-                            <a href="{{ route('admin.view_files', $data->id) }}"
-                               class="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-sm block"
-                               title="{{ $data->Study_Protocol_title }}">
-                                {{ $data->Study_Protocol_title }}
-                            </a>
+                            @elseif($data->Review_Type === 'N/A')
+                                <span class="text-xs font-semibold text-slate-400 italic truncate">N/A</span>
+                            @else
+                                <span class="text-xs font-semibold text-slate-400 italic truncate">Unassigned</span>
+                            @endif
                         </div>
+                        <span class="text-xs text-slate-400 font-medium tabular-nums flex items-center gap-1.5 shrink-0">
+                            <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>{{ $data->updated_at->format('M d, Y') }}
+                        </span>
+                    </div>
+
+                    <!-- Title -->
+                    <a href="{{ route('admin.view_files', $data->id) }}"
+                       class="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-xs block"
+                       title="{{ $data->Study_Protocol_title }}">
+                        {{ $data->Study_Protocol_title }}
+                    </a>
+
+                    <!-- Researcher Info -->
+                    <div class="flex items-center gap-2 text-xs text-slate-600 min-w-0">
+                        <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-[10px] font-bold text-slate-700 uppercase shrink-0">
+                            {{ substr($researcherName ?: 'U', 0, 1) }}
+                        </div>
+                        <span class="font-semibold text-slate-800 truncate">
+                            {{ $researcherName }}
+                        </span>
+                        @if($researcherEmail)
+                            <span class="text-slate-300 shrink-0">•</span>
+                            <span class="text-slate-500 truncate text-[11px] font-medium">{{ $researcherEmail }}</span>
+                        @endif
+                    </div>
+
+                    <!-- Unified Operational Details: Revision Status & Recommendation & Reviewers -->
+                    <div class="pt-3 border-t border-slate-100 space-y-2.5">
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="min-w-0">
+                                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Status</span>
+                                <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+                                    <span class="text-xs font-bold uppercase tracking-wider {{ $badgeStyle }} truncate">
+                                        {{ $displayStatus }}
+                                    </span>
+                                    @if($data->Status === 'Waiting for Revision')
+                                        <span class="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-red-600 shrink-0">Modifications Req.</span>
+                                    @elseif($data->Status === 'Panel Deliberation')
+                                        <span class="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-pink-700 shrink-0">Committee Review</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Recommendation</span>
+                                <div class="text-xs font-semibold text-slate-700 truncate">
+                                    {{ $data->reviewer_decision ?: 'None' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Reviewers:</span>
+                            <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+                                @if(count($reviewers) > 0)
+                                    @foreach($reviewers as $rev)
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80 font-medium text-[11px] truncate max-w-[150px]" title="{{ $rev->first_name }} {{ $rev->last_name }}">
+                                            <i class="fas fa-user-check text-slate-400 text-[10px] shrink-0" aria-hidden="true"></i>
+                                            <span class="truncate">{{ $rev->first_name }} {{ $rev->last_name }}</span>
+                                        </span>
+                                    @endforeach
+                                @else
+                                    <span class="text-xs text-slate-400 italic">None Assigned</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tactile Mobile Action Bar (Thumb-friendly 44px buttons) -->
+                    <div class="pt-3 border-t border-slate-100 flex items-center gap-2.5">
+                        <a href="{{ route('admin.view_files', $data->id) }}"
+                           class="flex-1 inline-flex items-center justify-center gap-1.5 h-11 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-[#8B0000] text-xs font-bold border border-slate-200/80 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                           title="View Protocol Documents"
+                           aria-label="View documents for {{ $data->Study_Protocol_title }}">
+                            <i class="fas fa-folder-open text-xs text-slate-400" aria-hidden="true"></i>
+                            <span>View Files</span>
+                        </a>
                         <button type="button"
                             @click="$dispatch('open-revision-drawer', {
                                 id: '{{ $data->id }}',
@@ -91,69 +166,13 @@
                                     @endforeach
                                 ]
                             })"
-                            class="p-2.5 -mr-1 text-slate-500 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] touch-manipulation"
-                            title="Revision Actions"
-                            aria-label="Actions for {{ $data->Study_Protocol_title }}">
-                            <i class="fas fa-ellipsis-v text-sm" aria-hidden="true"></i>
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 h-11 px-3 rounded-xl bg-[#8B0000] hover:bg-[#6d0000] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                            title="Open Revision Actions Drawer"
+                            aria-label="Manage revision for {{ $data->Study_Protocol_title }}">
+                            <i class="fas fa-sliders-h text-xs" aria-hidden="true"></i>
+                            <span>Manage</span>
                         </button>
                     </div>
-
-                    <!-- Badges Row -->
-                    <div class="flex items-center gap-2.5 flex-wrap">
-                        @if(isset($typeBadgeConfig[$data->Review_Type]))
-                            @php $tConf = $typeBadgeConfig[$data->Review_Type]; @endphp
-                            <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $tConf['text'] }}">
-                                {{ $tConf['label'] }}
-                            </span>
-                        @elseif($data->Review_Type === 'N/A')
-                            <span class="inline-flex items-center text-xs font-semibold text-slate-500 italic">N/A</span>
-                        @else
-                            <span class="inline-flex items-center text-xs font-semibold text-slate-400 italic">Unassigned</span>
-                        @endif
-
-                        <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $badgeStyle }}">
-                            {{ $displayStatus }}
-                        </span>
-
-                        @if($data->Status === 'Waiting for Revision')
-                            <span class="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-red-600 whitespace-nowrap">Modifications Required</span>
-                        @elseif($data->Status === 'Panel Deliberation')
-                            <span class="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-pink-700 whitespace-nowrap">Committee Review</span>
-                        @endif
-                    </div>
-
-                    <!-- Metadata Grid: Researcher & Reviewer -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-xs font-bold text-slate-700 uppercase shrink-0">
-                                {{ substr($researcherName ?: 'U', 0, 1) }}
-                            </div>
-                            <div class="min-w-0 truncate">
-                                <span class="font-semibold text-slate-800 truncate block">{{ $researcherName }}</span>
-                                @if($researcherEmail)
-                                    <span class="text-slate-400 text-[11px] truncate block">{{ $researcherEmail }}</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="text-slate-400 font-medium">Reviewer:</span>
-                            @if(count($reviewers) > 0)
-                                <span class="font-semibold text-slate-700 truncate">
-                                    {{ $reviewers->map(fn($r) => $r->first_name . ' ' . $r->last_name)->join(', ') }}
-                                </span>
-                            @else
-                                <span class="text-slate-400 italic">Unassigned</span>
-                            @endif
-                        </div>
-                    </div>
-
-                    @if($data->reviewer_decision)
-                        <div class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200/80">
-                            <i class="fas fa-level-up-alt text-slate-400 rotate-90 text-xs" aria-hidden="true"></i>
-                            <span>Recommendation: <strong class="text-slate-800">{{ $data->reviewer_decision }}</strong></span>
-                        </div>
-                    @endif
                 </div>
             @endforeach
         </div>
@@ -355,7 +374,7 @@
             </table>
         </div>
     @else
-        <div class="p-12 text-center text-slate-500 flex-grow flex flex-col items-center justify-center">
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs lg:border-0 lg:shadow-none p-12 text-center text-slate-500 flex-grow flex flex-col items-center justify-center">
             @if(request()->anyFilled(['search', 'review_types', 'status', 'reviewer_decisions', 'sort_by']))
                 <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
                     <i class="fas fa-search text-xl" aria-hidden="true"></i>
@@ -376,7 +395,7 @@
     @endif
 
     @if($datas->total() > 0)
-        <div class="p-4 sm:p-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 mt-auto shrink-0">
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs lg:bg-transparent lg:border-0 lg:border-t lg:border-slate-100 lg:shadow-none lg:rounded-none p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 mt-3.5 lg:mt-auto shrink-0">
             <div class="text-center sm:text-left">
                 Showing <span class="font-semibold text-slate-800 tabular-nums">{{ $datas->firstItem() ?? 0 }}</span> to <span
                     class="font-semibold text-slate-800 tabular-nums">{{ $datas->lastItem() ?? 0 }}</span> of <span

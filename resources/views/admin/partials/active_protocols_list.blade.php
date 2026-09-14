@@ -1,7 +1,7 @@
-        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 flex flex-col flex-1 h-full min-h-[400px]">
+        <div class="flex flex-col flex-1 h-full min-h-[400px] lg:bg-white lg:rounded-2xl lg:shadow-xs lg:border lg:border-slate-200/80">
             @if(count($datas) > 0)
                 <!-- MOBILE & TABLET ADAPTIVE CARDS VIEW (Visible below lg: 1024px) -->
-                <div class="block lg:hidden divide-y divide-slate-100 flex-grow">
+                <div class="block lg:hidden space-y-3.5 flex-grow">
                     @foreach($datas as $data)
                         @php
                             $isAdvanced = in_array($data->Status, ['Reviewer Assigned', 'Under Review', 'Reviewed']);
@@ -89,24 +89,106 @@
                             $hasReviewers = !empty($data->assigned_reviewers) && count($data->assigned_reviewers) > 0;
                             $hasValidType = !empty($data->Review_Type) && !in_array($data->Review_Type, ['Unassigned', 'N/A']);
                         @endphp
-                        <div class="p-4 sm:p-5 space-y-3 hover:bg-slate-50/60 transition-colors">
-                            <!-- Header: Code + Date + Title + Action Trigger -->
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                        <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
-                                            #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
+                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-3 hover:border-slate-300 hover:shadow-sm transition-all">
+                            <!-- Top Metadata: Code + Classification Track + Date -->
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2 flex-wrap min-w-0">
+                                    <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md shrink-0">
+                                        #{{ str_pad($data->id, 5, '0', STR_PAD_LEFT) }}
+                                    </span>
+                                    @if(isset($typeBadgeConfig[$data->Review_Type]))
+                                        <span class="text-xs font-bold uppercase tracking-wider {{ $typeBadgeConfig[$data->Review_Type]['text'] }} truncate">
+                                            {{ $data->Review_Type }}
                                         </span>
-                                        <span class="text-xs text-slate-500 font-medium tabular-nums flex items-center gap-1.5">
-                                            <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>{{ $data->created_at->format('M d, Y') }}
+                                    @elseif($data->Review_Type === 'N/A')
+                                        <span class="text-xs font-semibold text-slate-400 italic truncate">N/A</span>
+                                    @else
+                                        <span class="text-xs font-semibold text-slate-400 italic truncate">Unassigned</span>
+                                    @endif
+
+                                    @if(!empty($reviewerSuggestedType))
+                                        <span class="text-[10px] text-slate-400 font-medium" title="Suggested by Reviewer">
+                                            (Sugg: {{ str_replace(' Review', '', $reviewerSuggestedType) }})
                                         </span>
-                                    </div>
-                                    <a href="{{ route('admin.view_files', $data->id) }}"
-                                       class="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-sm"
-                                       title="{{ $data->Study_Protocol_title }}">
-                                        {{ $data->Study_Protocol_title }}
-                                    </a>
+                                    @endif
                                 </div>
+                                <span class="text-xs text-slate-400 font-medium tabular-nums flex items-center gap-1.5 shrink-0">
+                                    <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>{{ $data->created_at->format('M d, Y') }}
+                                </span>
+                            </div>
+
+                            <!-- Title -->
+                            <a href="{{ route('admin.view_files', $data->id) }}"
+                               class="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-xs block"
+                               title="{{ $data->Study_Protocol_title }}">
+                                {{ $data->Study_Protocol_title }}
+                            </a>
+
+                            <!-- Researcher Info -->
+                            <div class="flex items-center gap-2 text-xs text-slate-600 min-w-0">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-[10px] font-bold text-slate-700 uppercase shrink-0">
+                                    {{ substr($data->researcher->user->first_name ?? 'U', 0, 1) }}
+                                </div>
+                                <span class="font-semibold text-slate-800 truncate">
+                                    {{ $data->researcher->user->first_name ?? '' }} {{ $data->researcher->user->last_name ?? 'Unknown' }}
+                                </span>
+                                @if($data->researcher->user->email ?? false)
+                                    <span class="text-slate-300 shrink-0">•</span>
+                                    <span class="text-slate-500 truncate text-[11px] font-medium">{{ $data->researcher->user->email }}</span>
+                                @endif
+                            </div>
+
+                            <!-- Unified Operational Details: Doc Status, Review Stage, Reviewers -->
+                            <div class="pt-3 border-t border-slate-100 space-y-2.5">
+                                <div class="grid grid-cols-2 gap-3 text-xs">
+                                    <div class="min-w-0">
+                                        <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Doc Status</span>
+                                        <div class="text-xs font-bold uppercase tracking-wider {{ $docConfig['text'] }} flex items-center gap-1.5 truncate">
+                                            <span class="truncate">{{ $docConfig['label'] }}</span>
+                                            @if($data->Status === 'Incomplete - Awaiting Hardcopy' && $latestDeficiencies->get($data->id))
+                                                <span class="text-rose-600 shrink-0 cursor-help ml-0.5" title="Reason: {{ $latestDeficiencies->get($data->id)->message }}">
+                                                    <i class="fas fa-exclamation-circle text-xs" aria-hidden="true"></i>
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Review Stage</span>
+                                        <div class="text-xs font-bold uppercase tracking-wider {{ $revConfig['text'] }} truncate">
+                                            {{ $revConfig['label'] }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 text-xs">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Reviewers:</span>
+                                    <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+                                        @if($data->assigned_reviewers && count($data->assigned_reviewers) > 0)
+                                            @foreach($data->assigned_reviewers as $reviewerId)
+                                                @php $reviewerUser = $reviewersById->get($reviewerId); @endphp
+                                                @if($reviewerUser)
+                                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80 font-medium text-[11px] truncate max-w-[150px]" title="{{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}">
+                                                        <i class="fas fa-user-check text-slate-400 text-[10px] shrink-0" aria-hidden="true"></i>
+                                                        <span class="truncate">{{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}</span>
+                                                    </span>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            <span class="text-xs text-slate-400 italic">None Assigned</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tactile Mobile Action Bar (Thumb-friendly 44px buttons) -->
+                            <div class="pt-3 border-t border-slate-100 flex items-center gap-2.5">
+                                <a href="{{ route('admin.view_files', $data->id) }}"
+                                   class="flex-1 inline-flex items-center justify-center gap-1.5 h-11 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-[#8B0000] text-xs font-bold border border-slate-200/80 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                                   title="View Protocol Documents"
+                                   aria-label="View documents for {{ $data->Study_Protocol_title }}">
+                                    <i class="fas fa-folder-open text-xs text-slate-400" aria-hidden="true"></i>
+                                    <span>View Files</span>
+                                </a>
                                 <button type="button"
                                     @click="$dispatch('open-protocol-drawer', {
                                         id: '{{ $data->id }}',
@@ -132,78 +214,13 @@
                                         assigned_reviewers: {{ json_encode($data->assigned_reviewers ?? []) }},
                                         update_status_url: '{{ route('admin.updateStatus', $data->id) }}'
                                     })"
-                                    class="p-2.5 -mr-1 text-slate-500 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] touch-manipulation"
-                                    title="Protocol Actions"
-                                    aria-label="Actions for {{ $data->Study_Protocol_title }}">
-                                    <i class="fas fa-ellipsis-v text-sm" aria-hidden="true"></i>
+                                    class="flex-1 inline-flex items-center justify-center gap-1.5 h-11 px-3 rounded-xl bg-[#8B0000] hover:bg-[#6d0000] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                                    title="Open Protocol Management Drawer"
+                                    aria-label="Manage actions for {{ $data->Study_Protocol_title }}">
+                                    <i class="fas fa-sliders-h text-xs" aria-hidden="true"></i>
+                                    <span>Manage</span>
                                 </button>
                             </div>
-
-                            <!-- Researcher Row -->
-                            <div class="flex items-center gap-2.5 pt-2 border-t border-slate-100 text-xs text-slate-600">
-                                <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-xs font-bold text-slate-700 uppercase shrink-0">
-                                    {{ substr($data->researcher->user->first_name ?? 'U', 0, 1) }}
-                                </div>
-                                <span class="font-semibold text-slate-800 truncate">
-                                    {{ $data->researcher->user->first_name ?? '' }} {{ $data->researcher->user->last_name ?? 'Unknown' }}
-                                </span>
-                                @if($data->researcher->user->email ?? false)
-                                    <span class="text-slate-300">•</span>
-                                    <span class="text-slate-500 truncate text-[11px] font-medium">{{ $data->researcher->user->email }}</span>
-                                @endif
-                            </div>
-
-                            <!-- Protocol Metadata & Badges (Clean, unnested layout) -->
-                            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-                                <!-- Doc Status Text -->
-                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $docConfig['text'] }}">
-                                    <span>{{ $docConfig['label'] }}</span>
-                                    @if($data->Status === 'Incomplete - Awaiting Hardcopy' && $latestDeficiencies->get($data->id))
-                                        <span class="text-rose-600 shrink-0 cursor-help ml-1.5" title="Reason: {{ $latestDeficiencies->get($data->id)->message }}">
-                                            <i class="fas fa-exclamation-circle text-xs" aria-hidden="true"></i>
-                                        </span>
-                                    @endif
-                                </span>
-
-                                <!-- Review Status Text -->
-                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $revConfig['text'] }}">
-                                    <span>{{ $revConfig['label'] }}</span>
-                                </span>
-
-                                <!-- Review Classification Text -->
-                                @if(isset($typeBadgeConfig[$data->Review_Type]))
-                                    <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $typeBadgeConfig[$data->Review_Type]['text'] }}">
-                                        <span>{{ $data->Review_Type }}</span>
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center text-xs font-semibold text-slate-400 italic whitespace-nowrap">
-                                        {{ $data->Review_Type ?: 'Unassigned' }}
-                                    </span>
-                                @endif
-
-                                @if(!empty($reviewerSuggestedType))
-                                    <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 whitespace-nowrap" title="Suggested by Reviewer">
-                                        <i class="fas fa-level-up-alt text-[11px] text-slate-400 rotate-90" aria-hidden="true"></i>
-                                        Suggested: {{ str_replace(' Review', '', $reviewerSuggestedType) }}
-                                    </span>
-                                @endif
-                            </div>
-
-                            <!-- Assigned Reviewers -->
-                            @if($data->assigned_reviewers && count($data->assigned_reviewers) > 0)
-                                <div class="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-                                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Reviewers:</span>
-                                    @foreach($data->assigned_reviewers as $reviewerId)
-                                        @php $reviewerUser = $reviewersById->get($reviewerId); @endphp
-                                        @if($reviewerUser)
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 font-medium text-[11px]">
-                                                <i class="fas fa-user-check text-slate-400 text-[11px]" aria-hidden="true"></i>
-                                                {{ $reviewerUser->first_name }} {{ $reviewerUser->last_name }}
-                                            </span>
-                                        @endif
-                                    @endforeach
-                                </div>
-                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -444,7 +461,7 @@
                     </table>
                 </div>
             @else
-                <div class="p-12 text-center text-slate-500 flex-grow flex flex-col items-center justify-center">
+                <div class="p-12 text-center text-slate-500 flex-grow flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200/80 shadow-xs lg:border-0 lg:shadow-none lg:bg-transparent">
                     @if(request()->anyFilled(['search', 'review_types', 'doc_statuses', 'rev_statuses', 'assignment', 'sort_by']))
                         <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
                             <i class="fas fa-search text-xl" aria-hidden="true"></i>
@@ -465,7 +482,7 @@
             @endif
 
             @if($datas->total() > 0)
-            <div class="p-4 sm:p-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 mt-auto shrink-0">
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs lg:bg-transparent lg:border-0 lg:border-t lg:border-slate-100 lg:shadow-none lg:rounded-none p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 mt-3.5 lg:mt-auto shrink-0">
                 <div class="text-center sm:text-left">
                     Showing <span class="font-semibold text-slate-800 tabular-nums">{{ $datas->firstItem() ?? 0 }}</span> to <span
                         class="font-semibold text-slate-800 tabular-nums">{{ $datas->lastItem() ?? 0 }}</span> of <span

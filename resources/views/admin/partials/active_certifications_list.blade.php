@@ -1,9 +1,9 @@
-<div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 flex flex-col flex-1 h-full min-h-[400px]">
+<div class="flex flex-col flex-1 h-full min-h-[400px] lg:bg-white lg:rounded-2xl lg:shadow-xs lg:border lg:border-slate-200/80">
     @if($datas->count() > 0)
         {{-- =========================================================
              MOBILE & TABLET VIEWPORT: Adaptive Cards (block lg:hidden)
              ========================================================= --}}
-        <div class="block lg:hidden divide-y divide-slate-100 flex-grow">
+        <div class="block lg:hidden space-y-3.5 flex-grow">
             @foreach($datas as $data)
                 @php
                     $certificate = $data->adminFiles->firstWhere('filetype', 'certificate');
@@ -33,26 +33,86 @@
                         ]
                     ];
                 @endphp
-                <div class="p-4 sm:p-5 space-y-3 hover:bg-slate-50/60 transition-colors">
-                    {{-- Card Header: Code & Date + Action Button --}}
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
-                                    {{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-3 hover:border-slate-300 hover:shadow-sm transition-all">
+                    <!-- Top Metadata: REOC Code + Classification + Date -->
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 flex-wrap min-w-0">
+                            <span class="text-[11px] font-mono font-semibold tabular-nums text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md shrink-0">
+                                {{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}
+                            </span>
+                            @if(isset($typeBadgeConfig[$data->Review_Type]))
+                                <span class="text-xs font-bold uppercase tracking-wider {{ $typeBadgeConfig[$data->Review_Type]['text'] }} truncate">
+                                    {{ $data->Review_Type }}
                                 </span>
-                                <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium tabular-nums">
-                                    <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>
-                                    <span>Approved {{ $approvalDateFormatted }}</span>
+                            @elseif($data->Review_Type === 'N/A')
+                                <span class="text-xs font-semibold text-slate-400 italic truncate">N/A</span>
+                            @else
+                                <span class="text-xs font-semibold text-slate-400 italic truncate">Unassigned</span>
+                            @endif
+                        </div>
+                        <span class="text-xs text-slate-400 font-medium tabular-nums flex items-center gap-1.5 shrink-0">
+                            <i class="far fa-calendar-alt text-slate-400 text-[11px]" aria-hidden="true"></i>{{ $approvalDateFormatted }}
+                        </span>
+                    </div>
+
+                    <!-- Title -->
+                    <a href="{{ route('admin.view_files', $data->id) }}"
+                       class="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-xs block"
+                       title="{{ $data->Study_Protocol_title }}">
+                        {{ $data->Study_Protocol_title }}
+                    </a>
+
+                    <!-- Researcher Info -->
+                    <div class="flex items-center gap-2 text-xs text-slate-600 min-w-0">
+                        <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-[10px] font-bold text-slate-700 uppercase shrink-0">
+                            {{ substr($researcherName ?: 'U', 0, 1) }}
+                        </div>
+                        <span class="font-semibold text-slate-800 truncate">
+                            {{ $researcherName }}
+                        </span>
+                        @if($researcherEmail)
+                            <span class="text-slate-300 shrink-0">•</span>
+                            <span class="text-slate-500 truncate text-[11px] font-medium">{{ $researcherEmail }}</span>
+                        @endif
+                    </div>
+
+                    <!-- Unified Operational Details: Status & Approval -->
+                    <div class="pt-3 border-t border-slate-100 space-y-2.5">
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="min-w-0">
+                                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Status</span>
+                                @if($hasCerts)
+                                    <button type="button"
+                                            onclick="openViewCertificatesModal('{{ $letterUrl }}', '{{ $certUrl }}', '{{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($researcherName) }})"
+                                            class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer group"
+                                            title="Click to view certified documents">
+                                        <span class="truncate">Certified</span>
+                                        <i class="fas fa-external-link-alt text-[10px] text-emerald-600 shrink-0 group-hover:translate-x-0.5 transition-transform" aria-hidden="true"></i>
+                                    </button>
+                                @else
+                                    <span class="inline-flex items-center text-xs font-bold uppercase tracking-wider text-amber-800 truncate">
+                                        Ready to Issue
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="min-w-0">
+                                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Approval Date</span>
+                                <div class="text-xs font-semibold text-slate-700 truncate">
+                                    {{ $approvalDateFormatted }}
                                 </div>
                             </div>
-                            <a href="{{ route('admin.view_files', $data->id) }}"
-                               class="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B0000] rounded-sm block"
-                               title="{{ $data->Study_Protocol_title }}">
-                                {{ $data->Study_Protocol_title }}
-                            </a>
                         </div>
+                    </div>
 
+                    <!-- Tactile Mobile Action Bar (Thumb-friendly 44px buttons) -->
+                    <div class="pt-3 border-t border-slate-100 flex items-center gap-2.5">
+                        <a href="{{ route('admin.view_files', $data->id) }}"
+                           class="flex-1 inline-flex items-center justify-center gap-1.5 h-11 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-[#8B0000] text-xs font-bold border border-slate-200/80 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                           title="View Protocol Documents"
+                           aria-label="View documents for {{ $data->Study_Protocol_title }}">
+                            <i class="fas fa-folder-open text-xs text-slate-400" aria-hidden="true"></i>
+                            <span>View Files</span>
+                        </a>
                         <button type="button" 
                                 @click="$dispatch('open-cert-drawer', {
                                     id: '{{ $data->id }}',
@@ -67,53 +127,12 @@
                                     view_files_url: '{{ route('admin.view_files', $data->id) }}',
                                     generate_page_url: '{{ route('admin.certificate.generate_page', $data->id) }}'
                                 })"
-                                class="p-2.5 -mr-1 text-slate-500 hover:text-[#8B0000] hover:bg-slate-100 rounded-xl transition-all shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] touch-manipulation"
+                                class="flex-1 inline-flex items-center justify-center gap-1.5 h-11 px-3 rounded-xl bg-[#8B0000] hover:bg-[#6d0000] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                                title="Open Certification Actions Drawer"
                                 aria-label="Open action drawer for {{ $data->Study_Protocol_title }}">
-                            <i class="fas fa-ellipsis-v text-sm"></i>
+                            <i class="fas fa-sliders-h text-xs" aria-hidden="true"></i>
+                            <span>Actions</span>
                         </button>
-                    </div>
-
-                    {{-- Badges Row --}}
-                    <div class="flex items-center gap-2.5 flex-wrap">
-                        {{-- Review Type --}}
-                        @if(isset($typeBadgeConfig[$data->Review_Type]))
-                            @php $tConf = $typeBadgeConfig[$data->Review_Type]; @endphp
-                            <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $tConf['text'] }}">
-                                {{ $tConf['label'] }}
-                            </span>
-                        @elseif($data->Review_Type === 'N/A')
-                            <span class="inline-flex items-center text-xs font-semibold text-slate-500 italic">N/A</span>
-                        @else
-                            <span class="inline-flex items-center text-xs font-semibold text-slate-400 italic">Unassigned</span>
-                        @endif
-
-                        {{-- Status --}}
-                        @if($hasCerts)
-                            <button type="button"
-                                    onclick="openViewCertificatesModal('{{ $letterUrl }}', '{{ $certUrl }}', '{{ $data->reoc_code ?: ('#' . str_pad($data->id, 5, '0', STR_PAD_LEFT)) }}', {{ json_encode($data->Study_Protocol_title) }}, {{ json_encode($researcherName) }})"
-                                    class="inline-flex items-center gap-1 text-xs font-semibold whitespace-nowrap text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer group"
-                                    title="Click to view certified documents">
-                                <span>Certified</span>
-                                <i class="fas fa-external-link-alt text-[10px] text-emerald-600 ml-0.5 group-hover:translate-x-0.5 transition-transform" aria-hidden="true"></i>
-                            </button>
-                        @else
-                            <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap text-amber-800">
-                                <span>Ready to Issue</span>
-                            </span>
-                        @endif
-                    </div>
-
-                    {{-- Researcher Details --}}
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-xs font-bold text-slate-700 uppercase shrink-0">
-                                {{ substr($researcherName ?: 'U', 0, 1) }}
-                            </div>
-                            <div class="min-w-0">
-                                <p class="font-semibold text-slate-800 truncate">{{ $researcherName }}</p>
-                                <p class="text-slate-400 text-[11px] truncate">{{ $researcherEmail ?: 'Not Provided' }}</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             @endforeach
@@ -263,7 +282,7 @@
             </table>
         </div>
     @else
-        <div class="p-12 text-center text-slate-500 flex-grow flex flex-col items-center justify-center">
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs lg:border-0 lg:shadow-none p-12 text-center text-slate-500 flex-grow flex flex-col items-center justify-center">
             @if(request()->anyFilled(['search', 'review_types', 'status', 'date_from', 'date_to', 'sort_by']))
                 <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
                     <i class="fas fa-search text-xl" aria-hidden="true"></i>
@@ -291,7 +310,7 @@
          PAGINATION FOOTER (Matching Active Protocols)
          ========================================================= --}}
     @if($datas->total() > 0)
-        <div class="p-4 sm:p-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 mt-auto shrink-0">
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs lg:bg-transparent lg:border-0 lg:border-t lg:border-slate-100 lg:shadow-none lg:rounded-none p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 mt-3.5 lg:mt-auto shrink-0">
             <div class="text-center sm:text-left">
                 Showing <span class="font-semibold text-slate-800 tabular-nums">{{ $datas->firstItem() ?? 0 }}</span> to <span
                     class="font-semibold text-slate-800 tabular-nums">{{ $datas->lastItem() ?? 0 }}</span> of <span

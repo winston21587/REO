@@ -51,84 +51,99 @@
                          class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity" 
                          @click="filterDrawerOpen = false"></div>
 
-                    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+                    <div class="fixed inset-0 overflow-hidden pointer-events-none z-10">
                         <div class="absolute inset-0 overflow-hidden">
-                            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-                                <div x-show="filterDrawerOpen"
-                                     x-transition:enter="transform transition ease-in-out duration-300 sm:duration-400"
-                                     x-transition:enter-start="translate-x-full"
-                                     x-transition:enter-end="translate-x-0"
-                                     x-transition:leave="transform transition ease-in-out duration-300 sm:duration-400"
-                                     x-transition:leave-start="translate-x-0"
-                                     x-transition:leave-end="translate-x-full"
-                                     class="pointer-events-auto w-screen max-w-xs flex flex-col h-full bg-white shadow-2xl">
+                            <!-- Mobile: Bottom sheet | Desktop (sm+): Right slide-over -->
+                            <div class="pointer-events-none fixed inset-x-0 bottom-0 top-auto sm:top-0 sm:bottom-0 sm:left-auto sm:right-0 flex max-w-full sm:pl-10 justify-end"
+                                 x-show="filterDrawerOpen"
+                                 x-transition:enter="transform transition ease-out duration-300 sm:duration-400"
+                                 x-transition:enter-start="translate-y-full sm:translate-y-0 sm:translate-x-full"
+                                 x-transition:enter-end="translate-y-0 sm:translate-x-0"
+                                 x-transition:leave="transform transition ease-in duration-250 sm:duration-300"
+                                 x-transition:leave-start="translate-y-0 sm:translate-x-0"
+                                 x-transition:leave-end="translate-y-full sm:translate-y-0 sm:translate-x-full">
+                                
+                                <div class="pointer-events-auto w-full sm:w-screen sm:max-w-xs md:max-w-sm flex flex-col max-h-[88vh] sm:max-h-full sm:h-full bg-white shadow-2xl rounded-t-3xl sm:rounded-none overflow-hidden">
                                     
+                                    <!-- Mobile Drag Handle -->
+                                    <div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-2.5 sm:hidden shrink-0"></div>
+
                                     <!-- Drawer Header -->
-                                    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 flex-none text-left">
+                                    <div class="px-5 sm:px-6 pt-2 pb-4 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 flex-none text-left">
                                         <div>
-                                            <h3 id="cert-filter-title" class="font-heading font-bold text-base text-slate-900">Apply Filters</h3>
+                                            <h3 id="cert-filter-title" class="font-heading font-bold text-base sm:text-lg text-slate-900">Apply Filters</h3>
                                             <p class="text-xs text-slate-500 mt-0.5">Filter certifications by type & order</p>
                                         </div>
                                         <button type="button" @click="filterDrawerOpen = false" 
-                                                class="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer" 
+                                                class="w-10 h-10 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer" 
                                                 aria-label="Close filters">
                                             <i class="fas fa-times text-base"></i>
                                         </button>
                                     </div>
 
                                     <!-- Drawer Filters Body -->
-                                    <div class="flex-1 overflow-y-auto w-full pb-10">
+                                    <div class="flex-1 overflow-y-auto w-full p-4 sm:p-5 space-y-5">
                                         <!-- Sort Section -->
-                                        <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                                        <div>
                                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">Sort Results By</label>
-                                            <div class="space-y-2">
-                                                <label class="flex items-center gap-2.5 cursor-pointer group py-0.5">
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <label class="group relative flex items-center justify-center gap-2 p-3 min-h-[44px] rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer transition-all has-checked:border-[#8B0000] has-checked:bg-red-50/50 has-checked:shadow-2xs">
                                                     <input type="radio" name="cert_sort" value="updated_at"
-                                                           class="cert-filter-input text-[#8B0000] focus:ring-[#8B0000] cursor-pointer"
+                                                           class="cert-filter-input sr-only"
                                                            {{ request('sort_by', 'updated_at') == 'updated_at' ? 'checked' : '' }}>
-                                                    <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Last Updated</span>
+                                                    <i class="far fa-clock text-xs text-slate-400 group-has-checked:text-[#8B0000]"></i>
+                                                    <span class="text-xs font-bold text-slate-700 group-has-checked:text-[#8B0000]">Last Updated</span>
                                                 </label>
-                                                <label class="flex items-center gap-2.5 cursor-pointer group py-0.5">
+                                                <label class="group relative flex items-center justify-center gap-2 p-3 min-h-[44px] rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer transition-all has-checked:border-[#8B0000] has-checked:bg-red-50/50 has-checked:shadow-2xs">
                                                     <input type="radio" name="cert_sort" value="Title"
-                                                           class="cert-filter-input text-[#8B0000] focus:ring-[#8B0000] cursor-pointer"
+                                                           class="cert-filter-input sr-only"
                                                            {{ request('sort_by') == 'Title' ? 'checked' : '' }}>
-                                                    <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Alphabetical (Title)</span>
+                                                    <i class="fas fa-font text-xs text-slate-400 group-has-checked:text-[#8B0000]"></i>
+                                                    <span class="text-xs font-bold text-slate-700 group-has-checked:text-[#8B0000]">Title</span>
                                                 </label>
                                             </div>
                                         </div>
 
                                         <!-- Review Type Section -->
-                                        <div class="p-4 border-b border-slate-100">
-                                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">Review Type</label>
-                                            <div class="space-y-2">
-                                                @php $selectedTypes = request('review_types', []); @endphp
-                                                <label class="flex items-center gap-2.5 cursor-pointer group py-0.5">
-                                                    <input type="checkbox" name="cert_review_types[]" value="Exempt Review"
-                                                           class="cert-filter-input rounded text-[#8B0000] focus:ring-[#8B0000] cursor-pointer"
-                                                           {{ in_array('Exempt Review', $selectedTypes) ? 'checked' : '' }}>
-                                                    <span class="text-sm font-medium text-slate-700 group-hover:text-emerald-700 transition-colors">Exempt</span>
-                                                </label>
-                                                <label class="flex items-center gap-2.5 cursor-pointer group py-0.5">
-                                                    <input type="checkbox" name="cert_review_types[]" value="Expedited Review"
-                                                           class="cert-filter-input rounded text-[#8B0000] focus:ring-[#8B0000] cursor-pointer"
-                                                           {{ in_array('Expedited Review', $selectedTypes) ? 'checked' : '' }}>
-                                                    <span class="text-sm font-medium text-slate-700 group-hover:text-blue-700 transition-colors">Expedited</span>
-                                                </label>
-                                                <label class="flex items-center gap-2.5 cursor-pointer group py-0.5">
-                                                    <input type="checkbox" name="cert_review_types[]" value="Full Board Review"
-                                                           class="cert-filter-input rounded text-[#8B0000] focus:ring-[#8B0000] cursor-pointer"
-                                                           {{ in_array('Full Board Review', $selectedTypes) ? 'checked' : '' }}>
-                                                    <span class="text-sm font-medium text-slate-700 group-hover:text-amber-700 transition-colors">Full Board</span>
-                                                </label>
+                                        <div class="pt-4 border-t border-slate-100">
+                                            <div class="flex items-center justify-between mb-2.5">
+                                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Review Type</label>
+                                                <span class="text-[11px] text-slate-400 font-medium">Select track</span>
+                                            </div>
+                                            <div class="grid grid-cols-3 gap-2">
+                                                @php
+                                                    $selectedTypes = request('review_types', []);
+                                                    $certTypeList = [
+                                                        'Exempt Review' => 'Exempt',
+                                                        'Expedited Review' => 'Expedited',
+                                                        'Full Board Review' => 'Full Board',
+                                                    ];
+                                                @endphp
+                                                @foreach($certTypeList as $typeVal => $typeLabel)
+                                                    <label class="group relative flex flex-col items-center justify-center p-2.5 min-h-[48px] rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer transition-all text-center has-checked:border-[#8B0000] has-checked:bg-red-50/40 has-checked:shadow-2xs">
+                                                        <input type="checkbox" name="cert_review_types[]" value="{{ $typeVal }}"
+                                                               class="cert-filter-input sr-only"
+                                                               {{ in_array($typeVal, $selectedTypes) ? 'checked' : '' }}>
+                                                        <span class="text-xs font-bold text-slate-700 group-has-checked:text-[#8B0000] truncate w-full">{{ $typeLabel }}</span>
+                                                        <span class="text-[10px] text-slate-400 font-medium group-has-checked:text-[#8B0000]/70">Review</span>
+                                                    </label>
+                                                @endforeach
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <!-- Drawer Footer -->
-                                    <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+                                    <!-- Sticky Bottom Actions -->
+                                    <div class="p-4 sm:p-5 border-t border-slate-200/80 bg-slate-50/80 flex items-center gap-2.5 flex-none mt-auto sticky bottom-0 z-10">
+                                        <button type="button" 
+                                                id="reset_cert_filters_btn"
+                                                class="flex-1 h-11 min-h-[44px] px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider bg-white hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]">
+                                            <i class="fas fa-undo-alt text-xs text-slate-400"></i>
+                                            <span>Reset All</span>
+                                        </button>
                                         <button type="button" @click="filterDrawerOpen = false" 
-                                                class="w-full h-11 min-h-[44px] px-4 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider bg-white hover:bg-slate-50 hover:border-slate-300 transition-colors cursor-pointer">
-                                            Close Filters
+                                                class="flex-1 h-11 min-h-[44px] px-3 rounded-xl bg-[#8B0000] hover:bg-[#6d0000] text-xs font-bold text-white uppercase tracking-wider transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+                                            <i class="fas fa-check text-xs"></i>
+                                            <span>Done</span>
                                         </button>
                                     </div>
                                 </div>
@@ -378,6 +393,20 @@
             document.querySelectorAll('.cert-filter-input').forEach(input => {
                 input.addEventListener('change', () => triggerFetch(true));
             });
+
+            const resetCertBtn = document.getElementById('reset_cert_filters_btn');
+            if (resetCertBtn) {
+                resetCertBtn.addEventListener('click', () => {
+                    const defaultSort = document.querySelector('input[name="cert_sort"][value="updated_at"]');
+                    if (defaultSort) defaultSort.checked = true;
+
+                    document.querySelectorAll('input[name="cert_review_types[]"]').forEach(cb => {
+                        cb.checked = false;
+                    });
+
+                    triggerFetch(true);
+                });
+            }
 
             // Pagination delegation
             document.addEventListener('click', (e) => {

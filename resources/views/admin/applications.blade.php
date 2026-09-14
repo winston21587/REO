@@ -58,125 +58,179 @@
                                  x-transition:leave="ease-in-out duration-300" 
                                  x-transition:leave-start="opacity-100" 
                                  x-transition:leave-end="opacity-0" 
-                                 class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity cursor-pointer" 
+                                 class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity cursor-pointer" 
                                  @click="expanded = false"></div>
 
-                            <div class="fixed inset-0 overflow-hidden pointer-events-none">
+                            <div class="fixed inset-0 overflow-hidden pointer-events-none z-10">
                                 <div class="absolute inset-0 overflow-hidden">
-                                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-4 sm:pl-10"
+                                    <!-- Mobile: Bottom sheet | Desktop (sm+): Right slide-over -->
+                                    <div class="pointer-events-none fixed inset-x-0 bottom-0 top-auto sm:top-0 sm:bottom-0 sm:left-auto sm:right-0 flex max-w-full sm:pl-10 justify-end"
                                          x-show="expanded"
-                                         x-transition:enter="transform transition ease-in-out duration-300 sm:duration-400"
-                                         x-transition:enter-start="translate-x-full"
-                                         x-transition:enter-end="translate-x-0"
-                                         x-transition:leave="transform transition ease-in-out duration-300 sm:duration-400"
-                                         x-transition:leave-start="translate-x-0"
-                                         x-transition:leave-end="translate-x-full">
+                                         x-transition:enter="transform transition ease-out duration-300 sm:duration-400"
+                                         x-transition:enter-start="translate-y-full sm:translate-y-0 sm:translate-x-full"
+                                         x-transition:enter-end="translate-y-0 sm:translate-x-0"
+                                         x-transition:leave="transform transition ease-in duration-250 sm:duration-300"
+                                         x-transition:leave-start="translate-y-0 sm:translate-x-0"
+                                         x-transition:leave-end="translate-y-full sm:translate-y-0 sm:translate-x-full">
                                         
-                                        <div class="pointer-events-auto w-screen max-w-[280px] sm:max-w-xs flex flex-col h-full bg-white shadow-2xl">
+                                        <div class="pointer-events-auto w-full sm:w-screen sm:max-w-xs md:max-w-sm flex flex-col max-h-[88vh] sm:max-h-full sm:h-full bg-white shadow-2xl rounded-t-3xl sm:rounded-none overflow-hidden">
+                                            
+                                            <!-- Mobile Drag Handle -->
+                                            <div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-2.5 sm:hidden shrink-0"></div>
+
                                             <!-- Drawer Header -->
-                                            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-none text-left">
-                                                <h3 class="font-heading font-bold text-base text-slate-800 leading-tight">Apply Filters</h3>
-                                                <button type="button" @click="expanded = false" aria-label="Close filter options" class="text-slate-400 hover:text-[#8B0000] hover:bg-slate-100 transition-colors w-9 h-9 min-w-[36px] min-h-[36px] flex-shrink-0 flex items-center justify-center rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
-                                                    <i class="fas fa-times text-base" aria-hidden="true"></i>
+                                            <div class="px-5 sm:px-6 pt-2 pb-4 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 flex-none text-left">
+                                                <div>
+                                                    <h3 class="font-heading font-bold text-base sm:text-lg text-slate-900">Apply Filters</h3>
+                                                    <p class="text-xs text-slate-500 mt-0.5">Filter protocols by status & assignments</p>
+                                                </div>
+                                                <button type="button" @click="expanded = false" 
+                                                        class="w-10 h-10 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer" 
+                                                        aria-label="Close filters">
+                                                    <i class="fas fa-times text-base"></i>
                                                 </button>
                                             </div>
 
-                                            <!-- Drawer Filters List -->
-                                            <div class="flex-1 overflow-y-auto w-full pb-10">
-                            <!-- Sort Section -->
-                            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Sort By</label>
-                                <div class="space-y-2.5">
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="sort_by" value="created_at" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('sort_by', 'created_at') == 'created_at' ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Submission Date</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="sort_by" value="Title" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('sort_by') == 'Title' ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Title</span>
-                                    </label>
-                                </div>
-                            </div>
+                                            <!-- Drawer Filters List (Scrollable) -->
+                                            <div class="flex-1 overflow-y-auto w-full p-4 sm:p-5 space-y-5">
+                                                <!-- Sort Section -->
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">Sort Results By</label>
+                                                    <div class="grid grid-cols-2 gap-2">
+                                                        <label class="group relative flex items-center justify-center gap-2 p-3 min-h-[44px] rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer transition-all has-checked:border-[#8B0000] has-checked:bg-red-50/50 has-checked:shadow-2xs">
+                                                            <input type="radio" name="sort_by" value="created_at" class="auto-submit-input sr-only" {{ request('sort_by', 'created_at') == 'created_at' ? 'checked' : '' }}>
+                                                            <i class="far fa-calendar-alt text-xs text-slate-400 group-has-checked:text-[#8B0000]"></i>
+                                                            <span class="text-xs font-bold text-slate-700 group-has-checked:text-[#8B0000]">Date</span>
+                                                        </label>
+                                                        <label class="group relative flex items-center justify-center gap-2 p-3 min-h-[44px] rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer transition-all has-checked:border-[#8B0000] has-checked:bg-red-50/50 has-checked:shadow-2xs">
+                                                            <input type="radio" name="sort_by" value="Title" class="auto-submit-input sr-only" {{ request('sort_by') == 'Title' ? 'checked' : '' }}>
+                                                            <i class="fas fa-font text-xs text-slate-400 group-has-checked:text-[#8B0000]"></i>
+                                                            <span class="text-xs font-bold text-slate-700 group-has-checked:text-[#8B0000]">Title</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
 
-                            <!-- Review Type Section -->
-                            <div class="p-4 border-b border-slate-100">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Review Type</label>
-                                <div class="space-y-2.5">
-                                    @php $selectedTypes = request('review_types', []); @endphp
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="review_types[]" value="Exempt Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Exempt Review', $selectedTypes) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Exempt</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="review_types[]" value="Expedited Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Expedited Review', $selectedTypes) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Expedited</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="review_types[]" value="Full Board Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Full Board Review', $selectedTypes) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Full Board</span>
-                                    </label>
-                                </div>
-                            </div>
+                                                <!-- Review Type Section -->
+                                                <div class="pt-4 border-t border-slate-100">
+                                                    <div class="flex items-center justify-between mb-2.5">
+                                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Review Type</label>
+                                                        <span class="text-[11px] text-slate-400 font-medium">Select track</span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        @php
+                                                            $selectedTypes = request('review_types', []);
+                                                            $typeList = [
+                                                                'Exempt Review' => 'Exempt',
+                                                                'Expedited Review' => 'Expedited',
+                                                                'Full Board Review' => 'Full Board',
+                                                            ];
+                                                        @endphp
+                                                        @foreach($typeList as $typeVal => $typeLabel)
+                                                            <label class="group relative flex flex-col items-center justify-center p-2.5 min-h-[48px] rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer transition-all text-center has-checked:border-[#8B0000] has-checked:bg-red-50/40 has-checked:shadow-2xs">
+                                                                <input type="checkbox" name="review_types[]" value="{{ $typeVal }}" 
+                                                                       class="auto-submit-input sr-only" 
+                                                                       {{ in_array($typeVal, $selectedTypes) ? 'checked' : '' }}>
+                                                                <span class="text-xs font-bold text-slate-700 group-has-checked:text-[#8B0000] truncate w-full">{{ $typeLabel }}</span>
+                                                                <span class="text-[10px] text-slate-400 font-medium group-has-checked:text-[#8B0000]/70">Review</span>
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
 
-                            <!-- Document Status Section -->
-                            <div class="p-4 border-b border-slate-100">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Document Status</label>
-                                <div class="space-y-2.5">
-                                    @php $docStatuses = request('doc_statuses', []); @endphp
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="doc_statuses[]" value="Incomplete - Awaiting Hardcopy" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Incomplete - Awaiting Hardcopy', $docStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors text-balance leading-snug">Incomplete: Awaiting Hardcopy</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="doc_statuses[]" value="Incomplete Hardcopy" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Incomplete Hardcopy', $docStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Incomplete Hardcopy</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="doc_statuses[]" value="Hardcopy Received" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Hardcopy Received', $docStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Hardcopy Received</span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- Reviewer Status Section -->
-                            <div class="p-4 border-b border-slate-100">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Reviewer Status</label>
-                                <div class="space-y-2.5">
-                                    @php $revStatuses = request('rev_statuses', []); @endphp
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="rev_statuses[]" value="Reviewer Assigned" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Reviewer Assigned', $revStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Reviewer Assigned</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="rev_statuses[]" value="Under Review" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Under Review', $revStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Under Review</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" name="rev_statuses[]" value="Reviewed" class="auto-submit-input rounded text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ in_array('Reviewed', $revStatuses) ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Reviewed</span>
-                                    </label>
-                                </div>
-                            </div>
+                                                <!-- Document Status Section -->
+                                                <div class="pt-4 border-t border-slate-100">
+                                                    <div class="flex items-center justify-between mb-2.5">
+                                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Document Status</label>
+                                                        <span class="text-[11px] text-slate-400 font-medium">Hardcopy tracking</span>
+                                                    </div>
+                                                    <div class="space-y-2">
+                                                        @php
+                                                            $docStatuses = request('doc_statuses', []);
+                                                            $docConfigs = [
+                                                                'Incomplete - Awaiting Hardcopy' => ['dot' => 'bg-amber-500', 'label' => 'Awaiting Hardcopy'],
+                                                                'Incomplete Hardcopy' => ['dot' => 'bg-rose-500', 'label' => 'Incomplete Hardcopy'],
+                                                                'Hardcopy Received' => ['dot' => 'bg-emerald-500', 'label' => 'Hardcopy Received'],
+                                                            ];
+                                                        @endphp
+                                                        @foreach($docConfigs as $val => $cfg)
+                                                            <label class="group relative flex items-center justify-between p-3 min-h-[44px] rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer transition-all has-checked:border-[#8B0000] has-checked:bg-red-50/30">
+                                                                <div class="flex items-center gap-2.5 min-w-0">
+                                                                    <span class="w-2.5 h-2.5 rounded-full {{ $cfg['dot'] }} shrink-0"></span>
+                                                                    <span class="text-xs sm:text-sm font-semibold text-slate-700 group-has-checked:text-slate-900 truncate">{{ $cfg['label'] }}</span>
+                                                                </div>
+                                                                <input type="checkbox" name="doc_statuses[]" value="{{ $val }}" 
+                                                                       class="auto-submit-input w-4 h-4 rounded text-[#8B0000] focus:ring-[#8B0000] cursor-pointer" 
+                                                                       {{ in_array($val, $docStatuses) ? 'checked' : '' }}>
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
 
-                            <!-- Assignment Section -->
-                            <div class="p-4 bg-slate-50/50">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Reviewer Assignment</label>
-                                <div class="space-y-2.5">
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="assignment" value="All" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('assignment', 'All') == 'All' ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Show All Protocols</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="assignment" value="Unassigned" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('assignment') == 'Unassigned' ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Unassigned Only</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer group">
-                                        <input type="radio" name="assignment" value="Assigned" class="auto-submit-input text-[#8B0000] focus:ring-[#8B0000] accent-[#8B0000] cursor-pointer" {{ request('assignment') == 'Assigned' ? 'checked' : '' }}>
-                                        <span class="text-sm font-medium text-slate-700 group-hover:text-[#8B0000] transition-colors">Assigned Only</span>
-                                    </label>
-                                </div>
-                            </div>
+                                                <!-- Reviewer Status Section -->
+                                                <div class="pt-4 border-t border-slate-100">
+                                                    <div class="flex items-center justify-between mb-2.5">
+                                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Reviewer Status</label>
+                                                        <span class="text-[11px] text-slate-400 font-medium">Evaluation stage</span>
+                                                    </div>
+                                                    <div class="space-y-2">
+                                                        @php
+                                                            $revStatuses = request('rev_statuses', []);
+                                                            $revConfigs = [
+                                                                'Reviewer Assigned' => ['dot' => 'bg-blue-500', 'label' => 'Reviewer Assigned'],
+                                                                'Under Review' => ['dot' => 'bg-purple-500', 'label' => 'Under Review'],
+                                                                'Reviewed' => ['dot' => 'bg-emerald-500', 'label' => 'Reviewed'],
+                                                            ];
+                                                        @endphp
+                                                        @foreach($revConfigs as $val => $cfg)
+                                                            <label class="group relative flex items-center justify-between p-3 min-h-[44px] rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer transition-all has-checked:border-[#8B0000] has-checked:bg-red-50/30">
+                                                                <div class="flex items-center gap-2.5 min-w-0">
+                                                                    <span class="w-2.5 h-2.5 rounded-full {{ $cfg['dot'] }} shrink-0"></span>
+                                                                    <span class="text-xs sm:text-sm font-semibold text-slate-700 group-has-checked:text-slate-900 truncate">{{ $cfg['label'] }}</span>
+                                                                </div>
+                                                                <input type="checkbox" name="rev_statuses[]" value="{{ $val }}" 
+                                                                       class="auto-submit-input w-4 h-4 rounded text-[#8B0000] focus:ring-[#8B0000] cursor-pointer" 
+                                                                       {{ in_array($val, $revStatuses) ? 'checked' : '' }}>
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+
+                                                <!-- Assignment Section -->
+                                                <div class="pt-4 border-t border-slate-100">
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">Reviewer Assignment</label>
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        @php
+                                                            $assignments = [
+                                                                'All' => 'All',
+                                                                'Unassigned' => 'Unassigned',
+                                                                'Assigned' => 'Assigned',
+                                                            ];
+                                                        @endphp
+                                                        @foreach($assignments as $val => $lbl)
+                                                            <label class="group relative flex items-center justify-center p-2.5 min-h-[44px] rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer transition-all text-center has-checked:border-[#8B0000] has-checked:bg-red-50/40 has-checked:shadow-2xs">
+                                                                <input type="radio" name="assignment" value="{{ $val }}" class="auto-submit-input sr-only" {{ request('assignment', 'All') == $val ? 'checked' : '' }}>
+                                                                <span class="text-xs font-bold text-slate-700 group-has-checked:text-[#8B0000] truncate">{{ $lbl }}</span>
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
                                             </div> <!-- End Drawer Filters List -->
+
+                                            <!-- Sticky Bottom Actions (Thumb-friendly 44px) -->
+                                            <div class="p-4 sm:p-5 border-t border-slate-200/80 bg-slate-50/80 flex items-center gap-2.5 flex-none mt-auto sticky bottom-0 z-10">
+                                                <button type="button" 
+                                                        id="reset_protocols_filters_btn"
+                                                        class="flex-1 h-11 min-h-[44px] px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider bg-white hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]">
+                                                    <i class="fas fa-undo-alt text-xs text-slate-400"></i>
+                                                    <span>Reset All</span>
+                                                </button>
+                                                <button type="button" 
+                                                        @click="expanded = false"
+                                                        class="flex-1 h-11 min-h-[44px] px-3 rounded-xl bg-[#8B0000] hover:bg-[#6d0000] text-xs font-bold text-white uppercase tracking-wider transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+                                                    <i class="fas fa-check text-xs"></i>
+                                                    <span>Done</span>
+                                                </button>
+                                            </div>
                                         </div> <!-- End pointer-events-auto bg-white shadow-2xl -->
                                     </div> <!-- End pointer-events-none flex -->
                                 </div> <!-- End absolute inset-0 -->
@@ -1367,6 +1421,24 @@
                 e.preventDefault();
                 triggerFetch();
             });
+
+            // Reset button handler
+            const resetBtn = document.getElementById('reset_protocols_filters_btn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    const dateRadio = form.querySelector('input[name="sort_by"][value="created_at"]');
+                    if (dateRadio) dateRadio.checked = true;
+
+                    const allRadio = form.querySelector('input[name="assignment"][value="All"]');
+                    if (allRadio) allRadio.checked = true;
+
+                    form.querySelectorAll('input[name="review_types[]"], input[name="doc_statuses[]"], input[name="rev_statuses[]"]').forEach(cb => {
+                        cb.checked = false;
+                    });
+
+                    triggerFetch();
+                });
+            }
 
             // Pagination delegation
             document.addEventListener('click', (e) => {

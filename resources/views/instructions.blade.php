@@ -1,5 +1,5 @@
 <x-user_layout>
-    <div class="max-w-5xl mx-auto pt-2 pb-28 sm:py-12 px-4 sm:px-6 animate-[fadeInUp_0.5s_ease-out] relative">
+    <div class="max-w-5xl mx-auto pt-2 pb-28 sm:py-12 px-4 sm:px-6 relative">
 
         <!-- Subtle Atmospheric Maroon Glow -->
         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-72 bg-gradient-to-b from-red-100/40 via-red-50/20 to-transparent pointer-events-none -z-10 rounded-full blur-3xl" aria-hidden="true"></div>
@@ -313,6 +313,41 @@
                 </article>
             </div>
         </div>
+
+        <!-- SOP Review Turnaround & Service Commitment Benchmarks -->
+        <section class="mt-10 sm:mt-12 bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-red-50 text-brand-primary flex items-center justify-center font-bold shrink-0">
+                    <i class="fas fa-clock-rotate-left text-lg" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <h2 class="font-heading font-extrabold text-base sm:text-lg text-slate-900 leading-tight">
+                        Review Turnaround Timelines & Service Commitment
+                    </h2>
+                    <p class="text-xs text-slate-500">Standard Operating Procedures (WMSU REOC • PHREB Level III)</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <div class="text-[11px] font-bold uppercase text-slate-500 tracking-wider mb-1">Stage 1: Intake Screening</div>
+                    <div class="text-lg font-black text-slate-900 tracking-tight">3 – 5 Working Days</div>
+                    <p class="text-xs text-slate-600 mt-1">Completeness check and appointment notice for hardcopy verification.</p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <div class="text-[11px] font-bold uppercase text-slate-500 tracking-wider mb-1">Stage 2: Expedited Review</div>
+                    <div class="text-lg font-black text-slate-900 tracking-tight">7 – 14 Working Days</div>
+                    <p class="text-xs text-slate-600 mt-1">Minimal risk protocols evaluated by assigned primary and secondary reviewers.</p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <div class="text-[11px] font-bold uppercase text-slate-500 tracking-wider mb-1">Stage 3: Full Board Deliberation</div>
+                    <div class="text-lg font-black text-slate-900 tracking-tight">Monthly Session</div>
+                    <p class="text-xs text-slate-600 mt-1">Protocols requiring committee deliberation scheduled on the monthly docket.</p>
+                </div>
+            </div>
+        </section>
 
     </div>
 </x-user_layout>

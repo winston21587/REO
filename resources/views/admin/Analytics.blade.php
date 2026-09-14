@@ -375,25 +375,25 @@
 
 
         <!-- Key Metrics Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             <!-- Metric Card 1 -->
             <div role="button" tabindex="0"
                  aria-label="View Total Submissions details"
                  onclick="openDetailsModal('submissions', 'Total Submissions')"
                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('submissions', 'Total Submissions');}"
-                 class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200">
-                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
-                    <i class="fas fa-file-alt text-6xl text-[#8B0000]"></i>
+                 class="bg-white p-3.5 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl shadow-xs border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200 min-w-0">
+                <div class="absolute right-0 top-0 p-2 sm:p-3 lg:p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
+                    <i class="fas fa-file-alt text-3xl sm:text-5xl lg:text-6xl text-[#8B0000]"></i>
                 </div>
-                <p class="text-xs font-bold text-slate-600 uppercase tracking-wider">Total Submissions</p>
-                <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($totalSubmissions) }}</h3>
+                <p class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate" title="Total Submissions">Total Submissions</p>
+                <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 mt-1.5 sm:mt-2 min-w-0">
+                    <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($totalSubmissions) }}</h3>
                     @if($submissionsGrowthRate > 0)
-                        <span class="text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mb-1 tabular-nums" title="Increase compared to previous period"><i class="fas fa-arrow-up" aria-hidden="true"></i> {{ $submissionsGrowthRate }}% vs prev</span>
+                        <span class="text-[10px] sm:text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded self-start sm:self-auto tabular-nums truncate max-w-full" title="Increase compared to previous period"><i class="fas fa-arrow-up text-[9px]" aria-hidden="true"></i> {{ $submissionsGrowthRate }}% vs prev</span>
                     @elseif($submissionsGrowthRate < 0)
-                        <span class="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded mb-1 tabular-nums" title="Decrease compared to previous period"><i class="fas fa-arrow-down" aria-hidden="true"></i> {{ abs($submissionsGrowthRate) }}% vs prev</span>
+                        <span class="text-[10px] sm:text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded self-start sm:self-auto tabular-nums truncate max-w-full" title="Decrease compared to previous period"><i class="fas fa-arrow-down text-[9px]" aria-hidden="true"></i> {{ abs($submissionsGrowthRate) }}% vs prev</span>
                     @else
-                        <span class="text-xs font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded mb-1 tabular-nums" title="No change compared to previous period"><i class="fas fa-minus" aria-hidden="true"></i> 0% vs prev</span>
+                        <span class="text-[10px] sm:text-xs font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded self-start sm:self-auto tabular-nums truncate max-w-full" title="No change compared to previous period"><i class="fas fa-minus text-[9px]" aria-hidden="true"></i> 0% vs prev</span>
                     @endif
                 </div>
             </div>
@@ -403,14 +403,14 @@
                  aria-label="View Approved Protocols details"
                  onclick="openDetailsModal('approved', 'Approved Protocols')"
                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('approved', 'Approved Protocols');}"
-                 class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200">
-                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
-                    <i class="fas fa-check-circle text-6xl text-green-600"></i>
+                 class="bg-white p-3.5 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl shadow-xs border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200 min-w-0">
+                <div class="absolute right-0 top-0 p-2 sm:p-3 lg:p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
+                    <i class="fas fa-check-circle text-3xl sm:text-5xl lg:text-6xl text-green-600"></i>
                 </div>
-                <p class="text-xs font-bold text-slate-600 uppercase tracking-wider">Approved Protocols</p>
-                <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($approvedCount) }}</h3>
-                    <span class="text-xs font-bold text-slate-500 mb-1 tabular-nums">{{ $approvalRate }}% Approval Rate</span>
+                <p class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate" title="Approved Protocols">Approved Protocols</p>
+                <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 mt-1.5 sm:mt-2 min-w-0">
+                    <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($approvedCount) }}</h3>
+                    <span class="text-[10px] sm:text-xs font-semibold text-slate-500 self-start sm:self-auto tabular-nums truncate max-w-full" title="{{ $approvalRate }}% Approval Rate">{{ $approvalRate }}% Rate</span>
                 </div>
             </div>
 
@@ -419,14 +419,14 @@
                  aria-label="View Revisions Required details"
                  onclick="openDetailsModal('revisions', 'Revisions Required')"
                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('revisions', 'Revisions Required');}"
-                 class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200">
-                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
-                    <i class="fas fa-exclamation-triangle text-6xl text-orange-500"></i>
+                 class="bg-white p-3.5 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl shadow-xs border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200 min-w-0">
+                <div class="absolute right-0 top-0 p-2 sm:p-3 lg:p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
+                    <i class="fas fa-exclamation-triangle text-3xl sm:text-5xl lg:text-6xl text-orange-500"></i>
                 </div>
-                <p class="text-xs font-bold text-slate-600 uppercase tracking-wider">Revisions Required</p>
-                <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($revisionsCount) }}</h3>
-                    <span class="text-xs font-bold text-slate-500 mb-1 tabular-nums">{{ $revisionsRate }}% Revision Rate</span>
+                <p class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate" title="Revisions Required">Revisions Required</p>
+                <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 mt-1.5 sm:mt-2 min-w-0">
+                    <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($revisionsCount) }}</h3>
+                    <span class="text-[10px] sm:text-xs font-semibold text-slate-500 self-start sm:self-auto tabular-nums truncate max-w-full" title="{{ $revisionsRate }}% Revision Rate">{{ $revisionsRate }}% Rate</span>
                 </div>
             </div>
 
@@ -435,36 +435,36 @@
                  aria-label="View Active Researchers details"
                  onclick="openDetailsModal('researchers', 'Active Researchers')"
                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDetailsModal('researchers', 'Active Researchers');}"
-                 class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200">
-                <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
-                    <i class="fas fa-users text-6xl text-blue-600"></i>
+                 class="bg-white p-3.5 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl shadow-xs border border-slate-100 relative overflow-hidden group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] transition-all duration-200 min-w-0">
+                <div class="absolute right-0 top-0 p-2 sm:p-3 lg:p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
+                    <i class="fas fa-users text-3xl sm:text-5xl lg:text-6xl text-blue-600"></i>
                 </div>
-                <p class="text-xs font-bold text-slate-600 uppercase tracking-wider">Active Researchers</p>
-                <div class="flex items-end gap-2 mt-2">
-                    <h3 class="text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($activeResearchers) }}</h3>
-                    <span class="text-xs font-bold text-slate-500 mb-1">Registered Researchers</span>
+                <p class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate" title="Active Researchers">Active Researchers</p>
+                <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 mt-1.5 sm:mt-2 min-w-0">
+                    <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tabular-nums tracking-tight">{{ number_format($activeResearchers) }}</h3>
+                    <span class="text-[10px] sm:text-xs font-semibold text-slate-500 self-start sm:self-auto truncate max-w-full" title="Registered Researchers"><span class="hidden xs:inline">Registered </span>Researchers</span>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
             <!-- Left Column: Daily Trend (Takes up 2/3) -->
-            <section class="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-8 relative overflow-hidden flex flex-col">
-                <div class="absolute top-0 right-0 p-8 opacity-10">
+            <section class="lg:col-span-2 bg-white rounded-2xl shadow-sm sm:shadow-xl border border-slate-200/80 sm:border-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden flex flex-col">
+                <div class="hidden sm:block absolute top-0 right-0 p-8 opacity-10 pointer-events-none" aria-hidden="true">
                     <i class="fas fa-chart-line text-9xl text-[#8B0000]"></i>
                 </div>
                 
                 <div class="relative z-10 flex flex-col flex-1 w-full h-full" x-data="{ viewMode: 'timeline' }">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
-                        <div>
-                            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" x-text="viewMode === 'timeline' ? '{{ addslashes($overviewTitle) }}' : 'Approval Status Distribution'">{{ $overviewTitle }}</h2>
-                            <p class="text-xs text-slate-500 font-medium mt-1" x-text="viewMode === 'timeline' ? '{{ addslashes($dateRangeSubtitle ?? 'All Recorded Submissions') }}' : 'Visual breakdown across review statuses'">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-lg sm:text-xl lg:text-2xl font-extrabold text-slate-900 tracking-tight whitespace-normal" x-text="viewMode === 'timeline' ? '{{ addslashes($overviewTitle) }}' : 'Approval Status Distribution'">{{ $overviewTitle }}</h2>
+                            <p class="text-xs text-slate-500 font-medium mt-0.5 whitespace-normal" x-text="viewMode === 'timeline' ? '{{ addslashes($dateRangeSubtitle ?? 'All Recorded Submissions') }}' : 'Visual breakdown across review statuses'">
                                 {{ $dateRangeSubtitle ?? 'All Recorded Submissions' }}
                             </p>
                         </div>
                         
                         <!-- Accessible View Mode Tablist -->
-                        <div role="tablist" aria-label="Chart view mode" class="relative inline-flex items-center bg-slate-100 rounded-xl p-1 shrink-0 z-20 shadow-inner">
+                        <div role="tablist" aria-label="Chart view mode" class="w-full sm:w-auto grid grid-cols-2 sm:flex items-center bg-slate-100/90 rounded-xl p-1 shrink-0 z-20 shadow-inner">
                             <button type="button"
                                     role="tab"
                                     id="chart-tab-timeline"
@@ -474,9 +474,9 @@
                                     @click="viewMode = 'timeline'"
                                     @keydown.arrow-right.prevent="viewMode = 'pie'; $nextTick(() => document.getElementById('chart-tab-pie')?.focus())"
                                     @keydown.arrow-left.prevent="viewMode = 'pie'; $nextTick(() => document.getElementById('chart-tab-pie')?.focus())"
-                                    class="relative z-10 flex items-center justify-center px-3 h-8 rounded-lg text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]"
+                                    class="min-h-[40px] sm:min-h-[34px] px-3.5 rounded-lg text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] flex items-center justify-center gap-1.5"
                                     :class="viewMode === 'timeline' ? 'bg-white text-[#8B0000] shadow-sm' : 'text-slate-600 hover:text-slate-900'">
-                                <i class="fas fa-chart-line mr-1.5" aria-hidden="true"></i> Timeline
+                                <i class="fas fa-chart-line text-xs" aria-hidden="true"></i> Timeline
                             </button>
                             <button type="button"
                                     role="tab"
@@ -487,14 +487,14 @@
                                     @click="viewMode = 'pie'"
                                     @keydown.arrow-right.prevent="viewMode = 'timeline'; $nextTick(() => document.getElementById('chart-tab-timeline')?.focus())"
                                     @keydown.arrow-left.prevent="viewMode = 'timeline'; $nextTick(() => document.getElementById('chart-tab-timeline')?.focus())"
-                                    class="relative z-10 flex items-center justify-center px-3 h-8 rounded-lg text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000]"
+                                    class="min-h-[40px] sm:min-h-[34px] px-3.5 rounded-lg text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B0000] flex items-center justify-center gap-1.5"
                                     :class="viewMode === 'pie' ? 'bg-white text-[#8B0000] shadow-sm' : 'text-slate-600 hover:text-slate-900'">
-                                <i class="fas fa-chart-pie mr-1.5" aria-hidden="true"></i> Distribution
+                                <i class="fas fa-chart-pie text-xs" aria-hidden="true"></i> Distribution
                             </button>
                         </div>
                     </div>
 
-                    <div class="flex-1 w-full relative min-h-[320px]">
+                    <div class="flex-1 w-full relative min-h-[260px] sm:min-h-[300px] lg:min-h-[340px]">
                         <div id="chart-panel-timeline" role="tabpanel" aria-labelledby="chart-tab-timeline" x-show="viewMode === 'timeline'" x-transition:enter="transition-opacity duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 w-full h-full">
                             <canvas id="dailyTrendChart" role="img" aria-label="Submission Trend Chart over time" class="w-full h-full">
                                 <p class="sr-only">Submission trend timeline displaying research protocol volume across the selected timeframe.</p>
@@ -523,6 +523,12 @@
                             </canvas>
                         </div>
                     </div>
+
+                    <!-- Mobile Touch Interaction Hint -->
+                    <p class="text-[11px] text-slate-400 text-center mt-3 flex items-center justify-center gap-1.5 sm:hidden font-medium">
+                        <i class="fas fa-hand-pointer text-[10px] text-slate-400" aria-hidden="true"></i>
+                        <span x-text="viewMode === 'timeline' ? 'Tap any point along the curve to inspect submissions' : 'Tap any segment to inspect protocols by status'">Tap any point along the curve to inspect submissions</span>
+                    </p>
                 </div>
             </section>
 
@@ -598,19 +604,19 @@
         </div>
 
         <!-- Pending / Ongoing Proposals Table -->
-        <section id="pipeline-proposals-section" class="bg-white rounded-2xl shadow-lg border border-slate-100 mt-8 overflow-hidden" style="content-visibility: auto; contain-intrinsic-size: 1px 400px;">
-            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 relative overflow-hidden">
-                <div class="absolute right-0 top-0 opacity-5 p-4 transform translate-x-4 -translate-y-4">
+        <section id="pipeline-proposals-section" aria-live="polite" aria-busy="false" class="bg-white rounded-2xl shadow-lg border border-slate-100 mt-8 overflow-hidden" style="content-visibility: auto; contain-intrinsic-size: 1px 400px;">
+            <div class="p-4 sm:px-6 sm:py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 relative overflow-hidden">
+                <div class="hidden sm:block absolute right-0 top-0 opacity-5 p-4 transform translate-x-4 -translate-y-4 pointer-events-none" aria-hidden="true">
                     <i class="fas fa-tasks text-6xl text-[#8b0000]"></i>
                 </div>
-                <div class="relative z-10">
-                    <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Submissions In Progress</h2>
+                <div class="relative z-10 min-w-0">
+                    <h2 class="text-base sm:text-lg font-extrabold text-slate-800 tracking-tight">Submissions In Progress</h2>
                     <p class="text-xs text-slate-500 font-medium mt-0.5">List of submissions currently being reviewed or awaiting action.</p>
                 </div>
-                <div class="flex items-center gap-2 relative z-10">
+                <div class="flex items-center gap-2 relative z-10 shrink-0">
                     <button type="button" 
                             onclick="openDetailsModal('in_progress', 'Submissions In Progress')" 
-                            class="px-3 py-1 bg-[#8B0000] hover:bg-[#6e0000] text-white text-xs font-bold rounded-lg shadow-sm tabular-nums cursor-pointer transition-all hover:shadow-md flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
+                            class="w-full sm:w-auto min-h-[38px] sm:min-h-[34px] px-3.5 py-1.5 bg-[#8B0000] hover:bg-[#6e0000] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs tabular-nums cursor-pointer transition-all hover:shadow-md flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#8B0000]"
                             title="View All Submissions In Progress">
                         <i class="fas fa-list-ul text-[10px]" aria-hidden="true"></i>
                         <span>{{ $stuckProposals->total() }} In Progress (View All)</span>
@@ -619,47 +625,50 @@
             </div>
             
             <!-- Mobile Card Layout (md:hidden) -->
-            <div class="md:hidden divide-y divide-slate-100">
+            <div class="md:hidden p-3.5 space-y-3 bg-slate-50/60">
                 @forelse($stuckProposals as $proposal)
-                    <div onclick="window.location.href='{{ route('admin.view_files', $proposal->id) }}'" class="p-4 space-y-3 hover:bg-slate-50 cursor-pointer transition-colors">
-                        <div class="flex items-start justify-between gap-3">
-                            <a href="{{ route('admin.view_files', $proposal->id) }}" class="font-bold text-slate-800 text-sm line-clamp-2 hover:text-[#8B0000] transition-colors" title="{{ $proposal->Study_Protocol_title }}">
+                    @php
+                        $statusTextColor = match($proposal->Status) {
+                            'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'text-slate-600',
+                            'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review', 'Reviewer Assigned', 'Hardcopy Received' => 'text-blue-700',
+                            'Waiting for Revision' => 'text-amber-800',
+                            'Revision Submitted', 'Reviewing Revisions' => 'text-purple-700',
+                            'Complete - Awaiting Hardcopy', 'Reviewed', 'Approved' => 'text-emerald-700',
+                            default => 'text-slate-600'
+                        };
+                        $cleanStatus = str_replace(' - ', ': ', $proposal->Status);
+                    @endphp
+                    <div onclick="window.location.href='{{ route('admin.view_files', $proposal->id) }}'" class="bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-2xs hover:shadow-sm hover:border-slate-300 transition-all cursor-pointer space-y-2.5 active:scale-[0.99]">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold truncate max-w-[220px] {{ $statusTextColor }}">
+                                {{ $cleanStatus }}
+                            </span>
+                            <span class="text-[11px] text-slate-400 tabular-nums font-medium shrink-0 flex items-center gap-1">
+                                <i class="far fa-clock text-[10px]" aria-hidden="true"></i>{{ $proposal->updated_at->diffForHumans() }}
+                            </span>
+                        </div>
+                        <div>
+                            <a href="{{ route('admin.view_files', $proposal->id) }}" class="font-bold text-slate-900 text-sm leading-snug line-clamp-2 hover:text-[#8B0000] transition-colors block" title="{{ $proposal->Study_Protocol_title }}">
                                 {{ $proposal->Study_Protocol_title }}
                             </a>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                            <div class="flex items-center gap-2 min-w-0 pr-2 font-semibold text-slate-700">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 ring-1 ring-slate-200/70 flex items-center justify-center text-[11px] font-bold shrink-0">
+                                    {{ substr($proposal->researcher->user->first_name ?? 'U', 0, 1) }}
+                                </div>
+                                <span class="text-xs truncate max-w-[150px]">{{ $proposal->researcher->user->first_name ?? '' }} {{ $proposal->researcher->user->last_name ?? 'Unknown' }}</span>
+                            </div>
                             @if(Auth::user()->role === 'super_admin' || Auth::user()->role === 'admin')
-                            <a href="{{ route('admin.view_files', $proposal->id) }}" onclick="event.stopPropagation()" class="shrink-0 inline-flex items-center justify-center w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#8B0000] hover:border-[#8B0000] hover:shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:ring-offset-1" aria-label="View submission {{ $proposal->Study_Protocol_title }}">
-                                <i class="fas fa-external-link-alt text-xs" aria-hidden="true"></i>
+                            <a href="{{ route('admin.view_files', $proposal->id) }}" onclick="event.stopPropagation()" class="shrink-0 inline-flex items-center justify-center gap-1 px-2.5 py-1 min-h-[36px] rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 hover:text-[#8B0000] hover:border-[#8B0000] hover:bg-red-50/40 transition-all focus:outline-none focus:ring-2 focus:ring-[#8B0000]" aria-label="View files for {{ $proposal->Study_Protocol_title }}">
+                                <span>View Files</span>
+                                <i class="fas fa-arrow-right text-[10px]" aria-hidden="true"></i>
                             </a>
                             @endif
                         </div>
-                        <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
-                            <div class="flex items-center gap-2 font-semibold text-slate-700">
-                                <div class="w-6 h-6 rounded-full bg-slate-200/80 flex items-center justify-center text-[11px] font-bold text-slate-600 shrink-0">
-                                    {{ substr($proposal->researcher->user->first_name ?? 'U', 0, 1) }}
-                                </div>
-                                <span class="truncate max-w-[140px]">{{ $proposal->researcher->user->first_name ?? '' }} {{ $proposal->researcher->user->last_name ?? 'Unknown' }}</span>
-                            </div>
-                            <span class="tabular-nums">{{ $proposal->updated_at->diffForHumans() }}</span>
-                        </div>
-                        <div>
-                            @php
-                                $statusTextColor = match($proposal->Status) {
-                                    'Pending', 'Incomplete', 'Incomplete - Awaiting Hardcopy' => 'text-slate-600',
-                                    'For Initial Review', 'Hardcopy Received - For Initial Review', 'Under Review', 'Reviewer Assigned', 'Hardcopy Received' => 'text-blue-700',
-                                    'Waiting for Revision' => 'text-amber-800',
-                                    'Revision Submitted', 'Reviewing Revisions' => 'text-purple-700',
-                                    'Complete - Awaiting Hardcopy', 'Reviewed', 'Approved' => 'text-emerald-700',
-                                    default => 'text-slate-600'
-                                };
-                                $cleanStatus = str_replace(' - ', ': ', $proposal->Status);
-                            @endphp
-                            <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap {{ $statusTextColor }}">
-                                {{ $cleanStatus }}
-                            </span>
-                        </div>
                     </div>
                 @empty
-                    <div class="p-8 text-center">
+                    <div class="p-8 text-center bg-white rounded-xl border border-slate-100">
                         <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 mb-3 shadow-xs">
                             <i class="fas fa-check-circle text-2xl" aria-hidden="true"></i>
                         </div>
@@ -744,17 +753,17 @@
                     <div>
                         Showing <span class="font-bold text-slate-700">{{ $stuckProposals->firstItem() ?? 0 }}</span> - <span class="font-bold text-slate-700">{{ $stuckProposals->lastItem() ?? 0 }}</span> of <span class="font-bold text-slate-700">{{ $stuckProposals->total() }}</span>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex items-center gap-1.5">
                         @if ($stuckProposals->onFirstPage())
-                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-left" aria-hidden="true"></i></span>
+                            <span class="inline-flex items-center justify-center min-w-[38px] min-h-[38px] opacity-40 cursor-not-allowed text-slate-400 rounded-xl" aria-hidden="true"><i class="fas fa-chevron-left text-xs"></i></span>
                         @else
-                            <a href="{{ $stuckProposals->previousPageUrl() }}" aria-label="Previous proposals page" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
+                            <a href="{{ $stuckProposals->previousPageUrl() }}" data-pipeline-link="true" aria-label="Previous proposals page" class="inline-flex items-center justify-center min-w-[38px] min-h-[38px] text-slate-600 hover:text-[#8B0000] hover:bg-white rounded-xl border border-transparent hover:border-slate-200 transition-all shadow-2xs hover:shadow-sm active:scale-95 cursor-pointer"><i class="fas fa-chevron-left text-xs" aria-hidden="true"></i></a>
                         @endif
 
                         @if ($stuckProposals->hasMorePages())
-                            <a href="{{ $stuckProposals->nextPageUrl() }}" aria-label="Next proposals page" class="text-slate-600 hover:text-[#8B0000] hover:bg-white px-2.5 py-1.5 rounded border border-transparent hover:border-slate-200 transition-colors shadow-sm"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+                            <a href="{{ $stuckProposals->nextPageUrl() }}" data-pipeline-link="true" aria-label="Next proposals page" class="inline-flex items-center justify-center min-w-[38px] min-h-[38px] text-slate-600 hover:text-[#8B0000] hover:bg-white rounded-xl border border-transparent hover:border-slate-200 transition-all shadow-2xs hover:shadow-sm active:scale-95 cursor-pointer"><i class="fas fa-chevron-right text-xs" aria-hidden="true"></i></a>
                         @else
-                            <span class="opacity-50 cursor-not-allowed text-slate-400 px-2.5 py-1.5"><i class="fas fa-chevron-right" aria-hidden="true"></i></span>
+                            <span class="inline-flex items-center justify-center min-w-[38px] min-h-[38px] opacity-40 cursor-not-allowed text-slate-400 rounded-xl" aria-hidden="true"><i class="fas fa-chevron-right text-xs"></i></span>
                         @endif
                     </div>
                 </div>
@@ -1006,18 +1015,27 @@
                             data: dailyData,
                             borderColor: '#8B0000',
                             backgroundColor: gradient,
-                            borderWidth: 3,
+                            borderWidth: 2.5,
                             pointBackgroundColor: '#fff',
                             pointBorderColor: '#8B0000',
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
+                            pointBorderWidth: 2,
+                            pointRadius: (ctx) => {
+                                const val = ctx.raw || 0;
+                                return val > 0 ? 5 : 3;
+                            },
+                            pointHoverRadius: 7,
+                            pointHitRadius: 25,
                             fill: true,
-                            tension: 0.4
+                            tension: 0.35
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
                         onHover: (event, chartElement) => {
                             event.native.target.style.cursor = chartElement.length > 0 ? 'pointer' : 'default';
                         },
@@ -1080,9 +1098,51 @@
                                 }
                             }
                         },
-                        plugins: { legend: { display: false } },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                titleFont: { family: 'Inter', size: 12, weight: '700' },
+                                bodyFont: { family: 'Inter', size: 12, weight: '500' },
+                                padding: { top: 8, bottom: 8, left: 12, right: 12 },
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    title: function(items) {
+                                        return items[0].label;
+                                    },
+                                    label: function(item) {
+                                        const val = item.raw || 0;
+                                        return val === 1 ? '1 Submission • Tap to view' : `${val} Submissions • Tap to view`;
+                                    }
+                                }
+                            }
+                        },
                         scales: {
-                            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0 } },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#f1f5f9' },
+                                ticks: {
+                                    precision: 0,
+                                    font: { family: 'Inter', size: window.innerWidth < 640 ? 10 : 11 },
+                                    color: '#94a3b8'
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    autoSkip: true,
+                                    autoSkipPadding: 4,
+                                    maxRotation: 0,
+                                    minRotation: 0,
+                                    font: {
+                                        family: 'Inter',
+                                        size: window.innerWidth < 640 ? 10 : 11,
+                                        weight: '600'
+                                    },
+                                    color: '#64748b'
+                                }
+                            }
                         }
                     }
                 });
@@ -1152,13 +1212,13 @@
                                 position: window.innerWidth < 768 ? 'bottom' : 'right',
                                 labels: {
                                     usePointStyle: true,
-                                    padding: window.innerWidth < 768 ? 12 : 25,
-                                    font: { family: 'Inter', size: window.innerWidth < 768 ? 12 : 14, weight: '600' },
+                                    padding: window.innerWidth < 768 ? 10 : 22,
+                                    font: { family: 'Inter', size: window.innerWidth < 768 ? 11 : 13, weight: '600' },
                                     color: '#1a0505'
                                 }
                             },
                         },
-                        cutout: '70%',
+                        cutout: window.innerWidth < 640 ? '60%' : '70%',
                         animation: {
                             animateScale: true,
                             animateRotate: true
@@ -1167,16 +1227,25 @@
                 });
                 window.pieChartInstance = pieChartInstance;
 
-                let doughnutResizeTimer;
+                let chartResizeTimer;
                 window.addEventListener('resize', () => {
-                    clearTimeout(doughnutResizeTimer);
-                    doughnutResizeTimer = setTimeout(() => {
-                        const newPos = window.innerWidth < 768 ? 'bottom' : 'right';
-                        if (pieChartInstance && pieChartInstance.options.plugins.legend.position !== newPos) {
-                            pieChartInstance.options.plugins.legend.position = newPos;
-                            pieChartInstance.options.plugins.legend.labels.padding = window.innerWidth < 768 ? 12 : 25;
-                            pieChartInstance.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 12 : 14;
-                            pieChartInstance.update();
+                    clearTimeout(chartResizeTimer);
+                    chartResizeTimer = setTimeout(() => {
+                        const isMobile = window.innerWidth < 768;
+                        if (window.trendChartInstance) {
+                            window.trendChartInstance.options.scales.x.ticks.font.size = isMobile ? 10 : 11;
+                            window.trendChartInstance.options.scales.y.ticks.font.size = isMobile ? 10 : 11;
+                            window.trendChartInstance.update();
+                        }
+                        if (window.pieChartInstance) {
+                            const newPos = isMobile ? 'bottom' : 'right';
+                            if (window.pieChartInstance.options.plugins.legend.position !== newPos) {
+                                window.pieChartInstance.options.plugins.legend.position = newPos;
+                            }
+                            window.pieChartInstance.options.cutout = isMobile ? '60%' : '70%';
+                            window.pieChartInstance.options.plugins.legend.labels.padding = isMobile ? 10 : 22;
+                            window.pieChartInstance.options.plugins.legend.labels.font.size = isMobile ? 11 : 13;
+                            window.pieChartInstance.update();
                         }
                     }, 150);
                 });
@@ -1538,18 +1607,18 @@
     </div>
 
     <!-- Details Modal -->
-    <div id="detailsModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="detailsModalTitle" role="dialog" aria-modal="true" onclick="if(event.target===this) closeDetailsModal()">
-        <div class="bg-white shadow-2xl rounded-2xl w-full max-w-6xl 2xl:max-w-7xl max-h-[90vh] overflow-hidden transform transition-transform scale-95 duration-300 flex flex-col" id="detailsModalPanel">
-            <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
-                <div class="flex items-center gap-2.5 min-w-0">
-                    <h3 id="detailsModalTitle" class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2 truncate"></h3>
-                    <span id="detailsModalBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 shrink-0"></span>
+    <div id="detailsModal" class="fixed inset-0 bg-slate-900/50 hidden z-50 flex items-center justify-center p-2.5 sm:p-4 backdrop-blur-sm transition-opacity opacity-0 duration-300" aria-labelledby="detailsModalTitle" role="dialog" aria-modal="true" onclick="if(event.target===this) closeDetailsModal()">
+        <div class="bg-white shadow-2xl rounded-2xl w-full max-w-6xl 2xl:max-w-7xl max-h-[92vh] sm:max-h-[90vh] overflow-hidden transform transition-transform scale-95 duration-300 flex flex-col" id="detailsModalPanel">
+            <div class="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
+                <div class="flex items-center gap-2 min-w-0">
+                    <h3 id="detailsModalTitle" class="text-base sm:text-xl font-bold text-slate-800 flex items-center gap-2 truncate"></h3>
+                    <span id="detailsModalBadge" class="hidden px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-slate-100 text-slate-700 shrink-0"></span>
                 </div>
-                <button type="button" onclick="closeDetailsModal()" aria-label="Close details modal" class="w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl flex items-center justify-center text-slate-400 hover:text-[#8B0000] hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer transition-colors">
-                    <i class="fas fa-times text-lg" aria-hidden="true"></i>
+                <button type="button" onclick="closeDetailsModal()" aria-label="Close details modal" class="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl flex items-center justify-center text-slate-400 hover:text-[#8B0000] hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#8B0000] cursor-pointer transition-colors">
+                    <i class="fas fa-times text-base sm:text-lg" aria-hidden="true"></i>
                 </button>
             </div>
-            <div class="p-4 sm:p-6 overflow-y-auto flex-1 h-full min-h-[250px]" id="detailsModalContent">
+            <div class="p-3 sm:p-6 overflow-y-auto flex-1 h-full min-h-[250px]" id="detailsModalContent">
                 <div class="flex items-center justify-center py-20">
                     <i class="fas fa-spinner fa-spin text-4xl text-[#8B0000]" aria-hidden="true"></i>
                 </div>
@@ -1659,21 +1728,23 @@
         let currentModalTitle = '';
 
         window.toggleResearcherProtocols = function(idx) {
-            const drawer = document.getElementById('protocols-drawer-' + idx);
-            const chevron = document.getElementById('chevron-' + idx);
-            if (!drawer) return;
-            if (drawer.classList.contains('hidden')) {
-                drawer.classList.remove('hidden');
-                if (chevron) chevron.classList.add('rotate-180', 'text-[#8B0000]');
-            } else {
-                drawer.classList.add('hidden');
-                if (chevron) chevron.classList.remove('rotate-180', 'text-[#8B0000]');
-            }
+            ['', '-mob'].forEach(suffix => {
+                const drawer = document.getElementById('protocols-drawer' + suffix + '-' + idx);
+                const chevron = document.getElementById('chevron' + suffix + '-' + idx);
+                if (!drawer) return;
+                if (drawer.classList.contains('hidden')) {
+                    drawer.classList.remove('hidden');
+                    if (chevron) chevron.classList.add('rotate-180', 'text-[#8B0000]');
+                } else {
+                    drawer.classList.add('hidden');
+                    if (chevron) chevron.classList.remove('rotate-180', 'text-[#8B0000]');
+                }
+            });
         };
 
         window.toggleAllResearcherProtocols = function(expand) {
-            const drawers = document.querySelectorAll('[id^="protocols-drawer-"]');
-            const chevrons = document.querySelectorAll('[id^="chevron-"]');
+            const drawers = document.querySelectorAll('[id^="protocols-drawer"]');
+            const chevrons = document.querySelectorAll('[id^="chevron"]');
             drawers.forEach(d => {
                 if (expand) d.classList.remove('hidden');
                 else d.classList.add('hidden');
@@ -1737,11 +1808,14 @@
             if (s.includes('approved') || s.includes('complete') || s.includes('exempt')) {
                 return 'text-emerald-700';
             }
+            if (s.includes('reviewing revision') || s.includes('revision submitted')) {
+                return 'text-purple-700';
+            }
+            if (s.includes('waiting for revision') || s.includes('revis')) {
+                return 'text-amber-800';
+            }
             if (s.includes('review') || s.includes('received')) {
                 return 'text-blue-700';
-            }
-            if (s.includes('revis')) {
-                return 'text-amber-800';
             }
             return 'text-slate-600';
         }
@@ -1767,31 +1841,31 @@
                 const entityName = escapeHtml(data[0] ? (data[0].college || 'Entity Submissions') : 'Entity');
                 const entityCount = data.length;
                 html += `
-                    <div class="mb-4 p-3 sm:p-4 bg-gradient-to-r from-red-50/50 via-slate-50 to-white border border-red-100/70 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-2xs">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-10 h-10 rounded-xl bg-[#8B0000] text-white flex items-center justify-center shrink-0 shadow-sm">
-                                <i class="fas fa-university text-base" aria-hidden="true"></i>
+                    <div class="mb-3.5 p-3 sm:p-4 bg-gradient-to-r from-red-50/50 via-slate-50 to-white border border-red-100/70 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 shadow-2xs">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-9 h-9 rounded-xl bg-[#8B0000] text-white flex items-center justify-center shrink-0 shadow-sm">
+                                <i class="fas fa-university text-sm" aria-hidden="true"></i>
                             </div>
                             <div class="min-w-0">
-                                <div class="text-xs font-bold text-[#8B0000] uppercase tracking-wider">Submitting Entity</div>
-                                <h4 class="text-base font-extrabold text-slate-800 truncate" title="${entityName}">${entityName}</h4>
+                                <div class="text-[10px] sm:text-xs font-bold text-[#8B0000] uppercase tracking-wider">Submitting Entity</div>
+                                <h4 class="text-sm sm:text-base font-extrabold text-slate-800 truncate" title="${entityName}">${entityName}</h4>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-2xs">
-                                <i class="fas fa-layer-group text-[#8B0000]"></i>
-                                <span>${entityCount} Total Submissions</span>
-                            </span>
-                        </div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-2xs">
+                            <i class="fas fa-layer-group text-[#8B0000]" aria-hidden="true"></i>
+                            <span>${entityCount} Total Submissions</span>
+                        </span>
                     </div>
                 `;
             }
 
-            html += '<div class="overflow-x-auto w-full rounded-xl border border-slate-200/80 shadow-2xs bg-white"><table class="w-full text-left border-collapse">';
+            // --- 2. Desktop Table Markup (hidden on mobile, visible on md:) ---
+            let desktopTable = '<div class="hidden md:block overflow-x-auto w-full rounded-xl border border-slate-200/80 shadow-2xs bg-white"><table class="w-full text-left border-collapse min-w-[760px]">';
+            // --- 3. Mobile Card Markup (visible on mobile, hidden on md:) ---
+            let mobileCards = '<div class="block md:hidden space-y-3">';
 
-            // --- 2. Table Headers by Type ---
             if (type === 'researchers') {
-                html += `
+                desktopTable += `
                     <thead>
                         <tr class="text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/90">
                             <th scope="col" class="px-5 py-3.5">Researcher</th>
@@ -1801,6 +1875,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                 `;
+
                 data.forEach((item, idx) => {
                     const safeName = escapeHtml(item.name || 'Unspecified');
                     const safeEmail = escapeHtml(item.email || 'Not Provided');
@@ -1811,6 +1886,8 @@
                     const initial = escapeHtml(item.name ? item.name.charAt(0).toUpperCase() : 'U');
 
                     let drawerContent = '';
+                    let mobileProtocolsHtml = '';
+
                     if (hasProtocols) {
                         drawerContent = item.protocols.map(p => {
                             const pTitle = escapeHtml(p.title || 'Untitled Protocol');
@@ -1832,8 +1909,34 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                                        ${pStatus ? `<span class="text-xs font-semibold uppercase tracking-wider ${getStatusBadge(p.status)}">${pStatus}</span>` : ''}
+                                        ${pStatus ? `<span class="text-xs font-bold uppercase tracking-wider ${getStatusBadge(p.status)}">${pStatus}</span>` : ''}
                                         <a href="${pUrl}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B0000] hover:bg-[#6e0000] text-white rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                            <i class="fas fa-folder-open text-xs"></i> View Files
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+
+                        mobileProtocolsHtml = item.protocols.map(p => {
+                            const pTitle = escapeHtml(p.title || 'Untitled Protocol');
+                            const pUrl = escapeHtml(p.view_url || '#');
+                            const pStatus = escapeHtml(p.status || '');
+                            const pCat = escapeHtml(p.category || 'General');
+                            const pDate = escapeHtml(p.date || 'N/A');
+
+                            return `
+                                <div class="bg-slate-50/80 rounded-xl p-3 border border-slate-200/70 space-y-2">
+                                    <a href="${pUrl}" class="text-xs font-bold text-slate-800 hover:text-[#8B0000] transition-colors block line-clamp-2" title="${pTitle}">
+                                        <i class="fas fa-file-alt text-[#8B0000] mr-1 text-xs"></i>${pTitle}
+                                    </a>
+                                    <div class="flex flex-wrap items-center justify-between gap-1.5 text-[11px]">
+                                        <span class="text-slate-500 font-medium">Category: <strong class="text-slate-700">${pCat}</strong></span>
+                                        ${pStatus ? `<span class="text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(p.status)}">${pStatus}</span>` : ''}
+                                    </div>
+                                    <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-200/60">
+                                        <span class="text-[11px] text-slate-400 tabular-nums">${pDate}</span>
+                                        <a href="${pUrl}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B0000] hover:bg-[#6e0000] text-white rounded-lg text-xs font-bold transition-all shadow-2xs min-h-[36px] focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
                                             <i class="fas fa-folder-open text-xs"></i> View Files
                                         </a>
                                     </div>
@@ -1842,7 +1945,7 @@
                         }).join('');
                     }
 
-                    html += `
+                    desktopTable += `
                         <tr class="hover:bg-slate-50/50 transition-colors">
                             <td class="px-5 py-4 align-middle">
                                 <div class="flex items-center gap-3 min-w-0">
@@ -1891,9 +1994,46 @@
                             </tr>
                         ` : ''}
                     `;
+
+                    mobileCards += `
+                        <div class="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs space-y-2.5">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <div class="w-9 h-9 rounded-full bg-red-50 text-[#8B0000] border border-red-200/80 flex items-center justify-center text-xs font-extrabold shrink-0 shadow-2xs">
+                                        ${initial}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-bold text-slate-800 truncate" title="${safeName}">${safeName}</div>
+                                        <div class="text-xs text-slate-500 truncate" title="${safeEmail}">${safeEmail}</div>
+                                    </div>
+                                </div>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${item.affiliation === 'Internal' ? 'bg-blue-50 text-blue-700 border border-blue-200/80' : 'bg-indigo-50 text-indigo-700 border border-indigo-200/80'}">${safeAffil}</span>
+                            </div>
+                            <div class="text-xs text-slate-600 font-medium pl-0.5 truncate" title="${safeCollege}">
+                                <i class="fas fa-university text-slate-400 mr-1 text-[11px]" aria-hidden="true"></i>
+                                ${safeCollege} ${safeDept ? `• ${safeDept}` : ''}
+                            </div>
+                            ${hasProtocols ? `
+                                <button type="button" 
+                                        onclick="toggleResearcherProtocols(${idx})" 
+                                        class="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50/70 hover:border-red-300 text-xs font-bold text-slate-700 hover:text-[#8B0000] transition-all cursor-pointer min-h-[40px] focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                    <span class="flex items-center gap-1.5">
+                                        <i class="fas fa-folder text-[#8B0000] text-xs" aria-hidden="true"></i>
+                                        <span>${item.protocols.length} Submitted Protocol${item.protocols.length === 1 ? '' : 's'}</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="chevron-mob-${idx}"></i>
+                                </button>
+                                <div id="protocols-drawer-mob-${idx}" class="hidden space-y-2 pt-2 border-t border-slate-100">
+                                    ${mobileProtocolsHtml}
+                                </div>
+                            ` : `
+                                <div class="text-xs text-slate-400 italic px-2 py-1.5 bg-slate-50 rounded-xl text-center">0 submitted protocols</div>
+                            `}
+                        </div>
+                    `;
                 });
             } else if (type === 'revisions') {
-                html += `
+                desktopTable += `
                     <thead>
                         <tr class="text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/90">
                             <th scope="col" class="px-5 py-3.5">Protocol Details</th>
@@ -1906,6 +2046,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                 `;
+
                 data.forEach(item => {
                     const safeTitle = escapeHtml(item.title || 'Untitled');
                     const safeResearcher = escapeHtml(item.researcher || 'Unknown');
@@ -1917,14 +2058,14 @@
                     const feedbacksCount = item.feedbacks_count || 0;
                     const viewUrl = escapeHtml(item.view_url || '#');
 
-                    html += `
+                    desktopTable += `
                         <tr onclick="window.location.href='${viewUrl}'" class="hover:bg-amber-50/30 cursor-pointer transition-colors group">
                             <td class="px-5 py-3.5 max-w-xs">
                                 <a href="${viewUrl}" onclick="event.stopPropagation()" class="text-sm font-bold text-slate-800 group-hover:text-[#8B0000] transition-colors truncate block" title="${safeTitle}">
                                     ${safeTitle}
                                 </a>
                                 <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/80">${safeReview}</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">${safeReview}</span>
                                 </div>
                             </td>
                             <td class="px-5 py-3.5 max-w-[190px]">
@@ -1932,7 +2073,7 @@
                                 <div class="text-xs text-slate-500 truncate" title="${safeCollege}">${safeCollege}</div>
                             </td>
                             <td class="px-5 py-3.5 text-sm">
-                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap ${getStatusBadge(item.status)}">
+                                <span class="text-xs font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">
                                     ${safeStatus}
                                 </span>
                             </td>
@@ -1951,9 +2092,51 @@
                             </td>
                         </tr>
                     `;
+
+                    mobileCards += `
+                        <div class="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs hover:border-[#8B0000]/40 transition-colors space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                    ${safeReview}
+                                </span>
+                                <span class="text-xs font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">
+                                    ${safeStatus}
+                                </span>
+                            </div>
+                            <a href="${viewUrl}" class="text-sm font-bold text-slate-800 hover:text-[#8B0000] transition-colors block line-clamp-2 leading-snug" title="${safeTitle}">
+                                ${safeTitle}
+                            </a>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200/80">
+                                    <i class="fas fa-history text-[10px]" aria-hidden="true"></i>
+                                    <span>${safeRevisions} Revisions</span>
+                                </span>
+                                ${feedbacksCount > 0 ? `<span class="text-[11px] text-slate-500 font-medium">${feedbacksCount} feedback notes</span>` : ''}
+                            </div>
+                            <div class="bg-slate-50/80 rounded-lg p-2.5 border border-slate-100 space-y-1 text-xs">
+                                <div class="flex items-center gap-1.5 text-slate-700 font-semibold truncate">
+                                    <i class="fas fa-user-circle text-slate-400 text-xs shrink-0" aria-hidden="true"></i>
+                                    <span class="truncate" title="${safeResearcher}">${safeResearcher}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 text-slate-500 text-[11px] truncate">
+                                    <i class="fas fa-graduation-cap text-slate-400 text-[10px] shrink-0" aria-hidden="true"></i>
+                                    <span class="truncate" title="${safeCollege}">${safeCollege}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                                <div class="text-[11px] text-slate-500 font-medium tabular-nums flex items-center gap-1">
+                                    <i class="far fa-calendar-alt text-slate-400" aria-hidden="true"></i>
+                                    <span>${safeDate}</span>
+                                </div>
+                                <a href="${viewUrl}" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-[#8B0000] hover:bg-[#6e0000] text-white rounded-xl text-xs font-bold transition-all shadow-xs min-h-[38px] focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                    <i class="fas fa-folder-open text-xs"></i> View Files
+                                </a>
+                            </div>
+                        </div>
+                    `;
                 });
             } else if (type === 'college_specific') {
-                html += `
+                desktopTable += `
                     <thead>
                         <tr class="text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/90">
                             <th scope="col" class="px-5 py-3.5">Protocol Details</th>
@@ -1966,6 +2149,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                 `;
+
                 data.forEach(item => {
                     const safeTitle = escapeHtml(item.title || 'Untitled');
                     const safeCategory = escapeHtml(item.category || 'General');
@@ -1976,7 +2160,7 @@
                     const safeDate = escapeHtml(item.date || 'Not Provided');
                     const viewUrl = escapeHtml(item.view_url || '#');
 
-                    html += `
+                    desktopTable += `
                         <tr onclick="window.location.href='${viewUrl}'" class="hover:bg-red-50/40 cursor-pointer transition-colors group">
                             <td class="px-5 py-3.5 max-w-xs">
                                 <a href="${viewUrl}" onclick="event.stopPropagation()" class="text-sm font-bold text-slate-800 group-hover:text-[#8B0000] transition-colors truncate block" title="${safeTitle}">
@@ -1991,12 +2175,12 @@
                                 ${safeEmail ? `<div class="text-xs text-slate-500 truncate" title="${safeEmail}">${safeEmail}</div>` : ''}
                             </td>
                             <td class="px-5 py-3.5 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                     ${safeReview}
                                 </span>
                             </td>
                             <td class="px-5 py-3.5 whitespace-nowrap">
-                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap ${getStatusBadge(item.status)}">
+                                <span class="text-xs font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">
                                     ${safeStatus}
                                 </span>
                             </td>
@@ -2008,10 +2192,48 @@
                             </td>
                         </tr>
                     `;
+
+                    mobileCards += `
+                        <div class="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs hover:border-[#8B0000]/40 transition-colors space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                    ${safeReview}
+                                </span>
+                                <span class="text-xs font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">
+                                    ${safeStatus}
+                                </span>
+                            </div>
+                            <a href="${viewUrl}" class="text-sm font-bold text-slate-800 hover:text-[#8B0000] transition-colors block line-clamp-2 leading-snug" title="${safeTitle}">
+                                ${safeTitle}
+                            </a>
+                            <div class="bg-slate-50/80 rounded-lg p-2.5 border border-slate-100 space-y-1 text-xs">
+                                <div class="flex items-center gap-1.5 text-slate-700 font-semibold truncate">
+                                    <i class="fas fa-user-circle text-slate-400 text-xs shrink-0" aria-hidden="true"></i>
+                                    <span class="truncate" title="${safeResearcher}">${safeResearcher}</span>
+                                </div>
+                                ${safeEmail ? `
+                                <div class="flex items-center gap-1.5 text-slate-500 text-[11px] truncate">
+                                    <i class="fas fa-envelope text-slate-400 text-[10px] shrink-0" aria-hidden="true"></i>
+                                    <span class="truncate" title="${safeEmail}">${safeEmail}</span>
+                                </div>` : ''}
+                                <div class="text-[11px] text-slate-500 font-medium pt-0.5">
+                                    Category: <strong class="text-slate-700">${safeCategory}</strong>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                                <div class="text-[11px] text-slate-500 font-medium tabular-nums flex items-center gap-1">
+                                    <i class="far fa-calendar-alt text-slate-400" aria-hidden="true"></i>
+                                    <span>${safeDate}</span>
+                                </div>
+                                <a href="${viewUrl}" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-[#8B0000] hover:bg-[#6e0000] text-white rounded-xl text-xs font-bold transition-all shadow-xs min-h-[38px] focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                    <i class="fas fa-folder-open text-xs"></i> View Files
+                                </a>
+                            </div>
+                        </div>
+                    `;
                 });
             } else {
-                // --- 3. Default Submissions / Stages / Pipeline / Distribution Layout ---
-                html += `
+                desktopTable += `
                     <thead>
                         <tr class="text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200 bg-slate-50/90">
                             <th scope="col" class="px-5 py-3.5">Protocol Details</th>
@@ -2023,6 +2245,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                 `;
+
                 data.forEach(item => {
                     const safeTitle = escapeHtml(item.title || 'Untitled');
                     const safeResearcher = escapeHtml(item.researcher || 'Unknown');
@@ -2032,14 +2255,14 @@
                     const safeDate = escapeHtml(item.date || 'Not Provided');
                     const viewUrl = escapeHtml(item.view_url || '#');
 
-                    html += `
+                    desktopTable += `
                         <tr onclick="window.location.href='${viewUrl}'" class="hover:bg-red-50/40 cursor-pointer transition-colors group">
                             <td class="px-5 py-3.5 max-w-xs">
                                 <a href="${viewUrl}" onclick="event.stopPropagation()" class="text-sm font-bold text-slate-800 group-hover:text-[#8B0000] transition-colors truncate block" title="${safeTitle}">
                                     ${safeTitle}
                                 </a>
                                 <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/80">${safeReview}</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">${safeReview}</span>
                                 </div>
                             </td>
                             <td class="px-5 py-3.5 max-w-[190px]">
@@ -2047,7 +2270,7 @@
                                 <div class="text-xs text-slate-500 truncate" title="${safeCollege}">${safeCollege}</div>
                             </td>
                             <td class="px-5 py-3.5 text-sm">
-                                <span class="inline-flex items-center text-xs font-semibold whitespace-nowrap ${getStatusBadge(item.status)}">
+                                <span class="text-xs font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">
                                     ${safeStatus}
                                 </span>
                             </td>
@@ -2059,10 +2282,48 @@
                             </td>
                         </tr>
                     `;
+
+                    mobileCards += `
+                        <div class="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs hover:border-[#8B0000]/40 transition-colors space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                    ${safeReview}
+                                </span>
+                                <span class="text-xs font-bold uppercase tracking-wider ${getStatusBadge(item.status)}">
+                                    ${safeStatus}
+                                </span>
+                            </div>
+                            <a href="${viewUrl}" class="text-sm font-bold text-slate-800 hover:text-[#8B0000] transition-colors block line-clamp-2 leading-snug" title="${safeTitle}">
+                                ${safeTitle}
+                            </a>
+                            <div class="bg-slate-50/80 rounded-lg p-2.5 border border-slate-100 space-y-1 text-xs">
+                                <div class="flex items-center gap-1.5 text-slate-700 font-semibold truncate">
+                                    <i class="fas fa-user-circle text-slate-400 text-xs shrink-0" aria-hidden="true"></i>
+                                    <span class="truncate" title="${safeResearcher}">${safeResearcher}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 text-slate-500 text-[11px] truncate">
+                                    <i class="fas fa-graduation-cap text-slate-400 text-[10px] shrink-0" aria-hidden="true"></i>
+                                    <span class="truncate" title="${safeCollege}">${safeCollege}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                                <div class="text-[11px] text-slate-500 font-medium tabular-nums flex items-center gap-1">
+                                    <i class="far fa-calendar-alt text-slate-400" aria-hidden="true"></i>
+                                    <span>${safeDate}</span>
+                                </div>
+                                <a href="${viewUrl}" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-[#8B0000] hover:bg-[#6e0000] text-white rounded-xl text-xs font-bold transition-all shadow-xs min-h-[38px] focus:outline-none focus:ring-2 focus:ring-[#8B0000]">
+                                    <i class="fas fa-folder-open text-xs"></i> View Files
+                                </a>
+                            </div>
+                        </div>
+                    `;
                 });
             }
 
-            html += '</tbody></table></div>';
+            desktopTable += '</tbody></table></div>';
+            mobileCards += '</div>';
+
+            html += desktopTable + mobileCards;
             container.innerHTML = html;
         }
 
@@ -2090,31 +2351,31 @@
             }
 
             let toolbarHtml = `
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
-                    <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 shadow-2xs">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 mb-3.5 sm:mb-4 pb-3 border-b border-slate-100">
+                    <div class="flex items-center justify-between sm:justify-start gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 shadow-2xs">
                             <i class="fas fa-list-check text-slate-500"></i>
                             <span id="modalToolbarCount">${currentModalData.length} Total Record${currentModalData.length === 1 ? '' : 's'}</span>
                         </span>
                         ${type === 'researchers' ? `
                             <div class="flex items-center gap-1 ml-1">
-                                <button type="button" onclick="toggleAllResearcherProtocols(true)" class="px-2.5 py-1 text-xs font-bold text-slate-600 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-[#8B0000]">
+                                <button type="button" onclick="toggleAllResearcherProtocols(true)" class="px-2 py-1 text-xs font-bold text-slate-600 hover:text-[#8B0000] hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-[#8B0000]">
                                     <i class="fas fa-chevron-down text-[10px] mr-1"></i>Expand All
                                 </button>
                                 <span class="text-slate-300">|</span>
-                                <button type="button" onclick="toggleAllResearcherProtocols(false)" class="px-2.5 py-1 text-xs font-bold text-slate-600 hover:text-[#8B0000] hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-[#8B0000]">
+                                <button type="button" onclick="toggleAllResearcherProtocols(false)" class="px-2 py-1 text-xs font-bold text-slate-600 hover:text-[#8B0000] hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-[#8B0000]">
                                     <i class="fas fa-chevron-up text-[10px] mr-1"></i>Collapse All
                                 </button>
                             </div>
                         ` : ''}
                     </div>
                     <div class="relative w-full sm:w-72">
-                        <i class="fas fa-search absolute left-3 top-2.5 text-xs text-slate-400 pointer-events-none" aria-hidden="true"></i>
+                        <i class="fas fa-search absolute left-3 top-3 sm:top-2.5 text-xs text-slate-400 pointer-events-none" aria-hidden="true"></i>
                         <input type="text" 
                                id="modalSearchFilter" 
                                placeholder="Search in records..." 
                                oninput="filterModalContent(this.value)" 
-                               class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all text-slate-800 placeholder-slate-400">
+                               class="w-full pl-8 pr-3 py-2 sm:py-1.5 text-base sm:text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:bg-white transition-all text-slate-800 placeholder-slate-400 min-h-[44px] sm:min-h-0">
                     </div>
                 </div>
                 <div id="modalTableWrapper"></div>
@@ -2239,6 +2500,76 @@
                 if (activeModal === detailsModal) closeDetailsModal();
             } else if (e.key === 'Tab') {
                 trapFocusInModal(activeModal, e);
+            }
+        });
+
+        // --- Asynchronous Pipeline Proposals Pagination ---
+        let isPipelineFetching = false;
+
+        async function loadPipelinePage(url, pushState = true) {
+            const section = document.getElementById('pipeline-proposals-section');
+            if (!section || isPipelineFetching) return;
+
+            try {
+                isPipelineFetching = true;
+                section.setAttribute('aria-busy', 'true');
+                section.style.transition = 'opacity 0.2s ease';
+                section.style.opacity = '0.5';
+                section.style.pointerEvents = 'none';
+
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newSection = doc.getElementById('pipeline-proposals-section');
+
+                if (newSection) {
+                    section.innerHTML = newSection.innerHTML;
+                    if (pushState) {
+                        window.history.pushState({ isPipeline: true, url: url }, '', url);
+                    }
+                } else {
+                    window.location.href = url;
+                }
+            } catch (err) {
+                console.warn('Pipeline pagination AJAX failed, navigating normally:', err);
+                window.location.href = url;
+            } finally {
+                isPipelineFetching = false;
+                if (section) {
+                    section.style.opacity = '1';
+                    section.style.pointerEvents = '';
+                    section.setAttribute('aria-busy', 'false');
+                }
+            }
+        }
+
+        // Global event delegation for pipeline pagination clicks
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('#pipeline-proposals-section a[data-pipeline-link], #pipeline-proposals-section a[href*="pipeline_page"]');
+            if (!link) return;
+
+            const url = link.getAttribute('href');
+            if (!url || url === '#' || link.getAttribute('aria-disabled') === 'true') return;
+
+            e.preventDefault();
+            loadPipelinePage(url);
+        });
+
+        // Handle browser forward/back buttons for pipeline pages
+        window.addEventListener('popstate', function(e) {
+            if (window.location.href.includes('pipeline_page') || (e.state && e.state.isPipeline)) {
+                loadPipelinePage(window.location.href, false);
             }
         });
     </script>

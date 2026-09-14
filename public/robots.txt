@@ -1,2 +1,21 @@
 User-agent: *
-Disallow: /
+
+# Allow institutional landing and public transparency pages
+Allow: /$
+Allow: /resources
+Allow: /instructions
+Allow: /policy/privacy
+Allow: /policy/terms
+Allow: /policy/accessibility
+
+# Strictly disallow authenticated portals, administrative dockets, protocol records, and private storage
+Disallow: /home
+Disallow: /submit
+Disallow: /settings
+Disallow: /reviewer/
+Disallow: /admin/
+Disallow: /super-admin/
+Disallow: /submissions/
+Disallow: /storage/
+Disallow: /api/
+Disallow: /notifications

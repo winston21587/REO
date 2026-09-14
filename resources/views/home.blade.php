@@ -1,7 +1,5 @@
 <x-user_layout>
-    <x-boneyard-skeleton role="researcher" type="researcher" contentId="page-content" />
-    
-    <div id="page-content" class="max-w-5xl mx-auto pb-28 sm:pb-12 animate-[fadeInUp_0.5s_ease-out]">
+    <div id="page-content" class="max-w-5xl mx-auto pb-28 sm:pb-12">
 
         <!-- Welcome Section & Primary Action (Desktop/Tablet Only) -->
         <div class="flex items-center justify-between gap-4 mb-6 md:mb-8 pt-3 md:pt-5 border-b border-slate-200/80 pb-4 md:pb-6">
@@ -113,6 +111,10 @@
                             default => 'fa-clock',
                         };
                         $hasLetter = $title->files->where('filetype', 'Result of Review (Admin Generated)')->isNotEmpty();
+                        $scheduledAgenda = $title->agendaItems->first(function($ai) {
+                            return $ai->meeting && $ai->meeting->meeting_date >= now()->subDay();
+                        });
+                        $scheduledMeeting = $scheduledAgenda?->meeting;
                     @endphp
 
                     <!-- ========================================== -->
@@ -159,6 +161,18 @@
                                             <i class="fas fa-history text-slate-400 text-xs sm:text-sm" aria-hidden="true"></i>
                                             <span>Logs</span>
                                         </button>
+
+                                        @if($scheduledMeeting)
+                                            <button type="button" 
+                                                aria-haspopup="dialog" 
+                                                aria-expanded="false" 
+                                                onclick="document.getElementById('deliberation-modal-{{ $title->id }}').showModal()" 
+                                                title="Scheduled for Deliberation on {{ $scheduledMeeting->meeting_date->format('M d, Y') }}"
+                                                class="text-slate-600 hover:text-amber-700 bg-slate-100/80 hover:bg-slate-200/80 sm:bg-transparent sm:hover:bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors min-h-[32px] sm:min-h-[36px] focus-visible:ring-2 focus-visible:ring-brand-primary focus:outline-none cursor-pointer border border-slate-200/60 sm:border-transparent">
+                                                <i class="fas fa-calendar-check text-amber-500 text-xs sm:text-sm" aria-hidden="true"></i>
+                                                <span>Deliberation</span>
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -211,45 +225,7 @@
                                 </div>
                             </div>
 
-                            @php
-                                $scheduledAgenda = $title->agendaItems->first(function($ai) {
-                                    return $ai->meeting && $ai->meeting->meeting_date >= now()->subDay();
-                                });
-                                $scheduledMeeting = $scheduledAgenda?->meeting;
-                            @endphp
 
-                            @if($scheduledMeeting)
-                                <div class="w-full mt-3 p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-red-50/90 via-orange-50/70 to-slate-50 border border-red-200/80 text-slate-800 shadow-2xs">
-                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center shrink-0 shadow-2xs">
-                                                <i class="fas fa-calendar-check text-xs"></i>
-                                            </div>
-                                            <div>
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-[10px] font-bold uppercase tracking-wider bg-brand-primary/10 text-brand-primary px-2 py-0.5 rounded">
-                                                        Scheduled for Deliberation
-                                                    </span>
-                                                    <span class="text-[11px] font-semibold text-slate-500">SOP 19 Panel Deliberation</span>
-                                                </div>
-                                                <h4 class="text-xs sm:text-sm font-bold text-slate-900 mt-0.5">
-                                                    {{ $scheduledMeeting->title }}
-                                                </h4>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-3 text-xs text-slate-600 self-start sm:self-auto shrink-0">
-                                            <span class="font-medium text-slate-900">
-                                                <i class="fas fa-calendar-day text-brand-primary mr-1"></i>
-                                                {{ $scheduledMeeting->meeting_date->format('M d, Y \a\t h:i A') }}
-                                            </span>
-                                            <span class="text-slate-500">
-                                                <i class="fas fa-map-marker-alt text-slate-400 mr-1"></i>
-                                                {{ $scheduledMeeting->venue ?? 'REOC Hall' }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
 
                             <!-- Mobile Progress Stepper (Single Fluid Track) -->
                             <div class="md:hidden pt-4 pb-2 border-t border-slate-100/80 mt-3">
@@ -487,6 +463,34 @@
                                                 </div>
                                             @endif
                                         </div>
+
+                                        @if($scheduledMeeting)
+                                            <!-- Scheduled Deliberation Card in Protocol Details -->
+                                            <div class="p-4 bg-gradient-to-br from-amber-50/90 via-orange-50/50 to-white rounded-2xl border border-amber-200/80 shadow-xs">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <span class="text-[11px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                                                        <i class="fas fa-calendar-check text-amber-600" aria-hidden="true"></i>
+                                                        <span>Scheduled for Deliberation</span>
+                                                    </span>
+                                                    <span class="px-2 py-0.5 bg-amber-100 text-amber-800 font-bold text-[10px] uppercase rounded-full border border-amber-200">
+                                                        SOP 19 Full Board
+                                                    </span>
+                                                </div>
+                                                <p class="text-slate-900 font-bold text-sm leading-snug">
+                                                    {{ $scheduledMeeting->title }}
+                                                </p>
+                                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 text-xs text-slate-600">
+                                                    <span class="font-bold text-slate-900 flex items-center gap-1.5">
+                                                        <i class="far fa-calendar-alt text-amber-600"></i>
+                                                        {{ $scheduledMeeting->meeting_date->format('M d, Y • h:i A') }}
+                                                    </span>
+                                                    <span class="flex items-center gap-1.5 text-slate-600">
+                                                        <i class="fas fa-map-marker-alt text-brand-primary"></i>
+                                                        {{ $scheduledMeeting->venue ?? 'REOC Conference Hall' }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        @endif
                                         
                                         @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
                                             <!-- Admin Actions Section (Revenue Tracking) -->
@@ -659,6 +663,123 @@
                                     </div>
                                 </div>
                             </dialog>
+
+                            <!-- Scheduled Deliberation Modal -->
+                            @if($scheduledMeeting)
+                                <dialog id="deliberation-modal-{{ $title->id }}"
+                                    aria-labelledby="deliberation-modal-title-{{ $title->id }}"
+                                    onclick="if (event.target === this) this.close()"
+                                    class="m-auto rounded-3xl p-0 backdrop:bg-slate-900/60 backdrop:backdrop-blur-xs w-full max-w-lg max-h-[90vh] open:animate-[fadeIn_0.2s_ease-out] motion-reduce:animate-none border border-slate-200 shadow-2xl overflow-hidden focus:outline-none">
+                                    <div class="bg-white flex flex-col h-full max-h-[90vh]">
+                                        <!-- Header -->
+                                        <div class="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-amber-50/60 via-white to-orange-50/40 flex items-center justify-between shrink-0 z-20">
+                                            <div class="flex items-center gap-3 pr-3 min-w-0">
+                                                <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center shrink-0 shadow-xs" aria-hidden="true">
+                                                    <i class="fas fa-calendar-check text-base"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <h3 id="deliberation-modal-title-{{ $title->id }}" class="font-extrabold text-lg text-slate-900 leading-tight">Scheduled for Deliberation</h3>
+                                                    <p class="text-xs text-slate-500 font-medium truncate max-w-[220px] sm:max-w-xs mt-0.5">
+                                                        SOP 19 • Full Board Deliberation Session
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2.5 shrink-0">
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-800 font-mono text-[11px] font-bold rounded-lg border border-amber-200/80">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+                                                    Scheduled
+                                                </span>
+                                                <button type="button" onclick="document.getElementById('deliberation-modal-{{ $title->id }}').close()"
+                                                    aria-label="Close deliberation dialog"
+                                                    class="w-10 h-10 rounded-full bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors flex items-center justify-center border border-slate-200 shrink-0 min-w-[40px] min-h-[40px] focus-visible:ring-2 focus-visible:ring-brand-primary focus:outline-none cursor-pointer">
+                                                    <i class="fas fa-times text-sm" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Scrollable Content -->
+                                        <div class="p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto min-h-0 bg-slate-50/30 overscroll-contain">
+                                            <!-- Date & Time Highlight Card -->
+                                            <div class="p-4 sm:p-5 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white border border-amber-200/80 rounded-2xl flex items-start gap-4">
+                                                <div class="w-14 h-14 rounded-2xl bg-white border border-amber-200 shadow-xs flex flex-col items-center justify-center shrink-0 text-center overflow-hidden">
+                                                    <span class="text-[9px] font-black uppercase tracking-wider bg-amber-600 text-white w-full py-0.5">
+                                                        {{ $scheduledMeeting->meeting_date->format('M') }}
+                                                    </span>
+                                                    <span class="text-lg font-black text-slate-900 leading-none py-1">
+                                                        {{ $scheduledMeeting->meeting_date->format('d') }}
+                                                    </span>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+                                                        {{ $scheduledMeeting->meeting_date->format('l') }}
+                                                    </span>
+                                                    <h4 class="text-base sm:text-lg font-black text-slate-900 mt-1 leading-snug">
+                                                        {{ $scheduledMeeting->meeting_date->format('h:i A') }}
+                                                    </h4>
+                                                    <p class="text-xs text-slate-500 font-medium mt-0.5">
+                                                        {{ $scheduledMeeting->meeting_date->format('F d, Y') }} ({{ $scheduledMeeting->meeting_date->diffForHumans() }})
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Meeting Session & Venue Card -->
+                                            <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-xs space-y-3">
+                                                <div>
+                                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                                                        <i class="fas fa-users text-slate-400"></i> Session Title
+                                                    </span>
+                                                    <p class="text-sm font-bold text-slate-900 leading-snug">
+                                                        {{ $scheduledMeeting->title }}
+                                                    </p>
+                                                </div>
+                                                <div class="pt-3 border-t border-slate-100">
+                                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                                                        <i class="fas fa-map-marker-alt text-brand-primary"></i> Venue / Location
+                                                    </span>
+                                                    <p class="text-xs sm:text-sm font-semibold text-slate-800 leading-snug">
+                                                        {{ $scheduledMeeting->venue ?? 'WMSU Research Ethics Oversight Conference Hall, College of Law Annex' }}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Protocol on Agenda Card -->
+                                            <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-xs">
+                                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                                                    <i class="fas fa-clipboard-list text-slate-400"></i> Scheduled Protocol Agenda
+                                                </span>
+                                                <p class="text-xs sm:text-sm font-bold text-slate-800 leading-snug">
+                                                    {{ $title->Study_Protocol_title }}
+                                                </p>
+                                                @if($scheduledAgenda)
+                                                    <div class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                                                        <span>Section: <strong class="text-slate-700">{{ $scheduledAgenda->section ?? 'Protocol Review' }}</strong></span>
+                                                        <span>Order #{{ $scheduledAgenda->order ?? 1 }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+
+                                            <!-- SOP Institutional Advisory -->
+                                            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-600 leading-relaxed flex items-start gap-2.5">
+                                                <i class="fas fa-info-circle text-brand-primary mt-0.5 shrink-0 text-sm"></i>
+                                                <div>
+                                                    <p class="font-bold text-slate-800 mb-0.5">Researcher Deliberation Advisory</p>
+                                                    <p class="text-[11px] text-slate-500">
+                                                        The committee will deliberate this protocol during the scheduled session. Official committee decisions and action letters will be released in this portal shortly after the meeting concludes.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Footer -->
+                                        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end shrink-0">
+                                            <button type="button" onclick="document.getElementById('deliberation-modal-{{ $title->id }}').close()"
+                                                class="px-5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs transition-colors cursor-pointer min-h-[38px]">
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </dialog>
+                            @endif
 
                             <!-- Issued Certificates Modal (Researcher View - Swiss Modernism Ledger) -->
                             @if($resCert || $resCover)

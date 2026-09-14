@@ -105,15 +105,6 @@
             @endif
         </div>
 
-        @if(session('success'))
-        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-center justify-between shadow-2xs">
-            <div class="flex items-center gap-2.5">
-                <i class="fas fa-check-circle text-emerald-600 text-base shrink-0"></i>
-                <span class="font-medium">{{ session('success') }}</span>
-            </div>
-        </div>
-        @endif
-
         @if($totalCount > 0)
         <!-- ===== OPERATIONAL TOOLBAR ===== -->
         <div class="flex flex-col gap-3 bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
